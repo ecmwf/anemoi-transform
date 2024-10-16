@@ -11,13 +11,13 @@ from anemoi.transform.variables import Variable
 def test_variables():
     z500 = Variable.from_dict("z500", {"mars": {"param": "z", "levtype": "pl", "levelist": 500}})
 
-    assert z500.is_pressure_level()
-    assert z500.level() == 500
+    assert z500.is_pressure_level
+    assert z500.level == 500
 
     msl = Variable.from_dict("msl", {"mars": {"param": "msl", "levtype": "sfc"}})
 
-    assert not msl.is_pressure_level()
-    assert msl.level() is None
+    assert not msl.is_pressure_level
+    assert msl.level is None
 
 
 if __name__ == "__main__":

@@ -40,10 +40,12 @@ class Variable(ABC):
             return False
         return self.name == other.name
 
+    @property
     @abstractmethod
     def is_pressure_level(self):
         pass
 
+    @property
     @abstractmethod
     def level(self):
         pass

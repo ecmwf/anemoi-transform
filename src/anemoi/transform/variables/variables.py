@@ -15,9 +15,11 @@ class VariableFromMarsVocabulary(Variable):
         super().__init__(name)
         self.data = data
 
+    @property
     def is_pressure_level(self):
         return self.data.get("levtype", None) == "pl"
 
+    @property
     def level(self):
         return self.data.get("levelist", None)
 

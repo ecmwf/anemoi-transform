@@ -18,10 +18,10 @@ class Variable(ABC):
         self.name = name
 
     @classmethod
-    def from_dict(cls, data: dict):
+    def from_dict(cls, name, data: dict):
         from .variables import VariableFromDict
 
-        return VariableFromDict(data)
+        return VariableFromDict(name, data)
 
     @classmethod
     def from_earthkit(cls, field):

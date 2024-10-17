@@ -10,7 +10,7 @@ mars = filter_factory(
     levelist=[1000, 850, 500],
 )
 
-data = mars.forward(None)  # or data = mars(None)
+data = mars.forward(None)
 
 for f in data:
     print(f)
@@ -33,5 +33,11 @@ for f in data:
 ################
 
 pipeline = filter_factory("pipeline", filters=[mars, uv_2_ddff, ddff_2_uv])
+for f in pipeline(None):
+    print(f)
+
+################
+pipeline = mars | uv_2_ddff | ddff_2_uv
+
 for f in pipeline(None):
     print(f)

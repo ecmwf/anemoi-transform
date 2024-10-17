@@ -25,9 +25,8 @@ class Filter(ABC):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}()"
 
-    def __call__(self, *args, **kwargs):
-        # This is a convenience method to call the forward method
-        return self.forward(*args, **kwargs)
+    def __call__(self, data=None):
+        return self.forward(data)
 
     @abstractmethod
     def forward(self, x: ekd.FieldList) -> ekd.FieldList:
@@ -43,6 +42,13 @@ class Filter(ABC):
     @classmethod
     def reversed(cls, *args, **kwargs):
         return ReversedFilter(cls(*args, **kwargs))
+
+    def __or__(self, other):
+        return filter_factory("pipeline", filters=[self, other])
+        # return Pipeline([self, other])
+
+    # def __call__(self,other):
+    #     return  other | self
 
 
 class ReversedFilter(Filter):

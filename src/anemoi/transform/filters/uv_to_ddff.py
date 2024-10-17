@@ -13,6 +13,7 @@ from earthkit.meteo.wind.array import polar_to_xy
 from earthkit.meteo.wind.array import xy_to_polar
 
 from anemoi.transform.filters import TransformFilter
+from anemoi.transform.filters import register_filter
 
 
 class WindComponents(TransformFilter):
@@ -83,21 +84,5 @@ class WindComponents(TransformFilter):
         yield self.new_field_from_numpy(v, template=direction, param=self.v_component)
 
 
-if __name__ == "__main__":
-    from earthkit.data import from_source
-
-    ################
-    data = from_source(
-        "mars",
-        param=["u", "v", "t", "q"],
-        grid=[1, 1],
-        date="20200101/to/20200105",
-        levelist=[1000, 850, 500],
-    )
-    for f in data:
-        print(f)
-
-    ################
-    data = WindComponents().forward(data)
-    for f in data:
-        print(f)
+register_filter("uv_2_ddff", WindComponents)
+register_filter("ddff_2_uv", WindComponents.reversed)

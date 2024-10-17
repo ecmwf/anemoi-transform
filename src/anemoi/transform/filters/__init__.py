@@ -6,16 +6,17 @@
 # nor does it submit to any jurisdiction.
 
 
+import importlib
+import logging
+import os
 from abc import ABC
 from abc import abstractmethod
 from collections import defaultdict
-from typing import Any
 
 import earthkit.data as ekd
-import numpy as np
-from earthkit.data import FieldList
-from earthkit.meteo.wind.array import polar_to_xy
-from earthkit.meteo.wind.array import xy_to_polar
+import entrypoints
+
+LOG = logging.getLogger(__name__)
 
 
 class Filter(ABC):
@@ -33,6 +34,10 @@ class Filter(ABC):
 
     def reverse(self) -> "Filter":
         return ReversedFilter(self)
+
+    @classmethod
+    def reversed(cls, *args, **kwargs):
+        return ReversedFilter(cls(*args, **kwargs))
 
 
 class ReversedFilter(Filter):
@@ -89,7 +94,7 @@ class TransformFilter(Filter):
     def new_field_from_numpy(self, array, *, template, param):
         """Create a new field from a numpy array."""
         md = template.metadata().override(shortName=param)
-        return FieldList.from_array(array, md)[0]
+        return ekd.ArrayField(array, md)
 
     def new_fieldlits_from_list(self, fields):
         from earthkit.data.indexing.fieldlist import FieldArray
@@ -105,3 +110,57 @@ class TransformFilter(Filter):
     def backward_transform(self, *fields):
         """To be implemented by subclasses."""
         pass
+
+
+FILTERS = {}
+
+
+def register_filter(name, klass):
+    FILTERS[name] = klass
+
+
+def _load(file):
+    name, _ = os.path.splitext(file)
+    try:
+        # The module is expected to register the filter
+        # with the register_filter function
+        importlib.import_module(f".{name}", package=__name__)
+    except Exception:
+        LOG.warning(f"Error loading filter '{name}'", exc_info=True)
+
+
+def filter_registry(name) -> Filter:
+    if name in FILTERS:
+        return FILTERS[name]
+
+    for entry_point in entrypoints.get_group_all("anemoi.filters"):
+        if entry_point.name == name:
+            FILTERS[name] = entry_point.load()
+            return FILTERS[name]
+
+    here = os.path.dirname(__file__)
+    for file in os.listdir(here):
+        print(file)
+        if file[0] == ".":
+            continue
+
+        if file == "__init__.py":
+            continue
+
+        full = os.path.join(here, file)
+        if os.path.isdir(full):
+            if os.path.exists(os.path.join(full, "__init__.py")):
+                _load(file)
+            continue
+
+        if file.endswith(".py"):
+            _load(file)
+
+    if name not in FILTERS:
+        raise ValueError(f"Unknown filter '{name}'")
+
+    return FILTERS[name]
+
+
+def filter_factory(name, *args, **kwargs) -> Filter:
+    return filter_registry(name)(*args, **kwargs)

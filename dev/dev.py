@@ -3,7 +3,11 @@ from anemoi.transform.filters import filter_factory
 ################
 
 mars = filter_factory(
-    "mars", param=["u", "v", "t", "q"], grid=[1, 1], date="20200101/to/20200105", levelist=[1000, 850, 500]
+    "mars",
+    param=["u", "v", "t", "q"],
+    grid=[1, 1],
+    date="20200101/to/20200105",
+    levelist=[1000, 850, 500],
 )
 
 data = mars.forward(None)  # or data = mars(None)

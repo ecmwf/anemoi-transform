@@ -25,8 +25,8 @@ class Geography:
 
     def __init__(self, latitudes, longitudes, uuidOfHGrid=None):
 
-        assert isinstance(latitudes, np.ndarray)
-        assert isinstance(longitudes, np.ndarray)
+        assert isinstance(latitudes, np.ndarray), type(latitudes)
+        assert isinstance(longitudes, np.ndarray), type(longitudes)
 
         LOG.info(f"Latitudes: {len(latitudes)}, Longitudes: {len(longitudes)}")
         assert len(latitudes) == len(longitudes)
@@ -34,6 +34,9 @@ class Geography:
         self.uuidOfHGrid = uuidOfHGrid
         self.latitudes = latitudes
         self.longitudes = longitudes
+
+    def shape(self):
+        return self.latitudes.shape
 
 
 def _load(url_or_path, param):
@@ -56,16 +59,17 @@ class UnstructuredGridField:
     """An unstructured field."""
 
     def __init__(self, geography):
-        self._latitudes = geography.latitudes
-        self._longitudes = geography.longitudes
+        self.geography = geography
 
-    def metadata(self, name, default=None):
-        if name == "uuidOfHGrid":
-            return self.geography.uuidOfHGrid
+    def metadata(self, *args, default=None, **kwargs):
+
+        if len(args) == 0 and len(kwargs) == 0:
+            return self
+
         return default
 
     def grid_points(self):
-        return self._latitudes, self._longitudes
+        return self.geography.latitudes, self.geography.longitudes
 
     @property
     def resolution(self):
@@ -73,7 +77,10 @@ class UnstructuredGridField:
 
     @property
     def shape(self):
-        return (len(self._latitudes),)
+        return self.geography.shape()
+
+    def to_latlon(self, flatten=False):
+        return dict(lat=self.geography.latitudes, lon=self.geography.longitudes)
 
 
 class UnstructuredGridFieldList(FieldArray):

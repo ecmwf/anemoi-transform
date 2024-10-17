@@ -30,7 +30,7 @@ class Variable(ABC):
         return VariableFromEarthkit(field)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.name})"
+        return self.name
 
     def __hash__(self) -> int:
         return hash(self.name)
@@ -48,4 +48,9 @@ class Variable(ABC):
     @property
     @abstractmethod
     def level(self):
+        pass
+
+    @property
+    @abstractmethod
+    def is_constant_in_time(self):
         pass

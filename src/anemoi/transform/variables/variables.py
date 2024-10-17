@@ -5,6 +5,8 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import json
+
 from . import Variable
 
 
@@ -14,24 +16,29 @@ class VariableFromMarsVocabulary(Variable):
     def __init__(self, name, data: dict) -> None:
         super().__init__(name)
         self.data = data
+        print(json.dumps(data, indent=4))
+        if "mars" in self.data:
+            self.mars = self.data["mars"]
+        else:
+            self.mars = self.data
 
     @property
     def is_pressure_level(self):
-        return self.data.get("levtype", None) == "pl"
+        return self.mars.get("levtype", None) == "pl"
 
     @property
     def level(self):
-        return self.data.get("levelist", None)
+        return self.mars.get("levelist", None)
+
+    @property
+    def is_constant_in_time(self):
+        return self.data.get("is_constant_in_time", False)
 
 
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""
 
     def __init__(self, name, data: dict) -> None:
-
-        if "mars" in data:
-            data = data["mars"]
-
         super().__init__(name, data)
 
 

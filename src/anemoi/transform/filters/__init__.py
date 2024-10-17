@@ -25,6 +25,10 @@ class Filter(ABC):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}()"
 
+    def __call__(self, *args, **kwargs):
+        # This is a convenience method to call the forward method
+        return self.forward(*args, **kwargs)
+
     @abstractmethod
     def forward(self, x: ekd.FieldList) -> ekd.FieldList:
         pass
@@ -124,7 +128,7 @@ def filter_registry(name) -> Filter:
 
     here = os.path.dirname(__file__)
     for file in os.listdir(here):
-        print(file)
+
         if file[0] == ".":
             continue
 

@@ -8,7 +8,6 @@
 #
 
 
-import numpy as np
 from earthkit.meteo.wind.array import polar_to_xy
 from earthkit.meteo.wind.array import xy_to_polar
 
@@ -38,6 +37,8 @@ class WindComponents(TransformFilter):
         self.convention = convention
         self.radians = radians
 
+        assert not self.radians, "Radians not (yet) supported"
+
     def forward(self, data):
         return self._transform(
             data,
@@ -62,17 +63,12 @@ class WindComponents(TransformFilter):
             v.to_numpy(),
             convention=self.convention,
         )
-        if self.radians:
-            direction = np.deg2rad(direction)
 
         yield self.new_field_from_numpy(speed, template=u, param=self.wind_speed)
         yield self.new_field_from_numpy(direction, template=v, param=self.wind_direction)
 
     def backward_transform(self, speed, direction):
         """DD/FF to U/V"""
-
-        if self.radians:
-            direction = np.rad2deg(direction)
 
         u, v = polar_to_xy(
             speed.to_numpy(),

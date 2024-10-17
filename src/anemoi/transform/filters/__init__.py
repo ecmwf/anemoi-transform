@@ -11,10 +11,11 @@ import logging
 import os
 from abc import ABC
 from abc import abstractmethod
-from collections import defaultdict
 
 import earthkit.data as ekd
 import entrypoints
+
+from anemoi.transform.grouping import GroupByMarsParam
 
 LOG = logging.getLogger(__name__)
 
@@ -65,28 +66,10 @@ class TransformFilter(Filter):
 
         result = []
 
-        groups = defaultdict(dict)
+        groupping = GroupByMarsParam(group_by)
 
-        for f in data:
-            key = f.metadata(namespace="mars")
-            param = key.pop("param")
-
-            if param not in group_by:
-                result.append(f)
-                continue
-
-            key = tuple(key.items())
-
-            if param in groups[key]:
-                raise ValueError(f"Duplicate component {param} for {key}")
-
-            groups[key][param] = f
-
-        for _, group in groups.items():
-            if len(group) != len(group_by):
-                raise ValueError("Missing component")
-
-            for f in transform(*[group[p] for p in group_by]):
+        for matching in groupping.iterate(data, other=lambda x: result.append(x)):
+            for f in transform(*matching):
                 result.append(f)
 
         return self.new_fieldlits_from_list(result)
@@ -94,7 +77,8 @@ class TransformFilter(Filter):
     def new_field_from_numpy(self, array, *, template, param):
         """Create a new field from a numpy array."""
         md = template.metadata().override(shortName=param)
-        return ekd.ArrayField(array, md)
+        # return ekd.ArrayField(array, md)
+        return ekd.FieldList.from_array(array, md)[0]
 
     def new_fieldlits_from_list(self, fields):
         from earthkit.data.indexing.fieldlist import FieldArray

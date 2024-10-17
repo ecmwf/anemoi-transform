@@ -39,5 +39,5 @@ for f in pipeline(None):
 ################
 pipeline = mars | uv_2_ddff | ddff_2_uv
 
-for f in pipeline(None):
+for f in pipeline:
     print(f)

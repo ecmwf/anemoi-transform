@@ -28,5 +28,8 @@ class Pipeline(Filter):
             data = filter.backward(data)
         return data
 
+    def __iter__(self):
+        return iter(self(None))
+
 
 register_filter("pipeline", Pipeline)

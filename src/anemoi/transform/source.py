@@ -5,6 +5,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from .transform import Transform
 
-class Source:
-    pass
+
+class Source(Transform):
+    def backward(self, data):
+        raise NotImplementedError("Sources do not support backward transformations")

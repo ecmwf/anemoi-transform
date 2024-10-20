@@ -25,8 +25,5 @@ class Mars(Source):
 
         return ekd.from_source("mars", **self.request)
 
-    def backward(self, data):
-        raise NotImplementedError("Cannot archive data in MARS that way")
-
 
 register_source("mars", Mars)

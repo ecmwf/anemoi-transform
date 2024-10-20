@@ -8,11 +8,11 @@
 #
 
 
-from anemoi.transform.filters import Filter
-from anemoi.transform.filters import register_filter
+from ..workflow import Workflow
+from . import register_workflow
 
 
-class Pipeline(Filter):
+class Pipeline(Workflow):
     """A simple pipeline of filters"""
 
     def __init__(self, filters):
@@ -28,8 +28,5 @@ class Pipeline(Filter):
             data = filter.backward(data)
         return data
 
-    def __iter__(self):
-        return iter(self(None))
 
-
-register_filter("pipeline", Pipeline)
+register_workflow("pipeline", Pipeline)

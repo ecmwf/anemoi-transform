@@ -1,12 +1,13 @@
 from anemoi.transform.filters import filter_factory
 from anemoi.transform.sources import source_factory
+from anemoi.transform.workflows import workflow_factory
 
 ################
 
 mars = source_factory(
     "mars",
     param=["u", "v", "t", "q"],
-    grid=[1, 1],
+    grid=[20, 20],
     date="20200101/to/20200105",
     levelist=[1000, 850, 500],
 )
@@ -33,7 +34,7 @@ for f in data:
 
 ################
 
-pipeline = filter_factory("pipeline", filters=[mars, uv_2_ddff, ddff_2_uv])
+pipeline = workflow_factory("pipeline", filters=[mars, uv_2_ddff, ddff_2_uv])
 for f in pipeline(None):
     print(f)
 

@@ -68,4 +68,4 @@ class Registry:
         if name not in self.registered:
             raise ValueError(f"Cannot load '{name}' from {self.package}")
 
-        return self.registered
+        return self.registered[name]

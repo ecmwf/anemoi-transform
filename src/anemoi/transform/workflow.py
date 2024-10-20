@@ -5,6 +5,12 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from .transform import Transform
 
-class Workflow:
-    pass
+
+class Workflow(Transform):
+    def __iter__(self):
+        return iter(self(None))
+
+    def __call__(self, data):
+        return self.forward(data)

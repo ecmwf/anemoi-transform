@@ -6,5 +6,50 @@
 # nor does it submit to any jurisdiction.
 
 
-class Transform:
-    pass
+from abc import ABC
+from abc import abstractmethod
+
+
+class Transform(ABC):
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}()"
+
+    def __call__(self, data=None):
+        return self.forward(data)
+
+    @abstractmethod
+    def forward(self, data):
+        pass
+
+    @abstractmethod
+    def backward(self, data):
+        pass
+
+    def reverse(self) -> "Transform":
+        return ReversedTransform(self)
+
+    @classmethod
+    def reversed(cls, *args, **kwargs):
+        return ReversedTransform(cls(*args, **kwargs))
+
+    def __or__(self, other):
+        from .workflows import workflow_factory
+
+        return workflow_factory("pipeline", filters=[self, other])
+
+
+class ReversedTransform(Transform):
+    """Swap the forward and backward methods of a filter."""
+
+    def __init__(self, filter) -> None:
+        self.filter = filter
+
+    def __repr__(self) -> str:
+        return f"Reversed({self.filter})"
+
+    def forward(self, x):
+        return self.filter.backward(x)
+
+    def backward(self, x):
+        return self.filter.forward(x)

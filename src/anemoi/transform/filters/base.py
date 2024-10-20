@@ -14,7 +14,7 @@ from ..filter import Filter
 from ..grouping import GroupByMarsParam
 
 
-class TransformFilter(Filter):
+class SimpleFilter(Filter):
     """A filter to convert only some fields.
     The fields are matched by their metadata.
     """

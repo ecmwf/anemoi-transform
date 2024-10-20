@@ -12,10 +12,10 @@ from earthkit.meteo.wind.array import polar_to_xy
 from earthkit.meteo.wind.array import xy_to_polar
 
 from . import register_filter
-from .transform import TransformFilter
+from .base import SimpleFilter
 
 
-class WindComponents(TransformFilter):
+class WindComponents(SimpleFilter):
     """A filter to convert wind speed and direction to U and V components,
     and back.
     """

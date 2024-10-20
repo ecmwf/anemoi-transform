@@ -9,8 +9,8 @@
 from collections import defaultdict
 
 
-def _ignore(f):
-    pass
+def _lost(f):
+    raise ValueError(f"Lost field {f}")
 
 
 class GroupByMarsParam:
@@ -21,7 +21,7 @@ class GroupByMarsParam:
             params = [params]
         self.params = params
 
-    def iterate(self, data, *, other=_ignore):
+    def iterate(self, data, *, other=_lost):
 
         assert callable(other), type(other)
         groups = defaultdict(dict)
@@ -31,7 +31,7 @@ class GroupByMarsParam:
             param = key.pop("param")
 
             if param not in self.params:
-                _ignore(f)
+                other(f)
                 continue
 
             key = tuple(key.items())

@@ -10,11 +10,11 @@
 
 import earthkit.data as ekd
 
-from anemoi.transform.filters import Filter
-from anemoi.transform.filters import register_filter
+from ..source import Source
+from . import register_source
 
 
-class Mars(Filter):
+class Mars(Source):
     """A demo source"""
 
     def __init__(self, **request):
@@ -29,4 +29,4 @@ class Mars(Filter):
         raise NotImplementedError("Cannot archive data in MARS that way")
 
 
-register_filter("mars", Mars)
+register_source("mars", Mars)

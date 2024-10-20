@@ -6,18 +6,5 @@
 # nor does it submit to any jurisdiction.
 
 
-from ..registry import Registry
-
-registry = Registry(__name__)
-
-
-def register_source(name, maker):
-    registry.register(name, maker)
-
-
-def lookup_source(name):
-    return registry.lookup(name)
-
-
-def source_factory(name, *args, **kwargs):
-    return lookup_source(name)(*args, **kwargs)
+class Workflow:
+    pass

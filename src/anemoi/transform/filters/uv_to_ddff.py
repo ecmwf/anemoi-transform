@@ -11,8 +11,8 @@
 from earthkit.meteo.wind.array import polar_to_xy
 from earthkit.meteo.wind.array import xy_to_polar
 
-from anemoi.transform.filters import TransformFilter
-from anemoi.transform.filters import register_filter
+from . import register_filter
+from .transform import TransformFilter
 
 
 class WindComponents(TransformFilter):

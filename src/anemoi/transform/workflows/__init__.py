@@ -5,19 +5,18 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-
 from ..registry import Registry
 
 registry = Registry(__name__)
 
 
-def register_source(name, maker):
+def register_workflow(name, maker):
     registry.register(name, maker)
 
 
-def lookup_source(name):
+def lookup_workflow(name):
     return registry.lookup(name)
 
 
-def source_factory(name, *args, **kwargs):
-    return lookup_source(name)(*args, **kwargs)
+def workflow_factory(name, *args, **kwargs):
+    return lookup_workflow(name)(*args, **kwargs)

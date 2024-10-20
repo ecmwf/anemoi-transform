@@ -1,8 +1,9 @@
 from anemoi.transform.filters import filter_factory
+from anemoi.transform.sources import source_factory
 
 ################
 
-mars = filter_factory(
+mars = source_factory(
     "mars",
     param=["u", "v", "t", "q"],
     grid=[1, 1],

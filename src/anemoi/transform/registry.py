@@ -17,13 +17,11 @@ LOG = logging.getLogger(__name__)
 class Registry:
     """A registry of factories"""
 
-    def __init__(self, package, entrypoint_group=None):
-
-        print(f"package: {package} entrypoint_group: {entrypoint_group}")
+    def __init__(self, package):
 
         self.package = package
         self.registered = {}
-        self.entrypoint_group = entrypoint_group
+        self.kind = package.split(".")[-1]
 
     def register(self, name: str, factory: callable):
         self.registered[name] = factory
@@ -38,12 +36,6 @@ class Registry:
     def lookup(self, name: str) -> callable:
         if name in self.registered:
             return self.registered[name]
-
-        if self.entrypoint_group is not None:
-            for entry_point in entrypoints.get_group_all(self.entrypoint_group):
-                if entry_point.name == name:
-                    self.registered[name] = entry_point.load()
-                    return self.registered[name]
 
         directory = sys.modules[self.package].__path__[0]
 
@@ -63,6 +55,15 @@ class Registry:
 
             if file.endswith(".py"):
                 self._load(file)
+
+        entrypoint_group = f"anemoi.{self.kind}"
+        for entry_point in entrypoints.get_group_all(entrypoint_group):
+            if entry_point.name == name:
+                if name in self.registered:
+                    LOG.warning(
+                        f"Overwriting builtin '{name}' from {self.package} with plugin '{entry_point.module_name}'"
+                    )
+                self.registered[name] = entry_point.load()
 
         if name not in self.registered:
             raise ValueError(f"Cannot load '{name}' from {self.package}")

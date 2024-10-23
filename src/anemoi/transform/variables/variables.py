@@ -5,7 +5,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import json
 
 from . import Variable
 
@@ -16,11 +15,7 @@ class VariableFromMarsVocabulary(Variable):
     def __init__(self, name, data: dict) -> None:
         super().__init__(name)
         self.data = data
-        print(json.dumps(data, indent=4))
-        if "mars" in self.data:
-            self.mars = self.data["mars"]
-        else:
-            self.mars = self.data
+        self.mars = self.data.get("mars", {})
 
     @property
     def is_pressure_level(self):
@@ -32,7 +27,15 @@ class VariableFromMarsVocabulary(Variable):
 
     @property
     def is_constant_in_time(self):
-        return self.data.get("is_constant_in_time", False)
+        return self.data.get("constant_in_time", False)
+
+    @property
+    def is_from_input(self):
+        return "mars" in self.data
+
+    @property
+    def is_computed_forcing(self):
+        return self.data.get("computed_forcing", False)
 
 
 class VariableFromDict(VariableFromMarsVocabulary):

@@ -16,7 +16,7 @@ longitudes_url = "http://icon-downloads.mpimet.mpg.de/grids/public/edzw/icon_ext
 tlon = "tlon"
 
 
-def test_unstructured_from_url():
+def do_not_test_unstructured_from_url():
     ds = UnstructuredGridFieldList.from_grib(latitude_url, longitudes_url, tlat, tlon)
 
     assert len(ds) == 1

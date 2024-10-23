@@ -28,7 +28,6 @@ class Geography:
         assert isinstance(latitudes, np.ndarray), type(latitudes)
         assert isinstance(longitudes, np.ndarray), type(longitudes)
 
-        LOG.info(f"Latitudes: {len(latitudes)}, Longitudes: {len(longitudes)}")
         assert len(latitudes) == len(longitudes)
 
         self.uuidOfHGrid = uuidOfHGrid
@@ -95,7 +94,7 @@ class UnstructuredGridFieldList(FieldArray):
         return cls([UnstructuredGridField(Geography(latitudes, longitudes))])
 
     @classmethod
-    def from_values(cls, latitudes, longitudes):
+    def from_values(cls, *, latitudes, longitudes):
         if isinstance(latitudes, (list, tuple)):
             latitudes = np.array(latitudes)
 

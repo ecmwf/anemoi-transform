@@ -6,13 +6,16 @@ from anemoi.transform.workflows import workflow_factory
 
 mars = source_factory(
     "mars",
+)
+
+r = dict(
     param=["u", "v", "t", "q"],
     grid=[20, 20],
     date="20200101/to/20200105",
     levelist=[1000, 850, 500],
 )
 
-data = mars.forward(None)
+data = mars.forward(r)
 
 for f in data:
     print(f)
@@ -35,11 +38,16 @@ for f in data:
 ################
 
 pipeline = workflow_factory("pipeline", filters=[mars, uv_2_ddff, ddff_2_uv])
-for f in pipeline(None):
+for f in pipeline(r):
     print(f)
 
 ################
-pipeline = mars | uv_2_ddff | ddff_2_uv
+
+
+pipeline = r | mars | uv_2_ddff | ddff_2_uv
 
 for f in pipeline:
     print(f)
+
+
+ipipe = pipeline.to_infernece()

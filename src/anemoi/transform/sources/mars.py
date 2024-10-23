@@ -18,12 +18,18 @@ class Mars(Source):
     """A demo source"""
 
     def __init__(self, **request):
-        self.request = request
+        pass
 
     def forward(self, data):
-        assert data is None
+        return ekd.from_source("mars", **data)
 
-        return ekd.from_source("mars", **self.request)
+    def __ror__(self, data):
+
+        class Input:
+            def __init__(self, data):
+                self.data = data
+
+        return Input(data)
 
 
 register_source("mars", Mars)

@@ -50,4 +50,4 @@ for f in pipeline:
     print(f)
 
 
-ipipe = pipeline.to_infernece()
+# ipipe = pipeline.to_infernece()

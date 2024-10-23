@@ -25,9 +25,14 @@ class Mars(Source):
 
     def __ror__(self, data):
 
-        class Input:
+        this = self
+
+        class Input(Source):
             def __init__(self, data):
                 self.data = data
+
+            def forward(self, data):
+                return this.forward(self.data)
 
         return Input(data)
 

@@ -13,3 +13,4 @@ Keep it human-readable, your future self will thank you!
 ### Changed
 
 - Add more attributes to typed variables
+- Update copyright notice

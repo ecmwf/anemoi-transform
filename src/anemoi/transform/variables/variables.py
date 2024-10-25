@@ -37,6 +37,14 @@ class VariableFromMarsVocabulary(Variable):
     def is_computed_forcing(self):
         return self.data.get("computed_forcing", False)
 
+    @property
+    def is_accumulation(self):
+        return self.data.get("process") == "accumulation"
+
+    @property
+    def grib_keys(self):
+        return self.data.get("mars", {})
+
 
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""

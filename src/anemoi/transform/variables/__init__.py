@@ -54,3 +54,7 @@ class Variable(ABC):
     @abstractmethod
     def is_constant_in_time(self):
         pass
+
+    @property
+    def grib_keys(self):
+        raise NotImplementedError(f"Method `grib_keys` not implemented for {self.__class__.__name__}")

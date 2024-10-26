@@ -14,3 +14,4 @@ Keep it human-readable, your future self will thank you!
 
 - Add more attributes to typed variables
 - Fix `__version__` import in init
+- Update copyright notice

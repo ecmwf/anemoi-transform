@@ -44,8 +44,12 @@ class VariableFromMarsVocabulary(Variable):
         return self.data.get("process") == "accumulation"
 
     @property
+    def is_instantanous(self):
+        return "process" not in self.data.get
+
+    @property
     def grib_keys(self):
-        return self.data.get("mars", {})
+        return self.data.get("mars", {}).copy()
 
 
 class VariableFromDict(VariableFromMarsVocabulary):

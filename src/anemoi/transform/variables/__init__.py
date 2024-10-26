@@ -56,5 +56,28 @@ class Variable(ABC):
         pass
 
     @property
+    @abstractmethod
+    def is_instantanous(self):
+        pass
+
+    @property
+    def is_valid_over_a_period(self):
+        return not self.is_instantanous
+
+    @property
+    @abstractmethod
+    def is_accumulation(self):
+        pass
+
+    # This may need to move to a different class
+    @property
     def grib_keys(self):
         raise NotImplementedError(f"Method `grib_keys` not implemented for {self.__class__.__name__}")
+
+    @property
+    def is_computed_forcing(self):
+        raise NotImplementedError(f"Method `is_computed_forcing` not implemented for {self.__class__.__name__}")
+
+    @property
+    def is_from_input(self):
+        pass

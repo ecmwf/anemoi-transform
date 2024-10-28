@@ -10,6 +10,10 @@ Keep it human-readable, your future self will thank you!
 
 ## [Unreleased](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD)
 
+### Added 
+
+- Add CONTRIBUTORS.md (#5)
+
 ### Changed
 
 - Add more attributes to typed variables

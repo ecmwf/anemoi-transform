@@ -36,9 +36,9 @@ class Transform(ABC):
         return ReversedTransform(cls(*args, **kwargs))
 
     def __or__(self, other):
-        from .workflows import workflow_factory
+        from .workflows import workflow_registry
 
-        return workflow_factory("pipeline", filters=[self, other])
+        return workflow_registry.create("pipeline", filters=[self, other])
 
 
 class ReversedTransform(Transform):

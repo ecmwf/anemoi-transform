@@ -5,18 +5,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from ..registry import Registry
+from anemoi.utils.registry import Registry
 
-registry = Registry(__name__)
-
-
-def register_workflow(name, maker):
-    registry.register(name, maker)
-
-
-def lookup_workflow(name):
-    return registry.lookup(name)
-
-
-def workflow_factory(name, *args, **kwargs):
-    return lookup_workflow(name)(*args, **kwargs)
+workflow_registry = Registry(__name__)

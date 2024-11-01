@@ -9,7 +9,7 @@
 
 
 from ..workflow import Workflow
-from . import register_workflow
+from . import workflow_registry
 
 
 class Pipeline(Workflow):
@@ -29,4 +29,4 @@ class Pipeline(Workflow):
         return data
 
 
-register_workflow("pipeline", Pipeline)
+workflow_registry.register("pipeline", Pipeline)

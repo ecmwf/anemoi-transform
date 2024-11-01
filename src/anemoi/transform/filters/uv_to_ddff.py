@@ -11,7 +11,7 @@
 from earthkit.meteo.wind.array import polar_to_xy
 from earthkit.meteo.wind.array import xy_to_polar
 
-from . import register_filter
+from . import filter_registry
 from .base import SimpleFilter
 
 
@@ -80,5 +80,5 @@ class WindComponents(SimpleFilter):
         yield self.new_field_from_numpy(v, template=direction, param=self.v_component)
 
 
-register_filter("uv_2_ddff", WindComponents)
-register_filter("ddff_2_uv", WindComponents.reversed)
+filter_registry.register("uv_2_ddff", WindComponents)
+filter_registry.register("ddff_2_uv", WindComponents.reversed)

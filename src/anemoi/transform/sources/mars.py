@@ -11,9 +11,10 @@
 import earthkit.data as ekd
 
 from ..source import Source
-from . import register_source
+from . import source_registry
 
 
+@source_registry.register("mars")
 class Mars(Source):
     """A demo source"""
 
@@ -37,4 +38,4 @@ class Mars(Source):
         return Input(data)
 
 
-register_source("mars", Mars)
+source_registry.register("mars", Mars)

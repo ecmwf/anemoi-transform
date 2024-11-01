@@ -6,18 +6,6 @@
 # nor does it submit to any jurisdiction.
 
 
-from ..registry import Registry
+from anemoi.utils.registry import Registry
 
-registry = Registry(__name__)
-
-
-def register_filter(name, maker):
-    registry.register(name, maker)
-
-
-def lookup_filter(name):
-    return registry.lookup(name)
-
-
-def filter_factory(name, *args, **kwargs):
-    return lookup_filter(name)(*args, **kwargs)
+filter_registry = Registry(__name__)

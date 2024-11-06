@@ -81,3 +81,10 @@ class Variable(ABC):
     @property
     def is_from_input(self):
         pass
+
+    def similarity(self, other):
+        """Compute the similarity between two variables. This is used when
+        encoding a variables in GRIB and we do not have a template for it.
+        We can then try to find the most similar variable for which we have a template.
+        """
+        return 0

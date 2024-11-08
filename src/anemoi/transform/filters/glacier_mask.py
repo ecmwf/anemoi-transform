@@ -7,19 +7,15 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import cfgrib
+import earthkit.data as ekd
 import numpy as np
 
 from . import filter_registry
 from .base import SimpleFilter
 
-glacier_mask_file = "/home/rdx/data/climate/climate.v021/95_4/cicecap"
 
-
-def mask_glaciers(snow_depth, glacier_mask_file):
-    ds = cfgrib.open_dataset(glacier_mask_file, backend_kwargs={"read_keys": [], "indexpath": ""})
-    mask = ds.si10.values
-    snow_depth[mask] = np.nan
+def mask_glaciers(snow_depth, glacier_mask):
+    snow_depth[glacier_mask] = np.nan
     return snow_depth
 
 
@@ -30,9 +26,11 @@ class SnowDepthMasked(SimpleFilter):
     def __init__(
         self,
         *,
+        glacier_mask,
         snow_depth="sd",
         snow_depth_masked="sd_masked",
     ):
+        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy()
         self.snow_depth = snow_depth
         self.snow_depth_masked = snow_depth_masked
 
@@ -49,9 +47,9 @@ class SnowDepthMasked(SimpleFilter):
     def forward_transform(self, sd):
         """Mask out glaciers in snow depth"""
 
-        snow_cover = mask_glaciers(sd.to_numpy())
+        snow_depth_masked = mask_glaciers(sd.to_numpy(), self.glacier_mask)
 
-        yield self.new_field_from_numpy(snow_cover, template=sd, param=self.snow_cover)
+        yield self.new_field_from_numpy(snow_depth_masked, template=sd, param=self.snow_depth_masked)
 
     def backward_transform(self, sd):
         raise NotImplementedError("SnowDepthMasked is not reversible")

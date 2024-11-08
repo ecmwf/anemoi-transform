@@ -51,6 +51,21 @@ class VariableFromMarsVocabulary(Variable):
     def grib_keys(self):
         return self.data.get("mars", {}).copy()
 
+    def similarity(self, other):
+        if not isinstance(other, VariableFromMarsVocabulary):
+            return 0
+
+        def __similarity(a, b):
+            if isinstance(a, dict) and isinstance(b, dict):
+                return sum(__similarity(a[k], b[k]) for k in set(a.keys()) & set(b.keys()))
+
+            if isinstance(a, list) and isinstance(b, list):
+                return sum(__similarity(a[i], b[i]) for i in range(min(len(a), len(b))))
+
+            return 1 if a == b else 0
+
+        return __similarity(self.data, other.data)
+
 
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""

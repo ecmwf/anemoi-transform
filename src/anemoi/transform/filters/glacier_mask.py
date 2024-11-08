@@ -53,5 +53,5 @@ class SnowDepthMasked(SimpleFilter):
 
         yield self.new_field_from_numpy(snow_cover, template=sd, param=self.snow_cover)
 
-    def backward_transform(self, sd, rsn):
+    def backward_transform(self, sd):
         raise NotImplementedError("SnowDepthMasked is not reversible")

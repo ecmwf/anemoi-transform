@@ -7,8 +7,19 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import numpy as np
+
 from . import filter_registry
 from .base import SimpleFilter
+
+
+def compute_snow_cover(snow_depth, snow_density):
+    """Convert snow depth to snow cover."""
+    tmp1 = (1000 * snow_depth) / snow_density
+    tmp2 = np.clip(snow_density, 100, 400)
+    snow_cover = np.clip(np.tanh((4000 * tmp1) / tmp2), 0, 1)
+    snow_cover[snow_cover > 0.99] = 1.0
+    return snow_cover
 
 
 @filter_registry.register("snow_cover")
@@ -40,7 +51,7 @@ class SnowCover(SimpleFilter):
     def forward_transform(self, sd, rsn):
         """Convert snow depth and snow density to snow cover"""
 
-        snow_cover = sd.to_numpy() * rsn.to_numpy()
+        snow_cover = compute_snow_cover(sd.to_numpy(), rsn.to_numpy())
 
         yield self.new_field_from_numpy(snow_cover, template=sd, param=self.snow_cover)
 

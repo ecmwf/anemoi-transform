@@ -19,7 +19,7 @@ def mask_glaciers(snow_depth, glacier_mask):
     return snow_depth
 
 
-@filter_registry.register("snow_depth_masked")
+@filter_registry.register("glacier_mask")
 class SnowDepthMasked(SimpleFilter):
     """A filter to mask about glacier in snow depth."""
 
@@ -30,7 +30,7 @@ class SnowDepthMasked(SimpleFilter):
         snow_depth="sd",
         snow_depth_masked="sd_masked",
     ):
-        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy()
+        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().bool()
         self.snow_depth = snow_depth
         self.snow_depth_masked = snow_depth_masked
 

@@ -9,9 +9,10 @@
 
 
 from ..workflow import Workflow
-from . import register_workflow
+from . import workflow_registry
 
 
+@workflow_registry.register("pipeline")
 class Pipeline(Workflow):
     """A simple pipeline of filters"""
 
@@ -27,6 +28,3 @@ class Pipeline(Workflow):
         for filter in reversed(self.filters):
             data = filter.backward(data)
         return data
-
-
-register_workflow("pipeline", Pipeline)

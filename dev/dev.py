@@ -7,15 +7,13 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from anemoi.transform.filters import filter_factory
-from anemoi.transform.sources import source_factory
-from anemoi.transform.workflows import workflow_factory
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.sources import source_registry
+from anemoi.transform.workflows import workflow_registry
 
 ################
 
-mars = source_factory(
-    "mars",
-)
+mars = source_registry.create("mars")
 
 r = dict(
     param=["u", "v", "t", "q"],
@@ -31,14 +29,14 @@ for f in data:
 
 ################
 
-uv_2_ddff = filter_factory("uv_2_ddff")
+uv_2_ddff = filter_registry.create("uv_2_ddff")
 
 data = uv_2_ddff.forward(data)
 for f in data:
     print(f)
 
 
-ddff_2_uv = filter_factory("ddff_2_uv")
+ddff_2_uv = filter_registry.create("ddff_2_uv")
 data = ddff_2_uv.forward(data)
 for f in data:
     print(f)
@@ -46,7 +44,7 @@ for f in data:
 
 ################
 
-pipeline = workflow_factory("pipeline", filters=[mars, uv_2_ddff, ddff_2_uv])
+pipeline = workflow_registry.create("pipeline", filters=[mars, uv_2_ddff, ddff_2_uv])
 for f in pipeline(r):
     print(f)
 

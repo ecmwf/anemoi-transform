@@ -30,7 +30,7 @@ class SnowDepthMasked(SimpleFilter):
         snow_depth="sd",
         snow_depth_masked="sd_masked",
     ):
-        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().bool()
+        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().astype("bool")
         self.snow_depth = snow_depth
         self.snow_depth_masked = snow_depth_masked
 

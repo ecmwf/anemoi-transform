@@ -45,6 +45,6 @@ class GroupByMarsParam:
 
         for _, group in groups.items():
             if len(group) != len(self.params):
-                raise ValueError("Missing component")
+                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(group.keys())}")
 
             yield tuple(group[p] for p in self.params)

@@ -35,7 +35,10 @@ class SimpleFilter(Filter):
 
     def new_field_from_numpy(self, array, *, template, param):
         """Create a new field from a numpy array."""
-        md = template.metadata().override(shortName=param)
+        if isinstance(param, int):
+            md = template.metadata().override(paramId=param)
+        else:
+            md = template.metadata().override(shortName=param)
         # return ekd.ArrayField(array, md)
         return ekd.FieldList.from_array(array, md)[0]
 

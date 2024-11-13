@@ -53,7 +53,7 @@ def read_crosswalking_table(param, param_dic):
     return arrays
 
 
-@filter_registry.register("create_land_parameters")
+@filter_registry.register("land_parameters")
 class LandParameters(SimpleFilter):
     """A filter to add static parameters from table based on soil/vegetation type."""
 

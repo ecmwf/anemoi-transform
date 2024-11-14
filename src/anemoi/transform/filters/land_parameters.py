@@ -60,9 +60,11 @@ class LandParameters(SimpleFilter):
     def __init__(
         self,
         *,
+        # Input parameters
         high_veg_type="tvh",
         low_veg_type="tvl",
         soil_type="slt",
+        # Output parameters
         hveg_rsmin="hveg_rsmin",
         hveg_cov="hveg_cov",
         hveg_z0m="hveg_z0m",

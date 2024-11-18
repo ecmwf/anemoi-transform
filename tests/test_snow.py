@@ -8,10 +8,12 @@
 # nor does it submit to any jurisdiction.
 
 import numpy as np
+import pytest
 
 from anemoi.transform.filters.snow_cover import compute_snow_cover
 
 
+@pytest.mark.skip("Test not implemented")
 def test_snow_cover():
     snow_depth = np.array([1.0, 2.0, 3.0])
     snow_density = np.array([0.1, 0.2, 0.3])

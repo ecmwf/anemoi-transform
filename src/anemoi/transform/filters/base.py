@@ -8,12 +8,15 @@
 # nor does it submit to any jurisdiction.
 
 
+import logging
 from abc import abstractmethod
 
-import earthkit.data as ekd
-
+from ..fields import new_field_from_numpy
+from ..fields import new_fieldlist_from_list
 from ..filter import Filter
 from ..grouping import GroupByMarsParam
+
+LOG = logging.getLogger(__name__)
 
 
 class SimpleFilter(Filter):
@@ -35,14 +38,10 @@ class SimpleFilter(Filter):
 
     def new_field_from_numpy(self, array, *, template, param):
         """Create a new field from a numpy array."""
-        md = template.metadata().override(shortName=param)
-        # return ekd.ArrayField(array, md)
-        return ekd.FieldList.from_array(array, md)[0]
+        return new_field_from_numpy(array, template=template, param=param)
 
     def new_fieldlist_from_list(self, fields):
-        from earthkit.data.indexing.fieldlist import FieldArray
-
-        return FieldArray(fields)
+        return new_fieldlist_from_list(fields)
 
     @abstractmethod
     def forward_transform(self, *fields):

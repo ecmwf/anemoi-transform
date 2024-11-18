@@ -1,6 +1,8 @@
-# (C) Copyright 2024 European Centre for Medium-Range Weather Forecasts.
+# (C) Copyright 2024 Anemoi contributors.
+#
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+#
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
@@ -81,3 +83,10 @@ class Variable(ABC):
     @property
     def is_from_input(self):
         pass
+
+    def similarity(self, other):
+        """Compute the similarity between two variables. This is used when
+        encoding a variables in GRIB and we do not have a template for it.
+        We can then try to find the most similar variable for which we have a template.
+        """
+        return 0

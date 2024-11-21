@@ -8,8 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 
-from cfunits import Units
-
 from . import filter_registry
 from .base import SimpleFilter
 
@@ -67,6 +65,7 @@ class Convert(Rescale):
         unit_out,
         param
     ):
+        from cfunits import Units
         u0 = Units(unit_in)
         u1 = Units(unit_out)
         x1, x2 = 0.0, 1.0

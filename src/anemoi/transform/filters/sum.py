@@ -30,7 +30,7 @@ class Sum(SimpleFilter):
         return self._transform(data, self.forward_transform, *self.args)
 
     def backward(self, data):
-        raise NotImplementedError("Fire is not reversible")
+        raise NotImplementedError("Sum is not reversible")
 
     def forward_transform(self, *args):
         """Sum the fuel components to get the total fuel"""
@@ -44,5 +44,5 @@ class Sum(SimpleFilter):
 
         yield self.new_field_from_numpy(total, template=template, param=self.name)
 
-    def backward_transform(self, total_fuel):
-        raise NotImplementedError("Fire is not reversible")
+    def backward_transform(self, data):
+        raise NotImplementedError("Sum is not reversible")

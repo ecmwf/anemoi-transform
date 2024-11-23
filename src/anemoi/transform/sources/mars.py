@@ -36,6 +36,3 @@ class Mars(Source):
                 return this.forward(self.data)
 
         return Input(data)
-
-
-source_registry.register("mars", Mars)

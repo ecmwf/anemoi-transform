@@ -53,6 +53,10 @@ Keep it human-readable, your future self will thank you!
 
 ## [0.1.0](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.0.8...0.1.0) - 2024-11-18
 
+## [Unreleased](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.0.9...HEAD)
+
+## [0.0.9](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.0.8...0.0.9) - 2024-11-01
+
 ## [0.0.8](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.0.5...0.0.8) - 2024-10-26
 
 ### Added

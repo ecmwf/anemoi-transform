@@ -8,8 +8,12 @@
 # nor does it submit to any jurisdiction.
 
 
+import logging
+
 from . import filter_registry
 from .base import SimpleFilter
+
+LOG = logging.getLogger(__name__)
 
 
 @filter_registry.register("sum")
@@ -25,6 +29,7 @@ class Sum(SimpleFilter):
         assert len(formula) == 1
         self.name = list(formula.keys())[0]
         self.args = list(formula.values())[0]
+        LOG.warning("Using the sum filter will be deprecated in the future. Please do not rely on it.")
 
     def forward(self, data):
         return self._transform(data, self.forward_transform, *self.args)

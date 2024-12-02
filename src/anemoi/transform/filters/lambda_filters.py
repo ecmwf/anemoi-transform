@@ -91,4 +91,4 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         return out
 
 
-filter_registry.register("singlefieldlambda", EarthkitFieldLambdaFilter)
+filter_registry.register("earthkitfieldlambda", EarthkitFieldLambdaFilter)

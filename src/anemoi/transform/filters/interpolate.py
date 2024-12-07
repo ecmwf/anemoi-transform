@@ -44,3 +44,8 @@ class Interpolate(Filter):
         from earthkit.regrid import interpolate
 
         return interpolate(data, self.source, self.target, method=self.method)
+
+    def backward(self, data):
+        from earthkit.regrid import interpolate
+
+        return interpolate(data, self.target, self.source, method=self.method)

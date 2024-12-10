@@ -20,7 +20,7 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("repeat_members")
 class RepeatMembers(Filter):
-    """The filter can be used to replicate non-ensmbles fields into ensemble fields.
+    """The filter can be used to replicate non-ensembles fields into ensemble fields.
 
     Args: (only one of the following)
       numbers: A list of numbers (1-based) of the fields to replicate.

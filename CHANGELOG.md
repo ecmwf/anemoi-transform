@@ -10,6 +10,8 @@ Keep it human-readable, your future self will thank you!
 
 ## [Unreleased](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.1.0...HEAD)
 
+- Added repeat-member #18
+
 ## [0.1.0](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.0.8...0.1.0) - 2024-11-18
 
 ## [0.0.8](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.0.5...0.0.8) - 2024-10-26

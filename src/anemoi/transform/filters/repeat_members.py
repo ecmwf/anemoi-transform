@@ -18,6 +18,27 @@ from .base import Filter
 LOG = logging.getLogger(__name__)
 
 
+def make_list_int(value):
+    if isinstance(value, str):
+        if "/" not in value:
+            return [value]
+        bits = value.split("/")
+        if len(bits) == 3 and bits[1].lower() == "to":
+            value = list(range(int(bits[0]), int(bits[2]) + 1, 1))
+
+        elif len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
+            value = list(range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4])))
+
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return value
+    if isinstance(value, int):
+        return [value]
+
+    raise ValueError(f"Cannot make list from {value}")
+
+
 @filter_registry.register("repeat_members")
 class RepeatMembers(Filter):
     """The filter can be used to replicate non-ensembles fields into ensemble fields.
@@ -38,12 +59,13 @@ class RepeatMembers(Filter):
             raise ValueError("Exactly one of members, count or numbers must be given")
 
         if numbers is not None:
-            assert isinstance(numbers, (list, tuple)), f"numbers must be a list or tuple, got {type(numbers)}"
+            numbers = make_list_int(numbers)
             members = [n - 1 for n in numbers]
 
         if count is not None:
             members = list(range(count))
 
+        members = make_list_int(members)
         self.members = members
         assert isinstance(members, (tuple, list)), f"members must be a list or tuple, got {type(members)}"
 

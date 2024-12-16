@@ -14,42 +14,55 @@ from . import filter_registry
 from .base import SimpleFilter
 
 
-def masks(var, mask):
-    var[mask] = np.nan
+def masks(var, mask, mask_value = 1, threshold = None):
+    """ Masks elements in `var` based on the `mask` array, either for a specific value or a threshold condition. """
+    if threshold is not None:
+        var[mask > threshold] = np.nan
+    else:
+        var[mask == mask_value] = np.nan
+    
     return var
 
 
-@filter_registry.register("glacier_mask")
-class SnowDepthMasked(SimpleFilter):
-    """A filter to mask about glacier in snow depth."""
-
+@filter_registry.register("mask")
+class MaskVariable(SimpleFilter):
+    """A filter to mask variables using external file."""
     def __init__(
         self,
         *,
-        glacier_mask,
-        snow_depth="sd",
-        snow_depth_masked="sd_masked",
+        var,
+        path_to_mask,
+        mask_value = 1,
+        threshold=None,
+        overwrite=True,
     ):
-        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().astype(bool)
-        self.snow_depth = snow_depth
-        self.snow_depth_masked = snow_depth_masked
+        self.variable = var
+        self.mask = ekd.from_source("file", path_to_mask)[0].to_numpy().astype(bool)
+        self.mask_value = mask_value
+        self.threshold = threshold
+        self.overwrite = overwrite
 
     def forward(self, data):
         return self._transform(
             data,
             self.forward_transform,
-            self.snow_depth,
+            self.variable,
         )
 
     def backward(self, data):
-        raise NotImplementedError("SnowDepthMasked is not reversible")
+        raise NotImplementedError("MaskVariable is not reversible")
 
-    def forward_transform(self, sd):
-        """Mask out glaciers in snow depth"""
+    def forward_transform(self, var):
+        """Mask variable based on external mask file."""
 
-        snow_depth_masked = masks(sd.to_numpy(), self.glacier_mask)
-
-        yield self.new_field_from_numpy(snow_depth_masked, template=sd, param=self.snow_depth_masked)
-
-    def backward_transform(self, sd):
-        raise NotImplementedError("SnowDepthMasked is not reversible")
+        variable_masked = masks(var.to_numpy(), self.mask, self.mask_value, self.threshold)
+        
+        if self.overwrite:
+            #overwrite the original variable
+            yield self.new_field_from_numpy(variable_masked, template=var, param=self.variable)
+        else:
+            #create a new variable
+            yield self.new_field_from_numpy(variable_masked, template=var, param=self.variable+"_masked")
+    
+    def backward_transform(self, var):
+        raise NotImplementedError("MaskVariable is not reversible")

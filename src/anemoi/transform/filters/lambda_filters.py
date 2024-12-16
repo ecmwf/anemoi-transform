@@ -17,26 +17,7 @@ from earthkit.data.core.fieldlist import Field, FieldList
 
 @filter_registry.register("earthkitfieldlambda")
 class EarthkitFieldLambdaFilter(SimpleFilter):
-    """A filter to apply an arbitrary function to individual fields.
-
-    Parameters
-    ----------
-    fn: callable or str
-        The lambda function as a callable with the general signature 
-        `fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
-        a string path to the function, such as "package.module.function".
-    param: list or str
-        The parameter name or list of parameter names to apply the function to.
-    args: list
-        The list of arguments to pass to the lambda function.
-    kwargs: dict
-        The dictionary of keyword arguments to pass to the lambda function.
-    backward_fn (optional): callable, str or None
-        The backward lambda function as a callable with the general signature 
-        `backward_fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
-        a string path to the function, such as "package.module.function".
-
-    """
+    """A filter to apply an arbitrary function to individual fields."""
 
     def __init__(
         self,
@@ -46,7 +27,40 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         kwargs: dict[str, tp.Any] = {},
         backward_fn: str | tp.Callable[[Field, tp.Any], Field] | None = None,
     ):  
+        """Initialise the EarthkitFieldLambdaFilter.
         
+        Parameters
+        ----------
+        fn: callable or str
+            The lambda function as a callable with the general signature 
+            `fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
+            a string path to the function, such as "package.module.function".
+        param: list or str
+            The parameter name or list of parameter names to apply the function to.
+        args: list
+            The list of arguments to pass to the lambda function.
+        kwargs: dict
+            The dictionary of keyword arguments to pass to the lambda function.
+        backward_fn (optional): callable, str or None
+            The backward lambda function as a callable with the general signature 
+            `backward_fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
+            a string path to the function, such as "package.module.function".
+
+        Examples
+        --------
+        >>> from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
+        >>> import earthkit.data as ekd
+        >>> fields = ekd.from_source(
+        ...        "mars",{"param": ["2t"],
+        ...                "levtype": "sfc",
+        ...                "dates": ["2023-11-17 00:00:00"]})
+        >>> kelvin_to_celsius = EarthkitFieldLambdaFilter(
+        ...     fn=lambda x, s: x.clone(values=x.values - s),
+        ...     param="2t",
+        ...     args=[273.15],
+        ... )
+        >>> fields = kelvin_to_celsius.forward(fields)
+        """
         if not isinstance(args, list):
             raise ValueError("Expected 'args' to be a list. "
                              f"Got {args} instead.")
@@ -56,11 +70,11 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
 
         self.fn = self._import_fn(fn) if isinstance(fn, str) else fn
 
-        if backward_fn:
-            self.backward_fn = self._import_fn(backward_fn) \
-                if isinstance(backward_fn, str) else backward_fn
-        
-                             
+        if isinstance(backward_fn, str):
+            self.backward_fn = self._import_fn(backward_fn)
+        else:
+            self.backward_fn = backward_fn
+                    
         self.param = param if isinstance(param, list) else [param]
         self.args = args
         self.kwargs = kwargs

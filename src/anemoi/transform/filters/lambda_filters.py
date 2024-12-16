@@ -15,7 +15,7 @@ from anemoi.transform.filters import filter_registry
 from earthkit.data.core.fieldlist import Field, FieldList
 
 
-
+@filter_registry.register("earthkitfieldlambda")
 class EarthkitFieldLambdaFilter(SimpleFilter):
     """A filter to apply an arbitrary function to individual fields.
 
@@ -98,6 +98,3 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         out += f"kwargs={self.kwargs},"
         out += ")"
         return out
-
-
-filter_registry.register("earthkitfieldlambda", EarthkitFieldLambdaFilter)

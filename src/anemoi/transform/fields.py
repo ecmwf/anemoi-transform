@@ -103,3 +103,7 @@ def new_field_from_numpy(array, *, template, **metadata):
 
 def new_field_with_valid_datetime(template, date):
     return NewValidDateTimeField(template, date)
+
+
+def new_field_with_metadata(template, **metadata):
+    return NewMetadataField(template, **metadata)

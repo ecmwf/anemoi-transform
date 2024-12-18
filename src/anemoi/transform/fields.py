@@ -71,7 +71,6 @@ class NewMetadataField(WrappedField):
     def metadata(self, *args, **kwargs):
 
         if kwargs.get("namespace"):
-            assert kwargs.get("namespace") == "mars", kwargs
             assert len(args) == 0, (args, kwargs)
             mars = self._field.metadata(**kwargs).copy()
             for k in list(mars.keys()):
@@ -104,3 +103,7 @@ def new_field_from_numpy(array, *, template, **metadata):
 
 def new_field_with_valid_datetime(template, date):
     return NewValidDateTimeField(template, date)
+
+
+def new_field_with_metadata(template, **metadata):
+    return NewMetadataField(template, **metadata)

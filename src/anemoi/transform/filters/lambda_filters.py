@@ -7,12 +7,14 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import typing as tp
 import importlib
+import typing as tp
 
-from anemoi.transform.filters.base import SimpleFilter
+from earthkit.data.core.fieldlist import Field
+from earthkit.data.core.fieldlist import FieldList
+
 from anemoi.transform.filters import filter_registry
-from earthkit.data.core.fieldlist import Field, FieldList
+from anemoi.transform.filters.base import SimpleFilter
 
 
 @filter_registry.register("earthkitfieldlambda")
@@ -26,13 +28,13 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         args: list = [],
         kwargs: dict[str, tp.Any] = {},
         backward_fn: str | tp.Callable[[Field, tp.Any], Field] | None = None,
-    ):  
+    ):
         """Initialise the EarthkitFieldLambdaFilter.
-        
+
         Parameters
         ----------
         fn: callable or str
-            The lambda function as a callable with the general signature 
+            The lambda function as a callable with the general signature
             `fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
             a string path to the function, such as "package.module.function".
         param: list or str
@@ -42,7 +44,7 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         kwargs: dict
             The dictionary of keyword arguments to pass to the lambda function.
         backward_fn (optional): callable, str or None
-            The backward lambda function as a callable with the general signature 
+            The backward lambda function as a callable with the general signature
             `backward_fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
             a string path to the function, such as "package.module.function".
 
@@ -62,11 +64,9 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         >>> fields = kelvin_to_celsius.forward(fields)
         """
         if not isinstance(args, list):
-            raise ValueError("Expected 'args' to be a list. "
-                             f"Got {args} instead.")
+            raise ValueError("Expected 'args' to be a list. " f"Got {args} instead.")
         if not isinstance(kwargs, dict):
-            raise ValueError("Expected 'kwargs' to be a dictionary. "
-                             f"Got {kwargs} instead.")
+            raise ValueError("Expected 'kwargs' to be a dictionary. " f"Got {kwargs} instead.")
 
         self.fn = self._import_fn(fn) if isinstance(fn, str) else fn
 
@@ -74,7 +74,7 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
             self.backward_fn = self._import_fn(backward_fn)
         else:
             self.backward_fn = backward_fn
-                    
+
         self.param = param if isinstance(param, list) else [param]
         self.args = args
         self.kwargs = kwargs

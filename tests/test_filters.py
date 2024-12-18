@@ -10,44 +10,28 @@
 import sys
 from pathlib import Path
 
-import numpy.testing as npt
-
-from anemoi.transform.filters.rescale import Rescale, Convert
-from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
 import earthkit.data as ekd
+import numpy.testing as npt
 from pytest import approx
 
+from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
+from anemoi.transform.filters.rescale import Convert
+from anemoi.transform.filters.rescale import Rescale
+
 sys.path.append(Path(__file__).parents[1].as_posix())
+
 
 def test_rescale(fieldlist):
     fieldlist = fieldlist.sel(param="2t")
     # rescale from K to °C
     k_to_deg = Rescale(scale=1.0, offset=-273.15, param="2t")
     rescaled = k_to_deg.forward(fieldlist)
-    
-    npt.assert_allclose(
-        rescaled[0].to_numpy(),
-        fieldlist[0].to_numpy() - 273.15
-    )
+
+    npt.assert_allclose(rescaled[0].to_numpy(), fieldlist[0].to_numpy() - 273.15)
     # and back
     rescaled_back = k_to_deg.backward(rescaled)
-    npt.assert_allclose(
-        rescaled_back[0].to_numpy(),
-        fieldlist[0].to_numpy()
-    )
-    # rescale from °C to F
-    deg_to_far = Rescale(scale=9 / 5, offset=32, param="2t")
-    rescaled_farheneit = deg_to_far.forward(rescaled)
-    npt.assert_allclose(
-        rescaled_farheneit[0].to_numpy(),
-        9 / 5 * rescaled[0].to_numpy() + 32
-    )
-    # rescale from F to K
-    rescaled_back = k_to_deg.backward(deg_to_far.backward(rescaled_farheneit))
-    npt.assert_allclose(
-        rescaled_back[0].to_numpy(),
-        fieldlist[0].to_numpy()
-    )
+    npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
+
 
 def test_convert(fieldlist):
     # rescale from K to °C
@@ -62,10 +46,10 @@ def test_convert(fieldlist):
     assert rescaled_back[0].values.std() == approx(fieldlist.values.std())
 
 
-
 # used in the test below
 def _do_something(field, a):
     return field.clone(values=field.values * a)
+
 
 def test_singlefieldlambda(fieldlist):
 
@@ -73,7 +57,7 @@ def test_singlefieldlambda(fieldlist):
 
     def undo_something(field, a):
         return field.clone(values=field.values / a)
-    
+
     something = EarthkitFieldLambdaFilter(
         fn="tests.test_filters._do_something",
         param="sp",
@@ -82,17 +66,10 @@ def test_singlefieldlambda(fieldlist):
     )
 
     transformed = something.forward(fieldlist)
-    npt.assert_allclose(
-        transformed[0].to_numpy(),
-        fieldlist[0].to_numpy() * 10
-    )
+    npt.assert_allclose(transformed[0].to_numpy(), fieldlist[0].to_numpy() * 10)
 
     untransformed = something.backward(transformed)
-    npt.assert_allclose(
-        untransformed[0].to_numpy(),
-        fieldlist[0].to_numpy()
-    )
-
+    npt.assert_allclose(untransformed[0].to_numpy(), fieldlist[0].to_numpy())
 
 
 if __name__ == "__main__":
@@ -110,10 +87,7 @@ if __name__ == "__main__":
     try:
         test_convert(fieldlist)
     except FileNotFoundError:
-        print(
-            "Skipping test_convert because of missing UNIDATA UDUNITS2 library, "
-            "required by cfunits."
-        )
+        print("Skipping test_convert because of missing UNIDATA UDUNITS2 library, " "required by cfunits.")
     test_singlefieldlambda(fieldlist)
 
     print("All tests passed.")

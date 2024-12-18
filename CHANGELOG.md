@@ -13,6 +13,7 @@ Keep it human-readable, your future self will thank you!
 ### Added
 
 - Add regrid filter
+- Added repeat-member #18
 
 ## [0.1.0](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.0.8...0.1.0) - 2024-11-18
 

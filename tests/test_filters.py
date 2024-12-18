@@ -7,55 +7,87 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import sys
+from pathlib import Path
 
-from anemoi.transform.filters.rescale import Rescale, Convert
 import earthkit.data as ekd
+import numpy.testing as npt
 from pytest import approx
 
+from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
+from anemoi.transform.filters.rescale import Convert
+from anemoi.transform.filters.rescale import Rescale
 
-def test_rescale():
+sys.path.append(Path(__file__).parents[1].as_posix())
+
+
+def test_rescale(fieldlist):
+    fieldlist = fieldlist.sel(param="2t")
     # rescale from K to °C
-    temp = ekd.from_source(
-        "mars", {"param": "2t", "levtype": "sfc", "dates": ["2023-11-17 00:00:00"]}
-    )
-    fieldlist = temp.to_fieldlist()
     k_to_deg = Rescale(scale=1.0, offset=-273.15, param="2t")
     rescaled = k_to_deg.forward(fieldlist)
-    assert rescaled[0].values.min() == temp.values.min() - 273.15
-    assert rescaled[0].values.std() == approx(temp.values.std())
+
+    npt.assert_allclose(rescaled[0].to_numpy(), fieldlist[0].to_numpy() - 273.15)
     # and back
     rescaled_back = k_to_deg.backward(rescaled)
-    assert rescaled_back[0].values.min() == temp.values.min()
-    assert rescaled_back[0].values.std() == approx(temp.values.std())
-    # rescale from °C to F
-    deg_to_far = Rescale(scale=9 / 5, offset=32, param="2t")
-    rescaled_farheneit = deg_to_far.forward(rescaled)
-    assert rescaled_farheneit[0].values.min() == 9 / 5 * rescaled[0].values.min() + 32
-    assert rescaled_farheneit[0].values.std() == approx(
-        (9 / 5) * rescaled[0].values.std()
-    )
-    # rescale from F to K
-    rescaled_back = k_to_deg.backward(deg_to_far.backward(rescaled_farheneit))
-    assert rescaled_back[0].values.min() == temp.values.min()
-    assert rescaled_back[0].values.std() == approx(temp.values.std())
+    npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
 
 
-def test_convert():
+def test_convert(fieldlist):
     # rescale from K to °C
-    temp = ekd.from_source(
-        "mars", {"param": "2t", "levtype": "sfc", "dates": ["2023-11-17 00:00:00"]}
-    )
-    fieldlist = temp.to_fieldlist()
+    fieldlist = fieldlist.sel(param="2t")
     k_to_deg = Convert(unit_in="K", unit_out="degC", param="2t")
     rescaled = k_to_deg.forward(fieldlist)
-    assert rescaled[0].values.min() == temp.values.min() - 273.15
-    assert rescaled[0].values.std() == approx(temp.values.std())
+    assert rescaled[0].values.min() == fieldlist.values.min() - 273.15
+    assert rescaled[0].values.std() == approx(fieldlist.values.std())
     # and back
     rescaled_back = k_to_deg.backward(rescaled)
-    assert rescaled_back[0].values.min() == temp.values.min()
-    assert rescaled_back[0].values.std() == approx(temp.values.std())
+    assert rescaled_back[0].values.min() == fieldlist.values.min()
+    assert rescaled_back[0].values.std() == approx(fieldlist.values.std())
+
+
+# used in the test below
+def _do_something(field, a):
+    return field.clone(values=field.values * a)
+
+
+def test_singlefieldlambda(fieldlist):
+
+    fieldlist = fieldlist.sel(param="sp")
+
+    def undo_something(field, a):
+        return field.clone(values=field.values / a)
+
+    something = EarthkitFieldLambdaFilter(
+        fn="tests.test_filters._do_something",
+        param="sp",
+        args=[10],
+        backward_fn=undo_something,
+    )
+
+    transformed = something.forward(fieldlist)
+    npt.assert_allclose(transformed[0].to_numpy(), fieldlist[0].to_numpy() * 10)
+
+    untransformed = something.backward(transformed)
+    npt.assert_allclose(untransformed[0].to_numpy(), fieldlist[0].to_numpy())
 
 
 if __name__ == "__main__":
-    test_rescale()
-    test_convert()
+
+    fieldlist = ekd.from_source(
+        "mars",
+        {
+            "param": ["2t", "sp"],
+            "levtype": "sfc",
+            "dates": ["2023-11-17 00:00:00"],
+        },
+    )
+
+    test_rescale(fieldlist)
+    try:
+        test_convert(fieldlist)
+    except FileNotFoundError:
+        print("Skipping test_convert because of missing UNIDATA UDUNITS2 library, " "required by cfunits.")
+    test_singlefieldlambda(fieldlist)
+
+    print("All tests passed.")

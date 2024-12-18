@@ -11,9 +11,9 @@
 from . import filter_registry
 from .base import SimpleFilter
 
+
 class Rescale(SimpleFilter):
-    """A filter to rescale a parameter from a scale and an offset, and back.
-    """
+    """A filter to rescale a parameter from a scale and an offset, and back."""
 
     def __init__(
         self,
@@ -27,11 +27,7 @@ class Rescale(SimpleFilter):
         self.param = param
 
     def forward(self, data):
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.param        
-            )
+        return self._transform(data, self.forward_transform, self.param)
 
     def backward(self, data):
         return self._transform(
@@ -46,26 +42,21 @@ class Rescale(SimpleFilter):
         rescaled = x.to_numpy() * self.scale + self.offset
 
         yield self.new_field_from_numpy(rescaled, template=x, param=self.param)
-    
+
     def backward_transform(self, x):
         """ax+b to x"""
 
-        descaled = (x.to_numpy() - self.offset)/ self.scale 
+        descaled = (x.to_numpy() - self.offset) / self.scale
 
         yield self.new_field_from_numpy(descaled, template=x, param=self.param)
 
-class Convert(Rescale):
-    """A filter to convert a parameter in a given unit to another unit, and back.
-    """
 
-    def __init__(
-        self,
-        *,
-        unit_in,
-        unit_out,
-        param
-    ):
+class Convert(Rescale):
+    """A filter to convert a parameter in a given unit to another unit, and back."""
+
+    def __init__(self, *, unit_in, unit_out, param):
         from cfunits import Units
+
         u0 = Units(unit_in)
         u1 = Units(unit_out)
         x1, x2 = 0.0, 1.0

@@ -8,61 +8,52 @@
 # nor does it submit to any jurisdiction.
 
 import earthkit.data as ekd
-import numpy as np
 
+from ..fields import new_field_from_numpy
+from ..fields import new_fieldlist_from_list
+from ..filter import Filter
 from . import filter_registry
-from .base import SimpleFilter
 
 
-def masks(var, mask, mask_value = 1, threshold = None):
-    """ Masks elements in `var` based on the `mask` array, either for a specific value or a threshold condition. """
-    if threshold is not None:
-        var[mask > threshold] = np.nan
-    else:
-        var[mask == mask_value] = np.nan
-    
-    return var
-
-
-@filter_registry.register("mask")
-class MaskVariable(SimpleFilter):
+@filter_registry.register("apply_mask")
+class MaskVariable(Filter):
     """A filter to mask variables using external file."""
+
     def __init__(
         self,
         *,
-        var,
-        path_to_mask,
-        mask_value = 1,
+        path,
+        mask_value=1,
         threshold=None,
-        overwrite=True,
+        rename=None,
     ):
-        self.variable = var
-        self.mask = ekd.from_source("file", path_to_mask)[0].to_numpy().astype(bool)
-        self.mask_value = mask_value
-        self.threshold = threshold
-        self.overwrite = overwrite
+
+        mask = ekd.from_source("file", path)[0].to_numpy().astype(bool)
+
+        if threshold is not None:
+            self._mask = mask > threshold
+        else:
+            self._mask = mask == mask_value
+
+        self._rename = rename
 
     def forward(self, data):
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.variable,
-        )
+
+        result = []
+        extra = {}
+        for field in data:
+
+            values = field.to_numpy(flatten=True)
+            values_masked = values[self._mask]
+
+            if self._rename is not None:
+                param = field.metadata("param")
+                name = f"{param}_{self._rename}"
+                extra["param"] = name
+
+            result.append(new_field_from_numpy(values_masked, template=field), **extra)
+
+        return new_fieldlist_from_list(result)
 
     def backward(self, data):
-        raise NotImplementedError("MaskVariable is not reversible")
-
-    def forward_transform(self, var):
-        """Mask variable based on external mask file."""
-
-        variable_masked = masks(var.to_numpy(), self.mask, self.mask_value, self.threshold)
-        
-        if self.overwrite:
-            #overwrite the original variable
-            yield self.new_field_from_numpy(variable_masked, template=var, param=self.variable)
-        else:
-            #create a new variable
-            yield self.new_field_from_numpy(variable_masked, template=var, param=self.variable+"_masked")
-    
-    def backward_transform(self, var):
-        raise NotImplementedError("MaskVariable is not reversible")
+        raise NotImplementedError("`apply_mask` is not reversible")

@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 import earthkit.data as ekd
+import numpy as np
 
 from ..fields import new_field_from_numpy
 from ..fields import new_fieldlist_from_list
@@ -44,14 +45,14 @@ class MaskVariable(Filter):
         for field in data:
 
             values = field.to_numpy(flatten=True)
-            values_masked = values[self._mask]
+            values[self._mask] = np.nan
 
             if self._rename is not None:
                 param = field.metadata("param")
                 name = f"{param}_{self._rename}"
                 extra["param"] = name
 
-            result.append(new_field_from_numpy(values_masked, template=field), **extra)
+            result.append(new_field_from_numpy(values, template=field, **extra))
 
         return new_fieldlist_from_list(result)
 

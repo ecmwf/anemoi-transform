@@ -26,6 +26,7 @@ class RegridFilter(Filter):
         self.in_grid = in_grid
         self.out_grid = out_grid
         self.method = method
+        self.interpolator = interpolator(in_grid, out_grid, method)
 
     def forward(self, data):
         return self._interpolate(data, self.in_grid, self.out_grid, self.method)
@@ -34,20 +35,67 @@ class RegridFilter(Filter):
         return self._interpolate(data, self.out_grid, self.in_grid, self.method)
 
     def _interpolate(self, data, in_grid, out_grid, method):
-        from earthkit.regrid import interpolate
 
         result = []
         for field in data:
-            result.append(
-                new_field_from_numpy(
-                    interpolate(
-                        field.to_numpy(flatten=True),
-                        in_grid={"grid": in_grid},
-                        out_grid={"grid": out_grid},
-                        method=method,
-                    ),
-                    template=field,
-                )
-            )
+            result.append(self.interpolator(field))
 
         return new_fieldlist_from_list(result)
+
+
+class EarthkitInterpolator:
+    """Default interpolator using earthkit."""
+
+    def __init__(self, in_grid, out_grid, method):
+        self.in_grid = in_grid
+        self.out_grid = out_grid
+        self.method = method
+
+    def __call__(self, field):
+        from earthkit.regrid import interpolate
+
+        return new_field_from_numpy(
+            interpolate(
+                field.to_numpy(flatten=True),
+                in_grid={"grid": self.in_grid},
+                out_grid={"grid": self.out_grid},
+                method=self.method,
+            ),
+            template=field,
+        )
+
+
+class AnemoiInterpolator:
+    """Interpolator tools for the grids that are not supported yet by earthkit."""
+
+    def __init__(self, in_grid, out_grid, method):
+        if method != "nearest":
+            raise NotImplementedError(f"AnemoiInterpolator does not support {method}, only 'nearest'")
+
+        from anemoi.utils.grids import grids
+        from anemoi.utils.grids import nearest_grid_points
+
+        ingrid = grids(in_grid)
+        outgrid = grids(out_grid)
+
+        self.in_shape = ingrid["latitudes"].shape  # for checking the shape of the input data
+
+        self._nearest_grid_points = nearest_grid_points(
+            ingrid["latitudes"],
+            ingrid["longitudes"],
+            outgrid["latitudes"],
+            outgrid["longitudes"],
+        )
+
+    def __call__(self, field):
+        data = field.to_numpy(flatten=True)
+        assert data.shape == self.in_shape, (data.shape, self.in_shape)
+        data = data[..., self._nearest_grid_points]
+        return new_field_from_numpy(data, template=field)
+
+
+def interpolator(in_grid, out_grid, method):
+    if method.startswith("anemoi."):
+        method = method.split(".")[1]
+        return AnemoiInterpolator(in_grid, out_grid, method)
+    return EarthkitInterpolator(in_grid, out_grid, method)

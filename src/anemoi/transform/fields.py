@@ -29,13 +29,21 @@ class WrappedField:
         self._field = field
 
     def __getattr__(self, name):
+        if name in (
+            "clone",
+            "copy",
+        ):
+            raise AttributeError(f"NewField: forwarding of `{name}` is not supported")
+
         if name not in (
             "mars_area",
             "mars_grid",
             "to_numpy",
             "metadata",
+            "shape",
         ):
             LOG.warning(f"NewField: forwarding `{name}`")
+
         return getattr(self._field, name)
 
     def __repr__(self) -> str:
@@ -59,6 +67,18 @@ class NewDataField(WrappedField):
         if index is not None:
             data = data[index]
         return data
+
+
+class NewGridField(WrappedField):
+    """Change the grid of a field."""
+
+    def __init__(self, field, latitudes, longitudes):
+        super().__init__(field)
+        self._latitudes = latitudes
+        self._longitudes = longitudes
+
+    def grid_points(self):
+        return self._latitudes, self._longitudes
 
 
 class NewMetadataField(WrappedField):
@@ -89,7 +109,7 @@ class NewValidDateTimeField(NewMetadataField):
 
     def __init__(self, field, valid_datetime):
         date = int(valid_datetime.date().strftime("%Y%m%d"))
-        assert valid_datetime.time().minute == 0, valid_datetime.time()
+        assert valid_datetime.time().minute == 0, valid_datetime
         time = valid_datetime.time().hour
 
         self.valid_datetime = valid_datetime
@@ -107,3 +127,7 @@ def new_field_with_valid_datetime(template, date):
 
 def new_field_with_metadata(template, **metadata):
     return NewMetadataField(template, **metadata)
+
+
+def new_field_from_latitudes_longitudes(template, latitudes, longitudes):
+    return NewGridField(template, latitudes, longitudes)

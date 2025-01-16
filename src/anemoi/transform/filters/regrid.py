@@ -13,6 +13,7 @@ from collections import defaultdict
 
 from earthkit.data.core.fieldlist import Field
 
+from ..fields import new_field_from_latitudes_longitudes
 from ..fields import new_field_from_numpy
 from ..fields import new_fieldlist_from_list
 from ..filter import Filter
@@ -24,21 +25,29 @@ LOG = logging.getLogger(__name__)
 def as_gridspec(grid):
     if grid is None:
         return None
+
     if isinstance(grid, str):
         return {"grid": grid}
+
     return grid
 
 
 def as_griddata(grid):
+    if grid is None:
+        return None
+
     if isinstance(grid, Field):
-        lat, lon = grid.gridpoints()
+        lat, lon = grid.grid_points()
         return dict(latitudes=lat, longitudes=lon)
+
     if isinstance(grid, dict) and "latitudes" in grid and "longitudes" in grid:
         return grid
+
     if isinstance(grid, str):
         from anemoi.utils.grids import grids
 
         return grids(grid)
+
     raise ValueError(f"Invalid grid: {grid}")
 
 
@@ -124,7 +133,7 @@ class AnemoiInterpolator:
         assert data.shape == self.ingrid["longitudes"].shape, (data.shape, self.ingrid["longitudes"].shape)
 
         data = data[..., self.nearest_grid_points]
-        return new_field_from_numpy(data, template=field)
+        return new_field_from_latitudes_longitudes(new_field_from_numpy(data, template=field), **self.outgrid)
 
 
 def interpolator(in_grid, out_grid, method):

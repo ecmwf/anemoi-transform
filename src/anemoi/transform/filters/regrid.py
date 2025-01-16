@@ -9,6 +9,7 @@
 
 
 import logging
+from collections import defaultdict
 
 from earthkit.data.core.fieldlist import Field
 
@@ -127,7 +128,6 @@ class AnemoiInterpolator:
 
 
 def interpolator(in_grid, out_grid, method):
-    if method.startswith("anemoi."):
-        method = method.split(".")[1]
-        return AnemoiInterpolator(in_grid, out_grid, method)
-    return EarthkitInterpolator(in_grid, out_grid, method)
+    INTERPOLATORS = defaultdict(lambda: EarthkitInterpolator)
+    INTERPOLATORS["nearest"] = AnemoiInterpolator
+    return INTERPOLATORS[method](in_grid, out_grid, method)

@@ -10,12 +10,35 @@
 
 import logging
 
+from earthkit.data.core.fieldlist import Field
+
 from ..fields import new_field_from_numpy
 from ..fields import new_fieldlist_from_list
 from ..filter import Filter
 from . import filter_registry
 
 LOG = logging.getLogger(__name__)
+
+
+def as_gridspec(grid):
+    if grid is None:
+        return None
+    if isinstance(grid, str):
+        return {"grid": grid}
+    return grid
+
+
+def as_griddata(grid):
+    if isinstance(grid, Field):
+        lat, lon = grid.gridpoints()
+        return dict(latitudes=lat, longitudes=lon)
+    if isinstance(grid, dict) and "latitudes" in grid and "longitudes" in grid:
+        return grid
+    if isinstance(grid, str):
+        from anemoi.utils.grids import grids
+
+        return grids(grid)
+    raise ValueError(f"Invalid grid: {grid}")
 
 
 @filter_registry.register("regrid")
@@ -47,8 +70,8 @@ class EarthkitInterpolator:
     """Default interpolator using earthkit."""
 
     def __init__(self, in_grid, out_grid, method):
-        self.in_grid = in_grid
-        self.out_grid = out_grid
+        self.in_grid = as_gridspec(in_grid)
+        self.out_grid = as_gridspec(out_grid)
         self.method = method
 
     def __call__(self, field):
@@ -57,8 +80,8 @@ class EarthkitInterpolator:
         return new_field_from_numpy(
             interpolate(
                 field.to_numpy(flatten=True),
-                in_grid={"grid": self.in_grid},
-                out_grid={"grid": self.out_grid},
+                in_grid=self.in_grid,
+                out_grid=self.out_grid,
                 method=self.method,
             ),
             template=field,
@@ -68,29 +91,38 @@ class EarthkitInterpolator:
 class AnemoiInterpolator:
     """Interpolator tools for the grids that are not supported yet by earthkit."""
 
+    nearest_grid_points = None
+
     def __init__(self, in_grid, out_grid, method):
         if method != "nearest":
             raise NotImplementedError(f"AnemoiInterpolator does not support {method}, only 'nearest'")
 
-        from anemoi.utils.grids import grids
-        from anemoi.utils.grids import nearest_grid_points
+        self.ingrid = as_griddata(in_grid)
+        self.outgrid = as_griddata(out_grid)
 
-        ingrid = grids(in_grid)
-        outgrid = grids(out_grid)
-
-        self.in_shape = ingrid["latitudes"].shape  # for checking the shape of the input data
-
-        self._nearest_grid_points = nearest_grid_points(
-            ingrid["latitudes"],
-            ingrid["longitudes"],
-            outgrid["latitudes"],
-            outgrid["longitudes"],
-        )
+        if self.outgrid is None:
+            raise ValueError("out_grid is required, but not provided")
 
     def __call__(self, field):
+        if self.ingrid is None:
+            self.ingrid = as_griddata(field)
+            assert self.ingrid is not None, field
+
+        if self.nearest_grid_points is None:
+            from anemoi.utils.grids import nearest_grid_points
+
+            self.nearest_grid_points = nearest_grid_points(
+                self.ingrid["latitudes"],
+                self.ingrid["longitudes"],
+                self.outgrid["latitudes"],
+                self.outgrid["longitudes"],
+            )
+
         data = field.to_numpy(flatten=True)
-        assert data.shape == self.in_shape, (data.shape, self.in_shape)
-        data = data[..., self._nearest_grid_points]
+        assert data.shape == self.ingrid["latitudes"].shape, (data.shape, self.ingrid["latitudes"].shape)
+        assert data.shape == self.ingrid["longitudes"].shape, (data.shape, self.ingrid["longitudes"].shape)
+
+        data = data[..., self.nearest_grid_points]
         return new_field_from_numpy(data, template=field)
 
 

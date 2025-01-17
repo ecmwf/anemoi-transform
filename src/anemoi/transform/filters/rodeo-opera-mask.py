@@ -12,19 +12,20 @@ import numpy as np
 from . import filter_registry
 from .base import SimpleFilter
 
-NODATA = -9.999e+06
-UNDETECTED = -8.888e+06
+NODATA = -9.999e06
+UNDETECTED = -8.888e06
 
 _NODATA = 1
 _UNDETECTED = 2
 _INF = 3
 
 MAX_TP = 10000
-MAX_QI =1 
+MAX_QI = 1
 
-def clip_opera(tp,quality):
+
+def clip_opera(tp, quality):
     tp[tp < 0] = 0
-    tp[tp>= MAX_TP] = MAX_TP
+    tp[tp >= MAX_TP] = MAX_TP
     quality[quality >= MAX_QI] = MAX_QI
 
 

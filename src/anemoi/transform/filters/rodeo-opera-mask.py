@@ -12,17 +12,41 @@ import numpy as np
 from . import filter_registry
 from .base import SimpleFilter
 
+NODATA = -9.999e+06
+UNDETECTED = -8.888e+06
+
+_NODATA = 1
+_UNDETECTED = 2
+_INF = 3
+
+MAX_TP = 10000
+MAX_QI =1 
+
+def clip_opera(tp,quality):
+    tp[tp < 0] = 0
+    tp[tp>= MAX_TP] = MAX_TP
+    quality[quality >= MAX_QI] = MAX_QI
+
 
 def mask_opera(tp, quality, mask):
     print("✅✅", quality)
     print("✅✅✅", tp)
-    tp[quality == 75] = np.nan
-    tp[mask >= 5] = np.nan
+
+    # # RAW HDF5 DATA FILTERING
+    # tp[quality == NODATA] = np.nan
+    # tp[quality == UNDETECTED] = np.nan
+
+    # GRIB2 ENCODED DATA FILTERING
+    # !won't work until Pedro's fix to compute mask based on quality
+    tp[mask == _NODATA] = np.nan
+    tp[mask == _UNDETECTED] = np.nan
+    tp[mask == _INF] = np.nan
+
     return tp
 
 
-@filter_registry.register("rodeo_opera_mask")
-class RodeoOperaMask(SimpleFilter):
+@filter_registry.register("rodeo_opera_preprocessing")
+class RodeoOperaPreProcessing(SimpleFilter):
     """A filter to select only good quality data i nrodeo opera data."""
 
     def __init__(
@@ -31,11 +55,11 @@ class RodeoOperaMask(SimpleFilter):
         tp="tp",
         quality="quality",
         mask="mask",
-        output="tp_masked",
+        output="tp_cleaned",
     ):
         self.tp = tp
         self.quality = quality
-        self.tp_masked = output
+        self.tp_cleaned = output
         self.mask = mask
 
     def forward(self, data):
@@ -48,14 +72,18 @@ class RodeoOperaMask(SimpleFilter):
         )
 
     def backward(self, data):
-        raise NotImplementedError("RodeoOperaMask is not reversible")
+        raise NotImplementedError("RodeoOperaPreProcessing is not reversible")
 
     def forward_transform(self, tp, quality, mask):
-        """Mask out rodeo Opear data"""
+        """Pre-process Rodeo Opera data"""
 
+        # 1st - apply masking
         tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
 
-        yield self.new_field_from_numpy(tp_masked, template=tp, param=self.tp_masked)
+        # 2nd - apply clipping
+        tp_cleaned = clip_opera(tp=tp_masked.to_numpy(), quality=quality.to_numpy())
+
+        yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
 
     def backward_transform(self, tp):
-        raise NotImplementedError("RodeoOperaMask is not reversible")
+        raise NotImplementedError("RodeoOperaPreProcessing is not reversible")

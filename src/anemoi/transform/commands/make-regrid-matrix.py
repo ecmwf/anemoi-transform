@@ -31,6 +31,7 @@ class MakeRegridMatrix(Command):
         command_parser.add_argument("kwargs", nargs="*", help="MIR arguments.")
 
     def run(self, args):
+        import numpy as np
         from earthkit.data import from_source
         from earthkit.regrid.utils.mir import mir_make_matrix
 
@@ -45,7 +46,19 @@ class MakeRegridMatrix(Command):
             key, value = arg.split("=")
             kwargs[key] = value
 
-        mir_make_matrix(args.output, lat1, lon1, lat2, lon2, mir=args.mir, **kwargs)
+        sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=args.mir, **kwargs)
+
+        np.savez(
+            args.output,
+            matrix_data=sparse_array.data,
+            matrix_indices=sparse_array.indices,
+            matrix_indptr=sparse_array.indptr,
+            matrix_shape=sparse_array.shape,
+            in_latitudes=lat1,
+            in_longitudes=lon1,
+            out_latitudes=lat2,
+            out_longitudes=lon2,
+        )
 
 
 command = MakeRegridMatrix

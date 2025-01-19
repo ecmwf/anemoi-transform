@@ -35,11 +35,23 @@ class MakeRegridMatrix(Command):
         from earthkit.data import from_source
         from earthkit.regrid.utils.mir import mir_make_matrix
 
-        ds1 = from_source(args.source1, args.input1)
-        lat1, lon1 = ds1[0].grid_points()
+        _, ext1 = os.path.splitext(args.input1)
+        if ext1 in (".npz", ".npy"):
+            ds1 = np.load(args.input1)
+            lat1 = ds1["latitudes"]
+            lon1 = ds1["longitudes"]
+        else:
+            ds1 = from_source(args.source1, args.input1)
+            lat1, lon1 = ds1[0].grid_points()
 
-        ds2 = from_source(args.source2, args.input2)
-        lat2, lon2 = ds2[0].grid_points()
+        _, ext2 = os.path.splitext(args.input2)
+        if ext2 in (".npz", ".npy"):
+            ds2 = np.load(args.input2)
+            lat2 = ds2["latitudes"]
+            lon2 = ds2["longitudes"]
+        else:
+            ds2 = from_source(args.source2, args.input2)
+            lat2, lon2 = ds2[0].grid_points()
 
         kwargs = {}
         for arg in args.kwargs:

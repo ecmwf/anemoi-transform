@@ -28,6 +28,8 @@ def clip_opera(tp, quality):
     tp[tp >= MAX_TP] = MAX_TP
     quality[quality >= MAX_QI] = MAX_QI
 
+    return tp, quality
+
 
 def mask_opera(tp, quality, mask):
     print("✅✅", quality)
@@ -44,7 +46,6 @@ def mask_opera(tp, quality, mask):
     tp[mask == _INF] = np.nan
 
     return tp
-
 
 @filter_registry.register("rodeo_opera_preprocessing")
 class RodeoOperaPreProcessing(SimpleFilter):
@@ -82,7 +83,7 @@ class RodeoOperaPreProcessing(SimpleFilter):
         tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
 
         # 2nd - apply clipping
-        tp_cleaned = clip_opera(tp=tp_masked.to_numpy(), quality=quality.to_numpy())
+        tp_cleaned,quality = clip_opera(tp=tp_masked, quality=quality.to_numpy())
 
         yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
 

@@ -41,6 +41,7 @@ def mask_opera(tp, quality, mask):
 
     # GRIB2 ENCODED DATA FILTERING
     # !won't work until Pedro's fix to compute mask based on quality
+    # quality grib2 just have nans no NODATA or UNDETECTED values
     tp[mask == _NODATA] = np.nan
     tp[mask == _UNDETECTED] = np.nan
     tp[mask == _INF] = np.nan

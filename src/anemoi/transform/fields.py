@@ -46,7 +46,6 @@ class WrappedField:
         ):
             LOG.warning(f"NewField: forwarding `{name}`")
 
-
         return getattr(self._field, name)
 
     def __repr__(self) -> str:

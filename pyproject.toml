@@ -43,6 +43,7 @@ dependencies = [
   "cfunits",
   "earthkit-data>=0.12",
   "earthkit-meteo>=0.3",
+  "earthkit-regrid>=0.4",
 ]
 
 optional-dependencies.all = [ "anemoi-transform" ]

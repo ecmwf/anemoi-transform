@@ -9,6 +9,8 @@
 
 import logging
 
+import numpy as np
+from earthkit.data.core.geography import Geography
 from earthkit.data.indexing.fieldlist import FieldArray
 
 LOG = logging.getLogger(__name__)
@@ -69,6 +71,58 @@ class NewDataField(WrappedField):
         return data
 
 
+class GeoMetadata(Geography):
+    """A wrapper around a earthkit-data Geography object."""
+
+    def __init__(self, owner):
+        self.owner = owner
+
+    def shape(self):
+        return tuple([len(self.owner._latitudes)])
+
+    def resolution(self):
+        return "unknown"
+
+    def mars_area(self):
+        return [
+            np.amax(self.owner._latitudes),
+            np.amin(self.owner._longitudes),
+            np.amin(self.owner._latitudes),
+            np.amax(self.owner._longitudes),
+        ]
+
+    def mars_grid(self):
+        return None
+
+    def latitudes(self, dtype=None):
+        if dtype is None:
+            return self.owner._latitudes
+        return self.owner._latitudes.astype(dtype)
+
+    def longitudes(self, dtype=None):
+        if dtype is None:
+            return self.owner._longitudes
+        return self.owner._longitudes.astype(dtype)
+
+    def x(self, dtype=None):
+        raise NotImplementedError()
+
+    def y(self, dtype=None):
+        raise NotImplementedError()
+
+    def _unique_grid_id(self):
+        raise NotImplementedError()
+
+    def projection(self):
+        return None
+
+    def bounding_box(self):
+        raise NotImplementedError()
+
+    def gridspec(self):
+        raise NotImplementedError()
+
+
 class NewGridField(WrappedField):
     """Change the grid of a field."""
 
@@ -79,6 +133,21 @@ class NewGridField(WrappedField):
 
     def grid_points(self):
         return self._latitudes, self._longitudes
+
+    def to_latlon(self, flatten=True):
+        assert flatten
+        return dict(lat=self._latitudes, lon=self._longitudes)
+
+    def __repr__(self):
+        return f"NewGridField({len(self._latitudes), self._field})"
+
+    def metadata(self, *args, **kwargs):
+
+        metadata = self._field.metadata(*args, **kwargs)
+        if hasattr(metadata, "geography"):
+            metadata.geography = GeoMetadata(self)
+
+        return metadata
 
 
 class NewMetadataField(WrappedField):

@@ -21,7 +21,20 @@ from anemoi.transform.filters.rescale import Rescale
 sys.path.append(Path(__file__).parents[1].as_posix())
 
 
-def test_rescale(fieldlist):
+def fieldlist_fixture():
+    return ekd.from_source(
+        "mars",
+        {
+            "param": ["2t", "sp"],
+            "levtype": "sfc",
+            "dates": ["2023-11-17 00:00:00"],
+        },
+    )
+
+
+def test_rescale(fieldlist=None):
+    if fieldlist is None:
+        fieldlist = fieldlist_fixture()
     fieldlist = fieldlist.sel(param="2t")
     # rescale from K to °C
     k_to_deg = Rescale(scale=1.0, offset=-273.15, param="2t")
@@ -33,17 +46,22 @@ def test_rescale(fieldlist):
     npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
 
 
-def test_convert(fieldlist):
-    # rescale from K to °C
-    fieldlist = fieldlist.sel(param="2t")
-    k_to_deg = Convert(unit_in="K", unit_out="degC", param="2t")
-    rescaled = k_to_deg.forward(fieldlist)
-    assert rescaled[0].values.min() == fieldlist.values.min() - 273.15
-    assert rescaled[0].values.std() == approx(fieldlist.values.std())
-    # and back
-    rescaled_back = k_to_deg.backward(rescaled)
-    assert rescaled_back[0].values.min() == fieldlist.values.min()
-    assert rescaled_back[0].values.std() == approx(fieldlist.values.std())
+def test_convert(fieldlist=None):
+    if fieldlist is None:
+        fieldlist = fieldlist_fixture()
+    try:
+        # rescale from K to °C
+        fieldlist = fieldlist.sel(param="2t")
+        k_to_deg = Convert(unit_in="K", unit_out="degC", param="2t")
+        rescaled = k_to_deg.forward(fieldlist)
+        assert rescaled[0].values.min() == fieldlist.values.min() - 273.15
+        assert rescaled[0].values.std() == approx(fieldlist.values.std())
+        # and back
+        rescaled_back = k_to_deg.backward(rescaled)
+        assert rescaled_back[0].values.min() == fieldlist.values.min()
+        assert rescaled_back[0].values.std() == approx(fieldlist.values.std())
+    except FileNotFoundError:
+        print("Skipping test_convert because of missing UNIDATA UDUNITS2 library, " "required by cfunits.")
 
 
 # used in the test below
@@ -51,7 +69,9 @@ def _do_something(field, a):
     return field.clone(values=field.values * a)
 
 
-def test_singlefieldlambda(fieldlist):
+def test_singlefieldlambda(fieldlist=None):
+    if fieldlist is None:
+        fieldlist = fieldlist_fixture()
 
     fieldlist = fieldlist.sel(param="sp")
 
@@ -61,7 +81,7 @@ def test_singlefieldlambda(fieldlist):
     something = EarthkitFieldLambdaFilter(
         fn="tests.test_filters._do_something",
         param="sp",
-        args=[10],
+        fn_args=[10],
         backward_fn=undo_something,
     )
 
@@ -73,21 +93,10 @@ def test_singlefieldlambda(fieldlist):
 
 
 if __name__ == "__main__":
-
-    fieldlist = ekd.from_source(
-        "mars",
-        {
-            "param": ["2t", "sp"],
-            "levtype": "sfc",
-            "dates": ["2023-11-17 00:00:00"],
-        },
-    )
+    fieldlist = fieldlist_fixture()
 
     test_rescale(fieldlist)
-    try:
-        test_convert(fieldlist)
-    except FileNotFoundError:
-        print("Skipping test_convert because of missing UNIDATA UDUNITS2 library, " "required by cfunits.")
+    test_convert(fieldlist)
     test_singlefieldlambda(fieldlist)
 
     print("All tests passed.")

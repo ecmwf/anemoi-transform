@@ -23,11 +23,11 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
 
     def __init__(
         self,
-        fn: str | tp.Callable[[Field, tp.Any], Field],
-        param: str | list[str],
+        fn: tp.Union[str, tp.Callable[[Field, tp.Any], Field]],
+        param: tp.Union[str, list[str]],
         fn_args: list = [],
-        fn_kwargs: dict[str, tp.Any] = {},
-        backward_fn: str | tp.Callable[[Field, tp.Any], Field] | None = None,
+        fn_kwargs: tp.Dict[str, tp.Any] = {},
+        backward_fn: tp.Optional[tp.Union[str, tp.Callable[[Field, tp.Any], Field]]] = None,
     ):
         """Initialise the EarthkitFieldLambdaFilter.
 

@@ -44,7 +44,8 @@ class WrappedField:
             "metadata",
             "shape",
         ):
-            LOG.warning(f"🚫🚫🚫🚫 NewField: forwarding `{name}`")
+            LOG.warning(f"NewField: forwarding `{name}`")
+
 
         return getattr(self._field, name)
 

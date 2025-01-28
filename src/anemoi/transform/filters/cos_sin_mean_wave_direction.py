@@ -54,3 +54,21 @@ class CosSinWaveDirection(SimpleFilter):
 
     def backward_transform(self, cos_mwd, sin_mwd):
         raise NotImplementedError("Not implemented")
+
+    def forward_processor(self, state):
+        raise NotImplementedError("Not implemented")
+
+    def backward_processor(self, state):
+        cos_mwd = state["fields"].pop("cos_mwd")
+        sin_mwd = state["fields"].pop("sin_mwd")
+
+        mwd = np.rad2deg(np.arctan2(sin_mwd, cos_mwd))
+        mwd = np.where(mwd >= 360, mwd - 360, mwd)
+        mwd = np.where(mwd < 0, mwd + 360, mwd)
+
+        state["fields"]["mwd"] = mwd
+
+        return state
+
+
+filter_registry.register("mean_wave_direction", CosSinWaveDirection.reversed)

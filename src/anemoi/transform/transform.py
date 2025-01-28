@@ -40,6 +40,12 @@ class Transform(ABC):
 
         return workflow_registry.create("pipeline", filters=[self, other])
 
+    def forward_processor(self, state):
+        raise NotImplementedError("Not implemented")
+
+    def backward_processor(self, state):
+        raise NotImplementedError("Not implemented")
+
 
 class ReversedTransform(Transform):
     """Swap the forward and backward methods of a filter."""
@@ -55,3 +61,9 @@ class ReversedTransform(Transform):
 
     def backward(self, x):
         return self.filter.forward(x)
+
+    def forward_processor(self, state):
+        return self.filter.backward_processor(state)
+
+    def backward_processor(self, state):
+        return self.filter.forward_processor(state)

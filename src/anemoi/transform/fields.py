@@ -186,7 +186,7 @@ class NewValidDateTimeField(NewMetadataField):
         super().__init__(field, date=date, time=time, step=0, valid_datetime=valid_datetime.isoformat())
 
 
-def new_field_from_numpy(array, *, template, **metadata):
+def new_field_from_numpy(array, *, template=None, **metadata):
     return NewMetadataField(NewDataField(template, array), **metadata)
 
 

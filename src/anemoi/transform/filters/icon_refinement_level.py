@@ -9,34 +9,17 @@
 
 
 import logging
-from functools import lru_cache
 
-import numpy as np
 import tqdm
 
 from ..fields import new_field_from_latitudes_longitudes
 from ..fields import new_field_from_numpy
 from ..fields import new_fieldlist_from_list
 from ..filter import Filter
+from ..grids.icon import icon_grid
 from . import filter_registry
 
 LOG = logging.getLogger(__name__)
-
-
-@lru_cache(1)
-def icon_grid(path, refinement_level_c):
-    import xarray as xr
-
-    LOG.info(f"Reading ICON grid from {path}, refinement level {refinement_level_c}")
-    ds = xr.open_dataset(path)
-    latitudes = np.rad2deg(ds.clat[ds.refinement_level_c <= refinement_level_c].values)
-    longitudes = np.rad2deg(ds.clon[ds.refinement_level_c <= refinement_level_c].values)
-
-    LOG.info(f"Latitudes {np.min(latitudes)} {np.max(latitudes)} ({len(latitudes)})")
-    LOG.info(f"Longitudes {np.min(longitudes)} {np.max(longitudes)} ({len(longitudes)})")
-
-    LOG.info("Done")
-    return latitudes, longitudes
 
 
 @filter_registry.register("icon_refinement_level")

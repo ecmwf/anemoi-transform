@@ -23,7 +23,7 @@ MAX_TP = 10000
 MAX_QI = 1
 
 
-def clip_opera(tp, quality,max_tp):
+def clip_opera(tp, quality, max_tp):
     tp[tp < 0] = 0
     tp[tp >= max_tp] = max_tp
     quality[quality >= MAX_QI] = MAX_QI
@@ -84,7 +84,7 @@ class RodeoOperaPreProcessing(SimpleFilter):
         tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
 
         # 2nd - apply clipping
-        tp_cleaned, quality = clip_opera(tp=tp_masked, quality=quality.to_numpy(),max_tp=self.max_tp)
+        tp_cleaned, quality = clip_opera(tp=tp_masked, quality=quality.to_numpy(), max_tp=self.max_tp)
 
         yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
 

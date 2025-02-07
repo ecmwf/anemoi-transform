@@ -70,5 +70,20 @@ class CosSinWaveDirection(SimpleFilter):
 
         return state
 
+    def patch_data_request(self, data_request):
+        """We have a chance to modify the data request here."""
+
+        param = data_request.get("param")
+        if param is None:
+            return data_request
+
+        if self.cos_mean_wave_direction in param or self.sin_mean_wave_direction in param:
+            data_request["param"] = [
+                p for p in param if p not in (self.cos_mean_wave_direction, self.sin_mean_wave_direction)
+            ]
+            data_request["param"].append(self.mean_wave_direction)
+
+        return data_request
+
 
 filter_registry.register("mean_wave_direction", CosSinWaveDirection.reversed)

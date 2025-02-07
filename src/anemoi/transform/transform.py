@@ -46,6 +46,9 @@ class Transform(ABC):
     def backward_processor(self, state):
         raise NotImplementedError("Not implemented")
 
+    def patch_data_request(self, data_request):
+        return data_request
+
 
 class ReversedTransform(Transform):
     """Swap the forward and backward methods of a filter."""
@@ -67,3 +70,6 @@ class ReversedTransform(Transform):
 
     def backward_processor(self, state):
         return self.filter.forward_processor(state)
+
+    def patch_data_request(self, data_request):
+        return self.filter.patch_data_request(data_request)

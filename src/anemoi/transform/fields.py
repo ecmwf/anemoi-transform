@@ -49,7 +49,10 @@ class WrappedField:
         return getattr(self._field, name)
 
     def __repr__(self) -> str:
-        return repr(self._field)
+        return f"{self.__class__.__name__ }({repr(self._field)})"
+
+    def clone(self, **kwargs):
+        return NewClonedField(self, **kwargs)
 
 
 class NewDataField(WrappedField):
@@ -159,6 +162,20 @@ class NewMetadataField(WrappedField):
 
     def metadata(self, *args, **kwargs):
 
+        this = self
+
+        if len(args) == 0 and len(kwargs) == 0:
+
+            class MD:
+
+                def get(self, key, default=None):
+                    if key in this._metadata:
+                        return this._metadata[key]
+
+                    return this._field.metadata().get(key, default)
+
+            return MD()
+
         if kwargs.get("namespace"):
             assert len(args) == 0, (args, kwargs)
             mars = self._field.metadata(**kwargs).copy()
@@ -168,9 +185,15 @@ class NewMetadataField(WrappedField):
             return mars
 
         if len(args) == 1 and args[0] in self._metadata:
-            return self._metadata[args[0]]
+            value = self._metadata[args[0]]
+            if callable(value):
+                return value(self, args[0], self._field.metadata())
+            return value
 
         return self._field.metadata(*args, **kwargs)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__ }({repr(self._field)},{self._metadata})"
 
 
 class NewValidDateTimeField(NewMetadataField):
@@ -184,6 +207,26 @@ class NewValidDateTimeField(NewMetadataField):
         self.valid_datetime = valid_datetime
 
         super().__init__(field, date=date, time=time, step=0, valid_datetime=valid_datetime.isoformat())
+
+
+class NewClonedField(WrappedField):
+    """Wrapper around a field object that clones the field."""
+
+    def __init__(self, field, **metadata):
+        super().__init__(field)
+        self._metadata = metadata
+
+    def metadata(self, *args, **kwargs):
+        if len(args) == 1:
+            if args[0] in self._metadata:
+                if callable(self._metadata[args[0]]):
+                    proc = self._metadata[args[0]]
+                    self._metadata[args[0]] = proc(self._field, args[0], self._field.metadata())
+
+            if args[0] in self._metadata:
+                return self._metadata[args[0]]
+
+        return self._field.metadata(*args, **kwargs)
 
 
 def new_field_from_numpy(array, *, template=None, **metadata):

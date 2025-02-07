@@ -23,9 +23,9 @@ MAX_TP = 10000
 MAX_QI = 1
 
 
-def clip_opera(tp, quality):
+def clip_opera(tp, quality,max_tp):
     tp[tp < 0] = 0
-    tp[tp >= MAX_TP] = MAX_TP
+    tp[tp >= max_tp] = max_tp
     quality[quality >= MAX_QI] = MAX_QI
 
     return tp, quality
@@ -39,9 +39,6 @@ def mask_opera(tp, quality, mask):
     # tp[quality == NODATA] = np.nan
     # tp[quality == UNDETECTED] = np.nan
 
-    # GRIB2 ENCODED DATA FILTERING
-    # !won't work until Pedro's fix to compute mask based on quality
-    # quality grib2 just have nans no NODATA or UNDETECTED values
     tp[mask == _NODATA] = np.nan
     tp[mask == _UNDETECTED] = np.nan
     tp[mask == _INF] = np.nan
@@ -60,11 +57,13 @@ class RodeoOperaPreProcessing(SimpleFilter):
         quality="quality",
         mask="mask",
         output="tp_cleaned",
+        max_tp=MAX_TP,
     ):
         self.tp = tp
         self.quality = quality
         self.tp_cleaned = output
         self.mask = mask
+        self.max_tp = max_tp
 
     def forward(self, data):
         return self._transform(
@@ -85,7 +84,7 @@ class RodeoOperaPreProcessing(SimpleFilter):
         tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
 
         # 2nd - apply clipping
-        tp_cleaned, quality = clip_opera(tp=tp_masked, quality=quality.to_numpy())
+        tp_cleaned, quality = clip_opera(tp=tp_masked, quality=quality.to_numpy(),max_tp=self.max_tp)
 
         yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
 

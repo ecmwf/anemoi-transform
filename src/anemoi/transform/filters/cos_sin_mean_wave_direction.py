@@ -26,12 +26,10 @@ class CosSinWaveDirection(SimpleFilter):
         mean_wave_direction="mwd",
         cos_mean_wave_direction="cos_mwd",
         sin_mean_wave_direction="sin_mwd",
-        radians=False,
     ):
         self.mean_wave_direction = mean_wave_direction
         self.cos_mean_wave_direction = cos_mean_wave_direction
         self.sin_mean_wave_direction = sin_mean_wave_direction
-        self.radians = radians
 
     def forward(self, data):
         return self._transform(
@@ -46,8 +44,7 @@ class CosSinWaveDirection(SimpleFilter):
     def forward_transform(self, mwd):
 
         data = mwd.to_numpy()
-        if not self.radians:
-            data = np.deg2rad(data)
+        data = np.deg2rad(data)
 
         yield self.new_field_from_numpy(np.cos(data), template=mwd, param=self.cos_mean_wave_direction)
         yield self.new_field_from_numpy(np.sin(data), template=mwd, param=self.sin_mean_wave_direction)

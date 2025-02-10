@@ -23,7 +23,7 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("remove_nans")
 class RemoveNaNs(Filter):
-    """A filter to regrid fields using earthkit-regrid."""
+    """A filter to mask out NaNs."""
 
     def __init__(self, *, method="mask", check=False):
         self.method = method

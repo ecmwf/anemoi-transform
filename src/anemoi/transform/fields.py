@@ -11,17 +11,17 @@ import logging
 
 import numpy as np
 from earthkit.data.core.geography import Geography
-from earthkit.data.indexing.fieldlist import FieldArray
+from earthkit.data.indexing.fieldlist import SimpleFieldList
 
 LOG = logging.getLogger(__name__)
 
 
 def new_fieldlist_from_list(fields):
-    return FieldArray(fields)
+    return SimpleFieldList(fields)
 
 
 def new_empty_fieldlist():
-    return FieldArray([])
+    return SimpleFieldList([])
 
 
 class WrappedField:

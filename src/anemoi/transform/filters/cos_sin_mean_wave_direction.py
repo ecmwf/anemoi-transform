@@ -16,7 +16,7 @@ from .base import SimpleFilter
 
 @filter_registry.register("cos_sin_mean_wave_direction")
 class CosSinWaveDirection(SimpleFilter):
-    """A filter to convert wind speed and direction to U and V components,
+    """A filter to convert mean wave direction to cos() and sin()
     and back.
     """
 
@@ -39,7 +39,12 @@ class CosSinWaveDirection(SimpleFilter):
         )
 
     def backward(self, data):
-        raise NotImplementedError("Not implemented")
+        return self._transform(
+            data,
+            self.backward_transform,
+            self.cos_mean_wave_direction,
+            self.sin_mean_wave_direction,
+        )
 
     def forward_transform(self, mwd):
 
@@ -50,22 +55,12 @@ class CosSinWaveDirection(SimpleFilter):
         yield self.new_field_from_numpy(np.sin(data), template=mwd, param=self.sin_mean_wave_direction)
 
     def backward_transform(self, cos_mwd, sin_mwd):
-        raise NotImplementedError("Not implemented")
 
-    def forward_processor(self, state):
-        raise NotImplementedError("Not implemented")
-
-    def backward_processor(self, state):
-        cos_mwd = state["fields"].pop("cos_mwd")
-        sin_mwd = state["fields"].pop("sin_mwd")
-
-        mwd = np.rad2deg(np.arctan2(sin_mwd, cos_mwd))
+        mwd = np.rad2deg(np.arctan2(sin_mwd.to_numpy(), cos_mwd.to_numpy()))
         mwd = np.where(mwd >= 360, mwd - 360, mwd)
         mwd = np.where(mwd < 0, mwd + 360, mwd)
 
-        state["fields"]["mwd"] = mwd
-
-        return state
+        yield self.new_field_from_numpy(mwd, template=cos_mwd, param=self.mean_wave_direction)
 
     def patch_data_request(self, data_request):
         """We have a chance to modify the data request here."""
@@ -81,6 +76,3 @@ class CosSinWaveDirection(SimpleFilter):
             data_request["param"].append(self.mean_wave_direction)
 
         return data_request
-
-
-filter_registry.register("mean_wave_direction", CosSinWaveDirection.reversed)

@@ -52,3 +52,43 @@ class SimpleFilter(Filter):
     def backward_transform(self, *fields):
         """To be implemented by subclasses."""
         pass
+
+
+class SimpleFilter2(SimpleFilter):
+    """Temporarily empty class to avoid breaking the code"""
+
+    def __init__(self, forward_params, backward_params, **kwargs):
+        self.forward_params = forward_params
+        self.backward_params = backward_params
+
+        for long, short in forward_params.items():
+            setattr(self, long, kwargs.get(long, short))
+
+        for long, short in backward_params.items():
+            setattr(self, long, kwargs.get(long, short))
+
+    def forward(self, data):
+
+        args = []
+
+        for long in self.forward_params.keys():
+            args.append(getattr(self, long))
+
+        def forward_transform(*fields):
+            kwargs = {short: field for field, short in zip(fields, self.forward_params.values())}
+            return self.forward_transform(**kwargs)
+
+        return self._transform(data, forward_transform, *args)
+
+    def backward(self, data):
+
+        args = []
+
+        for long in self.backward_params.keys():
+            args.append(getattr(self, long))
+
+        def backward_transform(*fields):
+            kwargs = {short: field for field, short in zip(fields, self.backward_params.values())}
+            return self.backward_transform(**kwargs)
+
+        return self._transform(data, backward_transform, *args)

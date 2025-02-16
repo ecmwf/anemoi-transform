@@ -11,39 +11,29 @@
 import numpy as np
 
 from . import filter_registry
-from .base import SimpleFilter
+from .base import SimpleFilter2
 
 
 @filter_registry.register("cos_sin_mean_wave_direction")
-class CosSinWaveDirection(SimpleFilter):
+class CosSinWaveDirection(SimpleFilter2):
     """A filter to convert mean wave direction to cos() and sin()
     and back.
     """
 
     def __init__(
         self,
-        *,
-        mean_wave_direction="mwd",
-        cos_mean_wave_direction="cos_mwd",
-        sin_mean_wave_direction="sin_mwd",
+        **kwargs,
     ):
-        self.mean_wave_direction = mean_wave_direction
-        self.cos_mean_wave_direction = cos_mean_wave_direction
-        self.sin_mean_wave_direction = sin_mean_wave_direction
 
-    def forward(self, data):
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.mean_wave_direction,
-        )
-
-    def backward(self, data):
-        return self._transform(
-            data,
-            self.backward_transform,
-            self.cos_mean_wave_direction,
-            self.sin_mean_wave_direction,
+        super().__init__(
+            forward_params=dict(
+                mean_wave_direction="mwd",
+            ),
+            backward_params=dict(
+                cos_mean_wave_direction="cos_mwd",
+                sin_mean_wave_direction="sin_mwd",
+            ),
+            **kwargs,
         )
 
     def forward_transform(self, mwd):

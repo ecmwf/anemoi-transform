@@ -63,7 +63,7 @@ class VerticalVelocity(SimpleFilter):
     def backward_transform(self, wz, t, q):
         """m/s to Pa/s"""
 
-        level = float(w._metadata.get("levelist", None))
+        level = float(wz._metadata.get("levelist", None))
         # here the pressure gradient is assimilated to volumic weight : hydrostatic hypothesis
         rho = (100 * level) / (287 * t.to_numpy() * (1 + 0.61 * q.to_numpy()) + 1e-8)
         w = -1.0 * rho * 9.80665 * wz.to_numpy()

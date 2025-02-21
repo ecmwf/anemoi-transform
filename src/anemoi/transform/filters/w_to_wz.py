@@ -31,7 +31,7 @@ class VerticalVelocity(SimpleFilter):
         self.wz_component = wz_component
         self.temperature = temperature
         self.humidity = humidity
-        
+
     def forward(self, data):
         return self._transform(
             data,
@@ -39,7 +39,7 @@ class VerticalVelocity(SimpleFilter):
             self.w_component,
             self.temperature,
             self.humidity,
-           )
+        )
 
     def backward(self, data):
         return self._transform(
@@ -56,8 +56,8 @@ class VerticalVelocity(SimpleFilter):
         level = float(w._metadata.get("levelist", None))
         # here the pressure gradient is assimilated to volumic weight : hydrostatic hypothesis
         rho = (100 * level) / (287 * t.to_numpy() * (1 + 0.61 * q.to_numpy()) + 1e-8)
-        wz = (- 1.0 / (rho * 9.80665 + 1e-8)) * w.to_numpy()
-        
+        wz = (-1.0 / (rho * 9.80665 + 1e-8)) * w.to_numpy()
+
         yield self.new_field_from_numpy(wz, template=w, param=self.wz_component)
 
     def backward_transform(self, wz, t, q):
@@ -69,6 +69,7 @@ class VerticalVelocity(SimpleFilter):
         w = -1.0 * rho * 9.80665 * wz.to_numpy()
 
         yield self.new_field_from_numpy(w, template=wz, param=self.w_component)
-        
+
+
 filter_registry.register("w_2_wz", VerticalVelocity)
 filter_registry.register("wz_2_w", VerticalVelocity.reversed)

@@ -15,7 +15,8 @@ from . import Command
 
 class MakeRegridMatrix(Command):
     """Extract the grid from a pair GRIB or NetCDF files extract the MIR interpolation matrix to be used
-    by earthkit-regrid."""
+    by earthkit-regrid.
+    """
 
     def add_arguments(self, command_parser):
         command_parser.add_argument("--source1", default="file", help="EKD Source type (default: file).")

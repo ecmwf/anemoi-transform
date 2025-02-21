@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## 0.1.3 (2025-02-21)
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes 🔗
+* chore: synced file(s) with ecmwf-actions/reusable-workflows by @DeployDuck in https://github.com/ecmwf/anemoi-transform/pull/37
+* chore: synced file(s) with ecmwf-actions/reusable-workflows by @DeployDuck in https://github.com/ecmwf/anemoi-transform/pull/39
+* fix:  for opera mask by @anaprietonem in https://github.com/ecmwf/anemoi-transform/pull/40
+* chore: synced file(s) with ecmwf-actions/reusable-workflows by @DeployDuck in https://github.com/ecmwf/anemoi-transform/pull/41
+* chore: synced file(s) with ecmwf-actions/reusable-workflows by @DeployDuck in https://github.com/ecmwf/anemoi-transform/pull/43
+
+## New Contributors
+* @anaprietonem made their first contribution in https://github.com/ecmwf/anemoi-transform/pull/40
+
+**Full Changelog**: https://github.com/ecmwf/anemoi-transform/compare/0.1.2...0.1.3
+
 ## 0.1.2 (2025-02-04)
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

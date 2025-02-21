@@ -48,6 +48,10 @@ class VariableFromMarsVocabulary(Variable):
         return "process" not in self.data.get
 
     @property
+    def time_processing(self):
+        return self.data.get("process")
+
+    @property
     def grib_keys(self):
         return self.data.get("mars", {}).copy()
 

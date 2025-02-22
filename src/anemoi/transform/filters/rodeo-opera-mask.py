@@ -27,6 +27,22 @@ MAX_QI = 1
 
 
 def clip_opera(tp, quality, max_tp):
+    """Clip the tp and quality arrays to specified maximum values.
+
+    Parameters
+    ----------
+    tp : numpy.ndarray
+        The tp array to be clipped.
+    quality : numpy.ndarray
+        The quality array to be clipped.
+    max_tp : int
+        The maximum value for tp.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the clipped tp and quality arrays.
+    """
     tp[tp < 0] = 0
     tp[tp >= max_tp] = max_tp
     quality[quality >= MAX_QI] = MAX_QI
@@ -35,6 +51,22 @@ def clip_opera(tp, quality, max_tp):
 
 
 def mask_opera(tp, quality, mask):
+    """Apply masking to the tp array based on the mask array.
+
+    Parameters
+    ----------
+    tp : numpy.ndarray
+        The tp array to be masked.
+    quality : numpy.ndarray
+        The quality array.
+    mask : numpy.ndarray
+        The mask array indicating which values to mask.
+
+    Returns
+    -------
+    numpy.ndarray
+        The masked tp array.
+    """
     print("✅✅", quality)
     print("✅✅✅", tp)
 
@@ -51,7 +83,21 @@ def mask_opera(tp, quality, mask):
 
 @filter_registry.register("rodeo_opera_preprocessing")
 class RodeoOperaPreProcessing(SimpleFilter):
-    """A filter to select only good quality data i nrodeo opera data."""
+    """A filter to select only good quality data in Rodeo Opera data.
+
+    Parameters
+    ----------
+    tp : str, optional
+        The name of the tp field, by default "tp".
+    quality : str, optional
+        The name of the quality field, by default "quality".
+    mask : str, optional
+        The name of the mask field, by default "mask".
+    output : str, optional
+        The name of the output field, by default "tp_cleaned".
+    max_tp : int, optional
+        The maximum value for tp, by default MAX_TP.
+    """
 
     def __init__(
         self,
@@ -69,6 +115,18 @@ class RodeoOperaPreProcessing(SimpleFilter):
         self.max_tp = max_tp
 
     def forward(self, data: Any) -> Any:
+        """Apply the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : Any
+            The input data.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self._transform(
             data,
             self.forward_transform,
@@ -78,11 +136,37 @@ class RodeoOperaPreProcessing(SimpleFilter):
         )
 
     def backward(self, data: Any) -> None:
+        """Raise an error as RodeoOperaPreProcessing is not reversible.
+
+        Parameters
+        ----------
+        data : Any
+            The input data.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised as this method is not implemented.
+        """
         raise NotImplementedError("RodeoOperaPreProcessing is not reversible")
 
     def forward_transform(self, tp: Any, quality: Any, mask: Any) -> Generator[Any, None, None]:
-        """Pre-process Rodeo Opera data."""
+        """Pre-process Rodeo Opera data.
 
+        Parameters
+        ----------
+        tp : Any
+            The tp data.
+        quality : Any
+            The quality data.
+        mask : Any
+            The mask data.
+
+        Yields
+        ------
+        Any
+            The cleaned tp data.
+        """
         # 1st - apply masking
         tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
 
@@ -92,4 +176,16 @@ class RodeoOperaPreProcessing(SimpleFilter):
         yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
 
     def backward_transform(self, tp: Any) -> None:
+        """Raise an error as RodeoOperaPreProcessing is not reversible.
+
+        Parameters
+        ----------
+        tp : Any
+            The tp data.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised as this method is not implemented.
+        """
         raise NotImplementedError("RodeoOperaPreProcessing is not reversible")

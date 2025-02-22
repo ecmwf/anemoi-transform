@@ -22,15 +22,42 @@ LOG = logging.getLogger(__name__)
 
 
 def new_fieldlist_from_list(fields):
+    """
+    Create a new FieldArray from a list of fields.
+
+    Parameters
+    ----------
+    fields : list
+        List of fields to include in the FieldArray.
+
+    Returns
+    -------
+    FieldArray
+        A new FieldArray containing the provided fields.
+    """
     return FieldArray(fields)
 
 
 def new_empty_fieldlist():
+    """
+    Create a new empty FieldArray.
+
+    Returns
+    -------
+    FieldArray
+        A new empty FieldArray.
+    """
     return FieldArray([])
 
 
 class WrappedField:
-    """A wrapper around a earthkit-data field object."""
+    """A wrapper around an earthkit-data field object.
+
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    """
 
     def __init__(self, field):
         self._field = field
@@ -58,7 +85,15 @@ class WrappedField:
 
 
 class NewDataField(WrappedField):
-    """Change the data of a field."""
+    """Change the data of a field.
+
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    data : numpy.ndarray
+        The new data for the field.
+    """
 
     def __init__(self, field, data):
         super().__init__(field)
@@ -66,6 +101,23 @@ class NewDataField(WrappedField):
         self.shape = data.shape
 
     def to_numpy(self, flatten: bool = False, dtype: Optional[type] = None, index: Optional[Any] = None) -> np.ndarray:
+        """
+        Convert the field data to a numpy array.
+
+        Parameters
+        ----------
+        flatten : bool, optional
+            Whether to flatten the array, by default False.
+        dtype : type, optional
+            The desired data type of the array, by default None.
+        index : Any, optional
+            The index to apply to the array, by default None.
+
+        Returns
+        -------
+        numpy.ndarray
+            The field data as a numpy array.
+        """
         data = self._data
         if dtype is not None:
             data = data.astype(dtype)
@@ -77,18 +129,48 @@ class NewDataField(WrappedField):
 
 
 class GeoMetadata(Geography):
-    """A wrapper around a earthkit-data Geography object."""
+    """A wrapper around an earthkit-data Geography object.
+
+    Parameters
+    ----------
+    owner : Any
+        The owner of the geography data.
+    """
 
     def __init__(self, owner):
         self.owner = owner
 
     def shape(self) -> Tuple[int]:
+        """
+        Get the shape of the geography data.
+
+        Returns
+        -------
+        tuple
+            The shape of the geography data.
+        """
         return tuple([len(self.owner._latitudes)])
 
     def resolution(self) -> str:
+        """
+        Get the resolution of the geography data.
+
+        Returns
+        -------
+        str
+            The resolution of the geography data.
+        """
         return "unknown"
 
     def mars_area(self) -> List[float]:
+        """
+        Get the MARS area of the geography data.
+
+        Returns
+        -------
+        list
+            The MARS area of the geography data.
+        """
         return [
             np.amax(self.owner._latitudes),
             np.amin(self.owner._longitudes),
@@ -97,39 +179,141 @@ class GeoMetadata(Geography):
         ]
 
     def mars_grid(self) -> None:
+        """
+        Get the MARS grid of the geography data.
+
+        Returns
+        -------
+        None
+            The MARS grid of the geography data.
+        """
         return None
 
     def latitudes(self, dtype: Optional[type] = None) -> np.ndarray:
+        """
+        Get the latitudes of the geography data.
+
+        Parameters
+        ----------
+        dtype : type, optional
+            The desired data type of the array, by default None.
+
+        Returns
+        -------
+        numpy.ndarray
+            The latitudes of the geography data.
+        """
         if dtype is None:
             return self.owner._latitudes
         return self.owner._latitudes.astype(dtype)
 
     def longitudes(self, dtype: Optional[type] = None) -> np.ndarray:
+        """
+        Get the longitudes of the geography data.
+
+        Parameters
+        ----------
+        dtype : type, optional
+            The desired data type of the array, by default None.
+
+        Returns
+        -------
+        numpy.ndarray
+            The longitudes of the geography data.
+        """
         if dtype is None:
             return self.owner._longitudes
         return self.owner._longitudes.astype(dtype)
 
     def x(self, dtype: Optional[type] = None) -> None:
+        """
+        Get the x-coordinates of the geography data.
+
+        Parameters
+        ----------
+        dtype : type, optional
+            The desired data type of the array, by default None.
+
+        Returns
+        -------
+        None
+            The x-coordinates of the geography data.
+        """
         raise NotImplementedError()
 
     def y(self, dtype: Optional[type] = None) -> None:
+        """
+        Get the y-coordinates of the geography data.
+
+        Parameters
+        ----------
+        dtype : type, optional
+            The desired data type of the array, by default None.
+
+        Returns
+        -------
+        None
+            The y-coordinates of the geography data.
+        """
         raise NotImplementedError()
 
     def _unique_grid_id(self) -> None:
+        """
+        Get the unique grid ID of the geography data.
+
+        Returns
+        -------
+        None
+            The unique grid ID of the geography data.
+        """
         raise NotImplementedError()
 
     def projection(self) -> None:
+        """
+        Get the projection of the geography data.
+
+        Returns
+        -------
+        None
+            The projection of the geography data.
+        """
         return None
 
     def bounding_box(self) -> None:
+        """
+        Get the bounding box of the geography data.
+
+        Returns
+        -------
+        None
+            The bounding box of the geography data.
+        """
         raise NotImplementedError()
 
     def gridspec(self) -> None:
+        """
+        Get the grid specification of the geography data.
+
+        Returns
+        -------
+        None
+            The grid specification of the geography data.
+        """
         raise NotImplementedError()
 
 
 class NewGridField(WrappedField):
-    """Change the grid of a field."""
+    """Change the grid of a field.
+
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    latitudes : numpy.ndarray
+        The new latitudes for the field.
+    longitudes : numpy.ndarray
+        The new longitudes for the field.
+    """
 
     def __init__(self, field, latitudes, longitudes):
         super().__init__(field)
@@ -137,9 +321,30 @@ class NewGridField(WrappedField):
         self._longitudes = longitudes
 
     def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Get the grid points of the field.
+
+        Returns
+        -------
+        tuple
+            The latitudes and longitudes of the field.
+        """
         return self._latitudes, self._longitudes
 
     def to_latlon(self, flatten: bool = True) -> Dict[str, np.ndarray]:
+        """
+        Convert the grid points to latitude and longitude.
+
+        Parameters
+        ----------
+        flatten : bool, optional
+            Whether to flatten the arrays, by default True.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the latitudes and longitudes.
+        """
         assert flatten
         return dict(lat=self._latitudes, lon=self._longitudes)
 
@@ -147,7 +352,21 @@ class NewGridField(WrappedField):
         return f"NewGridField({len(self._latitudes), self._field})"
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
+        """
+        Get the metadata of the field.
 
+        Parameters
+        ----------
+        *args : Any
+            Additional arguments.
+        **kwargs : Any
+            Additional keyword arguments.
+
+        Returns
+        -------
+        Any
+            The metadata of the field.
+        """
         metadata = self._field.metadata(*args, **kwargs)
         if hasattr(metadata, "geography"):
             metadata.geography = GeoMetadata(self)
@@ -156,14 +375,36 @@ class NewGridField(WrappedField):
 
 
 class NewMetadataField(WrappedField):
-    """Change the metadata of a field."""
+    """Change the metadata of a field.
+
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    **kwargs : Any
+        The new metadata for the field.
+    """
 
     def __init__(self, field, **kwargs):
         super().__init__(field)
         self._metadata = kwargs
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
+        """
+        Get the metadata of the field.
 
+        Parameters
+        ----------
+        *args : Any
+            Additional arguments.
+        **kwargs : Any
+            Additional keyword arguments.
+
+        Returns
+        -------
+        Any
+            The metadata of the field.
+        """
         if kwargs.get("namespace"):
             assert len(args) == 0, (args, kwargs)
             mars = self._field.metadata(**kwargs).copy()
@@ -179,7 +420,15 @@ class NewMetadataField(WrappedField):
 
 
 class NewValidDateTimeField(NewMetadataField):
-    """Change the valid_datetime of a field."""
+    """Change the valid_datetime of a field.
+
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    valid_datetime : datetime
+        The new valid_datetime for the field.
+    """
 
     def __init__(self, field, valid_datetime):
         date = int(valid_datetime.date().strftime("%Y%m%d"))
@@ -192,18 +441,82 @@ class NewValidDateTimeField(NewMetadataField):
 
 
 def new_field_from_numpy(array: np.ndarray, *, template: WrappedField, **metadata: Any) -> NewMetadataField:
+    """
+    Create a new field from a numpy array.
+
+    Parameters
+    ----------
+    array : numpy.ndarray
+        The data for the new field.
+    template : WrappedField
+        The template field to use.
+    **metadata : Any
+        Additional metadata for the new field.
+
+    Returns
+    -------
+    NewMetadataField
+        The new field with the provided data and metadata.
+    """
     return NewMetadataField(NewDataField(template, array), **metadata)
 
 
 def new_field_with_valid_datetime(template: WrappedField, date: Any) -> NewValidDateTimeField:
+    """
+    Create a new field with a valid datetime.
+
+    Parameters
+    ----------
+    template : WrappedField
+        The template field to use.
+    date : Any
+        The valid datetime for the new field.
+
+    Returns
+    -------
+    NewValidDateTimeField
+        The new field with the provided valid datetime.
+    """
     return NewValidDateTimeField(template, date)
 
 
 def new_field_with_metadata(template: WrappedField, **metadata: Any) -> NewMetadataField:
+    """
+    Create a new field with metadata.
+
+    Parameters
+    ----------
+    template : WrappedField
+        The template field to use.
+    **metadata : Any
+        The metadata for the new field.
+
+    Returns
+    -------
+    NewMetadataField
+        The new field with the provided metadata.
+    """
     return NewMetadataField(template, **metadata)
 
 
 def new_field_from_latitudes_longitudes(
     template: WrappedField, latitudes: np.ndarray, longitudes: np.ndarray
 ) -> NewGridField:
+    """
+    Create a new field from latitudes and longitudes.
+
+    Parameters
+    ----------
+    template : WrappedField
+        The template field to use.
+    latitudes : numpy.ndarray
+        The latitudes for the new field.
+    longitudes : numpy.ndarray
+        The longitudes for the new field.
+
+    Returns
+    -------
+    NewGridField
+        The new field with the provided latitudes and longitudes.
+    """
     return NewGridField(template, latitudes, longitudes)

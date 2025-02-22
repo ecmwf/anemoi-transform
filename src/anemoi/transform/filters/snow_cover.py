@@ -17,7 +17,20 @@ from .base import SimpleFilter
 
 
 def compute_snow_cover(snow_depth, snow_density):
-    """Convert snow depth to snow cover."""
+    """Convert snow depth to snow cover.
+
+    Parameters
+    ----------
+    snow_depth : array-like
+        The depth of the snow.
+    snow_density : array-like
+        The density of the snow.
+
+    Returns
+    -------
+    array-like
+        The computed snow cover.
+    """
     tmp1 = (1000 * snow_depth) / snow_density
     tmp2 = np.clip(snow_density, 100, 400)
     snow_cover = np.clip(np.tanh((4000 * tmp1) / tmp2), 0, 1)
@@ -36,11 +49,34 @@ class SnowCover(SimpleFilter):
         snow_density: str = "rsn",
         snow_cover: str = "snowc",
     ) -> None:
+        """Initialize the SnowCover filter.
+
+        Parameters
+        ----------
+        snow_depth : str, optional
+            The parameter name for snow depth, by default "sd".
+        snow_density : str, optional
+            The parameter name for snow density, by default "rsn".
+        snow_cover : str, optional
+            The parameter name for snow cover, by default "snowc".
+        """
         self.snow_depth = snow_depth
         self.snow_density = snow_density
         self.snow_cover = snow_cover
 
     def forward(self, data: Any) -> Any:
+        """Apply the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : Any
+            The input data.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self._transform(
             data,
             self.forward_transform,

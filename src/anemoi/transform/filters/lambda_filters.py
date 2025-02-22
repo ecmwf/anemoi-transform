@@ -8,7 +8,12 @@
 # nor does it submit to any jurisdiction.
 
 import importlib
-import typing as tp
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Iterator
+from typing import Optional
+from typing import Union
 
 from earthkit.data.core.fieldlist import Field
 from earthkit.data.core.fieldlist import FieldList
@@ -23,11 +28,11 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
 
     def __init__(
         self,
-        fn: tp.Union[str, tp.Callable[[Field, tp.Any], Field]],
-        param: tp.Union[str, list[str]],
+        fn: Union[str, Callable[[Field, Any], Field]],
+        param: Union[str, list[str]],
         fn_args: list = [],
-        fn_kwargs: tp.Dict[str, tp.Any] = {},
-        backward_fn: tp.Optional[tp.Union[str, tp.Callable[[Field, tp.Any], Field]]] = None,
+        fn_kwargs: Dict[str, Any] = {},
+        backward_fn: Optional[Union[str, Callable[[Field, Any], Field]]] = None,
     ):
         """Initialise the EarthkitFieldLambdaFilter.
 
@@ -80,22 +85,90 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         self.fn_kwargs = fn_kwargs
 
     def forward(self, data: FieldList) -> FieldList:
+        """Apply the forward lambda function to the specified fields.
+
+        Parameters
+        ----------
+        data : FieldList
+            The list of fields to apply the forward lambda function to.
+
+        Returns
+        -------
+        FieldList
+            The transformed list of fields.
+        """
         return self._transform(data, self.forward_transform, *self.param)
 
     def backward(self, data: FieldList) -> FieldList:
+        """Apply the backward lambda function to the specified fields.
+
+        Parameters
+        ----------
+        data : FieldList
+            The list of fields to apply the backward lambda function to.
+
+        Returns
+        -------
+        FieldList
+            The transformed list of fields.
+
+        Raises
+        ------
+        NotImplementedError
+            If the backward function is not defined.
+        """
         if self.backward_fn:
             return self._transform(data, self.backward_transform, *self.param)
         raise NotImplementedError(f"{self} is not reversible.")
 
-    def forward_transform(self, *fields: Field) -> tp.Iterator[Field]:
-        """Apply the lambda function to the field."""
+    def forward_transform(self, *fields: Field) -> Iterator[Field]:
+        """Apply the forward lambda function to the fields.
+
+        Parameters
+        ----------
+        fields : Field
+            The fields to apply the forward lambda function to.
+
+        Yields
+        ------
+        Field
+            The transformed field.
+        """
         yield self.fn(*fields, *self.fn_args, **self.fn_kwargs)
 
-    def backward_transform(self, *fields: Field) -> tp.Iterator[Field]:
-        """Apply the backward lambda function to the field."""
+    def backward_transform(self, *fields: Field) -> Iterator[Field]:
+        """Apply the backward lambda function to the fields.
+
+        Parameters
+        ----------
+        fields : Field
+            The fields to apply the backward lambda function to.
+
+        Yields
+        ------
+        Field
+            The transformed field.
+        """
         yield self.backward_fn(*fields, *self.fn_args, **self.fn_kwargs)
 
-    def _import_fn(self, fn: str) -> tp.Callable[..., Field]:
+    def _import_fn(self, fn: str) -> Callable[..., Field]:
+        """Import a function from a string path.
+
+        Parameters
+        ----------
+        fn : str
+            The string path to the function, such as "package.module.function".
+
+        Returns
+        -------
+        callable
+            The imported function.
+
+        Raises
+        ------
+        ValueError
+            If the function cannot be imported.
+        """
         try:
             module_name, fn_name = fn.rsplit(".", 1)
             module = importlib.import_module(module_name)
@@ -104,6 +177,13 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
             raise ValueError(f"Could not import function {fn}") from e
 
     def __repr__(self) -> str:
+        """Return a string representation of the EarthkitFieldLambdaFilter.
+
+        Returns
+        -------
+        str
+            The string representation of the filter.
+        """
         out = f"{self.__class__.__name__}(fn={self.fn},"
         if self.backward_fn:
             out += f"backward_fn={self.backward_fn},"

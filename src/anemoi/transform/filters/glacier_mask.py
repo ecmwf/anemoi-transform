@@ -7,7 +7,8 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import typing as tp
+
+from typing import Iterator
 
 import earthkit.data as ekd
 import numpy as np
@@ -17,6 +18,20 @@ from .base import SimpleFilter
 
 
 def mask_glaciers(snow_depth, glacier_mask):
+    """Mask out glaciers in snow depth data.
+
+    Parameters
+    ----------
+    snow_depth : np.ndarray
+        Array of snow depth values.
+    glacier_mask : np.ndarray
+        Boolean array indicating glacier locations.
+
+    Returns
+    -------
+    np.ndarray
+        Snow depth array with glaciers masked out.
+    """
     snow_depth[glacier_mask] = np.nan
     return snow_depth
 
@@ -37,6 +52,18 @@ class SnowDepthMasked(SimpleFilter):
         self.snow_depth_masked = snow_depth_masked
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Apply the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : ekd.FieldList
+            Input data to be transformed.
+
+        Returns
+        -------
+        ekd.FieldList
+            Transformed data.
+        """
         return self._transform(
             data,
             self.forward_transform,
@@ -46,12 +73,22 @@ class SnowDepthMasked(SimpleFilter):
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         raise NotImplementedError("SnowDepthMasked is not reversible")
 
-    def forward_transform(self, sd: ekd.Field) -> tp.Iterator[ekd.Field]:
-        """Mask out glaciers in snow depth."""
+    def forward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
+        """Mask out glaciers in snow depth.
 
+        Parameters
+        ----------
+        sd : ekd.Field
+            Snow depth field.
+
+        Yields
+        ------
+        ekd.Field
+            Snow depth field with glaciers masked out.
+        """
         snow_depth_masked = mask_glaciers(sd.to_numpy(), self.glacier_mask)
 
         yield self.new_field_from_numpy(snow_depth_masked, template=sd, param=self.snow_depth_masked)
 
-    def backward_transform(self, sd: ekd.Field) -> tp.Iterator[ekd.Field]:
+    def backward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
         raise NotImplementedError("SnowDepthMasked is not reversible")

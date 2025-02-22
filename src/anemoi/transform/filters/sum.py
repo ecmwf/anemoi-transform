@@ -9,6 +9,8 @@
 
 
 import logging
+from typing import Any
+from typing import Generator
 
 from . import filter_registry
 from .base import SimpleFilter
@@ -18,27 +20,23 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("sum")
 class Sum(SimpleFilter):
-    """A filter to sum some parameters"""
+    """A filter to sum some parameters."""
 
-    def __init__(
-        self,
-        *,
-        formula,
-    ):
+    def __init__(self, *, formula: dict) -> None:
         assert isinstance(formula, dict)
         assert len(formula) == 1
         self.name = list(formula.keys())[0]
         self.args = list(formula.values())[0]
         LOG.warning("Using the sum filter will be deprecated in the future. Please do not rely on it.")
 
-    def forward(self, data):
+    def forward(self, data: Any) -> Any:
         return self._transform(data, self.forward_transform, *self.args)
 
-    def backward(self, data):
+    def backward(self, data: Any) -> None:
         raise NotImplementedError("Sum is not reversible")
 
-    def forward_transform(self, *args):
-        """Sum the fuel components to get the total fuel"""
+    def forward_transform(self, *args: Any) -> Generator[Any, None, None]:
+        """Sum the fuel components to get the total fuel."""
         total = None
         for arg in args:
             if total is None:
@@ -49,5 +47,5 @@ class Sum(SimpleFilter):
 
         yield self.new_field_from_numpy(total, template=template, param=self.name)
 
-    def backward_transform(self, data):
+    def backward_transform(self, data: Any) -> None:
         raise NotImplementedError("Sum is not reversible")

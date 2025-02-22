@@ -9,6 +9,8 @@
 
 
 import logging
+from typing import Any
+from typing import List
 
 from ..fields import new_field_from_numpy
 from ..fields import new_fieldlist_from_list
@@ -51,10 +53,10 @@ class RepeatMembers(Filter):
 
     def __init__(
         self,
-        numbers=None,  # 1-based
-        members=None,  # 0-based
-        count=None,
-    ):
+        numbers: List[int] = None,
+        members: List[int] = None,
+        count: int = None,
+    ) -> None:
         if sum(x is not None for x in (members, count, numbers)) != 1:
             raise ValueError("Exactly one of members, count or numbers must be given")
 
@@ -69,7 +71,7 @@ class RepeatMembers(Filter):
         self.members = members
         assert isinstance(members, (tuple, list)), f"members must be a list or tuple, got {type(members)}"
 
-    def forward(self, data):
+    def forward(self, data: Any) -> Any:
         result = []
         for f in data:
             array = f.to_numpy()
@@ -80,6 +82,6 @@ class RepeatMembers(Filter):
 
         return new_fieldlist_from_list(result)
 
-    def backward(self, data):
+    def backward(self, data: Any) -> None:
         # this could be implemented
         raise NotImplementedError("RepeatMembers is not reversible")

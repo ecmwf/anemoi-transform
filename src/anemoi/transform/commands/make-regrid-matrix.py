@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
+import argparse
 import os
 
 from . import Command
@@ -18,7 +19,7 @@ class MakeRegridMatrix(Command):
     by earthkit-regrid.
     """
 
-    def add_arguments(self, command_parser):
+    def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
         command_parser.add_argument("--source1", default="file", help="EKD Source type (default: file).")
         command_parser.add_argument("--source2", default="file", help="EKD Source type (default: file).")
 
@@ -31,7 +32,7 @@ class MakeRegridMatrix(Command):
 
         command_parser.add_argument("kwargs", nargs="*", help="MIR arguments.")
 
-    def run(self, args):
+    def run(self, args: argparse.Namespace) -> None:
         import numpy as np
         from earthkit.data import from_source
         from earthkit.regrid.utils.mir import mir_make_matrix

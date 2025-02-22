@@ -7,6 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from typing import Any
+from typing import Generator
+
 import numpy as np
 
 from . import filter_registry
@@ -29,15 +32,15 @@ class SnowCover(SimpleFilter):
     def __init__(
         self,
         *,
-        snow_depth="sd",
-        snow_density="rsn",
-        snow_cover="snowc",
-    ):
+        snow_depth: str = "sd",
+        snow_density: str = "rsn",
+        snow_cover: str = "snowc",
+    ) -> None:
         self.snow_depth = snow_depth
         self.snow_density = snow_density
         self.snow_cover = snow_cover
 
-    def forward(self, data):
+    def forward(self, data: Any) -> Any:
         return self._transform(
             data,
             self.forward_transform,
@@ -45,15 +48,15 @@ class SnowCover(SimpleFilter):
             self.snow_density,
         )
 
-    def backward(self, data):
+    def backward(self, data: Any) -> None:
         raise NotImplementedError("SnowCover is not reversible")
 
-    def forward_transform(self, sd, rsn):
-        """Convert snow depth and snow density to snow cover"""
+    def forward_transform(self, sd: Any, rsn: Any) -> Generator[Any, None, None]:
+        """Convert snow depth and snow density to snow cover."""
 
         snow_cover = compute_snow_cover(sd.to_numpy(), rsn.to_numpy())
 
         yield self.new_field_from_numpy(snow_cover, template=sd, param=self.snow_cover)
 
-    def backward_transform(self, sd, rsn):
+    def backward_transform(self, sd: Any, rsn: Any) -> None:
         raise NotImplementedError("SnowCover is not reversible")

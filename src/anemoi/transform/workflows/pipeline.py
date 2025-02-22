@@ -8,23 +8,26 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+from typing import List
+
 from ..workflow import Workflow
 from . import workflow_registry
 
 
 @workflow_registry.register("pipeline")
 class Pipeline(Workflow):
-    """A simple pipeline of filters"""
+    """A simple pipeline of filters."""
 
-    def __init__(self, filters):
+    def __init__(self, filters: List[Any]) -> None:
         self.filters = filters
 
-    def forward(self, data):
+    def forward(self, data: Any) -> Any:
         for filter in self.filters:
             data = filter.forward(data)
         return data
 
-    def backward(self, data):
+    def backward(self, data: Any) -> Any:
         for filter in reversed(self.filters):
             data = filter.backward(data)
         return data

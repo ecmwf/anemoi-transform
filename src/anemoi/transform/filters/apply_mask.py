@@ -38,7 +38,7 @@ class MaskVariable(Filter):
 
         self._rename = rename
 
-    def forward(self, data):
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
 
         result = []
         extra = {}
@@ -56,5 +56,5 @@ class MaskVariable(Filter):
 
         return new_fieldlist_from_list(result)
 
-    def backward(self, data):
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         raise NotImplementedError("`apply_mask` is not reversible")

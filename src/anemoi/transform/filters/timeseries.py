@@ -9,6 +9,8 @@
 
 
 import logging
+from typing import Any
+from typing import Generator
 
 import numpy as np
 
@@ -28,9 +30,9 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("timeseries")
 class Timeseries(SimpleFilter):
-    """A source to add a timeseries depending on time but not on location"""
+    """A source to add a timeseries depending on time but not on location."""
 
-    def __init__(self, *, netcdf=None, template_param="2t"):
+    def __init__(self, *, netcdf: dict = None, template_param: str = "2t") -> None:
         if netcdf:
             import xarray as xr
 
@@ -39,15 +41,15 @@ class Timeseries(SimpleFilter):
 
         self.template_param = template_param
 
-    def forward(self, data):
+    def forward(self, data: Any) -> Any:
         return self._transform(
             data,
             self.forward_transform,
             self.template_param,
         )
 
-    def forward_transform(self, template):
-        """Convert snow depth and snow density to snow cover"""
+    def forward_transform(self, template: Any) -> Generator[Any, None, None]:
+        """Convert snow depth and snow density to snow cover."""
         dt = template.metadata("valid_datetime")
         template_array = template.to_numpy()
 
@@ -58,8 +60,8 @@ class Timeseries(SimpleFilter):
             data = np.full_like(template_array, value)
             yield self.new_field_from_numpy(data, template=template, param=name)
 
-    def backward(self, data):
+    def backward(self, data: Any) -> None:
         raise NotImplementedError("SnowCover is not reversible")
 
-    def backward_transform(self, sd, rsn):
+    def backward_transform(self, sd: Any, rsn: Any) -> None:
         raise NotImplementedError("SnowCover is not reversible")

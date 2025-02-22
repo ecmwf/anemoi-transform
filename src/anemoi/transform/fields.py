@@ -8,6 +8,11 @@
 # nor does it submit to any jurisdiction.
 
 import logging
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 import numpy as np
 from earthkit.data.core.geography import Geography
@@ -30,7 +35,7 @@ class WrappedField:
     def __init__(self, field):
         self._field = field
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         if name in (
             "clone",
             "copy",
@@ -60,7 +65,7 @@ class NewDataField(WrappedField):
         self._data = data
         self.shape = data.shape
 
-    def to_numpy(self, flatten=False, dtype=None, index=None):
+    def to_numpy(self, flatten: bool = False, dtype: Optional[type] = None, index: Optional[Any] = None) -> np.ndarray:
         data = self._data
         if dtype is not None:
             data = data.astype(dtype)
@@ -77,13 +82,13 @@ class GeoMetadata(Geography):
     def __init__(self, owner):
         self.owner = owner
 
-    def shape(self):
+    def shape(self) -> Tuple[int]:
         return tuple([len(self.owner._latitudes)])
 
-    def resolution(self):
+    def resolution(self) -> str:
         return "unknown"
 
-    def mars_area(self):
+    def mars_area(self) -> List[float]:
         return [
             np.amax(self.owner._latitudes),
             np.amin(self.owner._longitudes),
@@ -91,35 +96,35 @@ class GeoMetadata(Geography):
             np.amax(self.owner._longitudes),
         ]
 
-    def mars_grid(self):
+    def mars_grid(self) -> None:
         return None
 
-    def latitudes(self, dtype=None):
+    def latitudes(self, dtype: Optional[type] = None) -> np.ndarray:
         if dtype is None:
             return self.owner._latitudes
         return self.owner._latitudes.astype(dtype)
 
-    def longitudes(self, dtype=None):
+    def longitudes(self, dtype: Optional[type] = None) -> np.ndarray:
         if dtype is None:
             return self.owner._longitudes
         return self.owner._longitudes.astype(dtype)
 
-    def x(self, dtype=None):
+    def x(self, dtype: Optional[type] = None) -> None:
         raise NotImplementedError()
 
-    def y(self, dtype=None):
+    def y(self, dtype: Optional[type] = None) -> None:
         raise NotImplementedError()
 
-    def _unique_grid_id(self):
+    def _unique_grid_id(self) -> None:
         raise NotImplementedError()
 
-    def projection(self):
+    def projection(self) -> None:
         return None
 
-    def bounding_box(self):
+    def bounding_box(self) -> None:
         raise NotImplementedError()
 
-    def gridspec(self):
+    def gridspec(self) -> None:
         raise NotImplementedError()
 
 
@@ -131,17 +136,17 @@ class NewGridField(WrappedField):
         self._latitudes = latitudes
         self._longitudes = longitudes
 
-    def grid_points(self):
+    def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
         return self._latitudes, self._longitudes
 
-    def to_latlon(self, flatten=True):
+    def to_latlon(self, flatten: bool = True) -> Dict[str, np.ndarray]:
         assert flatten
         return dict(lat=self._latitudes, lon=self._longitudes)
 
     def __repr__(self):
         return f"NewGridField({len(self._latitudes), self._field})"
 
-    def metadata(self, *args, **kwargs):
+    def metadata(self, *args: Any, **kwargs: Any) -> Any:
 
         metadata = self._field.metadata(*args, **kwargs)
         if hasattr(metadata, "geography"):
@@ -157,7 +162,7 @@ class NewMetadataField(WrappedField):
         super().__init__(field)
         self._metadata = kwargs
 
-    def metadata(self, *args, **kwargs):
+    def metadata(self, *args: Any, **kwargs: Any) -> Any:
 
         if kwargs.get("namespace"):
             assert len(args) == 0, (args, kwargs)
@@ -186,17 +191,19 @@ class NewValidDateTimeField(NewMetadataField):
         super().__init__(field, date=date, time=time, step=0, valid_datetime=valid_datetime.isoformat())
 
 
-def new_field_from_numpy(array, *, template, **metadata):
+def new_field_from_numpy(array: np.ndarray, *, template: WrappedField, **metadata: Any) -> NewMetadataField:
     return NewMetadataField(NewDataField(template, array), **metadata)
 
 
-def new_field_with_valid_datetime(template, date):
+def new_field_with_valid_datetime(template: WrappedField, date: Any) -> NewValidDateTimeField:
     return NewValidDateTimeField(template, date)
 
 
-def new_field_with_metadata(template, **metadata):
+def new_field_with_metadata(template: WrappedField, **metadata: Any) -> NewMetadataField:
     return NewMetadataField(template, **metadata)
 
 
-def new_field_from_latitudes_longitudes(template, latitudes, longitudes):
+def new_field_from_latitudes_longitudes(
+    template: WrappedField, latitudes: np.ndarray, longitudes: np.ndarray
+) -> NewGridField:
     return NewGridField(template, latitudes, longitudes)

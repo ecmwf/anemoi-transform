@@ -9,6 +9,9 @@
 
 
 from collections import defaultdict
+from typing import Any
+from typing import Callable
+from typing import List
 
 
 def _lost(f):
@@ -18,12 +21,12 @@ def _lost(f):
 class GroupByMarsParam:
     """Group matching fields by MARS paramters name."""
 
-    def __init__(self, params):
+    def __init__(self, params: List[str]) -> None:
         if not isinstance(params, (list, tuple)):
             params = [params]
         self.params = params
 
-    def iterate(self, data, *, other=_lost):
+    def iterate(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> Any:
 
         assert callable(other), type(other)
         groups = defaultdict(dict)

@@ -8,18 +8,20 @@
 # nor does it submit to any jurisdiction.
 
 
+import argparse
+
 from . import Command
 
 
 class GetGrid(Command):
     """Extract the grid from a GRIB or NetCDF file and save it as a NPZ file."""
 
-    def add_arguments(self, command_parser):
+    def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
         command_parser.add_argument("--source", default="file", help="EKD Source type (default: file).")
         command_parser.add_argument("input", help="Input file (GRIB or NetCDF).")
         command_parser.add_argument("output", help="Output NPZ file.")
 
-    def run(self, args):
+    def run(self, args: argparse.Namespace) -> None:
         import numpy as np
         from earthkit.data import from_source
 

@@ -16,4 +16,6 @@ LOG = logging.getLogger(__name__)
 
 
 class Filter(Transform):
+    """A filter transform that processes data."""
+
     pass

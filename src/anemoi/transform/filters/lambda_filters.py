@@ -33,17 +33,17 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
 
         Parameters
         ----------
-        fn: callable or str
+        fn : callable or str
             The lambda function as a callable with the general signature
             `fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
             a string path to the function, such as "package.module.function".
-        param: list or str
+        param : list or str
             The parameter name or list of parameter names to apply the function to.
-        fn_args: list
+        fn_args : list
             The list of arguments to pass to the lambda function.
-        fn_kwargs: dict
+        fn_kwargs : dict
             The dictionary of keyword arguments to pass to the lambda function.
-        backward_fn (optional): callable, str or None
+        backward_fn (optional) : callable, str or None
             The backward lambda function as a callable with the general signature
             `backward_fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
             a string path to the function, such as "package.module.function".
@@ -103,7 +103,7 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         except Exception as e:
             raise ValueError(f"Could not import function {fn}") from e
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         out = f"{self.__class__.__name__}(fn={self.fn},"
         if self.backward_fn:
             out += f"backward_fn={self.backward_fn},"

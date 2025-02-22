@@ -8,54 +8,57 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+from typing import Dict
+
 from . import Variable
 
 
 class VariableFromMarsVocabulary(Variable):
     """A variable that is defined by the Mars vocabulary."""
 
-    def __init__(self, name, data: dict) -> None:
+    def __init__(self, name: str, data: Dict[str, Any]) -> None:
         super().__init__(name)
         self.data = data
         self.mars = self.data.get("mars", {})
 
     @property
-    def is_pressure_level(self):
+    def is_pressure_level(self) -> bool:
         return self.mars.get("levtype", None) == "pl"
 
     @property
-    def level(self):
+    def level(self) -> Any:
         return self.mars.get("levelist", None)
 
     @property
-    def is_constant_in_time(self):
+    def is_constant_in_time(self) -> bool:
         return self.data.get("constant_in_time", False)
 
     @property
-    def is_from_input(self):
+    def is_from_input(self) -> bool:
         return "mars" in self.data
 
     @property
-    def is_computed_forcing(self):
+    def is_computed_forcing(self) -> bool:
         return self.data.get("computed_forcing", False)
 
     @property
-    def is_accumulation(self):
+    def is_accumulation(self) -> bool:
         return self.data.get("process") == "accumulation"
 
     @property
-    def is_instantanous(self):
+    def is_instantanous(self) -> bool:
         return "process" not in self.data.get
 
     @property
-    def grib_keys(self):
+    def grib_keys(self) -> Dict[str, Any]:
         return self.data.get("mars", {}).copy()
 
-    def similarity(self, other):
+    def similarity(self, other: Any) -> int:
         if not isinstance(other, VariableFromMarsVocabulary):
             return 0
 
-        def __similarity(a, b):
+        def __similarity(a: Any, b: Any) -> int:
             if isinstance(a, dict) and isinstance(b, dict):
                 return sum(__similarity(a[k], b[k]) for k in set(a.keys()) & set(b.keys()))
 
@@ -70,19 +73,19 @@ class VariableFromMarsVocabulary(Variable):
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""
 
-    def __init__(self, name, data: dict) -> None:
+    def __init__(self, name: str, data: Dict[str, Any]) -> None:
         super().__init__(name, data)
 
 
 class VariableFromEarthkit(VariableFromMarsVocabulary):
     """A variable that is defined by an EarthKit field."""
 
-    def __init__(self, name, field, namespace="mars") -> None:
+    def __init__(self, name: str, field: Any, namespace: str = "mars") -> None:
         super().__init__(name, field.metadata(namespace=namespace))
         self.field = field
 
-    def is_pressure_level(self):
+    def is_pressure_level(self) -> bool:
         return self.field.is_pressure_level()
 
-    def level(self):
+    def level(self) -> Any:
         return self.field.level()

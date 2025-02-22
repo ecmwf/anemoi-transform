@@ -8,12 +8,24 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+from typing import Iterator
+
 from .transform import Transform
 
 
 class Workflow(Transform):
-    def __iter__(self):
+    """A workflow that applies a series of transformations."""
+
+    def __iter__(self) -> Iterator:
+        """Returns an iterator over the transformed data.
+
+        Returns
+        -------
+        Iterator
+            An iterator over the transformed data.
+        """
         return iter(self(None))
 
-    def __call__(self, data):
+    def __call__(self, data: Any) -> Any:
         return self.forward(data)

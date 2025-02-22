@@ -9,6 +9,8 @@
 
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
+from typing import Dict
 
 
 class Variable(ABC):
@@ -20,13 +22,13 @@ class Variable(ABC):
         self.name = name
 
     @classmethod
-    def from_dict(cls, name, data: dict):
+    def from_dict(cls, name: str, data: Dict[str, Any]) -> Any:
         from .variables import VariableFromDict
 
         return VariableFromDict(name, data)
 
     @classmethod
-    def from_earthkit(cls, field):
+    def from_earthkit(cls, field: Any) -> Any:
         from .variables import VariableFromEarthkit
 
         return VariableFromEarthkit(field)
@@ -37,54 +39,54 @@ class Variable(ABC):
     def __hash__(self) -> int:
         return hash(self.name)
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Variable):
             return False
         return self.name == other.name
 
     @property
     @abstractmethod
-    def is_pressure_level(self):
+    def is_pressure_level(self) -> bool:
         pass
 
     @property
     @abstractmethod
-    def level(self):
+    def level(self) -> Any:
         pass
 
     @property
     @abstractmethod
-    def is_constant_in_time(self):
+    def is_constant_in_time(self) -> bool:
         pass
 
     @property
     @abstractmethod
-    def is_instantanous(self):
+    def is_instantanous(self) -> bool:
         pass
 
     @property
-    def is_valid_over_a_period(self):
+    def is_valid_over_a_period(self) -> bool:
         return not self.is_instantanous
 
     @property
     @abstractmethod
-    def is_accumulation(self):
+    def is_accumulation(self) -> bool:
         pass
 
     # This may need to move to a different class
     @property
-    def grib_keys(self):
+    def grib_keys(self) -> Dict[str, Any]:
         raise NotImplementedError(f"Method `grib_keys` not implemented for {self.__class__.__name__}")
 
     @property
-    def is_computed_forcing(self):
+    def is_computed_forcing(self) -> bool:
         raise NotImplementedError(f"Method `is_computed_forcing` not implemented for {self.__class__.__name__}")
 
     @property
-    def is_from_input(self):
+    def is_from_input(self) -> bool:
         pass
 
-    def similarity(self, other):
+    def similarity(self, other: Any) -> int:
         """Compute the similarity between two variables. This is used when
         encoding a variables in GRIB and we do not have a template for it.
         We can then try to find the most similar variable for which we have a template.

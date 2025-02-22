@@ -8,6 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+from typing import Generator
+
 from . import filter_registry
 from .base import SimpleFilter
 
@@ -18,33 +21,33 @@ class Rescale(SimpleFilter):
     def __init__(
         self,
         *,
-        scale,
-        offset,
-        param,
-    ):
+        scale: float,
+        offset: float,
+        param: str,
+    ) -> None:
         self.scale = scale
         self.offset = offset
         self.param = param
 
-    def forward(self, data):
+    def forward(self, data: Any) -> Any:
         return self._transform(data, self.forward_transform, self.param)
 
-    def backward(self, data):
+    def backward(self, data: Any) -> Any:
         return self._transform(
             data,
             self.backward_transform,
             self.param,
         )
 
-    def forward_transform(self, x):
-        """x to ax+b"""
+    def forward_transform(self, x: Any) -> Generator[Any, None, None]:
+        """X to ax+b."""
 
         rescaled = x.to_numpy() * self.scale + self.offset
 
         yield self.new_field_from_numpy(rescaled, template=x, param=self.param)
 
-    def backward_transform(self, x):
-        """ax+b to x"""
+    def backward_transform(self, x: Any) -> Generator[Any, None, None]:
+        """Ax+b to x."""
 
         descaled = (x.to_numpy() - self.offset) / self.scale
 
@@ -54,7 +57,7 @@ class Rescale(SimpleFilter):
 class Convert(Rescale):
     """A filter to convert a parameter in a given unit to another unit, and back."""
 
-    def __init__(self, *, unit_in, unit_out, param):
+    def __init__(self, *, unit_in: str, unit_out: str, param: str) -> None:
         from cfunits import Units
 
         u0 = Units(unit_in)

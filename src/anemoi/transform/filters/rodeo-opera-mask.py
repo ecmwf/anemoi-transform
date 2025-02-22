@@ -7,6 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from typing import Any
+from typing import Generator
+
 import numpy as np
 
 from . import filter_registry
@@ -53,19 +56,19 @@ class RodeoOperaPreProcessing(SimpleFilter):
     def __init__(
         self,
         *,
-        tp="tp",
-        quality="quality",
-        mask="mask",
-        output="tp_cleaned",
-        max_tp=MAX_TP,
-    ):
+        tp: str = "tp",
+        quality: str = "quality",
+        mask: str = "mask",
+        output: str = "tp_cleaned",
+        max_tp: int = MAX_TP,
+    ) -> None:
         self.tp = tp
         self.quality = quality
         self.tp_cleaned = output
         self.mask = mask
         self.max_tp = max_tp
 
-    def forward(self, data):
+    def forward(self, data: Any) -> Any:
         return self._transform(
             data,
             self.forward_transform,
@@ -74,11 +77,11 @@ class RodeoOperaPreProcessing(SimpleFilter):
             self.mask,
         )
 
-    def backward(self, data):
+    def backward(self, data: Any) -> None:
         raise NotImplementedError("RodeoOperaPreProcessing is not reversible")
 
-    def forward_transform(self, tp, quality, mask):
-        """Pre-process Rodeo Opera data"""
+    def forward_transform(self, tp: Any, quality: Any, mask: Any) -> Generator[Any, None, None]:
+        """Pre-process Rodeo Opera data."""
 
         # 1st - apply masking
         tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
@@ -88,5 +91,5 @@ class RodeoOperaPreProcessing(SimpleFilter):
 
         yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
 
-    def backward_transform(self, tp):
+    def backward_transform(self, tp: Any) -> None:
         raise NotImplementedError("RodeoOperaPreProcessing is not reversible")

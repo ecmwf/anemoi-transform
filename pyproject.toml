@@ -71,3 +71,14 @@ scripts.anemoi-transform = "anemoi.transform.__main__:main"
 
 [tool.setuptools_scm]
 version_file = "src/anemoi/transform/_version.py"
+
+[tool.mypy]
+strict = false
+exclude = [
+  "docs/**",
+]
+
+[tool.pydocstringformatter]
+write = true
+exclude = "docs/**"
+style = "numpydoc"

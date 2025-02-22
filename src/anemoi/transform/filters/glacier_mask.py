@@ -7,6 +7,8 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import typing as tp
+
 import earthkit.data as ekd
 import numpy as np
 
@@ -34,22 +36,22 @@ class SnowDepthMasked(SimpleFilter):
         self.snow_depth = snow_depth
         self.snow_depth_masked = snow_depth_masked
 
-    def forward(self, data):
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         return self._transform(
             data,
             self.forward_transform,
             self.snow_depth,
         )
 
-    def backward(self, data):
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         raise NotImplementedError("SnowDepthMasked is not reversible")
 
-    def forward_transform(self, sd):
-        """Mask out glaciers in snow depth"""
+    def forward_transform(self, sd: ekd.Field) -> tp.Iterator[ekd.Field]:
+        """Mask out glaciers in snow depth."""
 
         snow_depth_masked = mask_glaciers(sd.to_numpy(), self.glacier_mask)
 
         yield self.new_field_from_numpy(snow_depth_masked, template=sd, param=self.snow_depth_masked)
 
-    def backward_transform(self, sd):
+    def backward_transform(self, sd: ekd.Field) -> tp.Iterator[ekd.Field]:
         raise NotImplementedError("SnowDepthMasked is not reversible")

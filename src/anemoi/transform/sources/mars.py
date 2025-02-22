@@ -8,6 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+
 import earthkit.data as ekd
 
 from ..source import Source
@@ -16,23 +18,23 @@ from . import source_registry
 
 @source_registry.register("mars")
 class Mars(Source):
-    """A demo source"""
+    """A demo source."""
 
-    def __init__(self, **request):
+    def __init__(self, **request: Any) -> None:
         pass
 
-    def forward(self, data):
+    def forward(self, data: Any) -> Any:
         return ekd.from_source("mars", **data)
 
-    def __ror__(self, data):
+    def __ror__(self, data: Any) -> Any:
 
         this = self
 
         class Input(Source):
-            def __init__(self, data):
+            def __init__(self, data: Any) -> None:
                 self.data = data
 
-            def forward(self, data):
+            def forward(self, data: Any) -> Any:
                 return this.forward(self.data)
 
         return Input(data)

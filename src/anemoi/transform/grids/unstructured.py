@@ -9,6 +9,9 @@
 
 
 import logging
+from typing import Any
+from typing import Dict
+from typing import Tuple
 from urllib.parse import urlparse
 
 import numpy as np
@@ -23,7 +26,7 @@ class Geography:
     and checks if the fields are compatible with the grid.
     """
 
-    def __init__(self, latitudes, longitudes, uuidOfHGrid=None):
+    def __init__(self, latitudes: np.ndarray, longitudes: np.ndarray, uuidOfHGrid: str = None) -> None:
 
         assert isinstance(latitudes, np.ndarray), type(latitudes)
         assert isinstance(longitudes, np.ndarray), type(longitudes)
@@ -34,11 +37,11 @@ class Geography:
         self.latitudes = latitudes
         self.longitudes = longitudes
 
-    def shape(self):
+    def shape(self) -> Tuple[int, ...]:
         return self.latitudes.shape
 
 
-def _load(url_or_path, param):
+def _load(url_or_path: str, param: str) -> Tuple[np.ndarray, str]:
     parsed = urlparse(url_or_path)
     if parsed.scheme:
         source = "url"
@@ -57,34 +60,40 @@ def _load(url_or_path, param):
 class UnstructuredGridField:
     """An unstructured field."""
 
-    def __init__(self, geography):
+    def __init__(self, geography: Geography) -> None:
         self.geography = geography
 
-    def metadata(self, *args, default=None, **kwargs):
+    def metadata(self, *args: Any, default: Any = None, **kwargs: Any) -> Any:
 
         if len(args) == 0 and len(kwargs) == 0:
             return self
 
         return default
 
-    def grid_points(self):
+    def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
         return self.geography.latitudes, self.geography.longitudes
 
     @property
-    def resolution(self):
+    def resolution(self) -> str:
         return "unknown"
 
     @property
-    def shape(self):
+    def shape(self) -> Tuple[int, ...]:
         return self.geography.shape()
 
-    def to_latlon(self, flatten=False):
+    def to_latlon(self, flatten: bool = False) -> Dict[str, np.ndarray]:
         return dict(lat=self.geography.latitudes, lon=self.geography.longitudes)
 
 
 class UnstructuredGridFieldList(FieldArray):
     @classmethod
-    def from_grib(cls, latitudes_url_or_path, longitudes_url_or_path, latitudes_param="tlat", longitudes_params="tlon"):
+    def from_grib(
+        cls,
+        latitudes_url_or_path: str,
+        longitudes_url_or_path: str,
+        latitudes_param: str = "tlat",
+        longitudes_params: str = "tlon",
+    ) -> "UnstructuredGridFieldList":
         latitudes, latitudes_uuid = _load(latitudes_url_or_path, latitudes_param)
         longitudes, longitudes_uuid = _load(longitudes_url_or_path, longitudes_params)
 
@@ -94,7 +103,7 @@ class UnstructuredGridFieldList(FieldArray):
         return cls([UnstructuredGridField(Geography(latitudes, longitudes))])
 
     @classmethod
-    def from_values(cls, *, latitudes, longitudes):
+    def from_values(cls, *, latitudes: Any, longitudes: Any) -> "UnstructuredGridFieldList":
         if isinstance(latitudes, (list, tuple)):
             latitudes = np.array(latitudes)
 

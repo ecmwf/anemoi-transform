@@ -53,20 +53,6 @@ class Sum(SimpleFilter):
         """
         return self._transform(data, self.forward_transform, *self.args)
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Raise an error as Sum is not reversible.
-
-        Parameters
-        ----------
-        data : Any
-            Input data to be transformed.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as this operation is not supported.
-        """
-        raise NotImplementedError("Sum is not reversible")
 
     def forward_transform(self, *args: Any) -> Iterator[ekd.Field]:
         """Sum the fuel components to get the total fuel.
@@ -90,22 +76,3 @@ class Sum(SimpleFilter):
                 total += arg.to_numpy()
 
         yield self.new_field_from_numpy(total, template=template, param=self.name)
-
-    def backward_transform(self, data: Any) -> None:
-        """Raise an error as Sum is not reversible.
-
-        Parameters
-        ----------
-        data : Any
-            Input data to be transformed.
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as this operation is not supported.
-        """
-        raise NotImplementedError("Sum is not reversible")

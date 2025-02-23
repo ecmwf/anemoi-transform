@@ -7,9 +7,10 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-
 from typing import Any
 from typing import List
+
+import eatkit.data as ekd
 
 from ..workflow import Workflow
 from . import workflow_registry

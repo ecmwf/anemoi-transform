@@ -151,21 +151,6 @@ class RodeoOperaPreProcessing(SimpleFilter):
             self.mask,
         )
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Raise an error as RodeoOperaPreProcessing is not reversible.
-
-        Parameters
-        ----------
-        data : Any
-            The input data.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as this method is not implemented.
-        """
-        raise NotImplementedError("RodeoOperaPreProcessing is not reversible")
-
     def forward_transform(self, tp: Any, quality: Any, mask: Any) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 
@@ -190,18 +175,3 @@ class RodeoOperaPreProcessing(SimpleFilter):
         tp_cleaned, quality = clip_opera(tp=tp_masked, quality=quality.to_numpy(), max_tp=self.max_tp)
 
         yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
-
-    def backward_transform(self, tp: Any) -> None:
-        """Raise an error as RodeoOperaPreProcessing is not reversible.
-
-        Parameters
-        ----------
-        tp : Any
-            The tp data.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as this method is not implemented.
-        """
-        raise NotImplementedError("RodeoOperaPreProcessing is not reversible")

@@ -125,10 +125,6 @@ class LandParameters(SimpleFilter):
             self.soil_type,
         )
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Backward transformation is not implemented."""
-        raise NotImplementedError("LandParameters is not reversible")
-
     def forward_transform(self, tvh: ekd.Field, tvl: ekd.Field, sotype: ekd.Field) -> Iterator[ekd.Field]:
         """Get static parameters from table based on soil/vegetation type.
 
@@ -158,7 +154,3 @@ class LandParameters(SimpleFilter):
         yield self.new_field_from_numpy(lveg_z0m, template=tvl, param=self.lveg_z0m)
         yield self.new_field_from_numpy(theta_pwp, template=sotype, param=self.theta_pwp)
         yield self.new_field_from_numpy(theta_cap, template=sotype, param=self.theta_cap)
-
-    def backward_transform(self, tvh: Any, tvl: Any, sotype: Any) -> None:
-        """Backward transformation is not implemented."""
-        raise NotImplementedError("LandParameters is not reversible")

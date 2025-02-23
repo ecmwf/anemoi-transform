@@ -53,7 +53,6 @@ class Sum(SimpleFilter):
         """
         return self._transform(data, self.forward_transform, *self.args)
 
-
     def forward_transform(self, *args: Any) -> Iterator[ekd.Field]:
         """Sum the fuel components to get the total fuel.
 

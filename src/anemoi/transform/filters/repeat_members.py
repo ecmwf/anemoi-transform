@@ -92,7 +92,7 @@ class RepeatMembers(Filter):
         self.members = members
         assert isinstance(members, (tuple, list)), f"members must be a list or tuple, got {type(members)}"
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward transformation to replicate fields.
 
         Parameters
@@ -114,18 +114,3 @@ class RepeatMembers(Filter):
                 result.append(new_field)
 
         return new_fieldlist_from_list(result)
-
-    def backward(self, data: Any) -> None:
-        """Raise an error as RepeatMembers is not reversible.
-
-        Parameters
-        ----------
-        data : Any
-            The input data to be transformed.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as this operation is not supported.
-        """
-        raise NotImplementedError("RepeatMembers is not reversible")

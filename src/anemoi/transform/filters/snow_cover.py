@@ -65,7 +65,7 @@ class SnowCover(SimpleFilter):
         self.snow_density = snow_density
         self.snow_cover = snow_cover
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward transformation to the data.
 
         Parameters
@@ -85,7 +85,7 @@ class SnowCover(SimpleFilter):
             self.snow_density,
         )
 
-    def backward(self, data: Any) -> None:
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Raise an error as SnowCover is not reversible.
 
         Parameters

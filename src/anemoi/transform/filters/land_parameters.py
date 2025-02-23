@@ -104,7 +104,7 @@ class LandParameters(SimpleFilter):
         self.theta_pwp = theta_pwp
         self.theta_cap = theta_cap
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Forward transformation to add static parameters.
 
         Parameters
@@ -125,7 +125,7 @@ class LandParameters(SimpleFilter):
             self.soil_type,
         )
 
-    def backward(self, data: Any) -> None:
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Backward transformation is not implemented."""
         raise NotImplementedError("LandParameters is not reversible")
 

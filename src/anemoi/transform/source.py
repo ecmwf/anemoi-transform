@@ -8,25 +8,10 @@
 # nor does it submit to any jurisdiction.
 
 
-from typing import Any
-
 from .transform import Transform
 
 
 class Source(Transform):
     """A source transform that provides data."""
 
-    def backward(self, data: Any) -> None:
-        """Raises an error as sources do not support backward transformations.
-
-        Parameters
-        ----------
-        data : Any
-            The input data.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as sources do not support backward transformations.
-        """
-        raise NotImplementedError("Sources do not support backward transformations")
+    pass

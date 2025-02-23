@@ -98,7 +98,6 @@ class SimpleFilter(Filter):
         """To be implemented by subclasses."""
         pass
 
-    @abstractmethod
     def backward_transform(self, *fields: ekd.Field) -> Iterator[ekd.Field]:
         """To be implemented by subclasses."""
-        pass
+        raise NotImplementedError(f"{self} backward transformation is not implemented.")

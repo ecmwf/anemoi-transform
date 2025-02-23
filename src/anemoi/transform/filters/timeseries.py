@@ -52,7 +52,7 @@ class Timeseries(SimpleFilter):
 
         self.template_param = template_param
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward transformation to the data.
 
         Parameters
@@ -93,39 +93,3 @@ class Timeseries(SimpleFilter):
             value = sel[name].values
             data = np.full_like(template_array, value)
             yield self.new_field_from_numpy(data, template=template, param=name)
-
-    def backward(self, data: Any) -> None:
-        """Backward transformation is not implemented.
-
-        Parameters
-        ----------
-        data : Any
-            Input data.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as backward transformation is not implemented.
-        """
-        raise NotImplementedError("SnowCover is not reversible")
-
-    def backward_transform(self, sd: Any, rsn: Any) -> None:
-        """Backward transformation is not implemented.
-
-        Parameters
-        ----------
-        sd : Any
-            Snow depth.
-        rsn : Any
-            Snow density.
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as backward transformation is not implemented.
-        """
-        raise NotImplementedError("SnowCover is not reversible")

@@ -28,7 +28,7 @@ class Pipeline(Workflow):
     def __init__(self, filters: List[Any]) -> None:
         self.filters: List[Any] = filters
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the filters in sequence to the data.
 
         Parameters
@@ -45,7 +45,7 @@ class Pipeline(Workflow):
             data = filter.forward(data)
         return data
 
-    def backward(self, data: Any) -> Any:
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the filters in reverse sequence to the data.
 
         Parameters

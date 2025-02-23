@@ -46,23 +46,3 @@ class ClearStepFilter(Filter):
             result.append(new_field_with_valid_datetime(field, valid_datetime - datetime.timedelta(hours=step)))
 
         return new_fieldlist_from_list(result)
-
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Raises an error as `clear_step` is not reversible.
-
-        Parameters
-        ----------
-        data : ekd.FieldList
-            List of fields to be processed.
-
-        Returns
-        -------
-        ekd.FieldList
-            This function does not return as it always raises an error.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as this operation is not supported.
-        """
-        raise NotImplementedError("`clear_step` is not reversible")

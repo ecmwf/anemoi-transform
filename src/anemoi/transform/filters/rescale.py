@@ -40,7 +40,7 @@ class Rescale(SimpleFilter):
         self.offset = offset
         self.param = param
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward rescaling transformation.
 
         Parameters
@@ -55,7 +55,7 @@ class Rescale(SimpleFilter):
         """
         return self._transform(data, self.forward_transform, self.param)
 
-    def backward(self, data: Any) -> Any:
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the backward rescaling transformation.
 
         Parameters

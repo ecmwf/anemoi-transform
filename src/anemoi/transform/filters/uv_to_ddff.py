@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 
-from typing import Any
 from typing import Iterator
 
 import earthkit.data as ekd
@@ -60,7 +59,7 @@ class WindComponents(SimpleFilter):
 
         assert not self.radians, "Radians not (yet) supported"
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward transformation to the data.
 
         Parameters
@@ -80,7 +79,7 @@ class WindComponents(SimpleFilter):
             self.v_component,
         )
 
-    def backward(self, data: Any) -> Any:
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the backward transformation to the data.
 
         Parameters

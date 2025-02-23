@@ -38,7 +38,7 @@ class Sum(SimpleFilter):
         self.args = list(formula.values())[0]
         LOG.warning("Using the sum filter will be deprecated in the future. Please do not rely on it.")
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward transformation to the data.
 
         Parameters
@@ -53,7 +53,7 @@ class Sum(SimpleFilter):
         """
         return self._transform(data, self.forward_transform, *self.args)
 
-    def backward(self, data: Any) -> None:
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Raise an error as Sum is not reversible.
 
         Parameters

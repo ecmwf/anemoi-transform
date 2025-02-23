@@ -14,6 +14,8 @@ from typing import Any
 from typing import Type
 from typing import TypeVar
 
+import earthkit.data as ekd
+
 T = TypeVar("T", bound="Transform")
 
 
@@ -30,12 +32,12 @@ class Transform(ABC):
         """
         return f"{self.__class__.__name__}()"
 
-    def __call__(self, data: Any = None) -> Any:
+    def __call__(self, data: ekd.Field = None) -> ekd.Field:
         """Applies the forward transformation to the data.
 
         Parameters
         ----------
-        data : Any, optional
+        data : ekd.Field, optional
             The input data to be transformed.
 
         Returns
@@ -46,7 +48,7 @@ class Transform(ABC):
         return self.forward(data)
 
     @abstractmethod
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Applies the forward transformation to the data.
 
         Parameters
@@ -61,8 +63,7 @@ class Transform(ABC):
         """
         pass
 
-    @abstractmethod
-    def backward(self, data: Any) -> Any:
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Applies the backward transformation to the data.
 
         Parameters
@@ -75,7 +76,7 @@ class Transform(ABC):
         Any
             The transformed data.
         """
-        pass
+        raise NotImplementedError(f"{self} is not reversible.")
 
     def reverse(self) -> "Transform":
         """Returns a transform that applies the backward transformation.

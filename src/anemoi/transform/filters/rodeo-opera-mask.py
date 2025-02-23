@@ -130,7 +130,7 @@ class RodeoOperaPreProcessing(SimpleFilter):
         self.mask = mask
         self.max_tp = max_tp
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward transformation to the data.
 
         Parameters
@@ -151,7 +151,7 @@ class RodeoOperaPreProcessing(SimpleFilter):
             self.mask,
         )
 
-    def backward(self, data: Any) -> None:
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Raise an error as RodeoOperaPreProcessing is not reversible.
 
         Parameters

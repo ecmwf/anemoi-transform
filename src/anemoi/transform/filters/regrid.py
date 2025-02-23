@@ -113,7 +113,7 @@ class RegridFilter(Filter):
         self.method = method
         self.interpolator = make_interpolator(in_grid, out_grid, method, matrix, check, interpolator)
 
-    def forward(self, data: Any) -> Any:
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward regridding transformation.
 
         Parameters
@@ -128,7 +128,7 @@ class RegridFilter(Filter):
         """
         return self._interpolate(data, self.in_grid, self.out_grid, self.method)
 
-    def backward(self, data: Any) -> Any:
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the backward regridding transformation.
 
         Parameters

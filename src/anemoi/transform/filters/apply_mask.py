@@ -78,23 +78,3 @@ class MaskVariable(Filter):
             result.append(new_field_from_numpy(values, template=field, **extra))
 
         return new_fieldlist_from_list(result)
-
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the backward transformation to the data.
-
-        Parameters
-        ----------
-        data : ekd.FieldList
-            Input data to be transformed.
-
-        Returns
-        -------
-        ekd.FieldList
-            Transformed data.
-
-        Raises
-        ------
-        NotImplementedError
-            If the backward transformation is not implemented.
-        """
-        raise NotImplementedError("`apply_mask` is not reversible")

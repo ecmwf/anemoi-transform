@@ -81,26 +81,6 @@ class SnowDepthMasked(SimpleFilter):
             self.snow_depth,
         )
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Raise an error as SnowDepthMasked is not reversible.
-
-        Parameters
-        ----------
-        data : ekd.FieldList
-            Input data to be transformed.
-
-        Returns
-        -------
-        ekd.FieldList
-            Always raises NotImplementedError.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as this operation is not supported.
-        """
-        raise NotImplementedError("SnowDepthMasked is not reversible")
-
     def forward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
         """Mask out glaciers in snow depth.
 
@@ -117,23 +97,3 @@ class SnowDepthMasked(SimpleFilter):
         snow_depth_masked = mask_glaciers(sd.to_numpy(), self.glacier_mask)
 
         yield self.new_field_from_numpy(snow_depth_masked, template=sd, param=self.snow_depth_masked)
-
-    def backward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
-        """Raise an error as SnowDepthMasked is not reversible.
-
-        Parameters
-        ----------
-        sd : ekd.Field
-            Snow depth field.
-
-        Returns
-        -------
-        Iterator[ekd.Field]
-            Always raises NotImplementedError.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised as this operation is not supported.
-        """
-        raise NotImplementedError("SnowDepthMasked is not reversible")

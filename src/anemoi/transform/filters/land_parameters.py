@@ -8,7 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 from typing import Any
+from typing import Dict
 from typing import Generator
+from typing import List
 
 import numpy as np
 
@@ -51,7 +53,21 @@ VEG_TYPE_DIC = {
 }
 
 
-def read_crosswalking_table(param, param_dic):
+def read_crosswalking_table(param: Any, param_dic: Dict[int, Dict[str, float]]) -> List[np.ndarray]:
+    """Read crosswalking table and return arrays for each key.
+
+    Parameters
+    ----------
+    param : Any
+        The parameter to read.
+    param_dic : dict
+        The dictionary containing the crosswalking table.
+
+    Returns
+    -------
+    list of np.ndarray
+        The arrays for each key in the crosswalking table.
+    """
     arrays = [np.array([param_dic[x][key] for x in param]) for key in param_dic[0].keys()]
     return arrays
 
@@ -63,11 +79,9 @@ class LandParameters(SimpleFilter):
     def __init__(
         self,
         *,
-        # Input parameters
         high_veg_type: str = "tvh",
         low_veg_type: str = "tvl",
         soil_type: str = "slt",
-        # Output parameters
         hveg_rsmin: str = "hveg_rsmin",
         hveg_cov: str = "hveg_cov",
         hveg_z0m: str = "hveg_z0m",
@@ -90,6 +104,18 @@ class LandParameters(SimpleFilter):
         self.theta_cap = theta_cap
 
     def forward(self, data: Any) -> Any:
+        """Forward transformation to add static parameters.
+
+        Parameters
+        ----------
+        data : Any
+            The input data.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self._transform(
             data,
             self.forward_transform,
@@ -99,11 +125,26 @@ class LandParameters(SimpleFilter):
         )
 
     def backward(self, data: Any) -> None:
+        """Backward transformation is not implemented."""
         raise NotImplementedError("LandParameters is not reversible")
 
     def forward_transform(self, tvh: Any, tvl: Any, sotype: Any) -> Generator[Any, None, None]:
-        """Get static parameters from table based on soil/vegetation type."""
+        """Get static parameters from table based on soil/vegetation type.
 
+        Parameters
+        ----------
+        tvh : Any
+            High vegetation type.
+        tvl : Any
+            Low vegetation type.
+        sotype : Any
+            Soil type.
+
+        Yields
+        ------
+        Any
+            The new fields with static parameters.
+        """
         hveg_rsmin, hveg_cov, hveg_z0m = read_crosswalking_table(tvh.to_numpy(), VEG_TYPE_DIC)
         lveg_rsmin, lveg_cov, lveg_z0m = read_crosswalking_table(tvl.to_numpy(), VEG_TYPE_DIC)
         theta_pwp, theta_cap = read_crosswalking_table(sotype.to_numpy(), SOIL_TYPE_DIC)
@@ -118,4 +159,5 @@ class LandParameters(SimpleFilter):
         yield self.new_field_from_numpy(theta_cap, template=sotype, param=self.theta_cap)
 
     def backward_transform(self, tvh: Any, tvl: Any, sotype: Any) -> None:
+        """Backward transformation is not implemented."""
         raise NotImplementedError("LandParameters is not reversible")

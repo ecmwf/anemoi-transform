@@ -17,7 +17,7 @@ from . import filter_registry
 from .base import SimpleFilter
 
 
-def mask_glaciers(snow_depth, glacier_mask):
+def mask_glaciers(snow_depth: np.ndarray, glacier_mask: np.ndarray) -> np.ndarray:
     """Mask out glaciers in snow depth data.
 
     Parameters
@@ -43,10 +43,21 @@ class SnowDepthMasked(SimpleFilter):
     def __init__(
         self,
         *,
-        glacier_mask,
-        snow_depth="sd",
-        snow_depth_masked="sd_masked",
-    ):
+        glacier_mask: str,
+        snow_depth: str = "sd",
+        snow_depth_masked: str = "sd_masked",
+    ) -> None:
+        """Initialize the SnowDepthMasked filter.
+
+        Parameters
+        ----------
+        glacier_mask : str
+            Path to the glacier mask file.
+        snow_depth : str, optional
+            Name of the snow depth parameter, by default "sd".
+        snow_depth_masked : str, optional
+            Name of the masked snow depth parameter, by default "sd_masked".
+        """
         self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().astype(bool)
         self.snow_depth = snow_depth
         self.snow_depth_masked = snow_depth_masked
@@ -71,6 +82,18 @@ class SnowDepthMasked(SimpleFilter):
         )
 
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Raise an error as SnowDepthMasked is not reversible.
+
+        Parameters
+        ----------
+        data : ekd.FieldList
+            Input data to be transformed.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised as this operation is not supported.
+        """
         raise NotImplementedError("SnowDepthMasked is not reversible")
 
     def forward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
@@ -91,4 +114,16 @@ class SnowDepthMasked(SimpleFilter):
         yield self.new_field_from_numpy(snow_depth_masked, template=sd, param=self.snow_depth_masked)
 
     def backward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
+        """Raise an error as SnowDepthMasked is not reversible.
+
+        Parameters
+        ----------
+        sd : ekd.Field
+            Snow depth field.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised as this operation is not supported.
+        """
         raise NotImplementedError("SnowDepthMasked is not reversible")

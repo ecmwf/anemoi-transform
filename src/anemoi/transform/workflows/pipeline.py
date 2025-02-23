@@ -17,17 +17,47 @@ from . import workflow_registry
 
 @workflow_registry.register("pipeline")
 class Pipeline(Workflow):
-    """A simple pipeline of filters."""
+    """A simple pipeline of filters.
+
+    Parameters
+    ----------
+    filters : List[Any]
+        A list of filter objects that have `forward` and `backward` methods.
+    """
 
     def __init__(self, filters: List[Any]) -> None:
-        self.filters = filters
+        self.filters: List[Any] = filters
 
     def forward(self, data: Any) -> Any:
+        """Apply the filters in sequence to the data.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be processed by the filters.
+
+        Returns
+        -------
+        Any
+            The processed data after applying all filters.
+        """
         for filter in self.filters:
             data = filter.forward(data)
         return data
 
     def backward(self, data: Any) -> Any:
+        """Apply the filters in reverse sequence to the data.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be processed by the filters in reverse order.
+
+        Returns
+        -------
+        Any
+            The processed data after applying all filters in reverse order.
+        """
         for filter in reversed(self.filters):
             data = filter.backward(data)
         return data

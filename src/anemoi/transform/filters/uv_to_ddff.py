@@ -33,6 +33,23 @@ class WindComponents(SimpleFilter):
         convention: str = "meteo",
         radians: bool = False,
     ) -> None:
+        """Initialize the WindComponents filter.
+
+        Parameters
+        ----------
+        u_component : str, optional
+            Name of the U component, by default "u".
+        v_component : str, optional
+            Name of the V component, by default "v".
+        wind_speed : str, optional
+            Name of the wind speed parameter, by default "ws".
+        wind_direction : str, optional
+            Name of the wind direction parameter, by default "wdir".
+        convention : str, optional
+            Convention to use for conversion, by default "meteo".
+        radians : bool, optional
+            Whether to use radians, by default False.
+        """
         self.u_component = u_component
         self.v_component = v_component
         self.wind_speed = wind_speed
@@ -43,6 +60,18 @@ class WindComponents(SimpleFilter):
         assert not self.radians, "Radians not (yet) supported"
 
     def forward(self, data: Any) -> Any:
+        """Apply the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : Any
+            Input data to be transformed.
+
+        Returns
+        -------
+        Any
+            Transformed data.
+        """
         return self._transform(
             data,
             self.forward_transform,
@@ -51,6 +80,18 @@ class WindComponents(SimpleFilter):
         )
 
     def backward(self, data: Any) -> Any:
+        """Apply the backward transformation to the data.
+
+        Parameters
+        ----------
+        data : Any
+            Input data to be transformed.
+
+        Returns
+        -------
+        Any
+            Transformed data.
+        """
         return self._transform(
             data,
             self.backward_transform,

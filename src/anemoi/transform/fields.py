@@ -21,9 +21,8 @@ from earthkit.data.indexing.fieldlist import FieldArray
 LOG = logging.getLogger(__name__)
 
 
-def new_fieldlist_from_list(fields):
-    """
-    Create a new FieldArray from a list of fields.
+def new_fieldlist_from_list(fields: List[Any]) -> FieldArray:
+    """Create a new FieldArray from a list of fields.
 
     Parameters
     ----------
@@ -38,9 +37,8 @@ def new_fieldlist_from_list(fields):
     return FieldArray(fields)
 
 
-def new_empty_fieldlist():
-    """
-    Create a new empty FieldArray.
+def new_empty_fieldlist() -> FieldArray:
+    """Create a new empty FieldArray.
 
     Returns
     -------
@@ -59,7 +57,7 @@ class WrappedField:
         The field object to wrap.
     """
 
-    def __init__(self, field):
+    def __init__(self, field: Any) -> None:
         self._field = field
 
     def __getattr__(self, name: str) -> Any:
@@ -95,14 +93,13 @@ class NewDataField(WrappedField):
         The new data for the field.
     """
 
-    def __init__(self, field, data):
+    def __init__(self, field: Any, data: np.ndarray) -> None:
         super().__init__(field)
         self._data = data
         self.shape = data.shape
 
     def to_numpy(self, flatten: bool = False, dtype: Optional[type] = None, index: Optional[Any] = None) -> np.ndarray:
-        """
-        Convert the field data to a numpy array.
+        """Convert the field data to a numpy array.
 
         Parameters
         ----------
@@ -137,12 +134,11 @@ class GeoMetadata(Geography):
         The owner of the geography data.
     """
 
-    def __init__(self, owner):
+    def __init__(self, owner: Any) -> None:
         self.owner = owner
 
     def shape(self) -> Tuple[int]:
-        """
-        Get the shape of the geography data.
+        """Get the shape of the geography data.
 
         Returns
         -------
@@ -152,8 +148,7 @@ class GeoMetadata(Geography):
         return tuple([len(self.owner._latitudes)])
 
     def resolution(self) -> str:
-        """
-        Get the resolution of the geography data.
+        """Get the resolution of the geography data.
 
         Returns
         -------
@@ -163,8 +158,7 @@ class GeoMetadata(Geography):
         return "unknown"
 
     def mars_area(self) -> List[float]:
-        """
-        Get the MARS area of the geography data.
+        """Get the MARS area of the geography data.
 
         Returns
         -------
@@ -179,8 +173,7 @@ class GeoMetadata(Geography):
         ]
 
     def mars_grid(self) -> None:
-        """
-        Get the MARS grid of the geography data.
+        """Get the MARS grid of the geography data.
 
         Returns
         -------
@@ -190,8 +183,7 @@ class GeoMetadata(Geography):
         return None
 
     def latitudes(self, dtype: Optional[type] = None) -> np.ndarray:
-        """
-        Get the latitudes of the geography data.
+        """Get the latitudes of the geography data.
 
         Parameters
         ----------
@@ -208,8 +200,7 @@ class GeoMetadata(Geography):
         return self.owner._latitudes.astype(dtype)
 
     def longitudes(self, dtype: Optional[type] = None) -> np.ndarray:
-        """
-        Get the longitudes of the geography data.
+        """Get the longitudes of the geography data.
 
         Parameters
         ----------
@@ -226,8 +217,7 @@ class GeoMetadata(Geography):
         return self.owner._longitudes.astype(dtype)
 
     def x(self, dtype: Optional[type] = None) -> None:
-        """
-        Get the x-coordinates of the geography data.
+        """Get the x-coordinates of the geography data.
 
         Parameters
         ----------
@@ -242,8 +232,7 @@ class GeoMetadata(Geography):
         raise NotImplementedError()
 
     def y(self, dtype: Optional[type] = None) -> None:
-        """
-        Get the y-coordinates of the geography data.
+        """Get the y-coordinates of the geography data.
 
         Parameters
         ----------
@@ -258,8 +247,7 @@ class GeoMetadata(Geography):
         raise NotImplementedError()
 
     def _unique_grid_id(self) -> None:
-        """
-        Get the unique grid ID of the geography data.
+        """Get the unique grid ID of the geography data.
 
         Returns
         -------
@@ -269,8 +257,7 @@ class GeoMetadata(Geography):
         raise NotImplementedError()
 
     def projection(self) -> None:
-        """
-        Get the projection of the geography data.
+        """Get the projection of the geography data.
 
         Returns
         -------
@@ -280,8 +267,7 @@ class GeoMetadata(Geography):
         return None
 
     def bounding_box(self) -> None:
-        """
-        Get the bounding box of the geography data.
+        """Get the bounding box of the geography data.
 
         Returns
         -------
@@ -291,8 +277,7 @@ class GeoMetadata(Geography):
         raise NotImplementedError()
 
     def gridspec(self) -> None:
-        """
-        Get the grid specification of the geography data.
+        """Get the grid specification of the geography data.
 
         Returns
         -------
@@ -315,14 +300,13 @@ class NewGridField(WrappedField):
         The new longitudes for the field.
     """
 
-    def __init__(self, field, latitudes, longitudes):
+    def __init__(self, field: Any, latitudes: np.ndarray, longitudes: np.ndarray) -> None:
         super().__init__(field)
         self._latitudes = latitudes
         self._longitudes = longitudes
 
     def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Get the grid points of the field.
+        """Get the grid points of the field.
 
         Returns
         -------
@@ -332,8 +316,7 @@ class NewGridField(WrappedField):
         return self._latitudes, self._longitudes
 
     def to_latlon(self, flatten: bool = True) -> Dict[str, np.ndarray]:
-        """
-        Convert the grid points to latitude and longitude.
+        """Convert the grid points to latitude and longitude.
 
         Parameters
         ----------
@@ -348,12 +331,18 @@ class NewGridField(WrappedField):
         assert flatten
         return dict(lat=self._latitudes, lon=self._longitudes)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Get the string representation of the field.
+
+        Returns
+        -------
+        str
+            The string representation of the field.
+        """
         return f"NewGridField({len(self._latitudes), self._field})"
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
-        """
-        Get the metadata of the field.
+        """Get the metadata of the field.
 
         Parameters
         ----------
@@ -385,13 +374,12 @@ class NewMetadataField(WrappedField):
         The new metadata for the field.
     """
 
-    def __init__(self, field, **kwargs):
+    def __init__(self, field: Any, **kwargs: Any) -> None:
         super().__init__(field)
         self._metadata = kwargs
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
-        """
-        Get the metadata of the field.
+        """Get the metadata of the field.
 
         Parameters
         ----------
@@ -430,7 +418,7 @@ class NewValidDateTimeField(NewMetadataField):
         The new valid_datetime for the field.
     """
 
-    def __init__(self, field, valid_datetime):
+    def __init__(self, field: Any, valid_datetime: Any) -> None:
         date = int(valid_datetime.date().strftime("%Y%m%d"))
         assert valid_datetime.time().minute == 0, valid_datetime
         time = valid_datetime.time().hour
@@ -441,8 +429,7 @@ class NewValidDateTimeField(NewMetadataField):
 
 
 def new_field_from_numpy(array: np.ndarray, *, template: WrappedField, **metadata: Any) -> NewMetadataField:
-    """
-    Create a new field from a numpy array.
+    """Create a new field from a numpy array.
 
     Parameters
     ----------
@@ -462,8 +449,7 @@ def new_field_from_numpy(array: np.ndarray, *, template: WrappedField, **metadat
 
 
 def new_field_with_valid_datetime(template: WrappedField, date: Any) -> NewValidDateTimeField:
-    """
-    Create a new field with a valid datetime.
+    """Create a new field with a valid datetime.
 
     Parameters
     ----------
@@ -481,8 +467,7 @@ def new_field_with_valid_datetime(template: WrappedField, date: Any) -> NewValid
 
 
 def new_field_with_metadata(template: WrappedField, **metadata: Any) -> NewMetadataField:
-    """
-    Create a new field with metadata.
+    """Create a new field with metadata.
 
     Parameters
     ----------
@@ -502,8 +487,7 @@ def new_field_with_metadata(template: WrappedField, **metadata: Any) -> NewMetad
 def new_field_from_latitudes_longitudes(
     template: WrappedField, latitudes: np.ndarray, longitudes: np.ndarray
 ) -> NewGridField:
-    """
-    Create a new field from latitudes and longitudes.
+    """Create a new field from latitudes and longitudes.
 
     Parameters
     ----------

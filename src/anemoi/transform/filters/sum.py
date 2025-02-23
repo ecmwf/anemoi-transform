@@ -23,6 +23,13 @@ class Sum(SimpleFilter):
     """A filter to sum some parameters."""
 
     def __init__(self, *, formula: dict) -> None:
+        """Initialize the Sum filter.
+
+        Parameters
+        ----------
+        formula : dict
+            Dictionary containing the formula for summing parameters.
+        """
         assert isinstance(formula, dict)
         assert len(formula) == 1
         self.name = list(formula.keys())[0]
@@ -30,13 +37,48 @@ class Sum(SimpleFilter):
         LOG.warning("Using the sum filter will be deprecated in the future. Please do not rely on it.")
 
     def forward(self, data: Any) -> Any:
+        """Apply the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : Any
+            Input data to be transformed.
+
+        Returns
+        -------
+        Any
+            Transformed data.
+        """
         return self._transform(data, self.forward_transform, *self.args)
 
     def backward(self, data: Any) -> None:
+        """Raise an error as Sum is not reversible.
+
+        Parameters
+        ----------
+        data : Any
+            Input data to be transformed.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised as this operation is not supported.
+        """
         raise NotImplementedError("Sum is not reversible")
 
     def forward_transform(self, *args: Any) -> Generator[Any, None, None]:
-        """Sum the fuel components to get the total fuel."""
+        """Sum the fuel components to get the total fuel.
+
+        Parameters
+        ----------
+        args : Any
+            Fuel components to be summed.
+
+        Yields
+        ------
+        Any
+            Total fuel field.
+        """
         total = None
         for arg in args:
             if total is None:
@@ -48,4 +90,16 @@ class Sum(SimpleFilter):
         yield self.new_field_from_numpy(total, template=template, param=self.name)
 
     def backward_transform(self, data: Any) -> None:
+        """Raise an error as Sum is not reversible.
+
+        Parameters
+        ----------
+        data : Any
+            Input data to be transformed.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised as this operation is not supported.
+        """
         raise NotImplementedError("Sum is not reversible")

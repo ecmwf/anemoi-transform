@@ -20,6 +20,13 @@ class MakeRegridMatrix(Command):
     """
 
     def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
+        """Add arguments to the command parser.
+
+        Parameters
+        ----------
+        command_parser : argparse.ArgumentParser
+            The argument parser to add arguments to.
+        """
         command_parser.add_argument("--source1", default="file", help="EKD Source type (default: file).")
         command_parser.add_argument("--source2", default="file", help="EKD Source type (default: file).")
 
@@ -33,6 +40,13 @@ class MakeRegridMatrix(Command):
         command_parser.add_argument("kwargs", nargs="*", help="MIR arguments.")
 
     def run(self, args: argparse.Namespace) -> None:
+        """Run the command with the provided arguments.
+
+        Parameters
+        ----------
+        args : argparse.Namespace
+            The arguments to run the command with.
+        """
         import numpy as np
         from earthkit.data import from_source
         from earthkit.regrid.utils.mir import mir_make_matrix

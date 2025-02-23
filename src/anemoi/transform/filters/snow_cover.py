@@ -16,19 +16,19 @@ from . import filter_registry
 from .base import SimpleFilter
 
 
-def compute_snow_cover(snow_depth, snow_density):
+def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.ndarray:
     """Convert snow depth to snow cover.
 
     Parameters
     ----------
-    snow_depth : array-like
+    snow_depth : np.ndarray
         The depth of the snow.
-    snow_density : array-like
+    snow_density : np.ndarray
         The density of the snow.
 
     Returns
     -------
-    array-like
+    np.ndarray
         The computed snow cover.
     """
     tmp1 = (1000 * snow_depth) / snow_density
@@ -85,14 +85,52 @@ class SnowCover(SimpleFilter):
         )
 
     def backward(self, data: Any) -> None:
+        """Raise an error as SnowCover is not reversible.
+
+        Parameters
+        ----------
+        data : Any
+            The input data.
+
+        Raises
+        ------
+        NotImplementedError
+            SnowCover is not reversible.
+        """
         raise NotImplementedError("SnowCover is not reversible")
 
     def forward_transform(self, sd: Any, rsn: Any) -> Generator[Any, None, None]:
-        """Convert snow depth and snow density to snow cover."""
+        """Convert snow depth and snow density to snow cover.
 
+        Parameters
+        ----------
+        sd : Any
+            The snow depth data.
+        rsn : Any
+            The snow density data.
+
+        Yields
+        ------
+        Generator[Any, None, None]
+            The snow cover data.
+        """
         snow_cover = compute_snow_cover(sd.to_numpy(), rsn.to_numpy())
 
         yield self.new_field_from_numpy(snow_cover, template=sd, param=self.snow_cover)
 
     def backward_transform(self, sd: Any, rsn: Any) -> None:
+        """Raise an error as SnowCover is not reversible.
+
+        Parameters
+        ----------
+        sd : Any
+            The snow depth data.
+        rsn : Any
+            The snow density data.
+
+        Raises
+        ------
+        NotImplementedError
+            SnowCover is not reversible.
+        """
         raise NotImplementedError("SnowCover is not reversible")

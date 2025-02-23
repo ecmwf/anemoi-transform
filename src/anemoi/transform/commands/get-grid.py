@@ -17,11 +17,25 @@ class GetGrid(Command):
     """Extract the grid from a GRIB or NetCDF file and save it as a NPZ file."""
 
     def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
+        """Add arguments to the command parser.
+
+        Parameters
+        ----------
+        command_parser : argparse.ArgumentParser
+            The argument parser to add arguments to.
+        """
         command_parser.add_argument("--source", default="file", help="EKD Source type (default: file).")
         command_parser.add_argument("input", help="Input file (GRIB or NetCDF).")
         command_parser.add_argument("output", help="Output NPZ file.")
 
     def run(self, args: argparse.Namespace) -> None:
+        """Run the command with the provided arguments.
+
+        Parameters
+        ----------
+        args : argparse.Namespace
+            The arguments to run the command with.
+        """
         import numpy as np
         from earthkit.data import from_source
 

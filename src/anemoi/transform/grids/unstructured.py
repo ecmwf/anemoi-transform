@@ -22,8 +22,17 @@ LOG = logging.getLogger(__name__)
 
 
 class Geography:
-    """This class retrieve the latitudes and longitudes of unstructured grids,
+    """This class retrieves the latitudes and longitudes of unstructured grids,
     and checks if the fields are compatible with the grid.
+
+    Parameters
+    ----------
+    latitudes : np.ndarray
+        Array of latitude values.
+    longitudes : np.ndarray
+        Array of longitude values.
+    uuidOfHGrid : str, optional
+        UUID of the horizontal grid.
     """
 
     def __init__(self, latitudes: np.ndarray, longitudes: np.ndarray, uuidOfHGrid: str = None) -> None:
@@ -38,10 +47,31 @@ class Geography:
         self.longitudes = longitudes
 
     def shape(self) -> Tuple[int, ...]:
+        """Returns the shape of the latitude array.
+
+        Returns
+        -------
+        Tuple[int, ...]
+            Shape of the latitude array.
+        """
         return self.latitudes.shape
 
 
 def _load(url_or_path: str, param: str) -> Tuple[np.ndarray, str]:
+    """Loads data from a given URL or file path.
+
+    Parameters
+    ----------
+    url_or_path : str
+        URL or file path to load data from.
+    param : str
+        Parameter to select from the data source.
+
+    Returns
+    -------
+    Tuple[np.ndarray, str]
+        Tuple containing the data as a flattened numpy array and the UUID of the horizontal grid.
+    """
     parsed = urlparse(url_or_path)
     if parsed.scheme:
         source = "url"
@@ -58,34 +88,90 @@ def _load(url_or_path: str, param: str) -> Tuple[np.ndarray, str]:
 
 
 class UnstructuredGridField:
-    """An unstructured field."""
+    """An unstructured field.
+
+    Parameters
+    ----------
+    geography : Geography
+        Geography object containing latitude and longitude information.
+    """
 
     def __init__(self, geography: Geography) -> None:
         self.geography = geography
 
     def metadata(self, *args: Any, default: Any = None, **kwargs: Any) -> Any:
+        """Retrieves metadata for the field.
 
+        Parameters
+        ----------
+        *args : Any
+            Positional arguments for metadata retrieval.
+        default : Any, optional
+            Default value if no metadata is found.
+        **kwargs : Any
+            Keyword arguments for metadata retrieval.
+
+        Returns
+        -------
+        Any
+            Metadata value or default if not found.
+        """
         if len(args) == 0 and len(kwargs) == 0:
             return self
 
         return default
 
     def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Returns the grid points (latitudes and longitudes).
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            Tuple containing arrays of latitudes and longitudes.
+        """
         return self.geography.latitudes, self.geography.longitudes
 
     @property
     def resolution(self) -> str:
+        """Resolution of the grid.
+
+        Returns
+        -------
+        str
+            Resolution of the grid.
+        """
         return "unknown"
 
     @property
     def shape(self) -> Tuple[int, ...]:
+        """Shape of the grid.
+
+        Returns
+        -------
+        Tuple[int, ...]
+            Shape of the grid.
+        """
         return self.geography.shape()
 
     def to_latlon(self, flatten: bool = False) -> Dict[str, np.ndarray]:
+        """Converts the grid to latitude and longitude.
+
+        Parameters
+        ----------
+        flatten : bool, optional
+            Whether to flatten the arrays, by default False.
+
+        Returns
+        -------
+        Dict[str, np.ndarray]
+            Dictionary containing latitude and longitude arrays.
+        """
         return dict(lat=self.geography.latitudes, lon=self.geography.longitudes)
 
 
 class UnstructuredGridFieldList(FieldArray):
+    """List of unstructured grid fields."""
+
     @classmethod
     def from_grib(
         cls,

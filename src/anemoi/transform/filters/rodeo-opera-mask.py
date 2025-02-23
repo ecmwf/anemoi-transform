@@ -26,7 +26,7 @@ MAX_TP = 10000
 MAX_QI = 1
 
 
-def clip_opera(tp, quality, max_tp):
+def clip_opera(tp: np.ndarray, quality: np.ndarray, max_tp: int) -> tuple[np.ndarray, np.ndarray]:
     """Clip the tp and quality arrays to specified maximum values.
 
     Parameters
@@ -50,7 +50,7 @@ def clip_opera(tp, quality, max_tp):
     return tp, quality
 
 
-def mask_opera(tp, quality, mask):
+def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndarray:
     """Apply masking to the tp array based on the mask array.
 
     Parameters
@@ -108,6 +108,21 @@ class RodeoOperaPreProcessing(SimpleFilter):
         output: str = "tp_cleaned",
         max_tp: int = MAX_TP,
     ) -> None:
+        """Initialize the RodeoOperaPreProcessing filter.
+
+        Parameters
+        ----------
+        tp : str, optional
+            The name of the tp field, by default "tp".
+        quality : str, optional
+            The name of the quality field, by default "quality".
+        mask : str, optional
+            The name of the mask field, by default "mask".
+        output : str, optional
+            The name of the output field, by default "tp_cleaned".
+        max_tp : int, optional
+            The maximum value for tp, by default MAX_TP.
+        """
         self.tp = tp
         self.quality = quality
         self.tp_cleaned = output

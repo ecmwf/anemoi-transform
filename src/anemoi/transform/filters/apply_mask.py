@@ -23,12 +23,24 @@ class MaskVariable(Filter):
     def __init__(
         self,
         *,
-        path,
-        mask_value=1,
-        threshold=None,
-        rename=None,
+        path: str,
+        mask_value: int = 1,
+        threshold: float = None,
+        rename: str = None,
     ):
+        """Initialize the MaskVariable filter.
 
+        Parameters
+        ----------
+        path : str
+            Path to the external file containing the mask.
+        mask_value : int, optional
+            Value to be used for masking, by default 1.
+        threshold : float, optional
+            Threshold value for masking, by default None.
+        rename : str, optional
+            New name for the masked variable, by default None.
+        """
         mask = ekd.from_source("file", path)[0].to_numpy().astype(bool)
 
         if threshold is not None:

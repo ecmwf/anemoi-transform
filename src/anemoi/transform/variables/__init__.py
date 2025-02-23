@@ -19,27 +19,84 @@ class Variable(ABC):
     """
 
     def __init__(self, name: str) -> None:
-        self.name = name
+        """Parameters
+        -------------
+        name : str
+            The name of the variable.
+        """
+        self.name: str = name
 
     @classmethod
     def from_dict(cls, name: str, data: Dict[str, Any]) -> Any:
+        """Create a Variable instance from a dictionary.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        data : Dict[str, Any]
+            The data dictionary.
+
+        Returns
+        -------
+        Any
+            The created Variable instance.
+        """
         from .variables import VariableFromDict
 
         return VariableFromDict(name, data)
 
     @classmethod
     def from_earthkit(cls, field: Any) -> Any:
+        """Create a Variable instance from an Earthkit field.
+
+        Parameters
+        ----------
+        field : Any
+            The Earthkit field.
+
+        Returns
+        -------
+        Any
+            The created Variable instance.
+        """
         from .variables import VariableFromEarthkit
 
         return VariableFromEarthkit(field)
 
     def __repr__(self) -> str:
+        """Return a string representation of the Variable.
+
+        Returns
+        -------
+        str
+            The name of the variable.
+        """
         return self.name
 
     def __hash__(self) -> int:
+        """Return the hash of the Variable.
+
+        Returns
+        -------
+        int
+            The hash of the variable name.
+        """
         return hash(self.name)
 
     def __eq__(self, other: Any) -> bool:
+        """Check if two Variable instances are equal.
+
+        Parameters
+        ----------
+        other : Any
+            The other variable to compare with.
+
+        Returns
+        -------
+        bool
+            True if the variables are equal, False otherwise.
+        """
         if not isinstance(other, Variable):
             return False
         return self.name == other.name
@@ -47,48 +104,121 @@ class Variable(ABC):
     @property
     @abstractmethod
     def is_pressure_level(self) -> bool:
+        """Check if the variable is a pressure level.
+
+        Returns
+        -------
+        bool
+            True if the variable is a pressure level, False otherwise.
+        """
         pass
 
     @property
     @abstractmethod
     def level(self) -> Any:
+        """Get the level of the variable.
+
+        Returns
+        -------
+        Any
+            The level of the variable.
+        """
         pass
 
     @property
     @abstractmethod
     def is_constant_in_time(self) -> bool:
+        """Check if the variable is constant in time.
+
+        Returns
+        -------
+        bool
+            True if the variable is constant in time, False otherwise.
+        """
         pass
 
     @property
     @abstractmethod
     def is_instantanous(self) -> bool:
+        """Check if the variable is instantaneous.
+
+        Returns
+        -------
+        bool
+            True if the variable is instantaneous, False otherwise.
+        """
         pass
 
     @property
     def is_valid_over_a_period(self) -> bool:
+        """Check if the variable is valid over a period.
+
+        Returns
+        -------
+        bool
+            True if the variable is valid over a period, False otherwise.
+        """
         return not self.is_instantanous
 
     @property
     @abstractmethod
     def is_accumulation(self) -> bool:
+        """Check if the variable is an accumulation.
+
+        Returns
+        -------
+        bool
+            True if the variable is an accumulation, False otherwise.
+        """
         pass
 
     # This may need to move to a different class
     @property
     def grib_keys(self) -> Dict[str, Any]:
+        """Get the GRIB keys for the variable.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The GRIB keys for the variable.
+        """
         raise NotImplementedError(f"Method `grib_keys` not implemented for {self.__class__.__name__}")
 
     @property
     def is_computed_forcing(self) -> bool:
+        """Check if the variable is a computed forcing.
+
+        Returns
+        -------
+        bool
+            True if the variable is a computed forcing, False otherwise.
+        """
         raise NotImplementedError(f"Method `is_computed_forcing` not implemented for {self.__class__.__name__}")
 
     @property
     def is_from_input(self) -> bool:
+        """Check if the variable is from input.
+
+        Returns
+        -------
+        bool
+            True if the variable is from input, False otherwise.
+        """
         pass
 
     def similarity(self, other: Any) -> int:
         """Compute the similarity between two variables. This is used when
-        encoding a variables in GRIB and we do not have a template for it.
+        encoding a variable in GRIB and we do not have a template for it.
         We can then try to find the most similar variable for which we have a template.
+
+        Parameters
+        ----------
+        other : Any
+            The other variable to compare with.
+
+        Returns
+        -------
+        int
+            The similarity score.
         """
         return 0

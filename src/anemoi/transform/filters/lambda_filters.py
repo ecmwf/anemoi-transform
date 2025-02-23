@@ -33,8 +33,8 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         fn_args: list = [],
         fn_kwargs: Dict[str, Any] = {},
         backward_fn: Optional[Union[str, Callable[[Field, Any], Field]]] = None,
-    ):
-        """Initialise the EarthkitFieldLambdaFilter.
+    ) -> None:
+        """Initialize the EarthkitFieldLambdaFilter.
 
         Parameters
         ----------

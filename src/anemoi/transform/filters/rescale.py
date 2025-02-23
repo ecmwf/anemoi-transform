@@ -25,14 +25,47 @@ class Rescale(SimpleFilter):
         offset: float,
         param: str,
     ) -> None:
+        """Parameters
+        -------------
+        scale : float
+            The scale factor.
+        offset : float
+            The offset value.
+        param : str
+            The parameter to be rescaled.
+        """
         self.scale = scale
         self.offset = offset
         self.param = param
 
     def forward(self, data: Any) -> Any:
+        """Apply the forward rescaling transformation.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self._transform(data, self.forward_transform, self.param)
 
     def backward(self, data: Any) -> Any:
+        """Apply the backward rescaling transformation.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self._transform(
             data,
             self.backward_transform,
@@ -40,17 +73,35 @@ class Rescale(SimpleFilter):
         )
 
     def forward_transform(self, x: Any) -> Generator[Any, None, None]:
-        """X to ax+b."""
+        """Apply the forward transformation (x to ax+b).
 
+        Parameters
+        ----------
+        x : Any
+            The input data to be transformed.
+
+        Yields
+        ------
+        Any
+            The transformed data.
+        """
         rescaled = x.to_numpy() * self.scale + self.offset
-
         yield self.new_field_from_numpy(rescaled, template=x, param=self.param)
 
     def backward_transform(self, x: Any) -> Generator[Any, None, None]:
-        """Ax+b to x."""
+        """Apply the backward transformation (ax+b to x).
 
+        Parameters
+        ----------
+        x : Any
+            The input data to be transformed.
+
+        Yields
+        ------
+        Any
+            The transformed data.
+        """
         descaled = (x.to_numpy() - self.offset) / self.scale
-
         yield self.new_field_from_numpy(descaled, template=x, param=self.param)
 
 
@@ -58,6 +109,15 @@ class Convert(Rescale):
     """A filter to convert a parameter in a given unit to another unit, and back."""
 
     def __init__(self, *, unit_in: str, unit_out: str, param: str) -> None:
+        """Parameters
+        -------------
+        unit_in : str
+            The input unit.
+        unit_out : str
+            The output unit.
+        param : str
+            The parameter to be converted.
+        """
         from cfunits import Units
 
         u0 = Units(unit_in)

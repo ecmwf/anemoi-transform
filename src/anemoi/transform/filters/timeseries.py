@@ -33,6 +33,15 @@ class Timeseries(SimpleFilter):
     """A source to add a timeseries depending on time but not on location."""
 
     def __init__(self, *, netcdf: dict = None, template_param: str = "2t") -> None:
+        """Initialize the Timeseries filter.
+
+        Parameters
+        ----------
+        netcdf : dict, optional
+            Dictionary containing the path to the netCDF file, by default None.
+        template_param : str, optional
+            Template parameter name, by default "2t".
+        """
         if netcdf:
             import xarray as xr
 
@@ -42,6 +51,18 @@ class Timeseries(SimpleFilter):
         self.template_param = template_param
 
     def forward(self, data: Any) -> Any:
+        """Apply the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : Any
+            Input data to be transformed.
+
+        Returns
+        -------
+        Any
+            Transformed data.
+        """
         return self._transform(
             data,
             self.forward_transform,

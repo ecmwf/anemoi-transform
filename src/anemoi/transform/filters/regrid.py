@@ -14,7 +14,7 @@ from typing import Dict
 from typing import Optional
 from typing import Union
 
-import eatkit.data as ekd
+import earthkit.data as ekd
 import tqdm
 from earthkit.data.core.fieldlist import Field
 

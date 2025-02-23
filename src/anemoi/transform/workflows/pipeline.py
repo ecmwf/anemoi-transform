@@ -10,7 +10,7 @@
 from typing import Any
 from typing import List
 
-import eatkit.data as ekd
+import earthkit.data as ekd
 
 from ..workflow import Workflow
 from . import workflow_registry

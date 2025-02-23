@@ -12,7 +12,7 @@ import logging
 from typing import Any
 from typing import List
 
-import eatkit.data as ekd
+import earthkit.data as ekd
 
 from ..fields import new_field_from_numpy
 from ..fields import new_fieldlist_from_list

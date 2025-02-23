@@ -79,10 +79,10 @@ class Timeseries(SimpleFilter):
         template : Any
             Template field to transform.
 
-        Yields
-        ------
-        Any
-            Transformed field.
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Transformed fields.
         """
         dt = template.metadata("valid_datetime")
         template_array = template.to_numpy()

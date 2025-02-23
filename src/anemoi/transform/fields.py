@@ -61,6 +61,22 @@ class WrappedField:
         self._field = field
 
     def __getattr__(self, name: str) -> Any:
+        """Custom attribute access method for the NewField class.
+
+        This method intercepts attribute access and provides custom behavior for certain attributes.
+        If the attribute name is "clone" or "copy", an AttributeError is raised indicating that forwarding
+        of these attributes is not supported. For other attributes, a warning is logged if the attribute
+        name is not in the predefined list of supported attributes.
+
+        Args:
+            name (str): The name of the attribute being accessed.
+
+        Returns:
+            Any: The value of the attribute from the underlying _field object.
+
+        Raises:
+            AttributeError: If the attribute name is "clone" or "copy".
+        """
         if name in (
             "clone",
             "copy",

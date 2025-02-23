@@ -76,10 +76,10 @@ class Sum(SimpleFilter):
         args : Any
             Fuel components to be summed.
 
-        Yields
-        ------
-        Any
-            Total fuel field.
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Transformed fields.
         """
         total = None
         for arg in args:
@@ -98,6 +98,10 @@ class Sum(SimpleFilter):
         ----------
         data : Any
             Input data to be transformed.
+
+        Returns
+        -------
+        None
 
         Raises
         ------

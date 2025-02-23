@@ -57,7 +57,8 @@ class ClearStepFilter(Filter):
 
         Returns
         -------
-        None
+        ekd.FieldList
+            This function does not return as it always raises an error.
 
         Raises
         ------

@@ -178,10 +178,10 @@ class RodeoOperaPreProcessing(SimpleFilter):
         mask : Any
             The mask data.
 
-        Yields
-        ------
-        Any
-            The cleaned tp data.
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Transformed fields.
         """
         # 1st - apply masking
         tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())

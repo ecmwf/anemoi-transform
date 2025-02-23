@@ -110,10 +110,10 @@ class SnowCover(SimpleFilter):
         rsn : Any
             The snow density data.
 
-        Yields
-        ------
+        Returns
+        -------
         Iterator[ekd.Field]
-            The snow cover data.
+            Transformed fields.
         """
         snow_cover = compute_snow_cover(sd.to_numpy(), rsn.to_numpy())
 
@@ -128,6 +128,10 @@ class SnowCover(SimpleFilter):
             The snow depth data.
         rsn : Any
             The snow density data.
+
+        Returns
+        -------
+        None
 
         Raises
         ------

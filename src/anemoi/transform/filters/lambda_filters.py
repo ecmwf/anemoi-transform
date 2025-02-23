@@ -129,10 +129,10 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         fields : Field
             The fields to apply the forward lambda function to.
 
-        Yields
-        ------
-        Field
-            The transformed field.
+        Returns
+        -------
+        Iterator[Field]
+            Transformed fields.
         """
         yield self.fn(*fields, *self.fn_args, **self.fn_kwargs)
 
@@ -144,10 +144,10 @@ class EarthkitFieldLambdaFilter(SimpleFilter):
         fields : Field
             The fields to apply the backward lambda function to.
 
-        Yields
-        ------
-        Field
-            The transformed field.
+        Returns
+        -------
+        Iterator[Field]
+            Transformed fields.
         """
         yield self.backward_fn(*fields, *self.fn_args, **self.fn_kwargs)
 

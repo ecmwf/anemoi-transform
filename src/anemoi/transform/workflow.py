@@ -17,7 +17,7 @@ from .transform import Transform
 class Workflow(Transform):
     """A workflow that applies a series of transformations."""
 
-    def __iter__(self) -> Iterator:
+    def __iter__(self) -> Iterator[Any]:
         """Returns an iterator over the transformed data.
 
         Returns
@@ -28,4 +28,16 @@ class Workflow(Transform):
         return iter(self(None))
 
     def __call__(self, data: Any) -> Any:
+        """Applies the workflow transformations to the given data.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self.forward(data)

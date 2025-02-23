@@ -9,9 +9,10 @@
 
 from typing import Any
 from typing import Dict
-from typing import Generator
+from typing import Iterator
 from typing import List
 
+import earthkit.data as ekd
 import numpy as np
 
 from . import filter_registry
@@ -128,22 +129,22 @@ class LandParameters(SimpleFilter):
         """Backward transformation is not implemented."""
         raise NotImplementedError("LandParameters is not reversible")
 
-    def forward_transform(self, tvh: Any, tvl: Any, sotype: Any) -> Generator[Any, None, None]:
+    def forward_transform(self, tvh: ekd.Field, tvl: ekd.Field, sotype: ekd.Field) -> Iterator[ekd.Field]:
         """Get static parameters from table based on soil/vegetation type.
 
         Parameters
         ----------
-        tvh : Any
+        tvh : ekd.Field
             High vegetation type.
-        tvl : Any
+        tvl : ekd.Field
             Low vegetation type.
-        sotype : Any
+        sotype : ekd.Field
             Soil type.
 
-        Yields
-        ------
-        Any
-            The new fields with static parameters.
+        Returns
+        -------
+        Iterator[ekd.Field]
+            An iterator over the new fields with static parameters.
         """
         hveg_rsmin, hveg_cov, hveg_z0m = read_crosswalking_table(tvh.to_numpy(), VEG_TYPE_DIC)
         lveg_rsmin, lveg_cov, lveg_z0m = read_crosswalking_table(tvl.to_numpy(), VEG_TYPE_DIC)

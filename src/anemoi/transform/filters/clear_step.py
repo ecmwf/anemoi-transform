@@ -55,6 +55,10 @@ class ClearStepFilter(Filter):
         data : ekd.FieldList
             List of fields to be processed.
 
+        Returns
+        -------
+        None
+
         Raises
         ------
         NotImplementedError

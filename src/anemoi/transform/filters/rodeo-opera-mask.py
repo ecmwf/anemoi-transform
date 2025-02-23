@@ -8,8 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 from typing import Any
-from typing import Generator
+from typing import Iterator
 
+import earthkit.data as ekd
 import numpy as np
 
 from . import filter_registry
@@ -165,7 +166,7 @@ class RodeoOperaPreProcessing(SimpleFilter):
         """
         raise NotImplementedError("RodeoOperaPreProcessing is not reversible")
 
-    def forward_transform(self, tp: Any, quality: Any, mask: Any) -> Generator[Any, None, None]:
+    def forward_transform(self, tp: Any, quality: Any, mask: Any) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 
         Parameters

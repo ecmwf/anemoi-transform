@@ -42,15 +42,12 @@ def fieldlist_fixture() -> Any:
 
 
 def test_rescale(fieldlist: Optional[Any] = None) -> None:
-    """Test the Rescale filter.
+    """Test rescaling temperature from Kelvin to Celsius and back.
 
     Parameters
     ----------
     fieldlist : Optional[Any], optional
         The fieldlist to use for testing, by default None.
-
-    Tests:
-    - Rescaling temperature from Kelvin to Celsius and back.
     """
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
@@ -66,15 +63,12 @@ def test_rescale(fieldlist: Optional[Any] = None) -> None:
 
 
 def test_convert(fieldlist: Optional[Any] = None) -> None:
-    """Test the Convert filter.
+    """Test converting temperature from Kelvin to Celsius and back.
 
     Parameters
     ----------
     fieldlist : Optional[Any], optional
         The fieldlist to use for testing, by default None.
-
-    Tests:
-    - Converting temperature from Kelvin to Celsius and back.
     """
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
@@ -112,15 +106,12 @@ def _do_something(field: Any, a: float) -> Any:
 
 
 def test_singlefieldlambda(fieldlist: Optional[Any] = None) -> None:
-    """Test the EarthkitFieldLambdaFilter.
+    """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
 
     Parameters
     ----------
     fieldlist : Optional[Any], optional
         The fieldlist to use for testing, by default None.
-
-    Tests:
-    - Applying a lambda filter to scale field values and then undoing the operation.
     """
     if fieldlist is None:
         fieldlist = fieldlist_fixture()

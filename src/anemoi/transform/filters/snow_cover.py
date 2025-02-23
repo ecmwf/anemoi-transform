@@ -8,8 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 from typing import Any
-from typing import Generator
+from typing import Iterator
 
+import earthkit.data as ekd
 import numpy as np
 
 from . import filter_registry
@@ -99,7 +100,7 @@ class SnowCover(SimpleFilter):
         """
         raise NotImplementedError("SnowCover is not reversible")
 
-    def forward_transform(self, sd: Any, rsn: Any) -> Generator[Any, None, None]:
+    def forward_transform(self, sd: Any, rsn: Any) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.
 
         Parameters
@@ -111,7 +112,7 @@ class SnowCover(SimpleFilter):
 
         Yields
         ------
-        Generator[Any, None, None]
+        Iterator[ekd.Field]
             The snow cover data.
         """
         snow_cover = compute_snow_cover(sd.to_numpy(), rsn.to_numpy())

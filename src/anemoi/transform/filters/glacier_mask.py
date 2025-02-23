@@ -89,6 +89,11 @@ class SnowDepthMasked(SimpleFilter):
         data : ekd.FieldList
             Input data to be transformed.
 
+        Returns
+        -------
+        ekd.FieldList
+            Always raises NotImplementedError.
+
         Raises
         ------
         NotImplementedError
@@ -104,9 +109,9 @@ class SnowDepthMasked(SimpleFilter):
         sd : ekd.Field
             Snow depth field.
 
-        Yields
-        ------
-        ekd.Field
+        Returns
+        -------
+        Iterator[ekd.Field]
             Snow depth field with glaciers masked out.
         """
         snow_depth_masked = mask_glaciers(sd.to_numpy(), self.glacier_mask)
@@ -120,6 +125,11 @@ class SnowDepthMasked(SimpleFilter):
         ----------
         sd : ekd.Field
             Snow depth field.
+
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Always raises NotImplementedError.
 
         Raises
         ------

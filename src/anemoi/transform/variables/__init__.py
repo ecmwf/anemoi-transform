@@ -104,106 +104,54 @@ class Variable(ABC):
     @property
     @abstractmethod
     def is_pressure_level(self) -> bool:
-        """Check if the variable is a pressure level.
-
-        Returns
-        -------
-        bool
-            True if the variable is a pressure level, False otherwise.
-        """
+        """Check if the variable is a pressure level."""
         pass
 
     @property
     @abstractmethod
     def level(self) -> Any:
-        """Get the level of the variable.
-
-        Returns
-        -------
-        Any
-            The level of the variable.
-        """
+        """Get the level of the variable."""
         pass
 
     @property
     @abstractmethod
     def is_constant_in_time(self) -> bool:
-        """Check if the variable is constant in time.
-
-        Returns
-        -------
-        bool
-            True if the variable is constant in time, False otherwise.
-        """
+        """Check if the variable is constant in time."""
         pass
 
     @property
     @abstractmethod
     def is_instantanous(self) -> bool:
-        """Check if the variable is instantaneous.
-
-        Returns
-        -------
-        bool
-            True if the variable is instantaneous, False otherwise.
-        """
+        """Check if the variable is instantaneous."""
         pass
 
     @property
     def is_valid_over_a_period(self) -> bool:
-        """Check if the variable is valid over a period.
+        """Check if the variable is valid over a period."""
 
-        Returns
-        -------
-        bool
-            True if the variable is valid over a period, False otherwise.
-        """
         return not self.is_instantanous
 
     @property
     @abstractmethod
     def is_accumulation(self) -> bool:
-        """Check if the variable is an accumulation.
+        """Check if the variable is an accumulation."""
 
-        Returns
-        -------
-        bool
-            True if the variable is an accumulation, False otherwise.
-        """
         pass
 
     # This may need to move to a different class
     @property
     def grib_keys(self) -> Dict[str, Any]:
-        """Get the GRIB keys for the variable.
-
-        Returns
-        -------
-        Dict[str, Any]
-            The GRIB keys for the variable.
-        """
+        """Get the GRIB keys for the variable."""
         raise NotImplementedError(f"Method `grib_keys` not implemented for {self.__class__.__name__}")
 
     @property
     def is_computed_forcing(self) -> bool:
-        """Check if the variable is a computed forcing.
-
-        Returns
-        -------
-        bool
-            True if the variable is a computed forcing, False otherwise.
-        """
+        """Check if the variable is a computed forcing."""
         raise NotImplementedError(f"Method `is_computed_forcing` not implemented for {self.__class__.__name__}")
 
     @property
     def is_from_input(self) -> bool:
-        """Check if the variable is from input.
-
-        Returns
-        -------
-        bool
-            True if the variable is from input, False otherwise.
-        """
+        """Check if the variable is from input."""
         pass
 
     def similarity(self, other: Any) -> int:

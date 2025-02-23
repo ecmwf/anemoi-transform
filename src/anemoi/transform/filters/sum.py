@@ -10,7 +10,9 @@
 
 import logging
 from typing import Any
-from typing import Generator
+from typing import Iterator
+
+import earthkit.data as ekd
 
 from . import filter_registry
 from .base import SimpleFilter
@@ -66,7 +68,7 @@ class Sum(SimpleFilter):
         """
         raise NotImplementedError("Sum is not reversible")
 
-    def forward_transform(self, *args: Any) -> Generator[Any, None, None]:
+    def forward_transform(self, *args: Any) -> Iterator[ekd.Field]:
         """Sum the fuel components to get the total fuel.
 
         Parameters

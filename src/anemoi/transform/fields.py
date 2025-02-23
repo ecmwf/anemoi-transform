@@ -79,6 +79,14 @@ class WrappedField:
         return getattr(self._field, name)
 
     def __repr__(self) -> str:
+        """Return the string representation of the field.
+
+        This method returns the string representation of the `_field` attribute,
+        which provides a human-readable description of the object.
+
+        Returns:
+            str: The string representation of the `_field` attribute.
+        """
         return repr(self._field)
 
 
@@ -89,7 +97,7 @@ class NewDataField(WrappedField):
     ----------
     field : Any
         The field object to wrap.
-    data : numpy.ndarray
+    data : np.ndarray
         The new data for the field.
     """
 
@@ -112,7 +120,7 @@ class NewDataField(WrappedField):
 
         Returns
         -------
-        numpy.ndarray
+        np.ndarray
             The field data as a numpy array.
         """
         data = self._data
@@ -137,7 +145,7 @@ class GeoMetadata(Geography):
     def __init__(self, owner: Any) -> None:
         self.owner = owner
 
-    def shape(self) -> Tuple[int]:
+    def shape(self) -> Tuple[int, ...]:
         """Get the shape of the geography data.
 
         Returns
@@ -173,13 +181,7 @@ class GeoMetadata(Geography):
         ]
 
     def mars_grid(self) -> None:
-        """Get the MARS grid of the geography data.
-
-        Returns
-        -------
-        None
-            The MARS grid of the geography data.
-        """
+        """Get the MARS grid of the geography data."""
         return None
 
     def latitudes(self, dtype: Optional[type] = None) -> np.ndarray:
@@ -192,7 +194,7 @@ class GeoMetadata(Geography):
 
         Returns
         -------
-        numpy.ndarray
+        np.ndarray
             The latitudes of the geography data.
         """
         if dtype is None:
@@ -209,7 +211,7 @@ class GeoMetadata(Geography):
 
         Returns
         -------
-        numpy.ndarray
+        np.ndarray
             The longitudes of the geography data.
         """
         if dtype is None:
@@ -217,73 +219,27 @@ class GeoMetadata(Geography):
         return self.owner._longitudes.astype(dtype)
 
     def x(self, dtype: Optional[type] = None) -> None:
-        """Get the x-coordinates of the geography data.
-
-        Parameters
-        ----------
-        dtype : type, optional
-            The desired data type of the array, by default None.
-
-        Returns
-        -------
-        None
-            The x-coordinates of the geography data.
-        """
+        """Get the x-coordinates of the geography data."""
         raise NotImplementedError()
 
     def y(self, dtype: Optional[type] = None) -> None:
-        """Get the y-coordinates of the geography data.
-
-        Parameters
-        ----------
-        dtype : type, optional
-            The desired data type of the array, by default None.
-
-        Returns
-        -------
-        None
-            The y-coordinates of the geography data.
-        """
+        """Get the y-coordinates of the geography data."""
         raise NotImplementedError()
 
     def _unique_grid_id(self) -> None:
-        """Get the unique grid ID of the geography data.
-
-        Returns
-        -------
-        None
-            The unique grid ID of the geography data.
-        """
+        """Get the unique grid ID of the geography data."""
         raise NotImplementedError()
 
     def projection(self) -> None:
-        """Get the projection of the geography data.
-
-        Returns
-        -------
-        None
-            The projection of the geography data.
-        """
+        """Get the projection of the geography data."""
         return None
 
     def bounding_box(self) -> None:
-        """Get the bounding box of the geography data.
-
-        Returns
-        -------
-        None
-            The bounding box of the geography data.
-        """
+        """Get the bounding box of the geography data."""
         raise NotImplementedError()
 
     def gridspec(self) -> None:
-        """Get the grid specification of the geography data.
-
-        Returns
-        -------
-        None
-            The grid specification of the geography data.
-        """
+        """Get the grid specification of the geography data."""
         raise NotImplementedError()
 
 
@@ -294,9 +250,9 @@ class NewGridField(WrappedField):
     ----------
     field : Any
         The field object to wrap.
-    latitudes : numpy.ndarray
+    latitudes : np.ndarray
         The new latitudes for the field.
-    longitudes : numpy.ndarray
+    longitudes : np.ndarray
         The new longitudes for the field.
     """
 
@@ -414,7 +370,7 @@ class NewValidDateTimeField(NewMetadataField):
     ----------
     field : Any
         The field object to wrap.
-    valid_datetime : datetime
+    valid_datetime : Any
         The new valid_datetime for the field.
     """
 
@@ -433,7 +389,7 @@ def new_field_from_numpy(array: np.ndarray, *, template: WrappedField, **metadat
 
     Parameters
     ----------
-    array : numpy.ndarray
+    array : np.ndarray
         The data for the new field.
     template : WrappedField
         The template field to use.
@@ -493,9 +449,9 @@ def new_field_from_latitudes_longitudes(
     ----------
     template : WrappedField
         The template field to use.
-    latitudes : numpy.ndarray
+    latitudes : np.ndarray
         The latitudes for the new field.
-    longitudes : numpy.ndarray
+    longitudes : np.ndarray
         The longitudes for the new field.
 
     Returns

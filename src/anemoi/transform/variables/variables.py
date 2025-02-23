@@ -34,90 +34,42 @@ class VariableFromMarsVocabulary(Variable):
 
     @property
     def is_pressure_level(self) -> bool:
-        """Check if the variable is at a pressure level.
-
-        Returns
-        -------
-        bool
-            True if the variable is at a pressure level, False otherwise.
-        """
+        """Check if the variable is at a pressure level."""
         return self.mars.get("levtype", None) == "pl"
 
     @property
     def level(self) -> Union[str, None]:
-        """Get the level of the variable.
-
-        Returns
-        -------
-        Any
-            The level of the variable.
-        """
+        """Get the level of the variable."""
         return self.mars.get("levelist", None)
 
     @property
     def is_constant_in_time(self) -> bool:
-        """Check if the variable is constant in time.
-
-        Returns
-        -------
-        bool
-            True if the variable is constant in time, False otherwise.
-        """
+        """Check if the variable is constant in time."""
         return self.data.get("constant_in_time", False)
 
     @property
     def is_from_input(self) -> bool:
-        """Check if the variable is from input data.
-
-        Returns
-        -------
-        bool
-            True if the variable is from input data, False otherwise.
-        """
+        """Check if the variable is from input data."""
         return "mars" in self.data
 
     @property
     def is_computed_forcing(self) -> bool:
-        """Check if the variable is a computed forcing.
-
-        Returns
-        -------
-        bool
-            True if the variable is a computed forcing, False otherwise.
-        """
+        """Check if the variable is a computed forcing."""
         return self.data.get("computed_forcing", False)
 
     @property
     def is_accumulation(self) -> bool:
-        """Check if the variable is an accumulation.
-
-        Returns
-        -------
-        bool
-            True if the variable is an accumulation, False otherwise.
-        """
+        """Check if the variable is an accumulation."""
         return self.data.get("process") == "accumulation"
 
     @property
     def is_instantanous(self) -> bool:
-        """Check if the variable is instantaneous.
-
-        Returns
-        -------
-        bool
-            True if the variable is instantaneous, False otherwise.
-        """
+        """Check if the variable is instantaneous."""
         return "process" not in self.data
 
     @property
     def grib_keys(self) -> Dict[str, Any]:
-        """Get the GRIB keys of the variable.
-
-        Returns
-        -------
-        dict
-            The GRIB keys of the variable.
-        """
+        """Get the GRIB keys of the variable."""
         return self.data.get("mars", {}).copy()
 
     def similarity(self, other: Any) -> int:

@@ -9,7 +9,9 @@
 
 
 from typing import Any
-from typing import Generator
+from typing import Iterator
+
+import earthkit.data as ekd
 
 from . import filter_registry
 from .base import SimpleFilter
@@ -72,29 +74,34 @@ class Rescale(SimpleFilter):
             self.param,
         )
 
-    def forward_transform(self, x: Any) -> Generator[Any, None, None]:
+    def forward_transform(self, x: Any) -> Iterator[ekd.Field]:
         """Apply the forward transformation (x to ax+b).
 
         Parameters
         ----------
-        x : Any
+        x : ekd.Field
             The input data to be transformed.
 
-        Yields
-        ------
-        Any
-            The transformed data.
+        Returns
+        -------
+        Iterator[ekd.Field]
+            A generator yielding the transformed data.
         """
         rescaled = x.to_numpy() * self.scale + self.offset
         yield self.new_field_from_numpy(rescaled, template=x, param=self.param)
 
-    def backward_transform(self, x: Any) -> Generator[Any, None, None]:
+    def backward_transform(self, x: ekd.Field) -> Iterator[ekd.Field]:
         """Apply the backward transformation (ax+b to x).
 
         Parameters
         ----------
         x : Any
             The input data to be transformed.
+
+        Returns
+        -------
+        Iterator[ekd.Field]
+            A generator yielding the transformed data.
 
         Yields
         ------

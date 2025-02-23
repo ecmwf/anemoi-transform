@@ -9,8 +9,9 @@
 
 
 from typing import Any
-from typing import Generator
+from typing import Iterator
 
+import earthkit.data as ekd
 from earthkit.meteo.wind.array import polar_to_xy
 from earthkit.meteo.wind.array import xy_to_polar
 
@@ -99,7 +100,7 @@ class WindComponents(SimpleFilter):
             self.wind_direction,
         )
 
-    def forward_transform(self, u: Any, v: Any) -> Generator[Any, None, None]:
+    def forward_transform(self, u: ekd.Field, v: ekd.Field) -> Iterator[ekd.Field]:
         """U/V to DD/FF."""
 
         speed, direction = xy_to_polar(
@@ -111,7 +112,7 @@ class WindComponents(SimpleFilter):
         yield self.new_field_from_numpy(speed, template=u, param=self.wind_speed)
         yield self.new_field_from_numpy(direction, template=v, param=self.wind_direction)
 
-    def backward_transform(self, speed: Any, direction: Any) -> Generator[Any, None, None]:
+    def backward_transform(self, speed: ekd.Field, direction: ekd.Field) -> Iterator[ekd.Field]:
         """DD/FF to U/V."""
 
         u, v = polar_to_xy(

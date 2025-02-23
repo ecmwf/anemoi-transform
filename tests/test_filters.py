@@ -9,6 +9,8 @@
 
 import sys
 from pathlib import Path
+from typing import Any
+from typing import Optional
 
 import earthkit.data as ekd
 import numpy.testing as npt
@@ -21,7 +23,14 @@ from anemoi.transform.filters.rescale import Rescale
 sys.path.append(Path(__file__).parents[1].as_posix())
 
 
-def fieldlist_fixture():
+def fieldlist_fixture() -> Any:
+    """Fixture to create a fieldlist for testing.
+
+    Returns
+    -------
+    Any
+        The created fieldlist.
+    """
     return ekd.from_source(
         "mars",
         {
@@ -32,7 +41,14 @@ def fieldlist_fixture():
     )
 
 
-def test_rescale(fieldlist=None):
+def test_rescale(fieldlist: Optional[Any] = None) -> None:
+    """Test rescaling temperature from Kelvin to Celsius and back.
+
+    Parameters
+    ----------
+    fieldlist : Optional[Any], optional
+        The fieldlist to use for testing, by default None.
+    """
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
     fieldlist = fieldlist.sel(param="2t")
@@ -46,7 +62,14 @@ def test_rescale(fieldlist=None):
     npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
 
 
-def test_convert(fieldlist=None):
+def test_convert(fieldlist: Optional[Any] = None) -> None:
+    """Test converting temperature from Kelvin to Celsius and back.
+
+    Parameters
+    ----------
+    fieldlist : Optional[Any], optional
+        The fieldlist to use for testing, by default None.
+    """
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
     try:
@@ -64,18 +87,52 @@ def test_convert(fieldlist=None):
         print("Skipping test_convert because of missing UNIDATA UDUNITS2 library, " "required by cfunits.")
 
 
-# used in the test below
-def _do_something(field, a):
+def _do_something(field: Any, a: float) -> Any:
+    """Multiply field values by a constant.
+
+    Parameters
+    ----------
+    field : Any
+        The field to modify.
+    a : float
+        The constant to multiply by.
+
+    Returns
+    -------
+    Any
+        The modified field.
+    """
     return field.clone(values=field.values * a)
 
 
-def test_singlefieldlambda(fieldlist=None):
+def test_singlefieldlambda(fieldlist: Optional[Any] = None) -> None:
+    """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
+
+    Parameters
+    ----------
+    fieldlist : Optional[Any], optional
+        The fieldlist to use for testing, by default None.
+    """
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
 
     fieldlist = fieldlist.sel(param="sp")
 
-    def undo_something(field, a):
+    def undo_something(field: Any, a: float) -> Any:
+        """Divide field values by a constant.
+
+        Parameters
+        ----------
+        field : Any
+            The field to modify.
+        a : float
+            The constant to divide by.
+
+        Returns
+        -------
+        Any
+            The modified field.
+        """
         return field.clone(values=field.values / a)
 
     something = EarthkitFieldLambdaFilter(

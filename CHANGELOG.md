@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## 0.1.2 (2025-02-04)
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other Changes 🔗
+* chore: synced file(s) with ecmwf-actions/reusable-workflows by @DeployDuck in https://github.com/ecmwf/anemoi-transform/pull/30
+
+## New Contributors
+* @DeployDuck made their first contribution in https://github.com/ecmwf/anemoi-transform/pull/30
+
+**Full Changelog**: https://github.com/ecmwf/anemoi-transform/compare/0.1.1...0.1.2
+
 ## [Unreleased](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.1.0...HEAD)
 
 ### Added

@@ -7,6 +7,18 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+"""This module provides the command line interface for the Anemoi transform commands.
+
+Commands
+--------
+Command : class
+    Base class for all commands.
+Failed : class
+    Class representing a failed command.
+register_commands : function
+    Function to register commands.
+"""
+
 import os
 
 from anemoi.utils.cli import Command

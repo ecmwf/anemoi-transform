@@ -8,6 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+from typing import Dict
+
 import earthkit.data as ekd
 
 from ..source import Source
@@ -16,23 +19,71 @@ from . import source_registry
 
 @source_registry.register("mars")
 class Mars(Source):
-    """A demo source"""
+    """A demo source.
 
-    def __init__(self, **request):
+    Parameters
+    ----------
+    **request : Any
+        Keyword arguments for the MARS request.
+    """
+
+    def __init__(self, **request: Any) -> None:
         pass
 
-    def forward(self, data):
+    def forward(self, data: Dict[str, Any]) -> ekd.Source:
+        """Fetch data from MARS.
+
+        Parameters
+        ----------
+        data : Dict[str, Any]
+            The request parameters for fetching data from MARS.
+
+        Returns
+        -------
+        ekd.Source
+            The data fetched from MARS.
+        """
         return ekd.from_source("mars", **data)
 
-    def __ror__(self, data):
+    def __ror__(self, data: Dict[str, Any]) -> Source:
+        """Enable the use of the pipe operator with this source.
 
+        Parameters
+        ----------
+        data : Dict[str, Any]
+            The input data to be processed.
+
+        Returns
+        -------
+        Source
+            An Input source that processes the data.
+        """
         this = self
 
         class Input(Source):
-            def __init__(self, data):
-                self.data = data
+            def __init__(self, data: Dict[str, Any]) -> None:
+                """Initialize the Input source.
 
-            def forward(self, data):
+                Parameters
+                ----------
+                data : Dict[str, Any]
+                    The input data to be processed.
+                """
+                self.data: Dict[str, Any] = data
+
+            def forward(self, data: Any) -> ekd.Source:
+                """Fetch data from MARS using the stored request parameters.
+
+                Parameters
+                ----------
+                data : Any
+                    The input data to be processed.
+
+                Returns
+                -------
+                ekd.Source
+                    The data fetched from MARS.
+                """
                 return this.forward(self.data)
 
         return Input(data)

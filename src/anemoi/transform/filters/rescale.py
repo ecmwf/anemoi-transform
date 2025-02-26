@@ -8,6 +8,11 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+from typing import Iterator
+
+import earthkit.data as ekd
+
 from . import filter_registry
 from .base import SimpleFilter
 
@@ -18,43 +23,108 @@ class Rescale(SimpleFilter):
     def __init__(
         self,
         *,
-        scale,
-        offset,
-        param,
-    ):
+        scale: float,
+        offset: float,
+        param: str,
+    ) -> None:
+        """Parameters
+        -------------
+        scale : float
+            The scale factor.
+        offset : float
+            The offset value.
+        param : str
+            The parameter to be rescaled.
+        """
         self.scale = scale
         self.offset = offset
         self.param = param
 
-    def forward(self, data):
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Apply the forward rescaling transformation.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self._transform(data, self.forward_transform, self.param)
 
-    def backward(self, data):
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Apply the backward rescaling transformation.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self._transform(
             data,
             self.backward_transform,
             self.param,
         )
 
-    def forward_transform(self, x):
-        """x to ax+b"""
+    def forward_transform(self, x: Any) -> Iterator[ekd.Field]:
+        """Apply the forward transformation (x to ax+b).
 
+        Parameters
+        ----------
+        x : ekd.Field
+            The input data to be transformed.
+
+        Returns
+        -------
+        Iterator[ekd.Field]
+            A generator yielding the transformed data.
+        """
         rescaled = x.to_numpy() * self.scale + self.offset
-
         yield self.new_field_from_numpy(rescaled, template=x, param=self.param)
 
-    def backward_transform(self, x):
-        """ax+b to x"""
+    def backward_transform(self, x: ekd.Field) -> Iterator[ekd.Field]:
+        """Apply the backward transformation (ax+b to x).
 
+        Parameters
+        ----------
+        x : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Iterator[ekd.Field]
+            A generator yielding the transformed data.
+
+        Yields
+        ------
+        Any
+            The transformed data.
+        """
         descaled = (x.to_numpy() - self.offset) / self.scale
-
         yield self.new_field_from_numpy(descaled, template=x, param=self.param)
 
 
 class Convert(Rescale):
     """A filter to convert a parameter in a given unit to another unit, and back."""
 
-    def __init__(self, *, unit_in, unit_out, param):
+    def __init__(self, *, unit_in: str, unit_out: str, param: str) -> None:
+        """Parameters
+        -------------
+        unit_in : str
+            The input unit.
+        unit_out : str
+            The output unit.
+        param : str
+            The parameter to be converted.
+        """
         from cfunits import Units
 
         u0 = Units(unit_in)

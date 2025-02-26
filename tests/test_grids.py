@@ -19,7 +19,14 @@ longitudes_url = "http://icon-downloads.mpimet.mpg.de/grids/public/edzw/icon_ext
 tlon = "tlon"
 
 
-def do_not_test_unstructured_from_url():
+def do_not_test_unstructured_from_url() -> None:
+    """Test the UnstructuredGridFieldList class for loading data from URLs.
+
+    Tests:
+    - Loading latitude and longitude data from URLs.
+    - Asserting the loaded data has the correct number of grid points.
+    - Creating forcings from the loaded data and asserting their properties.
+    """
     ds = UnstructuredGridFieldList.from_grib(latitude_url, longitudes_url, tlat, tlon)
 
     assert len(ds) == 1

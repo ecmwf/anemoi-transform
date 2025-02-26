@@ -7,19 +7,40 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import os
+from typing import Any
+from typing import Tuple
+
 import earthkit.data as ekd
 import numpy as np
+import pytest
 
 from anemoi.transform.filters.repeat_members import RepeatMembers
 
+NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 
-def _get_template():
+
+def _get_template() -> Tuple[Any, np.ndarray, Any]:
+    """Get a template fieldlist, values, and metadata for testing.
+
+    Returns
+    -------
+    Tuple
+        A tuple containing the fieldlist, values, and metadata.
+    """
     temp = ekd.from_source("mars", {"param": "2t", "levtype": "sfc", "dates": ["2023-11-17 00:00:00"]})
     fieldlist = temp.to_fieldlist()
     return fieldlist, fieldlist[0].values, fieldlist[0].metadata
 
 
-def test_repeat_members_using_numbers_1():
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
+def test_repeat_members_using_numbers_1() -> None:
+    """Test RepeatMembers filter using a list of numbers.
+
+    Tests:
+    - Repeating members using a list of numbers [1, 2, 3].
+    - Asserting the repeated members have correct values and metadata.
+    """
     fieldlist, values, metadata = _get_template()
 
     repeat = RepeatMembers(numbers=[1, 2, 3])
@@ -32,7 +53,14 @@ def test_repeat_members_using_numbers_1():
         assert f.metadata("name") == metadata("name")
 
 
-def test_repeat_members_using_numbers_2():
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
+def test_repeat_members_using_numbers_2() -> None:
+    """Test RepeatMembers filter using a range of numbers.
+
+    Tests:
+    - Repeating members using a range of numbers "1/to/3".
+    - Asserting the repeated members have correct values and metadata.
+    """
     fieldlist, values, metadata = _get_template()
 
     repeat = RepeatMembers(numbers="1/to/3")
@@ -45,7 +73,14 @@ def test_repeat_members_using_numbers_2():
         assert f.metadata("name") == metadata("name")
 
 
-def test_repeat_members_using_members():
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
+def test_repeat_members_using_members() -> None:
+    """Test RepeatMembers filter using a list of members.
+
+    Tests:
+    - Repeating members using a list of members [0, 1, 2].
+    - Asserting the repeated members have correct values and metadata.
+    """
     fieldlist, values, metadata = _get_template()
 
     repeat = RepeatMembers(members=[0, 1, 2])
@@ -58,7 +93,14 @@ def test_repeat_members_using_members():
         assert f.metadata("name") == metadata("name")
 
 
-def test_repeat_members_using_count():
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
+def test_repeat_members_using_count() -> None:
+    """Test RepeatMembers filter using a count.
+
+    Tests:
+    - Repeating members using a count of 3.
+    - Asserting the repeated members have correct values and metadata.
+    """
     fieldlist, values, metadata = _get_template()
 
     repeat = RepeatMembers(count=3)

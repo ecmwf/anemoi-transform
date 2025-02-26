@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("icon_refinement_level")
 class IconRefinement(Filter):
-    """A filter to regrid fields using earthkit-regrid."""
+    """A filter interpolate its input to an ICON grid."""
 
     def __init__(self, *, grid, refinement_level_c):
         self.grid = grid

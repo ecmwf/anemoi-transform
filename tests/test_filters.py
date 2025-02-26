@@ -7,11 +7,13 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import os
 import sys
 from pathlib import Path
 
 import earthkit.data as ekd
 import numpy.testing as npt
+import pytest
 from pytest import approx
 
 from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
@@ -19,6 +21,8 @@ from anemoi.transform.filters.rescale import Convert
 from anemoi.transform.filters.rescale import Rescale
 
 sys.path.append(Path(__file__).parents[1].as_posix())
+
+NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 
 
 def fieldlist_fixture():
@@ -32,6 +36,7 @@ def fieldlist_fixture():
     )
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_rescale(fieldlist=None):
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
@@ -46,6 +51,7 @@ def test_rescale(fieldlist=None):
     npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_convert(fieldlist=None):
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
@@ -69,6 +75,7 @@ def _do_something(field, a):
     return field.clone(values=field.values * a)
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_singlefieldlambda(fieldlist=None):
     if fieldlist is None:
         fieldlist = fieldlist_fixture()

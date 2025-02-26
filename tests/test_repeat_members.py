@@ -7,10 +7,15 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import os
+
 import earthkit.data as ekd
 import numpy as np
+import pytest
 
 from anemoi.transform.filters.repeat_members import RepeatMembers
+
+NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 
 
 def _get_template():
@@ -19,6 +24,7 @@ def _get_template():
     return fieldlist, fieldlist[0].values, fieldlist[0].metadata
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_1():
     fieldlist, values, metadata = _get_template()
 
@@ -32,6 +38,7 @@ def test_repeat_members_using_numbers_1():
         assert f.metadata("name") == metadata("name")
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_2():
     fieldlist, values, metadata = _get_template()
 
@@ -45,6 +52,7 @@ def test_repeat_members_using_numbers_2():
         assert f.metadata("name") == metadata("name")
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_members():
     fieldlist, values, metadata = _get_template()
 
@@ -58,6 +66,7 @@ def test_repeat_members_using_members():
         assert f.metadata("name") == metadata("name")
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_count():
     fieldlist, values, metadata = _get_template()
 

@@ -10,32 +10,115 @@
 
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
+from typing import Type
+from typing import TypeVar
+
+import earthkit.data as ekd
+
+T = TypeVar("T", bound="Transform")
 
 
 class Transform(ABC):
+    """Abstract base class for all transformations."""
 
     def __repr__(self) -> str:
+        """Returns a string representation of the transform.
+
+        Returns
+        -------
+        str
+            A string representation of the transform.
+        """
         return f"{self.__class__.__name__}()"
 
-    def __call__(self, data=None):
+    def __call__(self, data: ekd.Field = None) -> ekd.Field:
+        """Applies the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : ekd.Field, optional
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self.forward(data)
 
     @abstractmethod
-    def forward(self, data):
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Applies the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         pass
 
-    @abstractmethod
-    def backward(self, data):
-        pass
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Applies the backward transformation to the data.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
+        raise NotImplementedError(f"{self} is not reversible.")
 
     def reverse(self) -> "Transform":
+        """Returns a transform that applies the backward transformation.
+
+        Returns
+        -------
+        Transform
+            A transform that applies the backward transformation.
+        """
         return ReversedTransform(self)
 
     @classmethod
-    def reversed(cls, *args, **kwargs):
+    def reversed(cls: Type[T], *args: Any, **kwargs: Any) -> "ReversedTransform":
+        """Creates a reversed transform.
+
+        Parameters
+        ----------
+        args : Any
+            Positional arguments for the transform.
+        kwargs : Any
+            Keyword arguments for the transform.
+
+        Returns
+        -------
+        ReversedTransform
+            A reversed transform.
+        """
         return ReversedTransform(cls(*args, **kwargs))
 
-    def __or__(self, other):
+    def __or__(self, other: "Transform") -> "Transform":
+        """Combines two transforms into a pipeline.
+
+        Parameters
+        ----------
+        other : Transform
+            The other transform to combine with.
+
+        Returns
+        -------
+        Transform
+            A pipeline transform.
+        """
         from .workflows import workflow_registry
 
         return workflow_registry.create("pipeline", filters=[self, other])
@@ -54,15 +137,53 @@ class ReversedTransform(Transform):
     """Swap the forward and backward methods of a filter."""
 
     def __init__(self, filter) -> None:
+        """Initializes the reversed transform.
+
+        Parameters
+        ----------
+        filter : Transform
+            The transform to be reversed.
+        """
         self.filter = filter
 
     def __repr__(self) -> str:
+        """Returns a string representation of the reversed transform.
+
+        Returns
+        -------
+        str
+            A string representation of the reversed transform.
+        """
         return f"Reversed({self.filter})"
 
-    def forward(self, x):
+    def forward(self, x: Any) -> Any:
+        """Applies the backward transformation to the data.
+
+        Parameters
+        ----------
+        x : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self.filter.backward(x)
 
-    def backward(self, x):
+    def backward(self, x: Any) -> Any:
+        """Applies the forward transformation to the data.
+
+        Parameters
+        ----------
+        x : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         return self.filter.forward(x)
 
     def forward_processor(self, state):

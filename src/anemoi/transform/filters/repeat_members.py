@@ -9,6 +9,10 @@
 
 
 import logging
+from typing import Any
+from typing import List
+
+import earthkit.data as ekd
 
 from ..fields import new_field_from_numpy
 from ..fields import new_fieldlist_from_list
@@ -18,7 +22,19 @@ from .base import Filter
 LOG = logging.getLogger(__name__)
 
 
-def make_list_int(value):
+def make_list_int(value: Any) -> List[int]:
+    """Convert a value to a list of integers.
+
+    Parameters
+    ----------
+    value : Any
+        The value to convert.
+
+    Returns
+    -------
+    list
+        The converted list of integers.
+    """
     if isinstance(value, str):
         if "/" not in value:
             return [value]
@@ -51,10 +67,19 @@ class RepeatMembers(Filter):
 
     def __init__(
         self,
-        numbers=None,  # 1-based
-        members=None,  # 0-based
-        count=None,
-    ):
+        numbers: List[int] = None,
+        members: List[int] = None,
+        count: int = None,
+    ) -> None:
+        """Parameters
+        -------------
+        numbers : list of int, optional
+            A list of numbers (1-based) of the fields to replicate.
+        members : list of int, optional
+            A list of 0-based indices of the fields to replicate.
+        count : int, optional
+            The number of times to replicate the fields.
+        """
         if sum(x is not None for x in (members, count, numbers)) != 1:
             raise ValueError("Exactly one of members, count or numbers must be given")
 
@@ -69,7 +94,19 @@ class RepeatMembers(Filter):
         self.members = members
         assert isinstance(members, (tuple, list)), f"members must be a list or tuple, got {type(members)}"
 
-    def forward(self, data):
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Apply the forward transformation to replicate fields.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be transformed.
+
+        Returns
+        -------
+        Any
+            The transformed data.
+        """
         result = []
         for f in data:
             array = f.to_numpy()
@@ -79,7 +116,3 @@ class RepeatMembers(Filter):
                 result.append(new_field)
 
         return new_fieldlist_from_list(result)
-
-    def backward(self, data):
-        # this could be implemented
-        raise NotImplementedError("RepeatMembers is not reversible")

@@ -68,6 +68,10 @@ class VariableFromMarsVocabulary(Variable):
         return "process" not in self.data
 
     @property
+    def time_processing(self):
+        return self.data.get("process")
+
+    @property
     def grib_keys(self) -> Dict[str, Any]:
         """Get the GRIB keys of the variable."""
         return self.data.get("mars", {}).copy()

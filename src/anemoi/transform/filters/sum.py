@@ -9,6 +9,10 @@
 
 
 import logging
+from typing import Any
+from typing import Iterator
+
+import earthkit.data as ekd
 
 from . import filter_registry
 from .base import SimpleFilter
@@ -18,27 +22,50 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("sum")
 class Sum(SimpleFilter):
-    """A filter to sum some parameters"""
+    """A filter to sum some parameters."""
 
-    def __init__(
-        self,
-        *,
-        formula,
-    ):
+    def __init__(self, *, formula: dict) -> None:
+        """Initialize the Sum filter.
+
+        Parameters
+        ----------
+        formula : dict
+            Dictionary containing the formula for summing parameters.
+        """
         assert isinstance(formula, dict)
         assert len(formula) == 1
         self.name = list(formula.keys())[0]
         self.args = list(formula.values())[0]
         LOG.warning("Using the sum filter will be deprecated in the future. Please do not rely on it.")
 
-    def forward(self, data):
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Apply the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : Any
+            Input data to be transformed.
+
+        Returns
+        -------
+        Any
+            Transformed data.
+        """
         return self._transform(data, self.forward_transform, *self.args)
 
-    def backward(self, data):
-        raise NotImplementedError("Sum is not reversible")
+    def forward_transform(self, *args: Any) -> Iterator[ekd.Field]:
+        """Sum the fuel components to get the total fuel.
 
-    def forward_transform(self, *args):
-        """Sum the fuel components to get the total fuel"""
+        Parameters
+        ----------
+        args : Any
+            Fuel components to be summed.
+
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Transformed fields.
+        """
         total = None
         for arg in args:
             if total is None:
@@ -48,6 +75,3 @@ class Sum(SimpleFilter):
                 total += arg.to_numpy()
 
         yield self.new_field_from_numpy(total, template=template, param=self.name)
-
-    def backward_transform(self, data):
-        raise NotImplementedError("Sum is not reversible")

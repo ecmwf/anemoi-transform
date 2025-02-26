@@ -12,5 +12,6 @@ from .transform import Transform
 
 
 class Source(Transform):
-    def backward(self, data):
-        raise NotImplementedError("Sources do not support backward transformations")
+    """A source transform that provides data."""
+
+    pass

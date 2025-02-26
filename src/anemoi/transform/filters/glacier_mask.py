@@ -7,6 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+
+from typing import Iterator
+
 import earthkit.data as ekd
 import numpy as np
 
@@ -14,7 +17,21 @@ from . import filter_registry
 from .base import SimpleFilter
 
 
-def mask_glaciers(snow_depth, glacier_mask):
+def mask_glaciers(snow_depth: np.ndarray, glacier_mask: np.ndarray) -> np.ndarray:
+    """Mask out glaciers in snow depth data.
+
+    Parameters
+    ----------
+    snow_depth : np.ndarray
+        Array of snow depth values.
+    glacier_mask : np.ndarray
+        Boolean array indicating glacier locations.
+
+    Returns
+    -------
+    np.ndarray
+        Snow depth array with glaciers masked out.
+    """
     snow_depth[glacier_mask] = np.nan
     return snow_depth
 
@@ -26,30 +43,57 @@ class SnowDepthMasked(SimpleFilter):
     def __init__(
         self,
         *,
-        glacier_mask,
-        snow_depth="sd",
-        snow_depth_masked="sd_masked",
-    ):
+        glacier_mask: str,
+        snow_depth: str = "sd",
+        snow_depth_masked: str = "sd_masked",
+    ) -> None:
+        """Initialize the SnowDepthMasked filter.
+
+        Parameters
+        ----------
+        glacier_mask : str
+            Path to the glacier mask file.
+        snow_depth : str, optional
+            Name of the snow depth parameter, by default "sd".
+        snow_depth_masked : str, optional
+            Name of the masked snow depth parameter, by default "sd_masked".
+        """
         self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().astype(bool)
         self.snow_depth = snow_depth
         self.snow_depth_masked = snow_depth_masked
 
-    def forward(self, data):
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Apply the forward transformation to the data.
+
+        Parameters
+        ----------
+        data : ekd.FieldList
+            Input data to be transformed.
+
+        Returns
+        -------
+        ekd.FieldList
+            Transformed data.
+        """
         return self._transform(
             data,
             self.forward_transform,
             self.snow_depth,
         )
 
-    def backward(self, data):
-        raise NotImplementedError("SnowDepthMasked is not reversible")
+    def forward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
+        """Mask out glaciers in snow depth.
 
-    def forward_transform(self, sd):
-        """Mask out glaciers in snow depth"""
+        Parameters
+        ----------
+        sd : ekd.Field
+            Snow depth field.
 
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Snow depth field with glaciers masked out.
+        """
         snow_depth_masked = mask_glaciers(sd.to_numpy(), self.glacier_mask)
 
         yield self.new_field_from_numpy(snow_depth_masked, template=sd, param=self.snow_depth_masked)
-
-    def backward_transform(self, sd):
-        raise NotImplementedError("SnowDepthMasked is not reversible")

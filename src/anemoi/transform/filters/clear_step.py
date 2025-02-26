@@ -11,6 +11,7 @@
 import datetime
 import logging
 
+import earthkit.data as ekd
 from earthkit.data.utils.dates import to_datetime
 
 from ..fields import new_field_with_valid_datetime
@@ -25,7 +26,19 @@ LOG = logging.getLogger(__name__)
 class ClearStepFilter(Filter):
     """Set the step of the field to 0."""
 
-    def forward(self, data):
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Adjusts the valid_datetime of each field by subtracting the step in hours.
+
+        Parameters
+        ----------
+        data : ekd.FieldList
+            List of fields to be processed.
+
+        Returns
+        -------
+        ekd.FieldList
+            List of fields with updated valid_datetime.
+        """
         result = []
         for field in data:
             valid_datetime = to_datetime(field.metadata("valid_datetime"))
@@ -33,6 +46,3 @@ class ClearStepFilter(Filter):
             result.append(new_field_with_valid_datetime(field, valid_datetime - datetime.timedelta(hours=step)))
 
         return new_fieldlist_from_list(result)
-
-    def backward(self, data):
-        raise NotImplementedError("`clear_step` is not reversible")

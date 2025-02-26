@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -14,6 +15,7 @@ from typing import Optional
 
 import earthkit.data as ekd
 import numpy.testing as npt
+import pytest
 from pytest import approx
 
 from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
@@ -21,6 +23,8 @@ from anemoi.transform.filters.rescale import Convert
 from anemoi.transform.filters.rescale import Rescale
 
 sys.path.append(Path(__file__).parents[1].as_posix())
+
+NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 
 
 def fieldlist_fixture() -> Any:
@@ -40,7 +44,7 @@ def fieldlist_fixture() -> Any:
         },
     )
 
-
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_rescale(fieldlist: Optional[Any] = None) -> None:
     """Test rescaling temperature from Kelvin to Celsius and back.
 
@@ -49,6 +53,7 @@ def test_rescale(fieldlist: Optional[Any] = None) -> None:
     fieldlist : Optional[Any], optional
         The fieldlist to use for testing, by default None.
     """
+
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
     fieldlist = fieldlist.sel(param="2t")
@@ -62,6 +67,7 @@ def test_rescale(fieldlist: Optional[Any] = None) -> None:
     npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_convert(fieldlist: Optional[Any] = None) -> None:
     """Test converting temperature from Kelvin to Celsius and back.
 
@@ -105,6 +111,7 @@ def _do_something(field: Any, a: float) -> Any:
     return field.clone(values=field.values * a)
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_singlefieldlambda(fieldlist: Optional[Any] = None) -> None:
     """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
 

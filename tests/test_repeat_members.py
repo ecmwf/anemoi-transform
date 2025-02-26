@@ -9,11 +9,15 @@
 
 from typing import Any
 from typing import Tuple
+import os
 
 import earthkit.data as ekd
 import numpy as np
+import pytest
 
 from anemoi.transform.filters.repeat_members import RepeatMembers
+
+NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 
 
 def _get_template() -> Tuple[Any, np.ndarray, Any]:
@@ -28,7 +32,7 @@ def _get_template() -> Tuple[Any, np.ndarray, Any]:
     fieldlist = temp.to_fieldlist()
     return fieldlist, fieldlist[0].values, fieldlist[0].metadata
 
-
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_1() -> None:
     """Test RepeatMembers filter using a list of numbers.
 
@@ -47,7 +51,7 @@ def test_repeat_members_using_numbers_1() -> None:
         assert f.metadata("number") == i + 1
         assert f.metadata("name") == metadata("name")
 
-
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_2() -> None:
     """Test RepeatMembers filter using a range of numbers.
 
@@ -66,7 +70,7 @@ def test_repeat_members_using_numbers_2() -> None:
         assert f.metadata("number") == i + 1
         assert f.metadata("name") == metadata("name")
 
-
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_members() -> None:
     """Test RepeatMembers filter using a list of members.
 
@@ -85,7 +89,7 @@ def test_repeat_members_using_members() -> None:
         assert f.metadata("number") == i + 1
         assert f.metadata("name") == metadata("name")
 
-
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_count() -> None:
     """Test RepeatMembers filter using a count.
 

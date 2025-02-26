@@ -44,6 +44,7 @@ def fieldlist_fixture() -> Any:
         },
     )
 
+
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_rescale(fieldlist: Optional[Any] = None) -> None:
     """Test rescaling temperature from Kelvin to Celsius and back.

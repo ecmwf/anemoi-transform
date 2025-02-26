@@ -7,9 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import os
 from typing import Any
 from typing import Tuple
-import os
 
 import earthkit.data as ekd
 import numpy as np
@@ -32,6 +32,7 @@ def _get_template() -> Tuple[Any, np.ndarray, Any]:
     fieldlist = temp.to_fieldlist()
     return fieldlist, fieldlist[0].values, fieldlist[0].metadata
 
+
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_1() -> None:
     """Test RepeatMembers filter using a list of numbers.
@@ -50,6 +51,7 @@ def test_repeat_members_using_numbers_1() -> None:
         assert np.all(f.values == values)
         assert f.metadata("number") == i + 1
         assert f.metadata("name") == metadata("name")
+
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_2() -> None:
@@ -70,6 +72,7 @@ def test_repeat_members_using_numbers_2() -> None:
         assert f.metadata("number") == i + 1
         assert f.metadata("name") == metadata("name")
 
+
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_members() -> None:
     """Test RepeatMembers filter using a list of members.
@@ -88,6 +91,7 @@ def test_repeat_members_using_members() -> None:
         assert np.all(f.values == values)
         assert f.metadata("number") == i + 1
         assert f.metadata("name") == metadata("name")
+
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_count() -> None:

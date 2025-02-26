@@ -119,7 +119,7 @@ class Transform(ABC):
         Transform
             A pipeline transform.
         """
-        from .workflows import workflow_registry
+        from anemoi.transform.workflows import workflow_registry
 
         return workflow_registry.create("pipeline", filters=[self, other])
 

@@ -17,22 +17,14 @@ from typing import Optional
 import earthkit.data as ekd
 import numpy as np
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 LOG = logging.getLogger(__name__)
 
-# class MyFilter(SuperSimpleFilter):
-#    def __init__(self, *, param):
-#        self.param = param
-#
-#    def transform(date, tp, lsm):
-#        new = tp + lsm + self.data(self.param, date)
-#        return dict(q_500 = new)
-
 
 @filter_registry.register("timeseries")
-class Timeseries(SimpleFilter):
+class Timeseries(MatchingFieldsFilter):
     """A source to add a timeseries depending on time but not on location.
 
     Parameters

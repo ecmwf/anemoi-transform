@@ -13,11 +13,11 @@ from typing import Iterator
 
 import earthkit.data as ekd
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 
-class Rescale(SimpleFilter):
+class Rescale(MatchingFieldsFilter):
     """A filter to rescale a parameter from a scale and an offset, and back."""
 
     def __init__(

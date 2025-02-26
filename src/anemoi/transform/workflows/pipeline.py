@@ -12,8 +12,8 @@ from typing import List
 
 import earthkit.data as ekd
 
-from ..workflow import Workflow
-from . import workflow_registry
+from anemoi.transform.workflow import Workflow
+from anemoi.transform.workflows import workflow_registry
 
 
 @workflow_registry.register("pipeline")

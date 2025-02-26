@@ -13,8 +13,8 @@ from typing import Iterator
 import earthkit.data as ekd
 import numpy as np
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 
 def mask_glaciers(snow_depth: np.ndarray, glacier_mask: np.ndarray) -> np.ndarray:
@@ -37,7 +37,7 @@ def mask_glaciers(snow_depth: np.ndarray, glacier_mask: np.ndarray) -> np.ndarra
 
 
 @filter_registry.register("glacier_mask")
-class SnowDepthMasked(SimpleFilter):
+class SnowDepthMasked(MatchingFieldsFilter):
     """A filter to mask about glacier in snow depth."""
 
     def __init__(

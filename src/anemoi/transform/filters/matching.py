@@ -17,15 +17,15 @@ from typing import List
 import earthkit.data as ekd
 import numpy as np
 
-from ..fields import new_field_from_numpy
-from ..fields import new_fieldlist_from_list
-from ..filter import Filter
-from ..grouping import GroupByMarsParam
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.filter import Filter
+from anemoi.transform.grouping import GroupByMarsParam
 
 LOG = logging.getLogger(__name__)
 
 
-class SimpleFilter(Filter):
+class MatchingFieldsFilter(Filter):
     """A filter to convert only some fields.
     The fields are matched by their metadata.
     """
@@ -102,8 +102,6 @@ class SimpleFilter(Filter):
         """To be implemented by subclasses."""
         raise NotImplementedError(f"{self} backward transformation is not implemented.")
 
-
-class SimpleFilter2(SimpleFilter):
     """Temporarily empty class to avoid breaking the code"""
 
     def __init__(self, forward_params, backward_params, **kwargs):

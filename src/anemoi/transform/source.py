@@ -8,7 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
-from .transform import Transform
+from anemoi.transform.transform import Transform
 
 
 class Source(Transform):

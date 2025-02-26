@@ -14,11 +14,11 @@ import earthkit.data as ekd
 from earthkit.meteo.wind.array import polar_to_xy
 from earthkit.meteo.wind.array import xy_to_polar
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 
-class WindComponents(SimpleFilter):
+class WindComponents(MatchingFieldsFilter):
     """A filter to convert wind speed and direction to U and V components,
     and back.
     """

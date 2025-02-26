@@ -11,7 +11,7 @@
 from typing import Any
 from typing import Iterator
 
-from .transform import Transform
+from anemoi.transform.transform import Transform
 
 
 class Workflow(Transform):

@@ -15,8 +15,8 @@ from typing import List
 import earthkit.data as ekd
 import numpy as np
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 SOIL_TYPE_DIC = {
     0: {"theta_pwp": 0, "theta_cap": 0},
@@ -74,7 +74,7 @@ def read_crosswalking_table(param: Any, param_dic: Dict[int, Dict[str, float]]) 
 
 
 @filter_registry.register("land_parameters")
-class LandParameters(SimpleFilter):
+class LandParameters(MatchingFieldsFilter):
     """A filter to add static parameters from table based on soil/vegetation type."""
 
     def __init__(

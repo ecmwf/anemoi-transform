@@ -13,8 +13,8 @@ from typing import Iterator
 import earthkit.data as ekd
 import numpy as np
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 
 def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.ndarray:
@@ -40,7 +40,7 @@ def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.n
 
 
 @filter_registry.register("snow_cover")
-class SnowCover(SimpleFilter):
+class SnowCover(MatchingFieldsFilter):
     """A filter to compute snow cover from snow density and snow depth."""
 
     def __init__(

@@ -14,14 +14,14 @@ from typing import Iterator
 
 import earthkit.data as ekd
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 LOG = logging.getLogger(__name__)
 
 
 @filter_registry.register("sum")
-class Sum(SimpleFilter):
+class Sum(MatchingFieldsFilter):
     """A filter to sum some parameters."""
 
     def __init__(self, *, formula: dict) -> None:

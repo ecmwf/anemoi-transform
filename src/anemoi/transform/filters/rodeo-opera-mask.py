@@ -13,8 +13,8 @@ from typing import Iterator
 import earthkit.data as ekd
 import numpy as np
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 NODATA = -9.999e06
 UNDETECTED = -8.888e06
@@ -83,7 +83,7 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
 
 
 @filter_registry.register("rodeo_opera_preprocessing")
-class RodeoOperaPreProcessing(SimpleFilter):
+class RodeoOperaPreProcessing(MatchingFieldsFilter):
     """A filter to select only good quality data in Rodeo Opera data.
 
     Parameters

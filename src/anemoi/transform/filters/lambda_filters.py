@@ -19,11 +19,11 @@ from earthkit.data.core.fieldlist import Field
 from earthkit.data.core.fieldlist import FieldList
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.filters.base import SimpleFilter
+from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 
 @filter_registry.register("earthkitfieldlambda")
-class EarthkitFieldLambdaFilter(SimpleFilter):
+class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
     """A filter to apply an arbitrary function to individual fields."""
 
     def __init__(

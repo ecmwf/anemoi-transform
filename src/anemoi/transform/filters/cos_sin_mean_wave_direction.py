@@ -17,30 +17,25 @@ import numpy as np
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 
 @filter_registry.register("cos_sin_mean_wave_direction")
 class CosSinWaveDirection(MatchingFieldsFilter):
     """A filter to convert mean wave direction to cos() and sin() and back."""
 
-    def __init__(self, **kwargs: Any) -> None:
-        """Initialize the CosSinWaveDirection filter.
+    @matching(match="param", forward=("mwd",), backward=("cos_mwd", "sin_mwd"))
+    def __init__(
+        self,
+        mean_wave_direction="mwd",
+        cos_mean_wave_direction="cos_mwd",
+        sin_mean_wave_direction="sin_mwd",
+    ) -> None:
+        """Initialize the CosSinWaveDirection filter."""
 
-        Parameters
-        ----------
-        **kwargs : Any
-            Additional keyword arguments.
-        """
-        super().__init__(
-            forward_params=dict(
-                mean_wave_direction="mwd",
-            ),
-            backward_params=dict(
-                cos_mean_wave_direction="cos_mwd",
-                sin_mean_wave_direction="sin_mwd",
-            ),
-            **kwargs,
-        )
+        self.mean_wave_direction = mean_wave_direction
+        self.cos_mean_wave_direction = cos_mean_wave_direction
+        self.sin_mean_wave_direction = sin_mean_wave_direction
 
     def forward_transform(self, mwd: ekd.Field) -> Iterator[ekd.Field]:
         """Convert mean wave direction to its cosine and sine components.

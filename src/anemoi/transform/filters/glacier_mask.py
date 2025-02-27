@@ -44,7 +44,6 @@ class SnowDepthMasked(MatchingFieldsFilter):
         self,
         *,
         glacier_mask: str,
-        snow_depth: str = "sd",
         snow_depth_masked: str = "sd_masked",
     ) -> None:
         """Initialize the SnowDepthMasked filter.
@@ -58,28 +57,15 @@ class SnowDepthMasked(MatchingFieldsFilter):
         snow_depth_masked : str, optional
             Name of the masked snow depth parameter, by default "sd_masked".
         """
-        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().astype(bool)
-        self.snow_depth = snow_depth
-        self.snow_depth_masked = snow_depth_masked
-
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the forward transformation to the data.
-
-        Parameters
-        ----------
-        data : ekd.FieldList
-            Input data to be transformed.
-
-        Returns
-        -------
-        ekd.FieldList
-            Transformed data.
-        """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.snow_depth,
+        super().__init__(
+            forward_params=dict(
+                snow_depth="sd",
+            ),
+            # **kwargs,
         )
+
+        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().astype(bool)
+        self.snow_depth_masked = snow_depth_masked
 
     def forward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
         """Mask out glaciers in snow depth.

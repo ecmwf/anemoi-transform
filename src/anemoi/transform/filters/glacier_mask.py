@@ -14,6 +14,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters import matching
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 
@@ -40,10 +41,12 @@ def mask_glaciers(snow_depth: np.ndarray, glacier_mask: np.ndarray) -> np.ndarra
 class SnowDepthMasked(MatchingFieldsFilter):
     """A filter to mask about glacier in snow depth."""
 
+    @matching(match="param", forward="snow_depth")
     def __init__(
         self,
         *,
         glacier_mask: str,
+        snow_depth: str = "sd",
         snow_depth_masked: str = "sd_masked",
     ) -> None:
         """Initialize the SnowDepthMasked filter.
@@ -57,22 +60,17 @@ class SnowDepthMasked(MatchingFieldsFilter):
         snow_depth_masked : str, optional
             Name of the masked snow depth parameter, by default "sd_masked".
         """
-        super().__init__(
-            forward_params=dict(
-                snow_depth="sd",
-            ),
-            # **kwargs,
-        )
 
+        self.snow_depth = snow_depth
         self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().astype(bool)
         self.snow_depth_masked = snow_depth_masked
 
-    def forward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, snow_depth: ekd.Field) -> Iterator[ekd.Field]:
         """Mask out glaciers in snow depth.
 
         Parameters
         ----------
-        sd : ekd.Field
+        snow_depth : ekd.Field
             Snow depth field.
 
         Returns
@@ -80,6 +78,6 @@ class SnowDepthMasked(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Snow depth field with glaciers masked out.
         """
-        snow_depth_masked = mask_glaciers(sd.to_numpy(), self.glacier_mask)
+        snow_depth_masked = mask_glaciers(snow_depth.to_numpy(), self.glacier_mask)
 
-        yield self.new_field_from_numpy(snow_depth_masked, template=sd, param=self.snow_depth_masked)
+        yield self.new_field_from_numpy(snow_depth_masked, template=snow_depth, param=self.snow_depth_masked)

@@ -16,9 +16,9 @@ from typing import Optional
 from typing import Union
 
 from earthkit.data.core.fieldlist import Field
-from earthkit.data.core.fieldlist import FieldList
 
 from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters import matching
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 
@@ -26,6 +26,11 @@ from anemoi.transform.filters.matching import MatchingFieldsFilter
 class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
     """A filter to apply an arbitrary function to individual fields."""
 
+    @matching(
+        match="param",
+        forward="param",
+        backward="param",
+    )
     def __init__(
         self,
         fn: Union[str, Callable[[Field, Any], Field]],
@@ -83,43 +88,6 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
         self.param = param if isinstance(param, list) else [param]
         self.fn_args = fn_args
         self.fn_kwargs = fn_kwargs
-
-    def forward(self, data: FieldList) -> FieldList:
-        """Apply the forward lambda function to the specified fields.
-
-        Parameters
-        ----------
-        data : FieldList
-            The list of fields to apply the forward lambda function to.
-
-        Returns
-        -------
-        FieldList
-            The transformed list of fields.
-        """
-        return self._transform(data, self.forward_transform, *self.param)
-
-    def backward(self, data: FieldList) -> FieldList:
-        """Apply the backward lambda function to the specified fields.
-
-        Parameters
-        ----------
-        data : FieldList
-            The list of fields to apply the backward lambda function to.
-
-        Returns
-        -------
-        FieldList
-            The transformed list of fields.
-
-        Raises
-        ------
-        NotImplementedError
-            If the backward function is not defined.
-        """
-        if self.backward_fn:
-            return self._transform(data, self.backward_transform, *self.param)
-        raise NotImplementedError(f"{self} is not reversible.")
 
     def forward_transform(self, *fields: Field) -> Iterator[Field]:
         """Apply the forward lambda function to the fields.

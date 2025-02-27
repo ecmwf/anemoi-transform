@@ -9,7 +9,6 @@
 
 
 import logging
-from typing import Any
 from typing import Dict
 from typing import Iterator
 from typing import Optional
@@ -18,6 +17,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters import matching
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 LOG = logging.getLogger(__name__)
@@ -35,6 +35,10 @@ class Timeseries(MatchingFieldsFilter):
         Template parameter name, by default "2t".
     """
 
+    @matching(
+        match="param",
+        forward="template_param",
+    )
     def __init__(self, *, netcdf: Optional[Dict[str, str]] = None, template_param: str = "2t") -> None:
         if netcdf:
             import xarray as xr
@@ -63,12 +67,12 @@ class Timeseries(MatchingFieldsFilter):
             self.template_param,
         )
 
-    def forward_transform(self, template: Any) -> Iterator[ekd.Field]:
+    def forward_transform(self, template: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.
 
         Parameters
         ----------
-        template : Any
+        template : ekd.Field
             Template field to transform.
 
         Returns

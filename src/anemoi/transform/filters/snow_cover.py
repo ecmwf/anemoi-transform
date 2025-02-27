@@ -14,6 +14,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters import matching
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 
 
@@ -43,6 +44,10 @@ def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.n
 class SnowCover(MatchingFieldsFilter):
     """A filter to compute snow cover from snow density and snow depth."""
 
+    @matching(
+        match="param",
+        forward=("snow_depth", "snow_density"),
+    )
     def __init__(
         self,
         *,
@@ -65,34 +70,14 @@ class SnowCover(MatchingFieldsFilter):
         self.snow_density = snow_density
         self.snow_cover = snow_cover
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the forward transformation to the data.
-
-        Parameters
-        ----------
-        data : Any
-            The input data.
-
-        Returns
-        -------
-        Any
-            The transformed data.
-        """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.snow_depth,
-            self.snow_density,
-        )
-
-    def forward_transform(self, sd: Any, rsn: Any) -> Iterator[ekd.Field]:
+    def forward_transform(self, snow_depth: Any, snow_density: Any) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.
 
         Parameters
         ----------
-        sd : Any
+        snow_depth : Any
             The snow depth data.
-        rsn : Any
+        snow_density : Any
             The snow density data.
 
         Returns
@@ -100,6 +85,6 @@ class SnowCover(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        snow_cover = compute_snow_cover(sd.to_numpy(), rsn.to_numpy())
+        snow_cover = compute_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield self.new_field_from_numpy(snow_cover, template=sd, param=self.snow_cover)
+        yield self.new_field_from_numpy(snow_cover, template=snow_depth, param=self.snow_cover)

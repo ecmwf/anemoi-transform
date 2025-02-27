@@ -60,26 +60,22 @@ class matching:
     def __call__(self, method):
 
         self.params_and_defaults = get_params_and_defaults(method)
-        print(self.params_and_defaults)
-
-        short_to_long = {v: k for k, v in self.params_and_defaults.items()}
 
         forward = {}
-        for short in self.forward:
-            if short not in short_to_long:
-                raise ValueError(f"Forward parameter {short} not found in method signature.")
-            forward[short_to_long[short]] = short
+        for name in self.params_and_defaults.keys():
+            if name in self.forward:
+                forward[name] = name
 
         backward = {}
-        for short in self.backward:
-            if short not in short_to_long:
-                raise ValueError(f"Backward parameter {short} not found in method signature.")
-            backward[short_to_long[short]] = short
+        for name in self.params_and_defaults.keys():
+            if name in self.backward:
+                backward[name] = name
 
         @wraps(method)
         def wrapped(obj, *args, **kwargs):
-            obj.forward_params = {long: short for long, short in forward.items()}
-            obj.backward_params = {long: short for long, short in backward.items()}
+            obj._forward_arguments = forward
+            obj._backward_arguments = backward
+            obj._initialised = True
             return method(obj, *args, **kwargs)
 
         return wrapped
@@ -90,25 +86,32 @@ class MatchingFieldsFilter(Filter):
     The fields are matched by their metadata.
     """
 
-    def __init__(self, forward_params, backward_params, **kwargs):
-        self.forward_params = forward_params
-        self.backward_params = backward_params
+    _initialised = False
 
-        for long, short in forward_params.items():
-            setattr(self, long, kwargs.get(long, short))
+    @property
+    def forward_arguments(self):
+        if not self._initialised:
+            raise ValueError("Filter not initialised.")
 
-        for long, short in backward_params.items():
-            setattr(self, long, kwargs.get(long, short))
+        return self._forward_arguments
+
+    @property
+    def backward_arguments(self):
+        if not self._initialised:
+            raise ValueError("Filter not initialised.")
+
+        return self._backward_arguments
 
     def forward(self, data):
 
         args = []
 
-        for long in self.forward_params.keys():
-            args.append(getattr(self, long))
+        for name in self.forward_arguments:
+            args.append(getattr(self, name))
 
         def forward_transform(*fields):
-            kwargs = {short: field for field, short in zip(fields, self.forward_params.values())}
+            assert len(fields) == len(self.forward_arguments)
+            kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
             return self.forward_transform(**kwargs)
 
         return self._transform(data, forward_transform, *args)
@@ -117,11 +120,12 @@ class MatchingFieldsFilter(Filter):
 
         args = []
 
-        for long in self.backward_params.keys():
-            args.append(getattr(self, long))
+        for name in self.backward_arguments:
+            args.append(getattr(self, name))
 
         def backward_transform(*fields):
-            kwargs = {short: field for field, short in zip(fields, self.backward_params.values())}
+            assert len(fields) == len(self.backward_arguments)
+            kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
             return self.backward_transform(**kwargs)
 
         return self._transform(data, backward_transform, *args)

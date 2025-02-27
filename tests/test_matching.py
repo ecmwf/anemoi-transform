@@ -31,7 +31,7 @@ def test_cos_sin_mean_wave_direction():
 
     source = ekd.from_source("list-of-dicts", data)
     target = filter.forward(source)
-    assert len(target) == 2
+    assert len(target) == 2, f"Expected 2 fields, got {len(target)}"
 
 
 if __name__ == "__main__":

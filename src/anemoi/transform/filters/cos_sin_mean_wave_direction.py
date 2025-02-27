@@ -24,7 +24,11 @@ from anemoi.transform.filters.matching import matching
 class CosSinWaveDirection(MatchingFieldsFilter):
     """A filter to convert mean wave direction to cos() and sin() and back."""
 
-    @matching(match="param", forward=("mwd",), backward=("cos_mwd", "sin_mwd"))
+    @matching(
+        match="param",
+        forward=("mean_wave_direction",),
+        backward=("cos_mean_wave_direction", "sin_mean_wave_direction"),
+    )
     def __init__(
         self,
         mean_wave_direction="mwd",
@@ -37,12 +41,15 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         self.cos_mean_wave_direction = cos_mean_wave_direction
         self.sin_mean_wave_direction = sin_mean_wave_direction
 
-    def forward_transform(self, mwd: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(
+        self,
+        mean_wave_direction: ekd.Field,
+    ) -> Iterator[ekd.Field]:
         """Convert mean wave direction to its cosine and sine components.
 
         Parameters
         ----------
-        mwd : ekd.Field
+        mean_wave_direction : ekd.Field
             The mean wave direction field.
 
         Returns
@@ -50,20 +57,24 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Fields of cosine and sine of the mean wave direction.
         """
-        data = mwd.to_numpy()
+        data = mean_wave_direction.to_numpy()
         data = np.deg2rad(data)
 
-        yield self.new_field_from_numpy(np.cos(data), template=mwd, param=self.cos_mean_wave_direction)
-        yield self.new_field_from_numpy(np.sin(data), template=mwd, param=self.sin_mean_wave_direction)
+        yield self.new_field_from_numpy(np.cos(data), template=mean_wave_direction, param=self.cos_mean_wave_direction)
+        yield self.new_field_from_numpy(np.sin(data), template=mean_wave_direction, param=self.sin_mean_wave_direction)
 
-    def backward_transform(self, cos_mwd: ekd.Field, sin_mwd: ekd.Field) -> Iterator[ekd.Field]:
+    def backward_transform(
+        self,
+        cos_mean_wave_direction: ekd.Field,
+        sin_mean_wave_direction: ekd.Field,
+    ) -> Iterator[ekd.Field]:
         """Convert cosine and sine components back to mean wave direction.
 
         Parameters
         ----------
-        cos_mwd : ekd.Field
+        cos_mean_wave_direction : ekd.Field
             The cosine of the mean wave direction field.
-        sin_mwd : ekd.Field
+        sin_mean_wave_direction : ekd.Field
             The sine of the mean wave direction field.
 
         Returns
@@ -71,11 +82,11 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Field of the mean wave direction.
         """
-        mwd = np.rad2deg(np.arctan2(sin_mwd.to_numpy(), cos_mwd.to_numpy()))
+        mwd = np.rad2deg(np.arctan2(sin_mean_wave_direction.to_numpy(), cos_mean_wave_direction.to_numpy()))
         mwd = np.where(mwd >= 360, mwd - 360, mwd)
         mwd = np.where(mwd < 0, mwd + 360, mwd)
 
-        yield self.new_field_from_numpy(mwd, template=cos_mwd, param=self.mean_wave_direction)
+        yield self.new_field_from_numpy(mwd, template=cos_mean_wave_direction, param=self.mean_wave_direction)
 
     def patch_data_request(self, data_request: Dict[str, Any]) -> Dict[str, Any]:
         """Modify the data request to include mean wave direction.

@@ -48,25 +48,6 @@ class Timeseries(MatchingFieldsFilter):
 
         self.template_param = template_param
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the forward transformation to the data.
-
-        Parameters
-        ----------
-        data : Any
-            Input data to be transformed.
-
-        Returns
-        -------
-        Any
-            Transformed data.
-        """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.template_param,
-        )
-
     def forward_transform(self, template: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.
 

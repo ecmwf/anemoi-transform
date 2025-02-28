@@ -18,8 +18,8 @@ from typing import Union
 from earthkit.data.core.fieldlist import Field
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.filters import matching
 from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 
 @filter_registry.register("earthkitfieldlambda")

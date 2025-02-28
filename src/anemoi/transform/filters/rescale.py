@@ -14,8 +14,8 @@ from typing import Iterator
 import earthkit.data as ekd
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.filters import matching
 from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 
 class Rescale(MatchingFieldsFilter):

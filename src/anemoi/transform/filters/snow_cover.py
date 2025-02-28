@@ -14,8 +14,8 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.filters import matching
 from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 
 def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.ndarray:

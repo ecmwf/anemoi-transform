@@ -14,8 +14,8 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.filters import matching
 from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 
 def mask_glaciers(snow_depth: np.ndarray, glacier_mask: np.ndarray) -> np.ndarray:

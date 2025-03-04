@@ -14,15 +14,21 @@ import earthkit.data as ekd
 from earthkit.meteo.wind.array import polar_to_xy
 from earthkit.meteo.wind.array import xy_to_polar
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 
-class WindComponents(SimpleFilter):
+class WindComponents(MatchingFieldsFilter):
     """A filter to convert wind speed and direction to U and V components,
     and back.
     """
 
+    @matching(
+        match="param",
+        forward=("u_component", "v_component"),
+        backward=("wind_speed", "wind_direction"),
+    )
     def __init__(
         self,
         *,
@@ -59,69 +65,59 @@ class WindComponents(SimpleFilter):
 
         assert not self.radians, "Radians not (yet) supported"
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the forward transformation to the data.
+    def forward_transform(self, u_component: ekd.Field, v_component: ekd.Field) -> Iterator[ekd.Field]:
+        """U/V to DD/FF.
 
         Parameters
         ----------
-        data : Any
-            Input data to be transformed.
+        u_component : ekd.Field
+            The U component of the wind.
+        v_component : ekd.Field
+            The V component of the wind.
 
         Returns
         -------
-        Any
-            Transformed data.
+        ekd.Field
+            The wind speed field.
+        ekd.Field
+            The wind direction field.
         """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.u_component,
-            self.v_component,
-        )
-
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the backward transformation to the data.
-
-        Parameters
-        ----------
-        data : Any
-            Input data to be transformed.
-
-        Returns
-        -------
-        Any
-            Transformed data.
-        """
-        return self._transform(
-            data,
-            self.backward_transform,
-            self.wind_speed,
-            self.wind_direction,
-        )
-
-    def forward_transform(self, u: ekd.Field, v: ekd.Field) -> Iterator[ekd.Field]:
-        """U/V to DD/FF."""
 
         speed, direction = xy_to_polar(
-            u.to_numpy(),
-            v.to_numpy(),
+            u_component.to_numpy(),
+            v_component.to_numpy(),
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(speed, template=u, param=self.wind_speed)
-        yield self.new_field_from_numpy(direction, template=v, param=self.wind_direction)
+        yield self.new_field_from_numpy(speed, template=u_component, param=self.wind_speed)
+        yield self.new_field_from_numpy(direction, template=v_component, param=self.wind_direction)
 
-    def backward_transform(self, speed: ekd.Field, direction: ekd.Field) -> Iterator[ekd.Field]:
-        """DD/FF to U/V."""
+    def backward_transform(self, wind_speed: ekd.Field, wind_direction: ekd.Field) -> Iterator[ekd.Field]:
+        """DD/FF to U/V.
+
+        Parameters
+        ----------
+        wind_speed : ekd.Field
+            The wind speed field.
+        wind_direction : ekd.Field
+            The wind direction field.
+
+        Returns
+        -------
+        ekd.Field
+            The U component of the wind.
+        ekd.Field
+            The V component of the wind.
+        """
 
         u, v = polar_to_xy(
-            speed.to_numpy(),
-            direction.to_numpy(),
+            wind_speed.to_numpy(),
+            wind_direction.to_numpy(),
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(u, template=speed, param=self.u_component)
-        yield self.new_field_from_numpy(v, template=direction, param=self.v_component)
+        yield self.new_field_from_numpy(u, template=wind_speed, param=self.u_component)
+        yield self.new_field_from_numpy(v, template=wind_direction, param=self.v_component)
 
 
 filter_registry.register("uv_2_ddff", WindComponents)

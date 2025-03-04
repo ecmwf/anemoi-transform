@@ -14,10 +14,10 @@ from typing import List
 
 import earthkit.data as ekd
 
-from ..fields import new_field_from_numpy
-from ..fields import new_fieldlist_from_list
-from . import filter_registry
-from .base import Filter
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.filter import Filter
+from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger(__name__)
 

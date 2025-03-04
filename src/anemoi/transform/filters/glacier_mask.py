@@ -13,8 +13,9 @@ from typing import Iterator
 import earthkit.data as ekd
 import numpy as np
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 
 def mask_glaciers(snow_depth: np.ndarray, glacier_mask: np.ndarray) -> np.ndarray:
@@ -37,9 +38,10 @@ def mask_glaciers(snow_depth: np.ndarray, glacier_mask: np.ndarray) -> np.ndarra
 
 
 @filter_registry.register("glacier_mask")
-class SnowDepthMasked(SimpleFilter):
+class SnowDepthMasked(MatchingFieldsFilter):
     """A filter to mask about glacier in snow depth."""
 
+    @matching(match="param", forward="snow_depth")
     def __init__(
         self,
         *,
@@ -58,35 +60,17 @@ class SnowDepthMasked(SimpleFilter):
         snow_depth_masked : str, optional
             Name of the masked snow depth parameter, by default "sd_masked".
         """
-        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().astype(bool)
+
         self.snow_depth = snow_depth
+        self.glacier_mask = ekd.from_source("file", glacier_mask)[0].to_numpy().astype(bool)
         self.snow_depth_masked = snow_depth_masked
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the forward transformation to the data.
-
-        Parameters
-        ----------
-        data : ekd.FieldList
-            Input data to be transformed.
-
-        Returns
-        -------
-        ekd.FieldList
-            Transformed data.
-        """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.snow_depth,
-        )
-
-    def forward_transform(self, sd: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, snow_depth: ekd.Field) -> Iterator[ekd.Field]:
         """Mask out glaciers in snow depth.
 
         Parameters
         ----------
-        sd : ekd.Field
+        snow_depth : ekd.Field
             Snow depth field.
 
         Returns
@@ -94,6 +78,6 @@ class SnowDepthMasked(SimpleFilter):
         Iterator[ekd.Field]
             Snow depth field with glaciers masked out.
         """
-        snow_depth_masked = mask_glaciers(sd.to_numpy(), self.glacier_mask)
+        snow_depth_masked = mask_glaciers(snow_depth.to_numpy(), self.glacier_mask)
 
-        yield self.new_field_from_numpy(snow_depth_masked, template=sd, param=self.snow_depth_masked)
+        yield self.new_field_from_numpy(snow_depth_masked, template=snow_depth, param=self.snow_depth_masked)

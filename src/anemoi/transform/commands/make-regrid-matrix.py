@@ -11,7 +11,7 @@
 import argparse
 import os
 
-from . import Command
+from anemoi.transform.commands import Command
 
 
 class MakeRegridMatrix(Command):

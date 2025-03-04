@@ -12,7 +12,7 @@ from typing import Any
 from typing import Dict
 from typing import Union
 
-from . import Variable
+from anemoi.transform.variables import Variable
 
 
 class VariableFromMarsVocabulary(Variable):

@@ -7,14 +7,14 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Any
 from typing import Iterator
 
 import earthkit.data as ekd
 import numpy as np
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 NODATA = -9.999e06
 UNDETECTED = -8.888e06
@@ -83,7 +83,7 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
 
 
 @filter_registry.register("rodeo_opera_preprocessing")
-class RodeoOperaPreProcessing(SimpleFilter):
+class RodeoOperaPreProcessing(MatchingFieldsFilter):
     """A filter to select only good quality data in Rodeo Opera data.
 
     Parameters
@@ -100,6 +100,10 @@ class RodeoOperaPreProcessing(SimpleFilter):
         The maximum value for tp, by default MAX_TP.
     """
 
+    @matching(
+        match="param",
+        forward=("tp", "quality", "mask"),
+    )
     def __init__(
         self,
         *,
@@ -130,37 +134,21 @@ class RodeoOperaPreProcessing(SimpleFilter):
         self.mask = mask
         self.max_tp = max_tp
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the forward transformation to the data.
-
-        Parameters
-        ----------
-        data : Any
-            The input data.
-
-        Returns
-        -------
-        Any
-            The transformed data.
-        """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.tp,
-            self.quality,
-            self.mask,
-        )
-
-    def forward_transform(self, tp: Any, quality: Any, mask: Any) -> Iterator[ekd.Field]:
+    def forward_transform(
+        self,
+        tp: ekd.Field,
+        quality: ekd.Field,
+        mask: ekd.Field,
+    ) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 
         Parameters
         ----------
-        tp : Any
+        tp : ekd.Field
             The tp data.
-        quality : Any
+        quality : ekd.Field
             The quality data.
-        mask : Any
+        mask : ekd.Field
             The mask data.
 
         Returns

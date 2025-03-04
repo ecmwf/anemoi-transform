@@ -13,13 +13,19 @@ from typing import Iterator
 
 import earthkit.data as ekd
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 
-class Rescale(SimpleFilter):
+class Rescale(MatchingFieldsFilter):
     """A filter to rescale a parameter from a scale and an offset, and back."""
 
+    @matching(
+        match="param",
+        forward=("param",),
+        backward=("param",),
+    )
     def __init__(
         self,
         *,
@@ -40,46 +46,12 @@ class Rescale(SimpleFilter):
         self.offset = offset
         self.param = param
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the forward rescaling transformation.
-
-        Parameters
-        ----------
-        data : Any
-            The input data to be transformed.
-
-        Returns
-        -------
-        Any
-            The transformed data.
-        """
-        return self._transform(data, self.forward_transform, self.param)
-
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the backward rescaling transformation.
-
-        Parameters
-        ----------
-        data : Any
-            The input data to be transformed.
-
-        Returns
-        -------
-        Any
-            The transformed data.
-        """
-        return self._transform(
-            data,
-            self.backward_transform,
-            self.param,
-        )
-
-    def forward_transform(self, x: Any) -> Iterator[ekd.Field]:
+    def forward_transform(self, param: Any) -> Iterator[ekd.Field]:
         """Apply the forward transformation (x to ax+b).
 
         Parameters
         ----------
-        x : ekd.Field
+        param : ekd.Field
             The input data to be transformed.
 
         Returns
@@ -87,15 +59,15 @@ class Rescale(SimpleFilter):
         Iterator[ekd.Field]
             A generator yielding the transformed data.
         """
-        rescaled = x.to_numpy() * self.scale + self.offset
-        yield self.new_field_from_numpy(rescaled, template=x, param=self.param)
+        rescaled = param.to_numpy() * self.scale + self.offset
+        yield self.new_field_from_numpy(rescaled, template=param, param=self.param)
 
-    def backward_transform(self, x: ekd.Field) -> Iterator[ekd.Field]:
+    def backward_transform(self, param: ekd.Field) -> Iterator[ekd.Field]:
         """Apply the backward transformation (ax+b to x).
 
         Parameters
         ----------
-        x : Any
+        param : Any
             The input data to be transformed.
 
         Returns
@@ -103,13 +75,9 @@ class Rescale(SimpleFilter):
         Iterator[ekd.Field]
             A generator yielding the transformed data.
 
-        Yields
-        ------
-        Any
-            The transformed data.
         """
-        descaled = (x.to_numpy() - self.offset) / self.scale
-        yield self.new_field_from_numpy(descaled, template=x, param=self.param)
+        descaled = (param.to_numpy() - self.offset) / self.scale
+        yield self.new_field_from_numpy(descaled, template=param, param=self.param)
 
 
 class Convert(Rescale):

@@ -8,6 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 
-from .unstructured import UnstructuredGridFieldList
+from anemoi.transform.grids.unstructured import UnstructuredGridFieldList
 
 __all__ = ["UnstructuredGridFieldList"]

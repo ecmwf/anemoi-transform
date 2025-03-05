@@ -154,12 +154,8 @@ class SeaIceMasking(MatchingFieldsFilter):
 
         breakpoint()
 
-        # Debug statements to check values before and after applying the condition
-        logger.debug("sihc_np before cleanup: %s", np.nanmax(sihc_np))
-        sihc_np[sihc_np >= -PUNY] = 0
-        logger.debug("sihc_np after cleanup: %s", np.nanmax(sihc_np))
-
         # Additional cleanup of interpolation artefacts
+        sihc_np[sihc_np >= -PUNY] = 0
         snhc_np[snhc_np >= -PUNY] = 0
 
         # Convert snow temperature in K to solve archiving error in ORAS6

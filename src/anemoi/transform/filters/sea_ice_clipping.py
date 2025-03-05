@@ -1,3 +1,12 @@
+# (C) Copyright 2024 Anemoi contributors.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+
 from typing import Iterator
 
 import earthkit.data as ekd
@@ -7,7 +16,7 @@ from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
 
-PUNY = 10e-6
+PUNY = 1e-5
 
 @filter_registry.register("sea_ice_masking")
 class SeaIceMasking(MatchingFieldsFilter):
@@ -22,26 +31,28 @@ class SeaIceMasking(MatchingFieldsFilter):
     siconc : str, optional
         The name of the sea ice concentration field, by default "avg_siconc".
     icesalt : str, optional
-        The name of the sea ice salinity field, by default "icesalt".
+        The name of the sea ice salinity field, by default "avg_icesalt".
     sihc : str, optional
-        The name of the sea ice heat content field, by default "sihc".
+        The name of the sea ice heat content field, by default "avg_sihc".
     snhc : str, optional
-        The name of the snow heat content field, by default "snhc".
+        The name of the snow heat content field, by default "avg_snhc".
     sipf : str, optional
-        The name of the sea ice pressure field, by default "sipf".
+        The name of the sea ice pressure field, by default "avg_sipf".
     sitemptop : str, optional
-        The name of the sea ice top temperature field, by default "sitemptop".
+        The name of the sea ice top temperature field, by default "avg_sitemptop".
     sntemp : str, optional
-        The name of the snow temperature field, by default "sntemp".
+        The name of the snow temperature field, by default "avg_sntemp".
     snvol : str, optional
-        The name of the snow volume field, by default "snvol".
+        The name of the snow volume field, by default "avg_snvol".
     sivol : str, optional
-        The name of the sea ice volume field, by default "sivol".
+        The name of the sea ice volume field, by default "avg_sivol".
+    PUNY : float
+        A small threshold value used for masking.
     """
 
     @matching(
         match="param",
-        forward=("siue", "sivn", "siconc", "icesalt", "sihc", "snhc", "sipf", "sitemptop", "sntemp", "snvol", "sivol"),
+        forward=("avg_siue", "avg_sivn", "avg_siconc", "avg_icesalt", "avg_sihc", "avg_snhc", "avg_sipf", "avg_sitemptop", "avg_sntemp", "avg_snvol", "avg_sivol"),
     )
     def __init__(
         self,
@@ -49,14 +60,14 @@ class SeaIceMasking(MatchingFieldsFilter):
         siue: str = "avg_siue",
         sivn: str = "avg_sivn",
         siconc: str = "avg_siconc",
-        icesalt: str = "icesalt",
-        sihc: str = "sihc",
-        snhc: str = "snhc",
-        sipf: str = "sipf",
-        sitemptop: str = "sitemptop",
-        sntemp: str = "sntemp",
-        snvol: str = "snvol",
-        sivol: str = "sivol",
+        icesalt: str = "avg_icesalt",
+        sihc: str = "avg_sihc",
+        snhc: str = "avg_snhc",
+        sipf: str = "avg_sipf",
+        sitemptop: str = "avg_sitemptop",
+        sntemp: str = "avg_sntemp",
+        snvol: str = "avg_snvol",
+        sivol: str = "avg_sivol",
     ) -> None:
         self.siue = siue
         self.sivn = sivn
@@ -141,13 +152,17 @@ class SeaIceMasking(MatchingFieldsFilter):
         snvol_np[siconc_np <= PUNY] = 0
         sivol_np[siconc_np <= PUNY] = 0
 
-        # Additional cleanup of interpolation artefacts
+        breakpoint()
 
+        # Debug statements to check values before and after applying the condition
+        logger.debug("sihc_np before cleanup: %s", np.nanmax(sihc_np))
         sihc_np[sihc_np >= -PUNY] = 0
+        logger.debug("sihc_np after cleanup: %s", np.nanmax(sihc_np))
+
+        # Additional cleanup of interpolation artefacts
         snhc_np[snhc_np >= -PUNY] = 0
 
         # Convert snow temperature in K to solve archiving error in ORAS6
-
         sntemp_np = sntemp_np + 273.15
 
         yield self.new_field_from_numpy(siue_np, template=siue, param=self.siue)
@@ -160,4 +175,3 @@ class SeaIceMasking(MatchingFieldsFilter):
         yield self.new_field_from_numpy(sntemp_np, template=sntemp, param=self.sntemp)
         yield self.new_field_from_numpy(snvol_np, template=snvol, param=self.snvol)
         yield self.new_field_from_numpy(sivol_np, template=sivol, param=self.sivol)
-

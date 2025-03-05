@@ -9,8 +9,8 @@ from anemoi.transform.filters.matching import matching
 
 PUNY = 10e-6
 
-@filter_registry.register("sea_ice_velocity_masking")
-class SeaIceVelocityMasking(MatchingFieldsFilter):
+@filter_registry.register("sea_ice_masking")
+class SeaIceMasking(MatchingFieldsFilter):
     """A filter to mask sea ice-related variables when sea ice concentration is low.
 
     Parameters

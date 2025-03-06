@@ -17,8 +17,9 @@ from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
 
 PUNY = 1e-5
-MINTF = 271.15 - PUNY # Assuming a minimum ocean temperature of 271.15K
+MINTF = 271.15 - PUNY  # Assuming a minimum ocean temperature of 271.15K
 TF = 273.15
+
 
 @filter_registry.register("oras6_clipping")
 class Oras6Clipping(MatchingFieldsFilter):
@@ -58,7 +59,22 @@ class Oras6Clipping(MatchingFieldsFilter):
 
     @matching(
         match="param",
-        forward=("siue", "sivn", "siconc", "icesalt", "sihc", "snhc", "sipf", "sitemptop", "sntemp", "snvol", "sivol", "sialb", "vasit", "tos"),
+        forward=(
+            "siue",
+            "sivn",
+            "siconc",
+            "icesalt",
+            "sihc",
+            "snhc",
+            "sipf",
+            "sitemptop",
+            "sntemp",
+            "snvol",
+            "sivol",
+            "sialb",
+            "vasit",
+            "tos",
+        ),
     )
     def __init__(
         self,
@@ -167,9 +183,9 @@ class Oras6Clipping(MatchingFieldsFilter):
 
         # Convert snow temperature from Celsius to Kelvin if the maximum value is less than 100,
         # as it indicates the temperature is likely in Celsius due to an archiving error in ORAS6.
-        if np.nanmax(sntemp_np) < 100: 
+        if np.nanmax(sntemp_np) < 100:
             sntemp_np = sntemp_np + TF
-            
+
         mask = siconc_np <= PUNY
 
         siue_np[mask] = 0

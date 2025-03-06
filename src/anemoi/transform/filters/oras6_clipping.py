@@ -17,10 +17,12 @@ from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
 
 PUNY = 1e-5
+MINTF = 271.15 - PUNY # Assuming a minimum ocean temperature of 271.15K
+TF = 273.15
 
-@filter_registry.register("sea_ice_masking")
-class SeaIceMasking(MatchingFieldsFilter):
-    """A filter to mask sea ice-related variables when sea ice concentration is low.
+@filter_registry.register("oras6_clipping")
+class Oras6Clipping(MatchingFieldsFilter):
+    """A filter to mask ocean and sea ice-related variables when sea ice concentration is low.
 
     Parameters
     ----------
@@ -46,13 +48,17 @@ class SeaIceMasking(MatchingFieldsFilter):
         The name of the snow volume field, by default "avg_snvol".
     sivol : str, optional
         The name of the sea ice volume field, by default "avg_sivol".
-    PUNY : float
-        A small threshold value used for masking.
+    sialb : str, optional
+        The name of the sea ice albedo field, by default "avg_sialb".
+    vasit : str, optional
+        The name of the vertically averaged sea ice temperature, by default "avg_vasit".
+    tos : str, optional
+        The name of the temperature of the surface field, by default "avg_tos".
     """
 
     @matching(
         match="param",
-        forward=("avg_siue", "avg_sivn", "avg_siconc", "avg_icesalt", "avg_sihc", "avg_snhc", "avg_sipf", "avg_sitemptop", "avg_sntemp", "avg_snvol", "avg_sivol"),
+        forward=("siue", "sivn", "siconc", "icesalt", "sihc", "snhc", "sipf", "sitemptop", "sntemp", "snvol", "sivol", "sialb", "vasit", "tos"),
     )
     def __init__(
         self,
@@ -68,6 +74,9 @@ class SeaIceMasking(MatchingFieldsFilter):
         sntemp: str = "avg_sntemp",
         snvol: str = "avg_snvol",
         sivol: str = "avg_sivol",
+        sialb: str = "avg_sialb",
+        vasit: str = "avg_vasit",
+        tos: str = "avg_tos",
     ) -> None:
         self.siue = siue
         self.sivn = sivn
@@ -80,6 +89,9 @@ class SeaIceMasking(MatchingFieldsFilter):
         self.sntemp = sntemp
         self.snvol = snvol
         self.sivol = sivol
+        self.sialb = sialb
+        self.vasit = vasit
+        self.tos = tos
 
     def forward_transform(
         self,
@@ -94,6 +106,9 @@ class SeaIceMasking(MatchingFieldsFilter):
         sntemp: ekd.Field,
         snvol: ekd.Field,
         sivol: ekd.Field,
+        sialb: ekd.Field,
+        vasit: ekd.Field,
+        tos: ekd.Field,
     ) -> Iterator[ekd.Field]:
         """Mask sea ice-related variables where concentration is low.
 
@@ -121,6 +136,12 @@ class SeaIceMasking(MatchingFieldsFilter):
             Snow volume.
         sivol : ekd.Field
             Sea ice volume.
+        sialb : ekd.Field
+            Sea ice albedo.
+        vasit : ekd.Field
+            Vertically integrated sea ice temperature.
+        tos : ekd.Field
+            Temperature of the surface.
 
         Returns
         -------
@@ -140,26 +161,38 @@ class SeaIceMasking(MatchingFieldsFilter):
         sntemp_np = sntemp.to_numpy()
         snvol_np = snvol.to_numpy()
         sivol_np = sivol.to_numpy()
+        sialb_np = sialb.to_numpy()
+        vasit_np = vasit.to_numpy()
+        tos_np = tos.to_numpy()
 
-        siue_np[siconc_np <= PUNY] = 0
-        sivn_np[siconc_np <= PUNY] = 0
-        icesalt_np[siconc_np <= PUNY] = 0
-        sihc_np[siconc_np <= PUNY] = 0
-        snhc_np[siconc_np <= PUNY] = 0
-        sipf_np[siconc_np <= PUNY] = 0
-        sitemptop_np[siconc_np <= PUNY] = 0
-        sntemp_np[siconc_np <= PUNY] = 0
-        snvol_np[siconc_np <= PUNY] = 0
-        sivol_np[siconc_np <= PUNY] = 0
+        # Convert snow temperature from Celsius to Kelvin if the maximum value is less than 100,
+        # as it indicates the temperature is likely in Celsius due to an archiving error in ORAS6.
+        if np.nanmax(sntemp_np) < 100: 
+            sntemp_np = sntemp_np + TF
+            
+        mask = siconc_np <= PUNY
 
-        breakpoint()
-
-        # Additional cleanup of interpolation artefacts
+        siue_np[mask] = 0
+        sivn_np[mask] = 0
+        icesalt_np[mask] = 0
+        sihc_np[mask] = 0
+        snhc_np[mask] = 0
+        sipf_np[mask] = 0
+        snvol_np[mask] = 0
+        sivol_np[mask] = 0
+        sialb_np[mask] = 0
+        # Temperature fields should be masked with 273.15K
+        sitemptop_np[mask] = TF
+        sntemp_np[mask] = TF
+        vasit_np[mask] = TF
+        # Additional cleanup of interpolation artefacts – heat content should be negative
+        # and positive values likely indicate erroneous data due to interpolation artefacts.
         sihc_np[sihc_np >= -PUNY] = 0
         snhc_np[snhc_np >= -PUNY] = 0
 
-        # Convert snow temperature in K to solve archiving error in ORAS6
-        sntemp_np = sntemp_np + 273.15
+        # Sea Surface Temperature Fix: Ensure the temperature does not fall below the minimum threshold (MINTF)
+        # to avoid unrealistic values in the ocean model.
+        tos_np[tos_np <= MINTF] = MINTF
 
         yield self.new_field_from_numpy(siue_np, template=siue, param=self.siue)
         yield self.new_field_from_numpy(sivn_np, template=sivn, param=self.sivn)
@@ -171,3 +204,6 @@ class SeaIceMasking(MatchingFieldsFilter):
         yield self.new_field_from_numpy(sntemp_np, template=sntemp, param=self.sntemp)
         yield self.new_field_from_numpy(snvol_np, template=snvol, param=self.snvol)
         yield self.new_field_from_numpy(sivol_np, template=sivol, param=self.sivol)
+        yield self.new_field_from_numpy(sialb_np, template=sialb, param=self.sialb)
+        yield self.new_field_from_numpy(vasit_np, template=vasit, param=self.vasit)
+        yield self.new_field_from_numpy(tos_np, template=tos, param=self.tos)

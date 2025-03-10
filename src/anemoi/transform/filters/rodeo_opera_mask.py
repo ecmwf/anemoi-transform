@@ -73,10 +73,10 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
 
     # # RAW HDF5 DATA FILTERING
     # tp[quality == NODATA] = np.nan
-    # tp[quality == UNDETECTED] = np.nan
+    # tp[quality == UNDETECTED] = 0
 
     tp[mask == _NODATA] = np.nan
-    tp[mask == _UNDETECTED] = np.nan
+    tp[mask == _UNDETECTED] = 0 
     tp[mask == _INF] = np.nan
 
     return tp
@@ -102,12 +102,12 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
 
     @matching(
         match="param",
-        forward=("tp", "quality", "mask"),
+        forward=("total_precipitation", "quality", "mask"),
     )
     def __init__(
         self,
         *,
-        tp: str = "tp",
+        total_precipitation: str = "tp",
         quality: str = "quality",
         mask: str = "mask",
         output: str = "tp_cleaned",
@@ -128,7 +128,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         max_tp : int, optional
             The maximum value for tp, by default MAX_TP.
         """
-        self.tp = tp
+        self.total_precipitation = total_precipitation
         self.quality = quality
         self.tp_cleaned = output
         self.mask = mask
@@ -136,7 +136,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        tp: ekd.Field,
+        total_precipitation: ekd.Field,
         quality: ekd.Field,
         mask: ekd.Field,
     ) -> Iterator[ekd.Field]:
@@ -144,7 +144,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
 
         Parameters
         ----------
-        tp : ekd.Field
+        total_precipitation : ekd.Field
             The tp data.
         quality : ekd.Field
             The quality data.
@@ -157,9 +157,9 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             Transformed fields.
         """
         # 1st - apply masking
-        tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
+        total_precipitation_masked = mask_opera(tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
 
         # 2nd - apply clipping
-        tp_cleaned, quality = clip_opera(tp=tp_masked, quality=quality.to_numpy(), max_tp=self.max_tp)
+        total_precipitation_clenaed, quality = clip_opera(tp=total_precipitation_masked, quality=quality.to_numpy(), max_tp=self.max_tp)
 
-        yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
+        yield self.new_field_from_numpy(total_precipitation_clenaed, template=total_precipitation, param=self.tp_cleaned)

@@ -86,7 +86,8 @@ class MatchingFieldsFilter(Filter):
     """
 
     _initialised = False
-    # to return filter inputs if needed
+    # to return filter inputs if needed.
+    # strings in the list must be in forward or backward args, otherwise this will fail 
     return_inputs: Union[Literal["all","none"], List[str]] = "none"
 
     @property
@@ -114,6 +115,8 @@ class MatchingFieldsFilter(Filter):
             case _:
                 if not isinstance(self.return_inputs,list):
                     raise ValueError("Return inputs must be 'all', 'none', or List[str].")
+                if not set(self.return_inputs) <= set(self.forward_arguments):
+                    raise ValueError("Returned input names must be in the forward arguments")
                 returned_input_list = self.return_inputs
 
         for name in self.forward_arguments:
@@ -136,12 +139,15 @@ class MatchingFieldsFilter(Filter):
         args = []
         match self.return_inputs:
             case "all":
-                returned_input_list = self.forward_arguments
+                returned_input_list = self.backward_arguments
             case "none":
                 returned_input_list = []
             case _:
                 if not isinstance(self.return_inputs,list):
                     raise ValueError("Return inputs must be 'all', 'none', or List[str].")
+                if not set(self.return_inputs) <= set(self.backward_arguments):
+                    raise ValueError("Returned input names must be in the backward arguments")
+
                 returned_input_list = self.return_inputs
                 
         for name in self.backward_arguments:

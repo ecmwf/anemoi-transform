@@ -12,9 +12,7 @@ import logging
 from abc import abstractmethod
 from functools import wraps
 from inspect import signature
-from typing import Callable
-from typing import Iterator
-from typing import List
+from typing import Callable, Iterator, List, Literal, Union
 
 import earthkit.data as ekd
 import numpy as np
@@ -87,6 +85,8 @@ class MatchingFieldsFilter(Filter):
     """
 
     _initialised = False
+    # to return filter inputs if needed
+    return_inputs: Union[Literal["all","none"], List[str]] = "none"
 
     @property
     def forward_arguments(self):
@@ -105,6 +105,15 @@ class MatchingFieldsFilter(Filter):
     def forward(self, data):
 
         args = []
+        match self.return_inputs:
+            case "all":
+                returned_input_list = self.forward_arguments
+            case "none":
+                returned_input_list = []
+            case _:
+                if not isinstance(self.return_inputs,list):
+                    raise ValueError("Return inputs must be 'all', 'none', or List[str].")
+                returned_input_list = self.return_inputs
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
@@ -112,6 +121,9 @@ class MatchingFieldsFilter(Filter):
         def forward_transform(*fields):
             assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
+            for name in returned_input_list:
+                if name in kwargs:
+                    yield kwargs[name]
             return self.forward_transform(**kwargs)
 
         return self._transform(data, forward_transform, *args)
@@ -119,13 +131,25 @@ class MatchingFieldsFilter(Filter):
     def backward(self, data):
 
         args = []
-
+        match self.return_inputs:
+            case "all":
+                returned_input_list = self.forward_arguments
+            case "none":
+                returned_input_list = []
+            case _:
+                if not isinstance(self.return_inputs,list):
+                    raise ValueError("Return inputs must be 'all', 'none', or List[str].")
+                returned_input_list = self.return_inputs
+                
         for name in self.backward_arguments:
             args.append(getattr(self, name))
 
         def backward_transform(*fields):
             assert len(fields) == len(self.backward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
+            for name in returned_input_list:
+                if name in kwargs:
+                    yield kwargs[name]
             return self.backward_transform(**kwargs)
 
         return self._transform(data, backward_transform, *args)
@@ -159,6 +183,11 @@ class MatchingFieldsFilter(Filter):
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)
+            
+        # adding additional filter inputs if required
+        for f_input in matching:
+            if f_input in self.return_inputs:
+                result.append(f_input)
 
         return self.new_fieldlist_from_list(result)
 

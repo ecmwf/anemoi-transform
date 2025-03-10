@@ -49,6 +49,8 @@ class VerticalVelocity(MatchingFieldsFilter):
         wz = (-1.0 / (rho * 9.80665 + 1e-8)) * w_component.to_numpy()
 
         yield self.new_field_from_numpy(wz, template=w_component, param=self.wz_component)
+        yield temperature
+        yield humidity
 
     def backward_transform(self, wz_component: ekd.Field, temperature: ekd.Field, humidity: ekd.Field) -> ekd.Field:
         """m/s to Pa/s"""
@@ -59,7 +61,8 @@ class VerticalVelocity(MatchingFieldsFilter):
         w = -1.0 * rho * 9.80665 * wz_component.to_numpy()
 
         yield self.new_field_from_numpy(w, template=wz_component, param=self.w_component)
-
+        yield temperature
+        yield humidity
 
 filter_registry.register("w_2_wz", VerticalVelocity)
 filter_registry.register("wz_2_w", VerticalVelocity.reversed)

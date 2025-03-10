@@ -88,8 +88,8 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
 
     Parameters
     ----------
-    tp : str, optional
-        The name of the tp field, by default "tp".
+    total_precipitation : str, optional
+        The name of the total_precipitation field, by default "tp".
     quality : str, optional
         The name of the quality field, by default "quality".
     mask : str, optional

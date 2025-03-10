@@ -13,7 +13,11 @@ from abc import abstractmethod
 from functools import wraps
 from inspect import signature
 from itertools import chain
-from typing import Callable, Iterator, List, Literal, Union
+from typing import Callable
+from typing import Iterator
+from typing import List
+from typing import Literal
+from typing import Union
 
 import earthkit.data as ekd
 import numpy as np
@@ -87,8 +91,8 @@ class MatchingFieldsFilter(Filter):
 
     _initialised = False
     # to return filter inputs if needed.
-    # strings in the list must be in forward or backward args, otherwise this will fail 
-    return_inputs: Union[Literal["all","none"], List[str]] = "none"
+    # strings in the list must be in forward or backward args, otherwise this will fail
+    return_inputs: Union[Literal["all", "none"], List[str]] = "none"
 
     @property
     def forward_arguments(self):
@@ -113,7 +117,7 @@ class MatchingFieldsFilter(Filter):
             case "none":
                 returned_input_list = []
             case _:
-                if not isinstance(self.return_inputs,list):
+                if not isinstance(self.return_inputs, list):
                     raise ValueError("Return inputs must be 'all', 'none', or List[str].")
                 if not set(self.return_inputs) <= set(self.forward_arguments):
                     raise ValueError("Returned input names must be in the forward arguments")
@@ -121,7 +125,7 @@ class MatchingFieldsFilter(Filter):
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
-        
+
         def inputs_generator(**kwargs):
             for name in returned_input_list:
                 if name in kwargs:
@@ -143,13 +147,13 @@ class MatchingFieldsFilter(Filter):
             case "none":
                 returned_input_list = []
             case _:
-                if not isinstance(self.return_inputs,list):
+                if not isinstance(self.return_inputs, list):
                     raise ValueError("Return inputs must be 'all', 'none', or List[str].")
                 if not set(self.return_inputs) <= set(self.backward_arguments):
                     raise ValueError("Returned input names must be in the backward arguments")
 
                 returned_input_list = self.return_inputs
-                
+
         for name in self.backward_arguments:
             args.append(getattr(self, name))
 

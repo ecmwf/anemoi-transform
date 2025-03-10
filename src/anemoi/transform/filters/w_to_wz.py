@@ -25,15 +25,7 @@ class VerticalVelocity(MatchingFieldsFilter):
         forward=("w_component", "temperature", "humidity"),
         backward=("wz_component", "temperature", "humidity"),
     )
-    def __init__(
-        self,
-        *,
-        w_component="w",
-        wz_component="wz",
-        temperature="t",
-        humidity="q",
-        return_inputs="none"
-    ):
+    def __init__(self, *, w_component="w", wz_component="wz", temperature="t", humidity="q", return_inputs="none"):
         self.return_inputs = return_inputs
         # wind speed in Pa/s
         self.w_component = w_component

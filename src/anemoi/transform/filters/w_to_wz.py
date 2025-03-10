@@ -34,7 +34,7 @@ class VerticalVelocity(MatchingFieldsFilter):
         humidity="q",
         return_inputs="none"
     ):
-        super.__init_(self,return_inputs)
+        self.return_inputs = return_inputs
         # wind speed in Pa/s
         self.w_component = w_component
         # wind speed in m/s

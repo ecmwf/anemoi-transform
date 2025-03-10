@@ -12,6 +12,7 @@ import logging
 from abc import abstractmethod
 from functools import wraps
 from inspect import signature
+from itertools import chain
 from typing import Callable, Iterator, List, Literal, Union
 
 import earthkit.data as ekd
@@ -117,14 +118,16 @@ class MatchingFieldsFilter(Filter):
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
+        
+        def inputs_generator(**kwargs):
+            for name in returned_input_list:
+                if name in kwargs:
+                    yield kwargs[name]
 
         def forward_transform(*fields):
             assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
-            for name in returned_input_list:
-                if name in kwargs:
-                    yield kwargs[name]
-            return self.forward_transform(**kwargs)
+            return chain(inputs_generator(**kwargs), self.forward_transform(**kwargs))
 
         return self._transform(data, forward_transform, *args)
 
@@ -144,13 +147,15 @@ class MatchingFieldsFilter(Filter):
         for name in self.backward_arguments:
             args.append(getattr(self, name))
 
-        def backward_transform(*fields):
-            assert len(fields) == len(self.backward_arguments)
-            kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
+        def inputs_generator(**kwargs):
             for name in returned_input_list:
                 if name in kwargs:
                     yield kwargs[name]
-            return self.backward_transform(**kwargs)
+
+        def backward_transform(*fields):
+            assert len(fields) == len(self.backward_arguments)
+            kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
+            return chain(inputs_generator(**kwargs), self.backward_transform(**kwargs))
 
         return self._transform(data, backward_transform, *args)
 
@@ -183,12 +188,6 @@ class MatchingFieldsFilter(Filter):
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)
-            
-        # adding additional filter inputs if required
-        for f_input in matching:
-            if f_input in self.return_inputs:
-                result.append(f_input)
-
         return self.new_fieldlist_from_list(result)
 
     def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, param: str) -> ekd.Field:

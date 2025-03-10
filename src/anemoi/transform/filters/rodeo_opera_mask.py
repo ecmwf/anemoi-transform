@@ -76,7 +76,7 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
     # tp[quality == UNDETECTED] = 0
 
     tp[mask == _NODATA] = np.nan
-    tp[mask == _UNDETECTED] = 0 
+    tp[mask == _UNDETECTED] = 0
     tp[mask == _INF] = np.nan
 
     return tp
@@ -157,9 +157,15 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             Transformed fields.
         """
         # 1st - apply masking
-        total_precipitation_masked = mask_opera(tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
+        total_precipitation_masked = mask_opera(
+            tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy()
+        )
 
         # 2nd - apply clipping
-        total_precipitation_clenaed, quality = clip_opera(tp=total_precipitation_masked, quality=quality.to_numpy(), max_tp=self.max_tp)
+        total_precipitation_clenaed, quality = clip_opera(
+            tp=total_precipitation_masked, quality=quality.to_numpy(), max_tp=self.max_tp
+        )
 
-        yield self.new_field_from_numpy(total_precipitation_clenaed, template=total_precipitation, param=self.tp_cleaned)
+        yield self.new_field_from_numpy(
+            total_precipitation_clenaed, template=total_precipitation, param=self.tp_cleaned
+        )

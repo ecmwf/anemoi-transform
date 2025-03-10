@@ -41,7 +41,9 @@ class VerticalVelocity(MatchingFieldsFilter):
         self.humidity = humidity
 
     def forward_transform(self, w_component: ekd.Field, temperature: ekd.Field, humidity: ekd.Field) -> ekd.Field:
-        """Pa/s to m/s"""
+        """Pa/s to m/s
+        This will return the fields that are used but not modified (temperature and humidity)
+        """
 
         level = float(w_component._metadata.get("levelist", None))
         # here the pressure gradient is assimilated to volumic weight : hydrostatic hypothesis
@@ -53,7 +55,9 @@ class VerticalVelocity(MatchingFieldsFilter):
         yield humidity
 
     def backward_transform(self, wz_component: ekd.Field, temperature: ekd.Field, humidity: ekd.Field) -> ekd.Field:
-        """m/s to Pa/s"""
+        """m/s to Pa/s
+        This will return the fields that are used but not modified (temperature and humidity)
+        """
 
         level = float(wz_component._metadata.get("levelist", None))
         # here the pressure gradient is assimilated to volumic weight : hydrostatic hypothesis

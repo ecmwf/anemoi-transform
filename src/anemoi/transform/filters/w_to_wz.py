@@ -68,5 +68,6 @@ class VerticalVelocity(MatchingFieldsFilter):
         yield temperature
         yield humidity
 
+
 filter_registry.register("w_2_wz", VerticalVelocity)
 filter_registry.register("wz_2_w", VerticalVelocity.reversed)

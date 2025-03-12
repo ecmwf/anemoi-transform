@@ -27,7 +27,7 @@ MAX_TP = 10000
 MAX_QI = 1
 
 
-def clip_opera(tp: np.ndarray, quality: np.ndarray=None, max_tp: int=MAX_TP) -> tuple[np.ndarray, np.ndarray]:
+def clip_opera(tp: np.ndarray, quality: np.ndarray = None, max_tp: int = MAX_TP) -> tuple[np.ndarray, np.ndarray]:
     """Clip the tp and quality arrays to specified maximum values.
 
     Parameters
@@ -206,19 +206,18 @@ class RodeoOperaClipping(MatchingFieldsFilter):
     ) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 
-        Parameters
-        ----------
-        total_precipitation : ekd.Field
-            The tp data.
+                Parameters
+                ----------
+                total_precipitation : ekd.Field
+                    The tp data.
 
-        Returns
-        -------
-        Iterator[ekd.Field]
-            Transformed fields.
-|        """   
-        total_precipitation_cleaned = clip_opera(
-            tp=total_precipitation.to_numpy(), max_tp=self.max_tp
-        )
+                Returns
+                -------
+                Iterator[ekd.Field]
+                    Transformed fields.
+        |
+        """
+        total_precipitation_cleaned = clip_opera(tp=total_precipitation.to_numpy(), max_tp=self.max_tp)
 
         yield self.new_field_from_numpy(
             total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation

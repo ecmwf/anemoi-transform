@@ -95,8 +95,6 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         The name of the quality field, by default "quality".
     mask : str, optional
         The name of the mask field, by default "mask".
-    output : str, optional
-        The name of the output field, by default "tp_cleaned".
     max_tp : int, optional
         The maximum value for tp, by default MAX_TP.
     """
@@ -111,7 +109,6 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         total_precipitation: str = "tp",
         quality: str = "quality",
         mask: str = "mask",
-        output: str = "tp_cleaned",
         max_tp: int = MAX_TP,
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
@@ -124,14 +121,11 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             The name of the quality field, by default "quality".
         mask : str, optional
             The name of the mask field, by default "mask".
-        output : str, optional
-            The name of the output field, by default "tp_cleaned".
         max_tp : int, optional
             The maximum value for tp, by default MAX_TP.
         """
         self.total_precipitation = total_precipitation
         self.quality = quality
-        self.tp_cleaned = output
         self.mask = mask
         self.max_tp = max_tp
 
@@ -168,7 +162,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         )
 
         yield self.new_field_from_numpy(
-            total_precipitation_cleaned, template=total_precipitation, param=self.tp_cleaned
+            total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
         )
 
 
@@ -180,8 +174,6 @@ class RodeoOperaClipping(MatchingFieldsFilter):
     ----------
     total_precipitation : str, optional
         The name of the total_precipitation field, by default "tp".
-    output : str, optional
-        The name of the output field, by default "tp_cleaned".
     max_tp : int, optional
         The maximum value for tp, by default MAX_TP.
     """
@@ -194,7 +186,6 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         self,
         *,
         total_precipitation: str = "tp",
-        output: str = "tp_cleaned",
         max_tp: int = MAX_TP,
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
@@ -203,13 +194,10 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         ----------
         tp : str, optional
             The name of the tp field, by default "tp".
-        output : str, optional
-            The name of the output field, by default "tp_cleaned".
         max_tp : int, optional
             The maximum value for tp, by default MAX_TP.
         """
         self.total_precipitation = total_precipitation
-        self.tp_cleaned = output
         self.max_tp = max_tp
 
     def forward_transform(
@@ -233,5 +221,5 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         )
 
         yield self.new_field_from_numpy(
-            total_precipitation_cleaned, template=total_precipitation, param=self.tp_cleaned
+            total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
         )

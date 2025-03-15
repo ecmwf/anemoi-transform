@@ -28,6 +28,28 @@ def _lost(f: Any) -> None:
     raise ValueError(f"Lost field {f}")
 
 
+def _flatten(params: List[Any]) -> List[str]:
+    """Flatten a list of parameters.
+
+    Parameters
+    ----------
+    params : list of Any
+        List of parameters to flatten.
+
+    Returns
+    -------
+    list of str
+        Flattened list of parameters.
+    """
+    flat = []
+    for p in params:
+        if isinstance(p, (list, tuple)):
+            flat.extend(_flatten(p))
+        else:
+            flat.append(p)
+    return flat
+
+
 class GroupByParam:
     """Group matching fields by parameters name.
 
@@ -37,10 +59,10 @@ class GroupByParam:
         List of parameters to group by.
     """
 
-    def __init__(self, *, params: List[str]) -> None:
+    def __init__(self, params: List[str]) -> None:
         if not isinstance(params, (list, tuple)):
             params = [params]
-        self.params = params
+        self.params = _flatten(params)
 
     def iterate(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[Tuple[Any, ...]]:
         """Iterate over the data and group fields by parameters.

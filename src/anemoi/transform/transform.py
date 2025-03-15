@@ -123,36 +123,6 @@ class Transform(ABC):
 
         return workflow_registry.create("pipeline", filters=[self, other])
 
-    def forward_processor(self, state: Any) -> Any:
-        """Process the state in the forward direction.
-
-        Parameters
-        ----------
-        state : Any
-            The state to process.
-
-        Returns
-        -------
-        Any
-            The processed state.
-        """
-        raise NotImplementedError("Not implemented")
-
-    def backward_processor(self, state: Any) -> Any:
-        """Process the state in the backward direction.
-
-        Parameters
-        ----------
-        state : Any
-            The state to process.
-
-        Returns
-        -------
-        Any
-            The processed state.
-        """
-        raise NotImplementedError("Not implemented")
-
     def patch_data_request(self, data_request: Any) -> Any:
         """Patch the data request with additional information.
 
@@ -221,36 +191,6 @@ class ReversedTransform(Transform):
             The transformed data.
         """
         return self.filter.forward(x)
-
-    def forward_processor(self, state: Any) -> Any:
-        """Process the state in the backward direction.
-
-        Parameters
-        ----------
-        state : Any
-            The state to process.
-
-        Returns
-        -------
-        Any
-            The processed state.
-        """
-        return self.filter.backward_processor(state)
-
-    def backward_processor(self, state: Any) -> Any:
-        """Process the state in the forward direction.
-
-        Parameters
-        ----------
-        state : Any
-            The state to process.
-
-        Returns
-        -------
-        Any
-            The processed state.
-        """
-        return self.filter.forward_processor(state)
 
     def patch_data_request(self, data_request: Any) -> Any:
         """Patch the data request with additional information.

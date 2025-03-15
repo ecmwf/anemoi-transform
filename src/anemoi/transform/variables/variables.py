@@ -18,7 +18,7 @@ from anemoi.transform.variables import Variable
 class VariableFromMarsVocabulary(Variable):
     """A variable that is defined by the Mars vocabulary."""
 
-    def __init__(self, *, name: str, data: Dict[str, Any]) -> None:
+    def __init__(self, name: str, data: Dict[str, Any]) -> None:
         """Initialize the variable with a name and data.
 
         Parameters
@@ -108,7 +108,7 @@ class VariableFromMarsVocabulary(Variable):
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""
 
-    def __init__(self, *, name: str, data: Dict[str, Any]) -> None:
+    def __init__(self, name: str, data: Dict[str, Any]) -> None:
         """Initialize the variable with a name and data.
 
         Parameters
@@ -124,7 +124,7 @@ class VariableFromDict(VariableFromMarsVocabulary):
 class VariableFromEarthkit(VariableFromMarsVocabulary):
     """A variable that is defined by an EarthKit field."""
 
-    def __init__(self, *, name: str, field: Any, namespace: str = "mars") -> None:
+    def __init__(self, name: str, field: Any, namespace: str = "mars") -> None:
         """Initialize the variable with a name, field, and namespace.
 
         Parameters

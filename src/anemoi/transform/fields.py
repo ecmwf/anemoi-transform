@@ -137,6 +137,11 @@ class NewDataField(WrappedField):
         self._data = data
         self.shape = data.shape
 
+    @property
+    def values(self) -> np.ndarray:
+        """Get the values of the field."""
+        return self.to_numpy(flatten=True)
+
     def to_numpy(self, flatten: bool = False, dtype: Optional[type] = None, index: Optional[Any] = None) -> np.ndarray:
         """Convert the field data to a numpy array.
 

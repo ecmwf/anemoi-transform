@@ -16,6 +16,7 @@ from typing import Any
 from typing import Callable
 from typing import Iterator
 from typing import List
+from typing import Tuple
 
 import earthkit.data as ekd
 import numpy as np
@@ -28,7 +29,7 @@ from anemoi.transform.grouping import GroupByParam
 LOG = logging.getLogger(__name__)
 
 
-def get_params_and_defaults(method: Callable) -> dict:
+def _get_params_and_defaults(method: Callable) -> dict:
     """Get the list of parameters and their default values from a method.
 
     Parameters
@@ -42,7 +43,40 @@ def get_params_and_defaults(method: Callable) -> dict:
         A dictionary with parameter names as keys and their default values as values.
     """
     sig = signature(method)
-    return {k: v.default for k, v in sig.parameters.items() if v.default is not v.empty}
+    return {k: v.default for k, v in sig.parameters.items()}  # if v.default is not v.empty}
+
+
+def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
+    """Check the types of arguments in the method signature.
+
+    Parameters
+    ----------
+    method : Callable
+        The method to inspect.
+
+    Returns
+    -------
+    Tuple[bool, bool, bool]
+        A tuple indicating the presence of positional or keyword arguments,
+        variable positional arguments, and variable keyword arguments.
+    """
+    sig = signature(method)
+    has_params = any(param.kind == param.POSITIONAL_OR_KEYWORD for param in sig.parameters.values())
+    has_args = any(param.kind == param.VAR_POSITIONAL for param in sig.parameters.values())
+    has_kwargs = any(param.kind == param.VAR_KEYWORD for param in sig.parameters.values())
+
+    result = (has_params, has_args, has_kwargs)
+
+    if all(a is False for a in result):
+        raise ValueError(f"{method}: no arguments found in method signature.")
+
+    if sum(a is True for a in result) > 1:
+        raise ValueError(f"{method}: cannot mix named parameters and *args and/or **kargs.")
+
+    if has_kwargs:  # For now
+        raise NotImplementedError(f"{method}: cannot have **kwargs.")
+
+    return has_params, has_args, has_kwargs
 
 
 class matching:
@@ -61,6 +95,9 @@ class matching:
             List of backward arguments, by default [].
         """
         self.match = match
+
+        if match != "param":
+            raise NotImplementedError("Only 'param' match is supported for now.")
 
         if not isinstance(forward, (list, tuple)):
             forward = [forward]
@@ -84,20 +121,37 @@ class matching:
         Callable
             The wrapped method.
         """
-        self.params_and_defaults = get_params_and_defaults(method)
+        self.params_and_defaults = _get_params_and_defaults(method)
 
+        seen = set()
         forward = {}
         for name in self.params_and_defaults.keys():
             if name in self.forward:
                 forward[name] = name
+                seen.add(name)
 
+        for name in self.forward:
+            if name not in seen:
+                LOG.warning(f"{method}: forward argument `{name}` not found in method signature.")
+
+        seen = set()
         backward = {}
         for name in self.params_and_defaults.keys():
             if name in self.backward:
                 backward[name] = name
+                seen.add(name)
+
+        for name in self.backward:
+            if name not in seen:
+                LOG.warning(f"{method}: backward argument `{name}` not found in method signature.")
 
         @wraps(method)
         def wrapped(obj: Any, *args: Any, **kwargs: Any) -> Any:
+
+            obj._forward_arguments_types = _check_arguments(getattr(obj, "forward_transform"))
+            obj._backward_arguments_types = _check_arguments(getattr(obj, "backward_transform"))
+
+            obj._match = self.match
             obj._forward_arguments = forward
             obj._backward_arguments = backward
             obj._initialised = True
@@ -161,12 +215,18 @@ class MatchingFieldsFilter(Filter):
         for name in self.forward_arguments:
             args.append(getattr(self, name))
 
-        def forward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
+        named_args = self._forward_arguments_types[0]
+
+        def forward_transform_named(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
             return self.forward_transform(**kwargs)
 
-        return self._transform(data, forward_transform, *args)
+        return self._transform(
+            data,
+            forward_transform_named if named_args else self.forward_transform,
+            *args,
+        )
 
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Transform the data using the backward transformation function.
@@ -186,12 +246,18 @@ class MatchingFieldsFilter(Filter):
         for name in self.backward_arguments:
             args.append(getattr(self, name))
 
+        named_args = self._backward_arguments_types[0]
+
         def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.backward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
             return self.backward_transform(**kwargs)
 
-        return self._transform(data, backward_transform, *args)
+        return self._transform(
+            data,
+            backward_transform if named_args else self.backward_transform,
+            *args,
+        )
 
     def _transform(
         self,
@@ -274,3 +340,18 @@ class MatchingFieldsFilter(Filter):
             Transformed fields.
         """
         pass
+
+    def backward_transform(self, *fields: ekd.Field) -> Iterator[ekd.Field]:
+        """Backward transformation to be implemented by subclasses.
+
+        Parameters
+        ----------
+        fields : ekd.Field
+            Fields to be transformed.
+
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Transformed fields.
+        """
+        raise NotImplementedError("Backward transformation not implemented.")

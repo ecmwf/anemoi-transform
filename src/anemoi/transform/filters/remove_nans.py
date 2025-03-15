@@ -10,6 +10,7 @@
 
 import logging
 
+import earthkit.data as ekd
 import tqdm
 
 from anemoi.transform.fields import new_field_from_latitudes_longitudes
@@ -26,6 +27,16 @@ class RemoveNaNs(Filter):
     """A filter to mask out NaNs."""
 
     def __init__(self, *, method="mask", check=False):
+        """Initialize the RemoveNaNs filter.
+
+        Parameters
+        ----------
+        method : str, optional
+            The method to use for removing NaNs, by default "mask".
+        check : bool, optional
+            Whether to perform a check, by default False.
+        """
+
         self.method = method
         self.check = check
 
@@ -36,7 +47,19 @@ class RemoveNaNs(Filter):
         self._latitudes = None
         self._longitudes = None
 
-    def forward(self, fields):
+    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
+        """Mask out NaNs in the fields.
+
+        Parameters
+        ----------
+        fields : ekd.FieldList
+            List of fields to be processed.
+
+        Returns
+        -------
+        ekd.FieldList
+            List of fields with NaNs masked out.
+        """
         import numpy as np
 
         if self._mask is None:
@@ -61,6 +84,3 @@ class RemoveNaNs(Filter):
             )
 
         return new_fieldlist_from_list(result)
-
-    def backward(self, data):
-        raise NotImplementedError("IconRefinement is not reversible")

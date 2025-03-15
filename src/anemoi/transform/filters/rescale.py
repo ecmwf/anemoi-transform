@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 
-from typing import Any
 from typing import Iterator
 
 import earthkit.data as ekd
@@ -42,11 +41,12 @@ class Rescale(MatchingFieldsFilter):
         param : str
             The parameter to be rescaled.
         """
+
         self.scale = scale
         self.offset = offset
         self.param = param
 
-    def forward_transform(self, param: Any) -> Iterator[ekd.Field]:
+    def forward_transform(self, param: ekd.Field) -> Iterator[ekd.Field]:
         """Apply the forward transformation (x to ax+b).
 
         Parameters
@@ -67,14 +67,13 @@ class Rescale(MatchingFieldsFilter):
 
         Parameters
         ----------
-        param : Any
+        param : ekd.Field
             The input data to be transformed.
 
         Returns
         -------
         Iterator[ekd.Field]
             A generator yielding the transformed data.
-
         """
         descaled = (param.to_numpy() - self.offset) / self.scale
         yield self.new_field_from_numpy(descaled, template=param, param=self.param)
@@ -101,9 +100,8 @@ class Convert(Rescale):
         y1, y2 = Units.conform([x1, x2], u0, u1)
         a = (y2 - y1) / (x2 - x1)
         b = y1 - a * x1
-        self.scale = a
-        self.offset = b
-        self.param = param
+
+        super().__init__(scale=a, offset=b, param=param)
 
 
 filter_registry.register("rescale", Rescale)

@@ -62,12 +62,12 @@ def read_crosswalking_table(param: Any, param_dic: Dict[int, Dict[str, float]]) 
     ----------
     param : Any
         The parameter to read.
-    param_dic : dict
+    param_dic : Dict[int, Dict[str, float]]
         The dictionary containing the crosswalking table.
 
     Returns
     -------
-    list of np.ndarray
+    List[np.ndarray]
         The arrays for each key in the crosswalking table.
     """
     arrays = [np.array([param_dic[x][key] for x in param]) for key in param_dic[0].keys()]
@@ -97,6 +97,7 @@ class LandParameters(MatchingFieldsFilter):
         theta_pwp: str = "theta_pwp",
         theta_cap: str = "theta_cap",
     ) -> None:
+
         self.high_veg_type = high_veg_type
         self.low_veg_type = low_veg_type
         self.soil_type = soil_type
@@ -114,12 +115,12 @@ class LandParameters(MatchingFieldsFilter):
 
         Parameters
         ----------
-        data : Any
+        data : ekd.FieldList
             The input data.
 
         Returns
         -------
-        Any
+        ekd.FieldList
             The transformed data.
         """
         return self._transform(

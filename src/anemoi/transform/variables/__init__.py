@@ -18,7 +18,7 @@ class Variable(ABC):
     training and inference.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, *, name: str) -> None:
         """Parameters
         -------------
         name : str

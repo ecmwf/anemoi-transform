@@ -22,11 +22,13 @@ class Pipeline(Workflow):
 
     Parameters
     ----------
+
     filters : List[Any]
         A list of filter objects that have `forward` and `backward` methods.
     """
 
-    def __init__(self, filters: List[Any]) -> None:
+    def __init__(self, *, filters: List[Any]) -> None:
+
         self.filters: List[Any] = filters
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
@@ -34,12 +36,12 @@ class Pipeline(Workflow):
 
         Parameters
         ----------
-        data : Any
+        data : ekd.FieldList
             The input data to be processed by the filters.
 
         Returns
         -------
-        Any
+        ekd.FieldList
             The processed data after applying all filters.
         """
         for filter in self.filters:
@@ -51,12 +53,12 @@ class Pipeline(Workflow):
 
         Parameters
         ----------
-        data : Any
+        data : ekd.FieldList
             The input data to be processed by the filters in reverse order.
 
         Returns
         -------
-        Any
+        ekd.FieldList
             The processed data after applying all filters in reverse order.
         """
         for filter in reversed(self.filters):

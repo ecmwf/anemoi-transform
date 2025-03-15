@@ -37,7 +37,7 @@ class GroupByParam:
         List of parameters to group by.
     """
 
-    def __init__(self, params: List[str]) -> None:
+    def __init__(self, *, params: List[str]) -> None:
         if not isinstance(params, (list, tuple)):
             params = [params]
         self.params = params

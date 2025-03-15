@@ -17,7 +17,21 @@ LOG = logging.getLogger(__name__)
 
 
 @lru_cache(1)
-def icon_grid(path, refinement_level_c):
+def icon_grid(path: str, refinement_level_c: int) -> tuple[np.ndarray, np.ndarray]:
+    """Read the ICON grid from a file.
+
+    Parameters
+    ----------
+    path : str
+        The path to the ICON grid file.
+    refinement_level_c : int
+        The refinement level to use.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the latitudes and longitudes.
+    """
     import xarray as xr
 
     LOG.info(f"Reading ICON grid from {path}, refinement level {refinement_level_c}")

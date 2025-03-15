@@ -7,7 +7,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Any
 from typing import Iterator
 
 import earthkit.data as ekd
@@ -66,18 +65,19 @@ class SnowCover(MatchingFieldsFilter):
         snow_cover : str, optional
             The parameter name for snow cover, by default "snowc".
         """
+
         self.snow_depth = snow_depth
         self.snow_density = snow_density
         self.snow_cover = snow_cover
 
-    def forward_transform(self, snow_depth: Any, snow_density: Any) -> Iterator[ekd.Field]:
+    def forward_transform(self, snow_depth: ekd.Field, snow_density: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.
 
         Parameters
         ----------
-        snow_depth : Any
+        snow_depth : ekd.Field
             The snow depth data.
-        snow_density : Any
+        snow_density : ekd.Field
             The snow density data.
 
         Returns

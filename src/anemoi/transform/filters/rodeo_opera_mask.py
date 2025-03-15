@@ -84,21 +84,7 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
 
 @filter_registry.register("rodeo_opera_preprocessing")
 class RodeoOperaPreProcessing(MatchingFieldsFilter):
-    """A filter to select only good quality data in Rodeo Opera data.
-
-    Parameters
-    ----------
-    tp : str, optional
-        The name of the tp field, by default "tp".
-    quality : str, optional
-        The name of the quality field, by default "quality".
-    mask : str, optional
-        The name of the mask field, by default "mask".
-    output : str, optional
-        The name of the output field, by default "tp_cleaned".
-    max_tp : int, optional
-        The maximum value for tp, by default MAX_TP.
-    """
+    """A filter to select only good quality data in Rodeo Opera data."""
 
     @matching(
         match="param",
@@ -128,6 +114,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         max_tp : int, optional
             The maximum value for tp, by default MAX_TP.
         """
+
         self.tp = tp
         self.quality = quality
         self.tp_cleaned = output

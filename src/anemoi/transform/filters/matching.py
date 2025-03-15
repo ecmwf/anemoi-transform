@@ -12,6 +12,7 @@ import logging
 from abc import abstractmethod
 from functools import wraps
 from inspect import signature
+from typing import Any
 from typing import Callable
 from typing import Iterator
 from typing import List
@@ -32,7 +33,7 @@ def get_params_and_defaults(method: Callable) -> dict:
 
     Parameters
     ----------
-    method : callable
+    method : Callable
         The method to inspect.
 
     Returns
@@ -45,7 +46,20 @@ def get_params_and_defaults(method: Callable) -> dict:
 
 
 class matching:
-    def __init__(self, match, forward=[], backward=[]):
+    """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
+
+    def __init__(self, *, match: str, forward: list = [], backward: list = []) -> None:
+        """Initialize the matching decorator.
+
+        Parameters
+        ----------
+        match : str
+            The match string.
+        forward : list, optional
+            List of forward arguments, by default [].
+        backward : list, optional
+            List of backward arguments, by default [].
+        """
         self.match = match
 
         if not isinstance(forward, (list, tuple)):
@@ -57,8 +71,19 @@ class matching:
         self.forward = forward
         self.backward = backward
 
-    def __call__(self, method):
+    def __call__(self, method: Callable) -> Callable:
+        """Wrap the method with forward and backward argument initialization.
 
+        Parameters
+        ----------
+        method : Callable
+            The method to wrap.
+
+        Returns
+        -------
+        Callable
+            The wrapped method.
+        """
         self.params_and_defaults = get_params_and_defaults(method)
 
         forward = {}
@@ -72,7 +97,7 @@ class matching:
                 backward[name] = name
 
         @wraps(method)
-        def wrapped(obj, *args, **kwargs):
+        def wrapped(obj: Any, *args: Any, **kwargs: Any) -> Any:
             obj._forward_arguments = forward
             obj._backward_arguments = backward
             obj._initialised = True
@@ -89,41 +114,79 @@ class MatchingFieldsFilter(Filter):
     _initialised = False
 
     @property
-    def forward_arguments(self):
+    def forward_arguments(self) -> dict:
+        """Get the forward arguments.
+
+        Raises
+        ------
+        ValueError
+            If the filter is not initialised.
+
+        """
         if not self._initialised:
             raise ValueError("Filter not initialised.")
 
         return self._forward_arguments
 
     @property
-    def backward_arguments(self):
+    def backward_arguments(self) -> dict:
+        """Get the backward arguments.
+
+        Raises
+        ------
+        ValueError
+            If the filter is not initialised.
+
+        """
         if not self._initialised:
             raise ValueError("Filter not initialised.")
 
         return self._backward_arguments
 
-    def forward(self, data):
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Transform the data using the forward transformation function.
 
+        Parameters
+        ----------
+        data : ekd.FieldList
+            Input data to be transformed.
+
+        Returns
+        -------
+        ekd.FieldList
+            Transformed data.
+        """
         args = []
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
 
-        def forward_transform(*fields):
+        def forward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
             return self.forward_transform(**kwargs)
 
         return self._transform(data, forward_transform, *args)
 
-    def backward(self, data):
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+        """Transform the data using the backward transformation function.
 
+        Parameters
+        ----------
+        data : ekd.FieldList
+            Input data to be transformed.
+
+        Returns
+        -------
+        ekd.FieldList
+            Transformed data.
+        """
         args = []
 
         for name in self.backward_arguments:
             args.append(getattr(self, name))
 
-        def backward_transform(*fields):
+        def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.backward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
             return self.backward_transform(**kwargs)
@@ -142,7 +205,7 @@ class MatchingFieldsFilter(Filter):
         ----------
         data : ekd.FieldList
             Input data to be transformed.
-        transform : callable
+        transform : Callable
             Transformation function to apply to the data.
         group_by : str
             Fields to group by.
@@ -186,7 +249,7 @@ class MatchingFieldsFilter(Filter):
 
         Parameters
         ----------
-        fields : list of ekd.Field
+        fields : List[ekd.Field]
             List of fields to create the field list from.
 
         Returns
@@ -198,9 +261,16 @@ class MatchingFieldsFilter(Filter):
 
     @abstractmethod
     def forward_transform(self, *fields: ekd.Field) -> Iterator[ekd.Field]:
-        """To be implemented by subclasses."""
-        pass
+        """Forward transformation to be implemented by subclasses.
 
-    def backward_transform(self, *fields: ekd.Field) -> Iterator[ekd.Field]:
-        """To be implemented by subclasses."""
-        raise NotImplementedError(f"{self} backward transformation is not implemented.")
+        Parameters
+        ----------
+        fields : ekd.Field
+            Fields to be transformed.
+
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Transformed fields.
+        """
+        pass

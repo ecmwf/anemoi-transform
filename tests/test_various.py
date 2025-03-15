@@ -158,6 +158,7 @@ def test_singlefieldlambda(fieldlist: Optional[Any] = None) -> None:
 
 
 if __name__ == "__main__":
+    """Run all tests with the provided fieldlist fixture."""
     fieldlist = fieldlist_fixture()
 
     test_rescale(fieldlist)

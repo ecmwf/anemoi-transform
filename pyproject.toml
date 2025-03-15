@@ -73,7 +73,7 @@ scripts.anemoi-transform = "anemoi.transform.__main__:main"
 version_file = "src/anemoi/transform/_version.py"
 
 [tool.mypy]
-strict = false
+strict = true
 exclude = [
   "docs/**",
 ]

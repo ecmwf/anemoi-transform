@@ -39,7 +39,13 @@ class Timeseries(MatchingFieldsFilter):
         match="param",
         forward="template_param",
     )
-    def __init__(self, *, netcdf: Optional[Dict[str, str]] = None, template_param: str = "2t") -> None:
+    def __init__(
+        self,
+        *,
+        netcdf: Optional[Dict[str, str]] = None,
+        template_param: str = "2t",
+    ) -> None:
+
         if netcdf:
             import xarray as xr
 

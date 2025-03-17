@@ -10,7 +10,6 @@
 from typing import Iterator
 
 import earthkit.data as ekd
-import numpy as np
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
@@ -18,38 +17,6 @@ from anemoi.transform.filters.matching import matching
 from anemoi.transform.filters.rodeo_opera_clipping import clip_opera
 
 MAX_TP = 10000
-
-
-def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndarray:
-    """Apply masking to the tp array based on the mask array.
-
-    Parameters
-    ----------
-    tp : numpy.ndarray
-        The tp array to be masked.
-    quality : numpy.ndarray
-        The quality array.
-    mask : numpy.ndarray
-        The mask array indicating which values to mask.
-
-    Returns
-    -------
-    numpy.ndarray
-        The masked tp array.
-    """
-    print("✅✅", quality)
-    print("✅✅✅", tp)
-
-    # # RAW HDF5 DATA FILTERING
-    # tp[quality == NODATA] = np.nan
-    # tp[quality == UNDETECTED] = 0
-
-    tp[mask == _NODATA] = np.nan
-    tp[mask == _UNDETECTED] = 0
-    tp[mask == _INF] = np.nan
-
-    return tp
-
 
 @filter_registry.register("rodeo_opera_clipping")
 class RodeoOperaClipping(MatchingFieldsFilter):

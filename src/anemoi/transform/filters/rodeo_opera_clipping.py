@@ -50,6 +50,7 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
 
     return tp
 
+
 @filter_registry.register("rodeo_opera_clipping")
 class RodeoOperaClipping(MatchingFieldsFilter):
     """A filter to clip reprojected data in Rodeo Opera data.
@@ -101,7 +102,9 @@ class RodeoOperaClipping(MatchingFieldsFilter):
                     Transformed fields.
         |
         """
-        total_precipitation_cleaned = clip_opera(tp=total_precipitation.to_numpy(), max_total_precipitation=self.max_total_precipitation)
+        total_precipitation_cleaned = clip_opera(
+            tp=total_precipitation.to_numpy(), max_total_precipitation=self.max_total_precipitation
+        )
 
         yield self.new_field_from_numpy(
             total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation

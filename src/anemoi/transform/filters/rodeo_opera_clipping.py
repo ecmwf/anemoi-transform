@@ -18,6 +18,7 @@ from anemoi.transform.filters.rodeo_opera_clipping import clip_opera
 
 MAX_TP = 10000
 
+
 @filter_registry.register("rodeo_opera_clipping")
 class RodeoOperaClipping(MatchingFieldsFilter):
     """A filter to clip reprojected data in Rodeo Opera data.

@@ -12,8 +12,8 @@ from argparse import ArgumentParser
 from anemoi.utils.cli import cli_main
 from anemoi.utils.cli import make_parser
 
-from . import __version__
-from .commands import COMMANDS
+from anemoi.transform import __version__
+from anemoi.transform.commands import COMMANDS
 
 
 # For read-the-docs

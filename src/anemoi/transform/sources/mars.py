@@ -13,8 +13,8 @@ from typing import Dict
 
 import earthkit.data as ekd
 
-from ..source import Source
-from . import source_registry
+from anemoi.transform.source import Source
+from anemoi.transform.sources import source_registry
 
 
 @source_registry.register("mars")

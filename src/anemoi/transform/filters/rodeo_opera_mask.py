@@ -7,14 +7,14 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Any
 from typing import Iterator
 
 import earthkit.data as ekd
 import numpy as np
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 NODATA = -9.999e06
 UNDETECTED = -8.888e06
@@ -73,23 +73,23 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
 
     # # RAW HDF5 DATA FILTERING
     # tp[quality == NODATA] = np.nan
-    # tp[quality == UNDETECTED] = np.nan
+    # tp[quality == UNDETECTED] = 0
 
     tp[mask == _NODATA] = np.nan
-    tp[mask == _UNDETECTED] = np.nan
+    tp[mask == _UNDETECTED] = 0
     tp[mask == _INF] = np.nan
 
     return tp
 
 
 @filter_registry.register("rodeo_opera_preprocessing")
-class RodeoOperaPreProcessing(SimpleFilter):
+class RodeoOperaPreProcessing(MatchingFieldsFilter):
     """A filter to select only good quality data in Rodeo Opera data.
 
     Parameters
     ----------
-    tp : str, optional
-        The name of the tp field, by default "tp".
+    total_precipitation : str, optional
+        The name of the total_precipitation field, by default "tp".
     quality : str, optional
         The name of the quality field, by default "quality".
     mask : str, optional
@@ -100,10 +100,14 @@ class RodeoOperaPreProcessing(SimpleFilter):
         The maximum value for tp, by default MAX_TP.
     """
 
+    @matching(
+        match="param",
+        forward=("total_precipitation", "quality", "mask"),
+    )
     def __init__(
         self,
         *,
-        tp: str = "tp",
+        total_precipitation: str = "tp",
         quality: str = "quality",
         mask: str = "mask",
         output: str = "tp_cleaned",
@@ -124,43 +128,27 @@ class RodeoOperaPreProcessing(SimpleFilter):
         max_tp : int, optional
             The maximum value for tp, by default MAX_TP.
         """
-        self.tp = tp
+        self.total_precipitation = total_precipitation
         self.quality = quality
         self.tp_cleaned = output
         self.mask = mask
         self.max_tp = max_tp
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the forward transformation to the data.
-
-        Parameters
-        ----------
-        data : Any
-            The input data.
-
-        Returns
-        -------
-        Any
-            The transformed data.
-        """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.tp,
-            self.quality,
-            self.mask,
-        )
-
-    def forward_transform(self, tp: Any, quality: Any, mask: Any) -> Iterator[ekd.Field]:
+    def forward_transform(
+        self,
+        total_precipitation: ekd.Field,
+        quality: ekd.Field,
+        mask: ekd.Field,
+    ) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 
         Parameters
         ----------
-        tp : Any
+        total_precipitation : ekd.Field
             The tp data.
-        quality : Any
+        quality : ekd.Field
             The quality data.
-        mask : Any
+        mask : ekd.Field
             The mask data.
 
         Returns
@@ -169,9 +157,15 @@ class RodeoOperaPreProcessing(SimpleFilter):
             Transformed fields.
         """
         # 1st - apply masking
-        tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
+        total_precipitation_masked = mask_opera(
+            tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy()
+        )
 
         # 2nd - apply clipping
-        tp_cleaned, quality = clip_opera(tp=tp_masked, quality=quality.to_numpy(), max_tp=self.max_tp)
+        total_precipitation_cleaned, quality = clip_opera(
+            tp=total_precipitation_masked, quality=quality.to_numpy(), max_tp=self.max_tp
+        )
 
-        yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
+        yield self.new_field_from_numpy(
+            total_precipitation_cleaned, template=total_precipitation, param=self.tp_cleaned
+        )

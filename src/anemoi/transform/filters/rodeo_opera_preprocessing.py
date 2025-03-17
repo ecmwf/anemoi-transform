@@ -27,7 +27,7 @@ MAX_TP = 10000
 MAX_QI = 1
 
 
-def clip_opera(tp: np.ndarray, quality: np.ndarray = None, max_tp: int = MAX_TP) -> tuple[np.ndarray, np.ndarray]:
+def clip_opera(tp: np.ndarray, quality: np.ndarray = None, max_total_precipitation: int = MAX_TP) -> tuple[np.ndarray, np.ndarray]:
     """Clip the tp and quality arrays to specified maximum values.
 
     Parameters
@@ -36,7 +36,7 @@ def clip_opera(tp: np.ndarray, quality: np.ndarray = None, max_tp: int = MAX_TP)
         The tp array to be clipped.
     quality : numpy.ndarray
         The quality array to be clipped.
-    max_tp : int
+    max_total_precipitation : int
         The maximum value for tp.
 
     Returns
@@ -45,7 +45,7 @@ def clip_opera(tp: np.ndarray, quality: np.ndarray = None, max_tp: int = MAX_TP)
         A tuple containing the clipped tp and quality arrays.
     """
     tp[tp < 0] = 0
-    tp[tp >= max_tp] = max_tp
+    tp[tp >= max_total_precipitation] = max_total_precipitation
     if quality is not None:
         quality[quality >= MAX_QI] = MAX_QI
         return tp, quality
@@ -95,7 +95,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         The name of the quality field, by default "quality".
     mask : str, optional
         The name of the mask field, by default "mask".
-    max_tp : int, optional
+    max_total_precipitation : int, optional
         The maximum value for tp, by default MAX_TP.
     """
 
@@ -109,7 +109,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         total_precipitation: str = "tp",
         quality: str = "quality",
         mask: str = "mask",
-        max_tp: int = MAX_TP,
+        max_total_precipitation: int = MAX_TP,
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
 
@@ -121,13 +121,13 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             The name of the quality field, by default "quality".
         mask : str, optional
             The name of the mask field, by default "mask".
-        max_tp : int, optional
+        max_total_precipitation : int, optional
             The maximum value for tp, by default MAX_TP.
         """
         self.total_precipitation = total_precipitation
         self.quality = quality
         self.mask = mask
-        self.max_tp = max_tp
+        self.max_total_precipitation = max_total_precipitation
 
     def forward_transform(
         self,
@@ -158,7 +158,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
 
         # 2nd - apply clipping
         total_precipitation_cleaned, quality = clip_opera(
-            tp=total_precipitation_masked, quality=quality.to_numpy(), max_tp=self.max_tp
+            tp=total_precipitation_masked, quality=quality.to_numpy(), max_total_precipitation=self.max_total_precipitation
         )
 
         yield self.new_field_from_numpy(
@@ -166,59 +166,3 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         )
 
 
-@filter_registry.register("rodeo_opera_clipping")
-class RodeoOperaClipping(MatchingFieldsFilter):
-    """A filter to clip reprojected data in Rodeo Opera data.
-
-    Parameters
-    ----------
-    total_precipitation : str, optional
-        The name of the total_precipitation field, by default "tp".
-    max_tp : int, optional
-        The maximum value for tp, by default MAX_TP.
-    """
-
-    @matching(
-        match="param",
-        forward=("total_precipitation"),
-    )
-    def __init__(
-        self,
-        *,
-        total_precipitation: str = "tp",
-        max_tp: int = MAX_TP,
-    ) -> None:
-        """Initialize the RodeoOperaPreProcessing filter.
-
-        Parameters
-        ----------
-        tp : str, optional
-            The name of the tp field, by default "tp".
-        max_tp : int, optional
-            The maximum value for tp, by default MAX_TP.
-        """
-        self.total_precipitation = total_precipitation
-        self.max_tp = max_tp
-
-    def forward_transform(
-        self,
-        total_precipitation: ekd.Field,
-    ) -> Iterator[ekd.Field]:
-        """Pre-process Rodeo Opera data.
-
-                Parameters
-                ----------
-                total_precipitation : ekd.Field
-                    The tp data.
-
-                Returns
-                -------
-                Iterator[ekd.Field]
-                    Transformed fields.
-        |
-        """
-        total_precipitation_cleaned = clip_opera(tp=total_precipitation.to_numpy(), max_tp=self.max_tp)
-
-        yield self.new_field_from_numpy(
-            total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
-        )

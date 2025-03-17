@@ -14,7 +14,8 @@ import earthkit.data as ekd
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
-from anemoi.transform.filters.rodeo_opera_clipping import clip_opera
+
+from .rodeo_opera_preprocessing import clip_opera
 
 MAX_TP = 10000
 

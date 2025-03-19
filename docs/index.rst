@@ -26,25 +26,6 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 
 -  :doc:`installing`
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: Introduction
-   overview
-   cli/overview
-   installing
-
-*****
- CLI
-*****
-
-.. toctree::
-   :maxdepth: 5
-   :hidden:
-   :caption: CLI
-
-   cli/get-grid
-   cli/make-regrid-matrix
 
 *****************
  Anemoi packages
@@ -73,13 +54,23 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 ..
    From here defines the TOC in the sidebar, but is not rendered directly on the page.
 
+
 .. toctree::
    :maxdepth: 1
    :hidden:
    :caption: Introduction
-
    overview
+   cli/overview
    installing
+
+
+.. toctree::
+   :maxdepth: 5
+   :hidden:
+   :caption: CLI
+
+   cli/get-grid
+   cli/make-regrid-matrix
 
 .. toctree::
    :maxdepth: 1

@@ -127,4 +127,4 @@ todo_include_todos = not read_the_docs_build
 
 autodoc_member_order = "bysource"  # Keep file order
 
-apidoc_automodule_options = {'members', 'undoc-members', 'show-inheritance', 'imported-members'}
+apidoc_automodule_options = {"members", "undoc-members", "show-inheritance", "imported-members"}

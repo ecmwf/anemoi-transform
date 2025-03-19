@@ -23,4 +23,3 @@ help:
 	sphinx-apidoc -M -f -o "_api" "./../src/anemoi" $(SPHINXOPTS) -t "_templates/apidoc" $(O)
 	sed -i -s 's/transform\./anemoi\.transform\./g' _api/*.rst
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-

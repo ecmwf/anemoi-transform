@@ -1,8 +1,8 @@
-#############
- placeholder
-#############
+#######
+ grids
+#######
 
-.. automodule:: anemoi.transform.placeholder
+.. automodule:: anemoi.transform.grids
    :members:
    :no-undoc-members:
    :show-inheritance:

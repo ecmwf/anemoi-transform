@@ -30,6 +30,18 @@ of the *Anemoi* packages.
 
    installing
 
+*****
+ CLI
+*****
+
+.. toctree::
+   :maxdepth: 5
+   :hidden:
+   :caption: CLI
+
+   cli/get-grid
+   cli/make-regrid-matrix
+
 *********
  Modules
 *********

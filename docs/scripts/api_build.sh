@@ -4,4 +4,3 @@ docs_dir="$script_dir/.."
 source_dir="$script_dir/../../src/"
 
 sphinx-apidoc -M -f -o "$docs_dir/_api" "$source_dir/anemoi" -t "$docs_dir/_templates/apidoc"
-sed -i -s 's/transform\./anemoi\.transform\./g' $docs_dir/_api/*.rst

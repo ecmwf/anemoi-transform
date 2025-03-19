@@ -14,9 +14,9 @@
 {%- endmacro %}
 
 {%- if is_namespace %}
-{{- [pkgname, ""] | join(" ") | e | heading }}
+{{- pkgname.split(".")[1:] | join(".") | e | heading }}
 {% else %}
-{{- [pkgname, ""] | join(" ") | e | heading }}
+{{- pkgname.split(".")[1:] | join(" ") | e | heading }}
 {% endif %}
 
 {%- if is_namespace %}
@@ -24,7 +24,7 @@
 {% endif %}
 
 {%- if modulefirst and not is_namespace %}
-{{ automodule(pkgname, [""]) }}
+{{ automodule(["anemoi", pkgname] | join("."), [""]) }}
 {% endif %}
 
 {%- if subpackages %}
@@ -40,9 +40,9 @@ Subpackages
 {% else %}
 {%- for submodule in submodules %}
 {% if show_headings %}
-{{- submodule | e | heading(2) }}
+{{- submodule.split(".")[2:] | join(".") | e | heading(2) }}
 {% endif %}
-{{ automodule(submodule, automodule_options) }}
+{{ automodule(["anemoi", submodule] | join("."), automodule_options) }}
 {% endfor %}
 {%- endif %}
 {%- endif %}

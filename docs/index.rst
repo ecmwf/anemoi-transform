@@ -26,7 +26,6 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 
 -  :doc:`installing`
 
-
 *****************
  Anemoi packages
 *****************
@@ -54,7 +53,6 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 ..
    From here defines the TOC in the sidebar, but is not rendered directly on the page.
 
-
 .. toctree::
    :maxdepth: 1
    :hidden:
@@ -63,7 +61,6 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    overview
    installing
    cli/overview
-
 
 .. toctree::
    :maxdepth: 5

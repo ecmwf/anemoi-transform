@@ -19,8 +19,10 @@ framework it seeks to handle many of the complexities that
 meteorological organisations will share, allowing them to easily train
 models from existing recipes but with their own data.
 
-This package provides a series of utility functions for used by the rest
-of the *Anemoi* packages.
+This package provides a series of data transformation and filering
+functions for use by components of the Anemoi framework. Particularly
+for those packages which handle incoming raw data, i.e. ``datasets`` and
+``inference``.
 
 -  :doc:`installing`
 
@@ -72,3 +74,27 @@ of the *Anemoi* packages.
 *Anemoi* is available under the open source `Apache License`__.
 
 .. __: http://www.apache.org/licenses/LICENSE-2.0.html
+
+..
+   ..................................................................................
+
+..
+   From here defines the TOC in the sidebar, but is not rendered directly on the page.
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Introduction
+
+   overview
+   installing
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Modules
+
+   modules/filters
+   modules/variables
+   modules/grouping
+   modules/grids

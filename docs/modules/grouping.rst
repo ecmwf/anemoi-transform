@@ -1,6 +1,6 @@
-###########
+##########
  Grouping
-###########
+##########
 
 .. automodule:: anemoi.transform.grouping
    :members:

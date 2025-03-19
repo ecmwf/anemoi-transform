@@ -19,9 +19,10 @@ framework it seeks to handle many of the complexities that
 meteorological organisations will share, allowing them to easily train
 models from existing recipes but with their own data.
 
-This package provides a series of data transformation and filering functions for use
-by components of the Anemoi framework. Particularly for those packages which handle incoming
-raw data, i.e. ``datasets`` and ``inference``.
+This package provides a series of data transformation and filering
+functions for use by components of the Anemoi framework. Particularly
+for those packages which handle incoming raw data, i.e. ``datasets`` and
+``inference``.
 
 -  :doc:`installing`
 
@@ -62,8 +63,6 @@ raw data, i.e. ``datasets`` and ``inference``.
 
 .. __: http://www.apache.org/licenses/LICENSE-2.0.html
 
-
-
 ..
    ..................................................................................
 
@@ -77,7 +76,6 @@ raw data, i.e. ``datasets`` and ``inference``.
 
    overview
    installing
-
 
 .. toctree::
    :maxdepth: 1

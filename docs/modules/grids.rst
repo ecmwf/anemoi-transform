@@ -1,6 +1,6 @@
-###########
+#######
  Grids
-###########
+#######
 
 .. automodule:: anemoi.transform.grids
    :members:

@@ -1,6 +1,6 @@
-###########
+#########
  Filters
-###########
+#########
 
 .. automodule:: anemoi.transform.filters
    :members:

@@ -56,7 +56,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :hidden:
    :caption: Introduction
    overview

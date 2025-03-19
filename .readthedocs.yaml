@@ -5,7 +5,7 @@ build:
   tools:
     python: "3.11"
   jobs:
-    pre_install:
+    pre_build:
       - bash docs/scripts/api_build.sh
 sphinx:
   configuration: docs/conf.py

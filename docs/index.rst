@@ -73,7 +73,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    cli/make-regrid-matrix
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :hidden:
    :caption: Modules
 

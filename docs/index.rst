@@ -56,12 +56,13 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
    :caption: Introduction
+
    overview
-   cli/overview
    installing
+   cli/overview
 
 
 .. toctree::

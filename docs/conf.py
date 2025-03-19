@@ -41,6 +41,7 @@ copyright = "%s, Anemoi contributors" % (years,)
 
 try:
     from anemoi.transform._version import __version__
+    from anemoi.transform.filters import *
 
     release = __version__
 except ImportError:
@@ -60,6 +61,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    # "sphinx.ext.apidoc",
     "sphinxarg.ext",
 ]
 
@@ -124,3 +126,5 @@ html_css_files = ["style.css"]
 todo_include_todos = not read_the_docs_build
 
 autodoc_member_order = "bysource"  # Keep file order
+
+apidoc_automodule_options = {'members', 'undoc-members', 'show-inheritance', 'imported-members'}

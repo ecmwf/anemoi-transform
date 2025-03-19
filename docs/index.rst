@@ -44,16 +44,6 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    cli/get-grid
    cli/make-regrid-matrix
 
-*********
- Modules
-*********
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-
-   modules/*
-
 *****************
  Anemoi packages
 *****************
@@ -94,7 +84,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    :hidden:
    :caption: Modules
 
-   modules/filters
-   modules/variables
-   modules/grouping
-   modules/grids
+   _api/transform.filters
+   _api/transform.grids
+   _api/transform.variables
+   _api/transform.grouping

@@ -23,7 +23,7 @@ class VerticalVelocity(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        use="param",
         forward=("w_component", "temperature", "humidity"),
         backward=("wz_component", "temperature", "humidity"),
     )

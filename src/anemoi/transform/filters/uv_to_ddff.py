@@ -25,7 +25,7 @@ class WindComponents(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        use="param",
         forward=("u_component", "v_component"),
         backward=("wind_speed", "wind_direction"),
     )

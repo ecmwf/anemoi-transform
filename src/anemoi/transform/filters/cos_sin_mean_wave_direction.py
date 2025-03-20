@@ -25,7 +25,7 @@ class CosSinWaveDirection(MatchingFieldsFilter):
     """A filter to convert mean wave direction to cos() and sin() and back."""
 
     @matching(
-        match="param",
+        use="param",
         forward=("mean_wave_direction",),
         backward=("cos_mean_wave_direction", "sin_mean_wave_direction"),
     )

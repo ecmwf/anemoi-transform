@@ -44,7 +44,7 @@ class SnowCover(MatchingFieldsFilter):
     """A filter to compute snow cover from snow density and snow depth."""
 
     @matching(
-        match="param",
+        use="param",
         forward=("snow_depth", "snow_density"),
     )
     def __init__(

@@ -27,7 +27,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
     """A filter to apply an arbitrary function to individual fields."""
 
     @matching(
-        match="param",
+        use="param",
         forward="param",
         backward="param",
     )

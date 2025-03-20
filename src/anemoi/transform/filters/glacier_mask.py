@@ -41,7 +41,7 @@ def mask_glaciers(snow_depth: np.ndarray, glacier_mask: np.ndarray) -> np.ndarra
 class SnowDepthMasked(MatchingFieldsFilter):
     """A filter to mask about glacier in snow depth."""
 
-    @matching(match="param", forward="snow_depth")
+    @matching(use="param", forward="snow_depth")
     def __init__(
         self,
         *,

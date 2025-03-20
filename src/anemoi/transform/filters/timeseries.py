@@ -36,7 +36,7 @@ class Timeseries(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        use="param",
         forward="template_param",
     )
     def __init__(

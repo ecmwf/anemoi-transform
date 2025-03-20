@@ -21,7 +21,7 @@ class Rescale(MatchingFieldsFilter):
     """A filter to rescale a parameter from a scale and an offset, and back."""
 
     @matching(
-        match="param",
+        use="param",
         forward=("param",),
         backward=("param",),
     )

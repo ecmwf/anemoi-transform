@@ -82,22 +82,22 @@ def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
 class matching:
     """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
 
-    def __init__(self, *, match: str, forward: list = [], backward: list = []) -> None:
+    def __init__(self, *, use: str, forward: list = [], backward: list = []) -> None:
         """Initialize the matching decorator.
 
         Parameters
         ----------
-        match : str
-            The match string.
+        use : str
+            The use string.
         forward : list, optional
             List of forward arguments, by default [].
         backward : list, optional
             List of backward arguments, by default [].
         """
-        self.match = match
+        self.use = use
 
-        if match != "param":
-            raise NotImplementedError("Only 'param' match is supported for now.")
+        if use != "param":
+            raise NotImplementedError("Only 'param' use is supported for now.")
 
         if not isinstance(forward, (list, tuple)):
             forward = [forward]
@@ -151,7 +151,7 @@ class matching:
             obj._forward_arguments_types = _check_arguments(getattr(obj, "forward_transform"))
             obj._backward_arguments_types = _check_arguments(getattr(obj, "backward_transform"))
 
-            obj._match = self.match
+            obj._use = self.use
             obj._forward_arguments = forward
             obj._backward_arguments = backward
             obj._initialised = True

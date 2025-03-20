@@ -110,27 +110,6 @@ class LandParameters(MatchingFieldsFilter):
         self.theta_pwp = theta_pwp
         self.theta_cap = theta_cap
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Forward transformation to add static parameters.
-
-        Parameters
-        ----------
-        data : ekd.FieldList
-            The input data.
-
-        Returns
-        -------
-        ekd.FieldList
-            The transformed data.
-        """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.high_veg_type,
-            self.low_veg_type,
-            self.soil_type,
-        )
-
     def forward_transform(
         self,
         high_veg_type: ekd.Field,

@@ -41,7 +41,6 @@ copyright = "%s, Anemoi contributors" % (years,)
 
 try:
     from anemoi.transform._version import __version__
-    from anemoi.transform.filters import *
 
     release = __version__
 except ImportError:
@@ -127,4 +126,19 @@ todo_include_todos = not read_the_docs_build
 
 autodoc_member_order = "bysource"  # Keep file order
 
-apidoc_automodule_options = {"members", "undoc-members", "show-inheritance", "imported-members"}
+# apidoc_modules = [
+#     {
+#         'path': '../src/anemoi',
+#         'destination': '_api/',
+#         'max_depth': 4,
+#         'follow_links': False,
+#         'separate_modules': False,
+#         'include_private': False,
+#         'no_headings': False,
+#         'module_first': True,
+#         'template_dir': '_templates/apidoc',
+#         'automodule_options': {
+#             'members', 'show-inheritance', 'undoc-members'
+#         },
+#     },
+# ]

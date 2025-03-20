@@ -87,7 +87,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
     """A filter to select only good quality data in Rodeo Opera data."""
 
     @matching(
-        use="param",
+        select="param",
         forward=("tp", "quality", "mask"),
     )
     def __init__(

@@ -79,7 +79,7 @@ class LandParameters(MatchingFieldsFilter):
     """A filter to add static parameters from table based on soil/vegetation type."""
 
     @matching(
-        use="param",
+        select="param",
         forward=("high_veg_type", "low_veg_type", "soil_type"),
     )
     def __init__(

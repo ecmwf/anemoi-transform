@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## [0.1.3](https://github.com/ecmwf/anemoi-transform/compare/0.1.2...0.1.3) (2025-03-06)
+
+
+### Features
+
+* Add `icon_refinement_level` filter ([#32](https://github.com/ecmwf/anemoi-transform/issues/32)) ([a2c0711](https://github.com/ecmwf/anemoi-transform/commit/a2c07114c18e6b631401f92519bd760564f8e1ac))
+* Clipping strategy to solve issues in the ORAS6 reanalysis ([#56](https://github.com/ecmwf/anemoi-transform/issues/56)) ([179d602](https://github.com/ecmwf/anemoi-transform/commit/179d602f84ad87d5f7d6fe3b7d2348ed74d55a13))
+* Matching fields ([#55](https://github.com/ecmwf/anemoi-transform/issues/55)) ([b6f52d6](https://github.com/ecmwf/anemoi-transform/commit/b6f52d6073b3b5de7e44e5e4694b8eeab0b339c2))
+
+
+### Bug Fixes
+
+* for opera mask ([#40](https://github.com/ecmwf/anemoi-transform/issues/40)) ([a1f8bf8](https://github.com/ecmwf/anemoi-transform/commit/a1f8bf8b49db74d7b79dea0a800d00dabdaa1ba2))
+
+
+### Documentation
+
+* fix readthedocs ([#51](https://github.com/ecmwf/anemoi-transform/issues/51)) ([42e874b](https://github.com/ecmwf/anemoi-transform/commit/42e874b1020f6d542d6bf9d20ee3c43483c2abcb))
+* use new logo ([#42](https://github.com/ecmwf/anemoi-transform/issues/42)) ([aa13ac5](https://github.com/ecmwf/anemoi-transform/commit/aa13ac5b9424d40f5d6bce8279ecbe73292bcc0b))
+
 ## 0.1.2 (2025-02-04)
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->

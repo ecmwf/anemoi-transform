@@ -27,7 +27,9 @@ MAX_TP = 10000
 MAX_QI = 1
 
 
-def clip_opera(tp: np.ndarray, quality: np.ndarray, max_tp: int) -> tuple[np.ndarray, np.ndarray]:
+def clip_opera(
+    tp: np.ndarray, quality: np.ndarray = None, max_total_precipitation: int = MAX_TP
+) -> tuple[np.ndarray, np.ndarray]:
     """Clip the tp and quality arrays to specified maximum values.
 
     Parameters
@@ -36,7 +38,7 @@ def clip_opera(tp: np.ndarray, quality: np.ndarray, max_tp: int) -> tuple[np.nda
         The tp array to be clipped.
     quality : numpy.ndarray
         The quality array to be clipped.
-    max_tp : int
+    max_total_precipitation : int
         The maximum value for tp.
 
     Returns
@@ -45,10 +47,11 @@ def clip_opera(tp: np.ndarray, quality: np.ndarray, max_tp: int) -> tuple[np.nda
         A tuple containing the clipped tp and quality arrays.
     """
     tp[tp < 0] = 0
-    tp[tp >= max_tp] = max_tp
-    quality[quality >= MAX_QI] = MAX_QI
-
-    return tp, quality
+    tp[tp >= max_total_precipitation] = max_total_precipitation
+    if quality is not None:
+        quality[quality >= MAX_QI] = MAX_QI
+        return tp, quality
+    return tp
 
 
 def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndarray:
@@ -73,10 +76,10 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
 
     # # RAW HDF5 DATA FILTERING
     # tp[quality == NODATA] = np.nan
-    # tp[quality == UNDETECTED] = np.nan
+    # tp[quality == UNDETECTED] = 0
 
     tp[mask == _NODATA] = np.nan
-    tp[mask == _UNDETECTED] = np.nan
+    tp[mask == _UNDETECTED] = 0
     tp[mask == _INF] = np.nan
 
     return tp
@@ -84,20 +87,31 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
 
 @filter_registry.register("rodeo_opera_preprocessing")
 class RodeoOperaPreProcessing(MatchingFieldsFilter):
-    """A filter to select only good quality data in Rodeo Opera data."""
+    """A filter to select only good quality data in Rodeo Opera data.
+
+    Parameters
+    ----------
+    total_precipitation : str, optional
+        The name of the total_precipitation field, by default "tp".
+    quality : str, optional
+        The name of the quality field, by default "quality".
+    mask : str, optional
+        The name of the mask field, by default "mask".
+    max_total_precipitation : int, optional
+        The maximum value for tp, by default MAX_TP.
+    """
 
     @matching(
         select="param",
-        forward=("tp", "quality", "mask"),
+        forward=("total_precipitation", "quality", "mask"),
     )
     def __init__(
         self,
         *,
-        tp: str = "tp",
+        total_precipitation: str = "tp",
         quality: str = "quality",
         mask: str = "mask",
-        output: str = "tp_cleaned",
-        max_tp: int = MAX_TP,
+        max_total_precipitation: int = MAX_TP,
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
 
@@ -109,21 +123,17 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             The name of the quality field, by default "quality".
         mask : str, optional
             The name of the mask field, by default "mask".
-        output : str, optional
-            The name of the output field, by default "tp_cleaned".
-        max_tp : int, optional
+        max_total_precipitation : int, optional
             The maximum value for tp, by default MAX_TP.
         """
-
-        self.tp = tp
+        self.total_precipitation = total_precipitation
         self.quality = quality
-        self.tp_cleaned = output
         self.mask = mask
-        self.max_tp = max_tp
+        self.max_total_precipitation = max_total_precipitation
 
     def forward_transform(
         self,
-        tp: ekd.Field,
+        total_precipitation: ekd.Field,
         quality: ekd.Field,
         mask: ekd.Field,
     ) -> Iterator[ekd.Field]:
@@ -131,7 +141,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
 
         Parameters
         ----------
-        tp : ekd.Field
+        total_precipitation : ekd.Field
             The tp data.
         quality : ekd.Field
             The quality data.
@@ -144,9 +154,17 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             Transformed fields.
         """
         # 1st - apply masking
-        tp_masked = mask_opera(tp=tp.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy())
+        total_precipitation_masked = mask_opera(
+            tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy()
+        )
 
         # 2nd - apply clipping
-        tp_cleaned, quality = clip_opera(tp=tp_masked, quality=quality.to_numpy(), max_tp=self.max_tp)
+        total_precipitation_cleaned, quality = clip_opera(
+            tp=total_precipitation_masked,
+            quality=quality.to_numpy(),
+            max_total_precipitation=self.max_total_precipitation,
+        )
 
-        yield self.new_field_from_numpy(tp_cleaned, template=tp, param=self.tp_cleaned)
+        yield self.new_field_from_numpy(
+            total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
+        )

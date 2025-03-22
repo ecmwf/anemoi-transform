@@ -40,7 +40,7 @@ classifiers = [
 
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.4.14",
+  "anemoi-utils>=0.4.15",
   "cfunits",
   "earthkit-data>=0.12.4",
   "earthkit-meteo>=0.3",

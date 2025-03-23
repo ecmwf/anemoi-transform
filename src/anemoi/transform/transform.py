@@ -142,7 +142,7 @@ class Transform(ABC):
 class ReversedTransform(Transform):
     """Swap the forward and backward methods of a filter."""
 
-    def __init__(self, *, filter: Transform) -> None:
+    def __init__(self, filter: Transform) -> None:
         """Initializes the reversed transform.
 
         Parameters

@@ -36,7 +36,7 @@ class Geography:
         UUID of the horizontal grid.
     """
 
-    def __init__(self, *, latitudes: np.ndarray, longitudes: np.ndarray, uuidOfHGrid: Optional[str] = None) -> None:
+    def __init__(self, latitudes: np.ndarray, longitudes: np.ndarray, uuidOfHGrid: Optional[str] = None) -> None:
         assert isinstance(latitudes, np.ndarray), type(latitudes)
         assert isinstance(longitudes, np.ndarray), type(longitudes)
         assert len(latitudes) == len(longitudes)
@@ -95,7 +95,7 @@ class UnstructuredGridField:
         Geography object containing latitude and longitude information.
     """
 
-    def __init__(self, *, geography: Geography) -> None:
+    def __init__(self, geography: Geography) -> None:
         self.geography = geography
 
     def metadata(self, *args: Any, default: Any = None, **kwargs: Any) -> Any:

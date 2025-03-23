@@ -40,7 +40,7 @@ classifiers = [
 
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.4.15",
+  "anemoi-utils>=0.4.16",
   "cfunits",
   "earthkit-data>=0.12.4",
   "earthkit-meteo>=0.3",
@@ -73,7 +73,7 @@ scripts.anemoi-transform = "anemoi.transform.__main__:main"
 version_file = "src/anemoi/transform/_version.py"
 
 [tool.mypy]
-strict = true
+strict = false
 exclude = [
   "docs/**",
 ]

@@ -415,4 +415,4 @@ def make_interpolator(
     """
     interpolator = _interpolator(in_grid, out_grid, method, matrix, check, interpolator)
 
-    return globals()[interpolator](in_grid=in_grid, out_grid=out_grid, method=method, matric=matrix, check=check)
+    return globals()[interpolator](in_grid=in_grid, out_grid=out_grid, method=method, matrix=matrix, check=check)

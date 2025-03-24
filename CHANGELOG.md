@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## [0.1.4](https://github.com/ecmwf/anemoi-transform/compare/0.1.3...0.1.4) (2025-03-24)
+
+
+### Features
+
+* plugin support ([#65](https://github.com/ecmwf/anemoi-transform/issues/65)) ([7481145](https://github.com/ecmwf/anemoi-transform/commit/7481145c51f4fbf2fdd43a9b8822b18e32b62449))
+* Rodeo transform update ([#61](https://github.com/ecmwf/anemoi-transform/issues/61)) ([3e669c0](https://github.com/ecmwf/anemoi-transform/commit/3e669c0207c68b897126e128a76d82a921960522))
+
+
+### Bug Fixes
+
+* fix regrid arguments ([#67](https://github.com/ecmwf/anemoi-transform/issues/67)) ([1a730cd](https://github.com/ecmwf/anemoi-transform/commit/1a730cd6354cdd00eedc82ec5bf57eea34e8f797))
+* return unmodified fields ([#57](https://github.com/ecmwf/anemoi-transform/issues/57)) ([6f0e6f4](https://github.com/ecmwf/anemoi-transform/commit/6f0e6f46506f8eef28219a26e1cfddca6b81793d))
+* undetected as dry pixels and meaningful naming ([#59](https://github.com/ecmwf/anemoi-transform/issues/59)) ([b66ce25](https://github.com/ecmwf/anemoi-transform/commit/b66ce25af3f1affc5c8162567a5754dc91b14889))
+
+
+### Documentation
+
+* links to GitHub ([#66](https://github.com/ecmwf/anemoi-transform/issues/66)) ([10f5c13](https://github.com/ecmwf/anemoi-transform/commit/10f5c138a6c96f1420d476d0171c5f1850cac43b))
+
 ## [0.1.3](https://github.com/ecmwf/anemoi-transform/compare/0.1.2...0.1.3) (2025-03-06)
 
 

@@ -33,7 +33,7 @@ class RodeoOperaClipping(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        select="param",
         forward=("total_precipitation"),
     )
     def __init__(

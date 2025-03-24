@@ -27,37 +27,40 @@ class DewPoint(MatchingFieldsFilter):
     def __init__(
         self,
         *,
-        rel_humidity="r",
+        relative_humidity="r",
         temperature="t",
         dewpoint="d"
      ):
         
-        self.relative_humidity = rel_humidity
+        self.relative_humidity = relative_humidity
         self.temperature = temperature
         self.dewpoint = dewpoint
 
     def forward_transform(self, temperature: ekd.Field, relative_humidity: ekd.Field) -> ekd.Field:
         """
-        This will return the dewpoint temperature along with temperature and relative humidity
+        Return the dewpoint temperature (Td, in K) along with temperature (K) and relative humidity (in %)
         """
         
         # here we follow Bolton, 1980 
         # https://journals.ametsoc.org/view/journals/mwre/108/7/1520-0493_1980_108_1046_tcoept_2_0_co_2.xml
         # with T in kelvins
                 
-        pvap_ratio = relative_humidity.to_numpy() * np.exp(
-            (17.67 * (temperature.to_numpy() - 273.15) )/ (temperature.to_numpy() - 29.65)
+        pvap_ratio = np.clip(
+            (relative_humidity.to_numpy() / 100.0) * np.exp(
+            (17.67 * (temperature.to_numpy() - 273.15) ) / (temperature.to_numpy() - 29.65)
+            ),
+            a_min=1e-8, a_max=None
             )
         
         td = 273.15 + 243.5 * np.log(pvap_ratio) / (17.67 - np.log(pvap_ratio)) 
 
-        yield self.new_field_from_numpy(td, template=temperature, param=self.rel_humidity)
+        yield self.new_field_from_numpy(td, template=temperature, param=self.dewpoint)
         yield temperature
         yield relative_humidity
 
     def backward_transform(self, dewpoint: ekd.Field, temperature: ekd.Field) -> ekd.Field:
         """
-        This will return the relative humidity from temperature and dewpoint,
+        This will return the relative humidity (in %) from temperature (in K) and dewpoint (Td, in K),
         along with temperature and dewpoint
         """
         
@@ -75,9 +78,9 @@ class DewPoint(MatchingFieldsFilter):
             17.67 * t_norm / (1.0 + t_norm)
         )
         
-        rh = pvap_ratio / (psat_ratio + 1e-8)
+        rh = 100.0 * pvap_ratio / (psat_ratio + 1e-8)
 
-        yield self.new_field_from_numpy(rh, template=temperature, param=self.rel_humidity)
+        yield self.new_field_from_numpy(rh, template=temperature, param=self.relative_humidity)
         yield dewpoint
         yield temperature
 

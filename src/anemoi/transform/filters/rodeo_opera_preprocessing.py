@@ -102,7 +102,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        select="param",
         forward=("total_precipitation", "quality", "mask"),
     )
     def __init__(

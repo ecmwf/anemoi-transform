@@ -111,3 +111,11 @@ def test_repeat_members_using_count() -> None:
         assert np.all(f.values == values)
         assert f.metadata("number") == i + 1
         assert f.metadata("name") == metadata("name")
+
+
+if __name__ == "__main__":
+    """Run all test functions that start with 'test_'."""
+    for name, obj in list(globals().items()):
+        if name.startswith("test_") and callable(obj):
+            print(f"Running {name}...")
+            obj()

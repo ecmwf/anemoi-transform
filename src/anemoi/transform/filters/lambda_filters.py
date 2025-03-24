@@ -27,7 +27,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
     """A filter to apply an arbitrary function to individual fields."""
 
     @matching(
-        match="param",
+        select="param",
         forward="param",
         backward="param",
     )
@@ -43,17 +43,17 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
 
         Parameters
         ----------
-        fn : callable or str
+        fn : Union[str, Callable[[Field, Any], Field]]
             The lambda function as a callable with the general signature
             `fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
             a string path to the function, such as "package.module.function".
-        param : list or str
+        param : Union[str, list[str]]
             The parameter name or list of parameter names to apply the function to.
         fn_args : list
             The list of arguments to pass to the lambda function.
-        fn_kwargs : dict
+        fn_kwargs : Dict[str, Any]
             The dictionary of keyword arguments to pass to the lambda function.
-        backward_fn (optional) : callable, str or None
+        backward_fn : Optional[Union[str, Callable[[Field, Any], Field]]], optional
             The backward lambda function as a callable with the general signature
             `backward_fn(*earthkit.data.Field, *args, **kwargs) -> earthkit.data.Field` or
             a string path to the function, such as "package.module.function".
@@ -73,6 +73,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
         ... )
         >>> fields = kelvin_to_celsius.forward(fields)
         """
+
         if not isinstance(fn_args, list):
             raise ValueError("Expected 'fn_args' to be a list. " f"Got {fn_args} instead.")
         if not isinstance(fn_kwargs, dict):
@@ -129,7 +130,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
 
         Returns
         -------
-        callable
+        Callable[..., Field]
             The imported function.
 
         Raises

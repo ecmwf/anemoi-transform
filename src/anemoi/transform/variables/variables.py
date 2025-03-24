@@ -69,6 +69,7 @@ class VariableFromMarsVocabulary(Variable):
 
     @property
     def time_processing(self):
+        """Get the time processing type of the variable."""
         return self.data.get("process")
 
     @property

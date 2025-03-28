@@ -18,6 +18,8 @@ import numpy as np
 from earthkit.data.core.geography import Geography
 from earthkit.data.indexing.fieldlist import SimpleFieldList
 
+from anemoi.transform.grids import Grid
+
 LOG = logging.getLogger(__name__)
 
 
@@ -279,8 +281,8 @@ class GeoMetadata(Geography):
         raise NotImplementedError()
 
 
-class NewGridField(WrappedField):
-    """Change the grid of a field.
+class NewLatLonField(WrappedField):
+    """Change the latitudes and longitudes of a field.
 
     Parameters
     ----------
@@ -353,6 +355,90 @@ class NewGridField(WrappedField):
             metadata.geography = GeoMetadata(self)
 
         return metadata
+
+
+class NewGridField(WrappedField):
+    """Change the grid of a field.
+
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    grid: Grid
+        The new grid for the field.
+    """
+
+    def __init__(self, field: Any, grid: Grid) -> None:
+        super().__init__(field)
+        self._grid = grid
+
+    def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Get the grid points of the field.
+
+        Returns
+        -------
+        tuple
+            The latitudes and longitudes of the field.
+        """
+        return self._grid.latlon()
+
+    def to_latlon(self, flatten: bool = True) -> Dict[str, np.ndarray]:
+        """Convert the grid points to latitude and longitude.
+
+        Parameters
+        ----------
+        flatten : bool, optional
+            Whether to flatten the arrays, by default True.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the latitudes and longitudes.
+        """
+        assert flatten
+        coords = self._grid.latlon()
+        return dict(lat=coords[0], lon=coords[1])
+
+    def __repr__(self) -> str:
+        """Get the string representation of the field.
+
+        Returns
+        -------
+        str
+            The string representation of the field.
+        """
+        return f"NewGridField({self._field}, {self._grid})"
+
+    def metadata(self, *args: Any, **kwargs: Any) -> Any:
+        """Get the metadata of the field.
+
+        Parameters
+        ----------
+        *args : Any
+            Additional arguments.
+        **kwargs : Any
+            Additional keyword arguments.
+
+        Returns
+        -------
+        Any
+            The metadata of the field.
+        """
+        metadata = self._field.metadata(*args, **kwargs)
+        if hasattr(metadata, "geography"):
+            metadata.geography = GeoMetadata(self)
+
+        return metadata
+
+    @property
+    def _latitudes(self) -> np.ndarray:
+        """Get the latitudes of the field."""
+        return self._grid.latlon()[0]
+
+    @property
+    def _longitudes(self) -> np.ndarray:
+        """Get the longitudes of the field."""
+        return self._grid.latlon()[1]
 
 
 class NewMetadataField(WrappedField):
@@ -567,3 +653,24 @@ def new_field_from_latitudes_longitudes(
         The new field with the provided latitudes and longitudes.
     """
     return NewGridField(template, latitudes, longitudes)
+
+
+def new_field_from_grid(
+    template: WrappedField,
+    grid: Grid,
+) -> NewGridField:
+    """Create a new field from a grid.
+
+    Parameters
+    ----------
+    template : WrappedField
+        The template field to use.
+    grid : Grid
+        The grid for the new field.
+
+    Returns
+    -------
+    NewGridField
+        The new field with the provided grid.
+    """
+    return NewGridField(template, grid)

@@ -8,20 +8,33 @@
 # nor does it submit to any jurisdiction.
 
 from collections import defaultdict
-from typing import Mapping
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Union
 
+import earthkit.data as ekd
 from anemoi.utils.rules import Rule
 from anemoi.utils.rules import RuleSet
 
 from anemoi.transform.fields import MISSING_METADATA
 from anemoi.transform.fields import Flavour
+from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.fields import new_flavoured_field
 
 
 class RuleBasedFlavour(Flavour):
     """Rule-based flavour for GRIB files."""
 
-    def __init__(self, rules):
+    def __init__(self, rules: Union[RuleSet, List[Rule], Dict[str, Any]]):
+        """Initialize the RuleBasedFlavour with a set of rules.
+
+        Parameters
+        ----------
+        rules : Union[RuleSet, List[Rule], Dict[str, Any]]
+            The rules to be applied, which can be a RuleSet, a list of Rule objects,
+            or a dictionary mapping keys to rule definitions.
+        """
         rules = RuleSet.from_any(rules)
         per_target = defaultdict(list)
         for rule in rules:
@@ -34,18 +47,53 @@ class RuleBasedFlavour(Flavour):
         for key, value in per_target.items():
             self.rules[key] = RuleSet.from_any(value)
 
-        print(self.rules)
+    def apply(self, field: ekd.Field) -> ekd.Field:
+        """Apply the flavour to a single field.
 
-    def apply(self, field):
+        Parameters
+        ----------
+        field : ekd.Field
+            The field to which the flavour will be applied.
+
+        Returns
+        -------
+        ekd.Field
+            The field with the applied flavour.
+        """
         return new_flavoured_field(field, self)
 
-    def __call__(self, key, field):
-        """Called when the field metadata is queried"""
+    def map(self, fieldlist: ekd.FieldArray) -> ekd.FieldArray:
+        """Apply the flavour to a fieldlist.
 
+        Parameters
+        ----------
+        fieldlist : ekd.FieldArray
+            The list of fields to which the flavour will be applied.
+
+        Returns
+        -------
+        ekd.FieldArray
+            The list of fields with the applied flavour.
+        """
+        return new_fieldlist_from_list([self.apply(field) for field in fieldlist])
+
+    def __call__(self, key: str, field: ekd.Field) -> Any:
+        """Called when the field metadata is queried.
+
+        Parameters
+        ----------
+        key : str
+            The metadata key being queried.
+        field : ekd.Field
+            The field whose metadata is being queried.
+
+        Returns
+        -------
+        Any
+            The result of the metadata query, or MISSING_METADATA if no match is found.
+        """
         if key not in self.rules:
             return MISSING_METADATA
-
-        class FieldMetadata(Mapping): ...
 
         for rule in self.rules[key]:
             if rule.match(field.metadata()):

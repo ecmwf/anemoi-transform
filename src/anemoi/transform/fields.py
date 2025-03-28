@@ -391,6 +391,8 @@ class NewMetadataField(WrappedField):
 
             class MD:
 
+                geography = this._field.metadata().geography
+
                 def get(self, key, default=None):
                     if key in this._metadata:
                         return this._metadata[key]

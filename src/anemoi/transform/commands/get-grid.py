@@ -10,7 +10,7 @@
 
 import argparse
 
-from . import Command
+from anemoi.transform.commands import Command
 
 
 class GetGrid(Command):

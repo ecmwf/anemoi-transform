@@ -53,12 +53,12 @@ class Transform(ABC):
 
         Parameters
         ----------
-        data : Any
+        data : ekd.FieldList
             The input data to be transformed.
 
         Returns
         -------
-        Any
+        ekd.FieldList
             The transformed data.
         """
         pass
@@ -68,12 +68,12 @@ class Transform(ABC):
 
         Parameters
         ----------
-        data : Any
+        data : ekd.FieldList
             The input data to be transformed.
 
         Returns
         -------
-        Any
+        ekd.FieldList
             The transformed data.
         """
         raise NotImplementedError(f"{self} is not reversible.")
@@ -119,24 +119,30 @@ class Transform(ABC):
         Transform
             A pipeline transform.
         """
-        from .workflows import workflow_registry
+        from anemoi.transform.workflows import workflow_registry
 
         return workflow_registry.create("pipeline", filters=[self, other])
 
-    def forward_processor(self, state):
-        raise NotImplementedError("Not implemented")
+    def patch_data_request(self, data_request: Any) -> Any:
+        """Patch the data request with additional information.
 
-    def backward_processor(self, state):
-        raise NotImplementedError("Not implemented")
+        Parameters
+        ----------
+        data_request : Any
+            The data request to patch.
 
-    def patch_data_request(self, data_request):
+        Returns
+        -------
+        Any
+            The patched data request.
+        """
         return data_request
 
 
 class ReversedTransform(Transform):
     """Swap the forward and backward methods of a filter."""
 
-    def __init__(self, filter) -> None:
+    def __init__(self, filter: Transform) -> None:
         """Initializes the reversed transform.
 
         Parameters
@@ -186,11 +192,17 @@ class ReversedTransform(Transform):
         """
         return self.filter.forward(x)
 
-    def forward_processor(self, state):
-        return self.filter.backward_processor(state)
+    def patch_data_request(self, data_request: Any) -> Any:
+        """Patch the data request with additional information.
 
-    def backward_processor(self, state):
-        return self.filter.forward_processor(state)
+        Parameters
+        ----------
+        data_request : Any
+            The data request to patch.
 
-    def patch_data_request(self, data_request):
+        Returns
+        -------
+        Any
+            The patched data request.
+        """
         return self.filter.patch_data_request(data_request)

@@ -14,10 +14,10 @@ from typing import List
 
 import earthkit.data as ekd
 
-from ..fields import new_field_from_numpy
-from ..fields import new_fieldlist_from_list
-from . import filter_registry
-from .base import Filter
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.filter import Filter
+from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger(__name__)
 
@@ -67,6 +67,7 @@ class RepeatMembers(Filter):
 
     def __init__(
         self,
+        *,
         numbers: List[int] = None,
         members: List[int] = None,
         count: int = None,
@@ -80,6 +81,7 @@ class RepeatMembers(Filter):
         count : int, optional
             The number of times to replicate the fields.
         """
+
         if sum(x is not None for x in (members, count, numbers)) != 1:
             raise ValueError("Exactly one of members, count or numbers must be given")
 
@@ -99,12 +101,12 @@ class RepeatMembers(Filter):
 
         Parameters
         ----------
-        data : Any
+        data : ekd.FieldList
             The input data to be transformed.
 
         Returns
         -------
-        Any
+        ekd.FieldList
             The transformed data.
         """
         result = []

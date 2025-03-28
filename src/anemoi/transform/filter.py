@@ -10,7 +10,7 @@
 
 import logging
 
-from .transform import Transform
+from anemoi.transform.transform import Transform
 
 LOG = logging.getLogger(__name__)
 

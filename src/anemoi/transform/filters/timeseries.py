@@ -9,7 +9,6 @@
 
 
 import logging
-from typing import Any
 from typing import Dict
 from typing import Iterator
 from typing import Optional
@@ -17,22 +16,15 @@ from typing import Optional
 import earthkit.data as ekd
 import numpy as np
 
-from . import filter_registry
-from .base import SimpleFilter
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 LOG = logging.getLogger(__name__)
 
-# class MyFilter(SuperSimpleFilter):
-#    def __init__(self, *, param):
-#        self.param = param
-#
-#    def transform(date, tp, lsm):
-#        new = tp + lsm + self.data(self.param, date)
-#        return dict(q_500 = new)
-
 
 @filter_registry.register("timeseries")
-class Timeseries(SimpleFilter):
+class Timeseries(MatchingFieldsFilter):
     """A source to add a timeseries depending on time but not on location.
 
     Parameters
@@ -43,7 +35,17 @@ class Timeseries(SimpleFilter):
         Template parameter name, by default "2t".
     """
 
-    def __init__(self, *, netcdf: Optional[Dict[str, str]] = None, template_param: str = "2t") -> None:
+    @matching(
+        select="param",
+        forward="template_param",
+    )
+    def __init__(
+        self,
+        *,
+        netcdf: Optional[Dict[str, str]] = None,
+        template_param: str = "2t",
+    ) -> None:
+
         if netcdf:
             import xarray as xr
 
@@ -52,31 +54,12 @@ class Timeseries(SimpleFilter):
 
         self.template_param = template_param
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the forward transformation to the data.
-
-        Parameters
-        ----------
-        data : Any
-            Input data to be transformed.
-
-        Returns
-        -------
-        Any
-            Transformed data.
-        """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.template_param,
-        )
-
-    def forward_transform(self, template: Any) -> Iterator[ekd.Field]:
+    def forward_transform(self, template: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.
 
         Parameters
         ----------
-        template : Any
+        template : ekd.Field
             Template field to transform.
 
         Returns

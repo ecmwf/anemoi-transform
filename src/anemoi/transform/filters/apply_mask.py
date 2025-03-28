@@ -10,10 +10,10 @@
 import earthkit.data as ekd
 import numpy as np
 
-from ..fields import new_field_from_numpy
-from ..fields import new_fieldlist_from_list
-from ..filter import Filter
-from . import filter_registry
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.filter import Filter
+from anemoi.transform.filters import filter_registry
 
 
 @filter_registry.register("apply_mask")
@@ -41,6 +41,7 @@ class MaskVariable(Filter):
         rename : str, optional
             New name for the masked variable, by default None.
         """
+
         mask = ekd.from_source("file", path)[0].to_numpy().astype(bool)
 
         if threshold is not None:

@@ -12,7 +12,7 @@ from typing import Any
 from typing import Dict
 from typing import Union
 
-from . import Variable
+from anemoi.transform.variables import Variable
 
 
 class VariableFromMarsVocabulary(Variable):
@@ -69,6 +69,7 @@ class VariableFromMarsVocabulary(Variable):
 
     @property
     def time_processing(self):
+        """Get the time processing type of the variable."""
         return self.data.get("process")
 
     @property

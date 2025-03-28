@@ -74,21 +74,22 @@ class WrappedField:
         self._field = field
 
     def __getattr__(self, name: str) -> Any:
-        """Custom attribute access method for the NewField class.
+        """Custom attribute access method for the WrappedField class.
 
-        This method intercepts attribute access and provides custom behavior for certain attributes.
-        If the attribute name is "clone" or "copy", an AttributeError is raised indicating that forwarding
-        of these attributes is not supported. For other attributes, a warning is logged if the attribute
-        name is not in the predefined list of supported attributes.
+        Parameters
+        ----------
+        name : str
+            The name of the attribute being accessed.
 
-        Args:
-            name (str): The name of the attribute being accessed.
+        Returns
+        -------
+        Any
+            The value of the attribute from the underlying _field object.
 
-        Returns:
-            Any: The value of the attribute from the underlying _field object.
-
-        Raises:
-            AttributeError: If the attribute name is "clone" or "copy".
+        Raises
+        ------
+        AttributeError
+            If the attribute name is "clone" or "copy".
         """
         if name in (
             "clone",
@@ -110,15 +111,26 @@ class WrappedField:
     def __repr__(self) -> str:
         """Return the string representation of the field.
 
-        This method returns the string representation of the `_field` attribute,
-        which provides a human-readable description of the object.
-
-        Returns:
-            str: The string representation of the `_field` attribute.
+        Returns
+        -------
+        str
+            The string representation of the `_field` attribute.
         """
         return f"{self.__class__.__name__ }({repr(self._field)})"
 
-    def clone(self, **kwargs):
+    def clone(self, **kwargs: Any) -> "NewClonedField":
+        """Clone the field with new metadata.
+
+        Parameters
+        ----------
+        **kwargs : Any
+            The new metadata for the cloned field.
+
+        Returns
+        -------
+        NewClonedField
+            The cloned field with the provided metadata.
+        """
         return NewClonedField(self, **kwargs)
 
 
@@ -137,6 +149,11 @@ class NewDataField(WrappedField):
         super().__init__(field)
         self._data = data
         self.shape = data.shape
+
+    @property
+    def values(self) -> np.ndarray:
+        """Get the values of the field."""
+        return self.to_numpy(flatten=True)
 
     def to_numpy(self, flatten: bool = False, dtype: Optional[type] = None, index: Optional[Any] = None) -> np.ndarray:
         """Convert the field data to a numpy array.
@@ -415,6 +432,13 @@ class _NewMetadataField(WrappedField, ABC):
         return self._field.metadata(*args, **kwargs)
 
     def __repr__(self) -> str:
+        """Get the string representation of the field.
+
+        Returns
+        -------
+        str
+            The string representation of the field.
+        """
         return f"{self.__class__.__name__ }({repr(self._field)},{self._metadata})"
 
 
@@ -468,13 +492,35 @@ class NewValidDateTimeField(NewMetadataField):
 
 
 class NewClonedField(WrappedField):
-    """Wrapper around a field object that clones the field."""
+    """Wrapper around a field object that clones the field.
 
-    def __init__(self, field, **metadata):
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    **metadata : Any
+        The new metadata for the cloned field.
+    """
+
+    def __init__(self, field: Any, **metadata: Any) -> None:
         super().__init__(field)
         self._metadata = metadata
 
-    def metadata(self, *args, **kwargs):
+    def metadata(self, *args: Any, **kwargs: Any) -> Any:
+        """Get the metadata of the cloned field.
+
+        Parameters
+        ----------
+        *args : Any
+            Additional arguments.
+        **kwargs : Any
+            Additional keyword arguments.
+
+        Returns
+        -------
+        Any
+            The metadata of the cloned field.
+        """
         if len(args) == 1:
             if args[0] in self._metadata:
                 if callable(self._metadata[args[0]]):

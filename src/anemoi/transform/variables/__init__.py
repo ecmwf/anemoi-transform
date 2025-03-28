@@ -42,7 +42,7 @@ class Variable(ABC):
         Any
             The created Variable instance.
         """
-        from .variables import VariableFromDict
+        from anemoi.transform.variables.variables import VariableFromDict
 
         return VariableFromDict(name, data)
 
@@ -60,7 +60,7 @@ class Variable(ABC):
         Any
             The created Variable instance.
         """
-        from .variables import VariableFromEarthkit
+        from anemoi.transform.variables.variables import VariableFromEarthkit
 
         return VariableFromEarthkit(field)
 

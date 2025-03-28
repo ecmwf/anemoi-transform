@@ -13,22 +13,23 @@ from typing import Dict
 
 import earthkit.data as ekd
 
-from ..source import Source
-from . import source_registry
+from anemoi.transform.source import Source
+from anemoi.transform.sources import source_registry
 
 
 @source_registry.register("mars")
 class Mars(Source):
-    """A demo source.
-
-    Parameters
-    ----------
-    **request : Any
-        Keyword arguments for the MARS request.
-    """
+    """A demo source."""
 
     def __init__(self, **request: Any) -> None:
-        pass
+        """Initialize the Mars source.
+
+        Parameters
+        ----------
+
+        **request : Any
+            Keyword arguments for the MARS request.
+        """
 
     def forward(self, data: Dict[str, Any]) -> ekd.Source:
         """Fetch data from MARS.
@@ -61,7 +62,7 @@ class Mars(Source):
         this = self
 
         class Input(Source):
-            def __init__(self, data: Dict[str, Any]) -> None:
+            def __init__(self, *, data: Dict[str, Any]) -> None:
                 """Initialize the Input source.
 
                 Parameters

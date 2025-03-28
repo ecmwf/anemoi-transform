@@ -12,7 +12,7 @@ from collections import defaultdict
 from typing import Any
 from typing import Callable
 from typing import Dict
-from typing import Generator
+from typing import Iterator
 from typing import List
 from typing import Tuple
 
@@ -28,24 +28,44 @@ def _lost(f: Any) -> None:
     raise ValueError(f"Lost field {f}")
 
 
-class GroupByMarsParam:
-    """Group matching fields by MARS parameters name.
+def _flatten(params: List[Any]) -> List[str]:
+    """Flatten a list of parameters.
+
+    Parameters
+    ----------
+    params : list of Any
+        List of parameters to flatten.
+
+    Returns
+    -------
+    list of str
+        Flattened list of parameters.
+    """
+    flat = []
+    for p in params:
+        if isinstance(p, (list, tuple)):
+            flat.extend(_flatten(p))
+        else:
+            flat.append(p)
+    return flat
+
+
+class GroupByParam:
+    """Group matching fields by parameters name.
 
     Parameters
     ----------
     params : list of str
-        List of MARS parameters to group by.
+        List of parameters to group by.
     """
 
     def __init__(self, params: List[str]) -> None:
         if not isinstance(params, (list, tuple)):
             params = [params]
-        self.params = params
+        self.params = _flatten(params)
 
-    def iterate(
-        self, data: List[Any], *, other: Callable[[Any], None] = _lost
-    ) -> Generator[Tuple[Any, ...], None, None]:
-        """Iterate over the data and group fields by MARS parameters.
+    def iterate(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[Tuple[Any, ...]]:
+        """Iterate over the data and group fields by parameters.
 
         Parameters
         ----------
@@ -56,15 +76,15 @@ class GroupByMarsParam:
 
         Returns
         -------
-        Generator[tuple of Any]
-            Generator yielding tuples of grouped fields.
+        Iterator[Tuple[Any, ...]]
+            Iterator yielding tuples of grouped fields.
         """
         assert callable(other), type(other)
         groups: Dict[Tuple[Tuple[str, Any], ...], Dict[str, Any]] = defaultdict(dict)
 
         for f in data:
             key = f.metadata(namespace="mars")
-            param = key.pop("param")
+            param = key.pop("param", f.metadata("param"))
 
             if param not in self.params:
                 other(f)

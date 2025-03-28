@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## [0.1.5](https://github.com/ecmwf/anemoi-transform/compare/0.1.4...0.1.5) (2025-03-28)
+
+
+### Bug Fixes
+
+* missing metadata attribute ([#68](https://github.com/ecmwf/anemoi-transform/issues/68)) ([4f69cb4](https://github.com/ecmwf/anemoi-transform/commit/4f69cb480cc09c1b9b466a81b671b8427c87866d))
+
+
+### Documentation
+
+* Docathon ([#62](https://github.com/ecmwf/anemoi-transform/issues/62)) ([413665c](https://github.com/ecmwf/anemoi-transform/commit/413665cf8b475bbf673017bca66b9b1360ded4ea))
+
 ## [0.1.4](https://github.com/ecmwf/anemoi-transform/compare/0.1.3...0.1.4) (2025-03-24)
 
 

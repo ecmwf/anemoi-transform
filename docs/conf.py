@@ -154,4 +154,3 @@ html_context = {
     "github_repo": "anemoi-transform",
     "github_version": "main/docs/",
 }
-

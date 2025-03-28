@@ -30,7 +30,6 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
  Anemoi packages
 *****************
 
-
 -  :ref:`anemoi-utils <anemoi-utils:index-page>`
 -  :ref:`anemoi-transform <anemoi-transform:index-page>`
 -  :ref:`anemoi-datasets <anemoi-datasets:index-page>`

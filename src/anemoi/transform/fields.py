@@ -652,7 +652,7 @@ def new_field_from_latitudes_longitudes(
     NewGridField
         The new field with the provided latitudes and longitudes.
     """
-    return NewGridField(template, latitudes, longitudes)
+    return NewLatLonField(template, latitudes, longitudes)
 
 
 def new_field_from_grid(

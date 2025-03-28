@@ -26,3 +26,11 @@ def test_snow_cover() -> None:
     expected_snow_cover: np.ndarray = np.array([0.1, 0.4, 0.9])
     snow_cover: np.ndarray = compute_snow_cover(snow_depth, snow_density)
     np.testing.assert_allclose(snow_cover, expected_snow_cover)
+
+
+if __name__ == "__main__":
+    """Run all test functions that start with 'test_'."""
+    for name, obj in list(globals().items()):
+        if name.startswith("test_") and callable(obj):
+            print(f"Running {name}...")
+            obj()

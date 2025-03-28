@@ -30,6 +30,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
  Anemoi packages
 *****************
 
+
 -  :ref:`anemoi-utils <anemoi-utils:index-page>`
 -  :ref:`anemoi-transform <anemoi-transform:index-page>`
 -  :ref:`anemoi-datasets <anemoi-datasets:index-page>`
@@ -38,6 +39,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 -  :ref:`anemoi-training <anemoi-training:index-page>`
 -  :ref:`anemoi-inference <anemoi-inference:index-page>`
 -  :ref:`anemoi-registry <anemoi-registry:index-page>`
+-  :ref:`anemoi-plugins <anemoi-plugins:index-page>`
 
 *********
  License

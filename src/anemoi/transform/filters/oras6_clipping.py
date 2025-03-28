@@ -58,7 +58,7 @@ class Oras6Clipping(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        select="param",
         forward=(
             "siue",
             "sivn",

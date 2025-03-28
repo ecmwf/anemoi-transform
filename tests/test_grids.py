@@ -46,6 +46,7 @@ def do_not_test_unstructured_from_url() -> None:
 
 
 if __name__ == "__main__":
+    """Run all test functions that start with 'test_'."""
     for name, obj in list(globals().items()):
         if name.startswith("test_") and callable(obj):
             print(f"Running {name}...")

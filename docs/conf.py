@@ -106,6 +106,10 @@ intersphinx_mapping = {
         "https://anemoi-transform.readthedocs.io/en/latest/",
         ("../../anemoi-transform/docs/_build/html/objects.inv", None),
     ),
+    "anemoi-plugins": (
+        "https://anemoi-plugins.readthedocs.io/en/latest/",
+        ("../../anemoi-plugins/docs/_build/html/objects.inv", None),
+    ),
 }
 
 # -- Options for HTML output -------------------------------------------------
@@ -126,6 +130,7 @@ todo_include_todos = not read_the_docs_build
 
 autodoc_member_order = "bysource"  # Keep file order
 
+
 # apidoc_modules = [
 #     {
 #         'path': '../src/anemoi',
@@ -142,3 +147,11 @@ autodoc_member_order = "bysource"  # Keep file order
 #         },
 #     },
 # ]
+
+html_context = {
+    "display_github": True,
+    "github_user": "ecmwf",
+    "github_repo": "anemoi-transform",
+    "github_version": "main/docs/",
+}
+

@@ -62,12 +62,12 @@ def read_crosswalking_table(param: Any, param_dic: Dict[int, Dict[str, float]]) 
     ----------
     param : Any
         The parameter to read.
-    param_dic : dict
+    param_dic : Dict[int, Dict[str, float]]
         The dictionary containing the crosswalking table.
 
     Returns
     -------
-    list of np.ndarray
+    List[np.ndarray]
         The arrays for each key in the crosswalking table.
     """
     arrays = [np.array([param_dic[x][key] for x in param]) for key in param_dic[0].keys()]
@@ -79,7 +79,7 @@ class LandParameters(MatchingFieldsFilter):
     """A filter to add static parameters from table based on soil/vegetation type."""
 
     @matching(
-        match="param",
+        select="param",
         forward=("high_veg_type", "low_veg_type", "soil_type"),
     )
     def __init__(
@@ -97,6 +97,7 @@ class LandParameters(MatchingFieldsFilter):
         theta_pwp: str = "theta_pwp",
         theta_cap: str = "theta_cap",
     ) -> None:
+
         self.high_veg_type = high_veg_type
         self.low_veg_type = low_veg_type
         self.soil_type = soil_type
@@ -108,27 +109,6 @@ class LandParameters(MatchingFieldsFilter):
         self.lveg_z0m = lveg_z0m
         self.theta_pwp = theta_pwp
         self.theta_cap = theta_cap
-
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Forward transformation to add static parameters.
-
-        Parameters
-        ----------
-        data : Any
-            The input data.
-
-        Returns
-        -------
-        Any
-            The transformed data.
-        """
-        return self._transform(
-            data,
-            self.forward_transform,
-            self.high_veg_type,
-            self.low_veg_type,
-            self.soil_type,
-        )
 
     def forward_transform(
         self,

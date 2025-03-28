@@ -23,6 +23,16 @@ from earthkit.data.indexing.fieldlist import SimpleFieldList
 
 LOG = logging.getLogger(__name__)
 
+MISSING_METADATA = object()
+
+
+class Flavour(ABC):
+
+    @abstractmethod
+    def __call__(self, key: str, field: ekd.Field) -> Any:
+        """Called during field metadata lookup, so it can be modified"""
+        pass
+
 
 def new_fieldlist_from_list(fields: List[Any]) -> SimpleFieldList:
     """Create a new SimpleFieldList from a list of fields.
@@ -374,10 +384,10 @@ class _NewMetadataField(WrappedField, ABC):
                 geography = this._field.metadata().geography
 
                 def get(self, key, default=None):
-                    try:
-                        return this.mapping(key, this._field)
-                    except KeyError:
-                        pass
+
+                    value = this.mapping(key, this._field)
+                    if value is not MISSING_METADATA:
+                        return value
 
                     return this._field.metadata().get(key, default)
 
@@ -387,16 +397,14 @@ class _NewMetadataField(WrappedField, ABC):
             assert len(args) == 0, (args, kwargs)
             mars = self._field.metadata(**kwargs).copy()
             for k in list(mars.keys()):
-                try:
-                    mars[k] = self.mapping(k, self._field)
-                except KeyError:
-                    pass
+                m = self.mapping(k, self._field)
+                if m is not MISSING_METADATA:
+                    mars[k] = m
             return mars
 
         if len(args) == 1:
-            try:
-                value = self.mapping(args[0], self._field)
-            except KeyError:
+            value = self.mapping(args[0], self._field)
+            if value is MISSING_METADATA:
                 return self._field.metadata(*args, **kwargs)
 
             if callable(value):
@@ -426,11 +434,11 @@ class NewMetadataField(_NewMetadataField):
         self.kwargs = kwargs
 
     def mapping(self, key: str, field: ekd.Field) -> Any:
-        return self.kwargs[key]
+        return self.kwargs.get(key, MISSING_METADATA)
 
 
 class NewFlavouredField(_NewMetadataField):
-    def __init__(self, field: Any, flavour: Any) -> None:
+    def __init__(self, field: Any, flavour: Flavour) -> None:
         super().__init__(field)
         self.flavour = flavour
 
@@ -557,6 +565,6 @@ def new_field_from_latitudes_longitudes(
     return NewGridField(template, latitudes, longitudes)
 
 
-def new_flavoured_field(field: Any, flavour: Any) -> NewFlavouredField:
+def new_flavoured_field(field: Any, flavour: Flavour) -> NewFlavouredField:
     """Create a new field with a flavour."""
     return NewFlavouredField(field, flavour)

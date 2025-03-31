@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## [0.1.7](https://github.com/ecmwf/anemoi-transform/compare/0.1.6...0.1.7) (2025-03-31)
+
+
+### Documentation
+
+* fix ([#76](https://github.com/ecmwf/anemoi-transform/issues/76)) ([fc8acad](https://github.com/ecmwf/anemoi-transform/commit/fc8acad014a3e1f5179e403171f1ef2c924accd2))
+
 ## [0.1.6](https://github.com/ecmwf/anemoi-transform/compare/0.1.5...0.1.6) (2025-03-31)
 
 

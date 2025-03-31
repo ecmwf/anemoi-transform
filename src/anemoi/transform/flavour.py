@@ -62,17 +62,17 @@ class RuleBasedFlavour(Flavour):
         """
         return new_flavoured_field(field, self)
 
-    def map(self, fieldlist: ekd.FieldArray) -> ekd.FieldArray:
+    def map(self, fieldlist: ekd.FieldList) -> ekd.FieldList:
         """Apply the flavour to a fieldlist.
 
         Parameters
         ----------
-        fieldlist : ekd.FieldArray
+        fieldlist : ekd.FieldList
             The list of fields to which the flavour will be applied.
 
         Returns
         -------
-        ekd.FieldArray
+        ekd.FieldList
             The list of fields with the applied flavour.
         """
         return new_fieldlist_from_list([self.apply(field) for field in fieldlist])

@@ -210,6 +210,7 @@ class Oras6Clipping(MatchingFieldsFilter):
         # to avoid unrealistic values in the ocean model.
         tos_np[tos_np <= MINTF] = MINTF
 
+        yield self.new_field_from_numpy(siconc_np, template=siconc, param=self.siconc)
         yield self.new_field_from_numpy(siue_np, template=siue, param=self.siue)
         yield self.new_field_from_numpy(sivn_np, template=sivn, param=self.sivn)
         yield self.new_field_from_numpy(icesalt_np, template=icesalt, param=self.icesalt)

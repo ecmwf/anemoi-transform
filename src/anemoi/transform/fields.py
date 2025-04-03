@@ -8,12 +8,15 @@
 # nor does it submit to any jurisdiction.
 
 import logging
+from abc import ABC
+from abc import abstractmethod
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
 
+import earthkit.data as ekd
 import numpy as np
 from earthkit.data.core.geography import Geography
 from earthkit.data.indexing.fieldlist import SimpleFieldList
@@ -21,6 +24,16 @@ from earthkit.data.indexing.fieldlist import SimpleFieldList
 from anemoi.transform.grids import Grid
 
 LOG = logging.getLogger(__name__)
+
+MISSING_METADATA = object()
+
+
+class Flavour(ABC):
+
+    @abstractmethod
+    def __call__(self, key: str, field: ekd.Field) -> Any:
+        """Called during field metadata lookup, so it can be modified"""
+        pass
 
 
 def new_fieldlist_from_list(fields: List[Any]) -> SimpleFieldList:
@@ -441,20 +454,14 @@ class NewGridField(WrappedField):
         return self._grid.latlon()[1]
 
 
-class NewMetadataField(WrappedField):
-    """Change the metadata of a field.
+class _NewMetadataField(WrappedField, ABC):
+    """Change the metadata of a field."""
 
-    Parameters
-    ----------
-    field : Any
-        The field object to wrap.
-    **kwargs : Any
-        The new metadata for the field.
-    """
-
-    def __init__(self, field: Any, **kwargs: Any) -> None:
+    def __init__(self, field: Any) -> None:
         super().__init__(field)
-        self._metadata = kwargs
+
+    @abstractmethod
+    def mapping(self, key: str, field: ekd.Field) -> Any: ...
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
         """Get the metadata of the field.
@@ -480,8 +487,10 @@ class NewMetadataField(WrappedField):
                 geography = this._field.metadata().geography
 
                 def get(self, key, default=None):
-                    if key in this._metadata:
-                        return this._metadata[key]
+
+                    value = this.mapping(key, this._field)
+                    if value is not MISSING_METADATA:
+                        return value
 
                     return this._field.metadata().get(key, default)
 
@@ -491,14 +500,19 @@ class NewMetadataField(WrappedField):
             assert len(args) == 0, (args, kwargs)
             mars = self._field.metadata(**kwargs).copy()
             for k in list(mars.keys()):
-                if k in self._metadata:
-                    mars[k] = self._metadata[k]
+                m = self.mapping(k, self._field)
+                if m is not MISSING_METADATA:
+                    mars[k] = m
             return mars
 
-        if len(args) == 1 and args[0] in self._metadata:
-            value = self._metadata[args[0]]
+        if len(args) == 1:
+            value = self.mapping(args[0], self._field)
+            if value is MISSING_METADATA:
+                return self._field.metadata(*args, **kwargs)
+
             if callable(value):
                 return value(self, args[0], self._field.metadata())
+
             return value
 
         return self._field.metadata(*args, **kwargs)
@@ -512,6 +526,34 @@ class NewMetadataField(WrappedField):
             The string representation of the field.
         """
         return f"{self.__class__.__name__ }({repr(self._field)},{self._metadata})"
+
+
+class NewMetadataField(_NewMetadataField):
+    """Change the metadata of a field.
+
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    **kwargs : Any
+        The new metadata for the field.
+    """
+
+    def __init__(self, field: Any, **kwargs: Any) -> None:
+        super().__init__(field)
+        self.kwargs = kwargs
+
+    def mapping(self, key: str, field: ekd.Field) -> Any:
+        return self.kwargs.get(key, MISSING_METADATA)
+
+
+class NewFlavouredField(_NewMetadataField):
+    def __init__(self, field: Any, flavour: Flavour) -> None:
+        super().__init__(field)
+        self.flavour = flavour
+
+    def mapping(self, key: str, field: ekd.Field) -> Any:
+        return self.flavour(key, field)
 
 
 class NewValidDateTimeField(NewMetadataField):
@@ -674,3 +716,8 @@ def new_field_from_grid(
         The new field with the provided grid.
     """
     return NewGridField(template, grid)
+
+
+def new_flavoured_field(field: Any, flavour: Flavour) -> NewFlavouredField:
+    """Create a new field with a flavour."""
+    return NewFlavouredField(field, flavour)

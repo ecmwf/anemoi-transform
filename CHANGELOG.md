@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## [0.1.8](https://github.com/ecmwf/anemoi-transform/compare/0.1.7...0.1.8) (2025-03-31)
+
+
+### Bug Fixes
+
+* sea ice concentration correctly treated in oras6_clipping ([#78](https://github.com/ecmwf/anemoi-transform/issues/78)) ([703813a](https://github.com/ecmwf/anemoi-transform/commit/703813aebcdd883d6710a4d15674f9f1bde24a56))
+
+## [0.1.7](https://github.com/ecmwf/anemoi-transform/compare/0.1.6...0.1.7) (2025-03-31)
+
+
+### Documentation
+
+* fix ([#76](https://github.com/ecmwf/anemoi-transform/issues/76)) ([fc8acad](https://github.com/ecmwf/anemoi-transform/commit/fc8acad014a3e1f5179e403171f1ef2c924accd2))
+
+## [0.1.6](https://github.com/ecmwf/anemoi-transform/compare/0.1.5...0.1.6) (2025-03-31)
+
+
+### Features
+
+* add GRIB flavours ([#72](https://github.com/ecmwf/anemoi-transform/issues/72)) ([a5cb523](https://github.com/ecmwf/anemoi-transform/commit/a5cb523712d8ad5ad48e644524ca43c4bdf73361))
+
 ## [0.1.5](https://github.com/ecmwf/anemoi-transform/compare/0.1.4...0.1.5) (2025-03-28)
 
 

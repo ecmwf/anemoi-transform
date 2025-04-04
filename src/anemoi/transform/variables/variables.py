@@ -158,3 +158,19 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
             The level of the variable.
         """
         return self.field.level()
+
+
+class PostProcessedVariable(VariableFromMarsVocabulary):
+    """A variable that is defined by a post-processed dictionary."""
+
+    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+        """Initialize the variable with a name and data.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        data : dict
+            The data defining the variable.
+        """
+        super().__init__(name, data)

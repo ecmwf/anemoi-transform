@@ -21,7 +21,7 @@ class HumidityConversion(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        select="param",
         forward=("temperature", "humidity"),
         backward=("relative_humidity", "temperature"),
     )

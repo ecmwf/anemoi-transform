@@ -41,6 +41,7 @@ class MaskVariable(Filter):
         rename : str, optional
             New name for the masked variable, by default None.
         """
+
         mask = ekd.from_source("file", path)[0].to_numpy().astype(bool)
 
         if threshold is not None:

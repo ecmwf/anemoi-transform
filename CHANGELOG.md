@@ -8,6 +8,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## [0.1.8](https://github.com/ecmwf/anemoi-transform/compare/0.1.7...0.1.8) (2025-03-31)
+
+
+### Bug Fixes
+
+* sea ice concentration correctly treated in oras6_clipping ([#78](https://github.com/ecmwf/anemoi-transform/issues/78)) ([703813a](https://github.com/ecmwf/anemoi-transform/commit/703813aebcdd883d6710a4d15674f9f1bde24a56))
+
+## [0.1.7](https://github.com/ecmwf/anemoi-transform/compare/0.1.6...0.1.7) (2025-03-31)
+
+
+### Documentation
+
+* fix ([#76](https://github.com/ecmwf/anemoi-transform/issues/76)) ([fc8acad](https://github.com/ecmwf/anemoi-transform/commit/fc8acad014a3e1f5179e403171f1ef2c924accd2))
+
+## [0.1.6](https://github.com/ecmwf/anemoi-transform/compare/0.1.5...0.1.6) (2025-03-31)
+
+
+### Features
+
+* add GRIB flavours ([#72](https://github.com/ecmwf/anemoi-transform/issues/72)) ([a5cb523](https://github.com/ecmwf/anemoi-transform/commit/a5cb523712d8ad5ad48e644524ca43c4bdf73361))
+
+## [0.1.5](https://github.com/ecmwf/anemoi-transform/compare/0.1.4...0.1.5) (2025-03-28)
+
+
+### Bug Fixes
+
+* missing metadata attribute ([#68](https://github.com/ecmwf/anemoi-transform/issues/68)) ([4f69cb4](https://github.com/ecmwf/anemoi-transform/commit/4f69cb480cc09c1b9b466a81b671b8427c87866d))
+
+
+### Documentation
+
+* Docathon ([#62](https://github.com/ecmwf/anemoi-transform/issues/62)) ([413665c](https://github.com/ecmwf/anemoi-transform/commit/413665cf8b475bbf673017bca66b9b1360ded4ea))
+
+## [0.1.4](https://github.com/ecmwf/anemoi-transform/compare/0.1.3...0.1.4) (2025-03-24)
+
+
+### Features
+
+* plugin support ([#65](https://github.com/ecmwf/anemoi-transform/issues/65)) ([7481145](https://github.com/ecmwf/anemoi-transform/commit/7481145c51f4fbf2fdd43a9b8822b18e32b62449))
+* Rodeo transform update ([#61](https://github.com/ecmwf/anemoi-transform/issues/61)) ([3e669c0](https://github.com/ecmwf/anemoi-transform/commit/3e669c0207c68b897126e128a76d82a921960522))
+
+
+### Bug Fixes
+
+* fix regrid arguments ([#67](https://github.com/ecmwf/anemoi-transform/issues/67)) ([1a730cd](https://github.com/ecmwf/anemoi-transform/commit/1a730cd6354cdd00eedc82ec5bf57eea34e8f797))
+* return unmodified fields ([#57](https://github.com/ecmwf/anemoi-transform/issues/57)) ([6f0e6f4](https://github.com/ecmwf/anemoi-transform/commit/6f0e6f46506f8eef28219a26e1cfddca6b81793d))
+* undetected as dry pixels and meaningful naming ([#59](https://github.com/ecmwf/anemoi-transform/issues/59)) ([b66ce25](https://github.com/ecmwf/anemoi-transform/commit/b66ce25af3f1affc5c8162567a5754dc91b14889))
+
+
+### Documentation
+
+* links to GitHub ([#66](https://github.com/ecmwf/anemoi-transform/issues/66)) ([10f5c13](https://github.com/ecmwf/anemoi-transform/commit/10f5c138a6c96f1420d476d0171c5f1850cac43b))
+
 ## [0.1.3](https://github.com/ecmwf/anemoi-transform/compare/0.1.2...0.1.3) (2025-03-06)
 
 

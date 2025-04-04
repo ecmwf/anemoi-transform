@@ -10,8 +10,8 @@ To install the package, you can use the following command:
 
 The options are:
 
--  ``dev``: install the development dependencies
--  ``all``: install all the dependencies
+-  ``dev``: install the development dependencies.
+-  ``all``: install all the dependencies.
 
 **************
  Contributing

@@ -25,7 +25,7 @@ class WindComponents(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        select="param",
         forward=("u_component", "v_component"),
         backward=("wind_speed", "wind_direction"),
     )
@@ -56,6 +56,7 @@ class WindComponents(MatchingFieldsFilter):
         radians : bool, optional
             Whether to use radians, by default False.
         """
+
         self.u_component = u_component
         self.v_component = v_component
         self.wind_speed = wind_speed
@@ -66,7 +67,7 @@ class WindComponents(MatchingFieldsFilter):
         assert not self.radians, "Radians not (yet) supported"
 
     def forward_transform(self, u_component: ekd.Field, v_component: ekd.Field) -> Iterator[ekd.Field]:
-        """U/V to DD/FF.
+        """Convert U and V wind components to wind speed and direction.
 
         Parameters
         ----------
@@ -77,9 +78,8 @@ class WindComponents(MatchingFieldsFilter):
 
         Returns
         -------
-        ekd.Field
+        Iterator[ekd.Field]
             The wind speed field.
-        ekd.Field
             The wind direction field.
         """
 
@@ -93,7 +93,7 @@ class WindComponents(MatchingFieldsFilter):
         yield self.new_field_from_numpy(direction, template=v_component, param=self.wind_direction)
 
     def backward_transform(self, wind_speed: ekd.Field, wind_direction: ekd.Field) -> Iterator[ekd.Field]:
-        """DD/FF to U/V.
+        """Convert wind speed and direction to U and V components.
 
         Parameters
         ----------
@@ -104,9 +104,8 @@ class WindComponents(MatchingFieldsFilter):
 
         Returns
         -------
-        ekd.Field
+        Iterator[ekd.Field]
             The U component of the wind.
-        ekd.Field
             The V component of the wind.
         """
 

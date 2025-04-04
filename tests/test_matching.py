@@ -19,7 +19,7 @@ prototype = {
 
 
 def test_cos_sin_mean_wave_direction():
-
+    """Test the cos_sin_mean_wave_direction filter."""
     data = [{"param": "mwd", **prototype}]
 
     filter = filter_registry.create(
@@ -35,6 +35,9 @@ def test_cos_sin_mean_wave_direction():
 
 
 if __name__ == "__main__":
+    """
+    Run all test functions that start with 'test_'.
+    """
     for name, obj in list(globals().items()):
         if name.startswith("test_") and callable(obj):
             print(f"Running {name}...")

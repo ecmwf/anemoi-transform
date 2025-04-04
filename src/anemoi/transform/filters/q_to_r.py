@@ -31,7 +31,6 @@ class HumidityConversion(MatchingFieldsFilter):
         temperature="t",
         humidity="q",
     ):
-
         self.relative_humidity = relative_humidity
         self.temperature = temperature
         self.humidity = humidity
@@ -56,7 +55,6 @@ class HumidityConversion(MatchingFieldsFilter):
         yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
         yield temperature
         yield relative_humidity
-
 
 filter_registry.register("q_2_r", HumidityConversion)
 filter_registry.register("r_2_q", HumidityConversion.reversed)

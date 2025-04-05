@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## [0.1.9](https://github.com/ecmwf/anemoi-transform/compare/0.1.8...0.1.9) (2025-04-05)
+
+
+### Features
+
+* add grid class and factory ([#71](https://github.com/ecmwf/anemoi-transform/issues/71)) ([db0b70a](https://github.com/ecmwf/anemoi-transform/commit/db0b70ad8eb00945d573c69b665fe1859b0889d9))
+
+
+### Bug Fixes
+
+* grid support ([#82](https://github.com/ecmwf/anemoi-transform/issues/82)) ([c1dc21d](https://github.com/ecmwf/anemoi-transform/commit/c1dc21d487853e5414decf50a637ce04d629ea54))
+
+
+### Documentation
+
+* fix typo ([#80](https://github.com/ecmwf/anemoi-transform/issues/80)) ([7bb1d2d](https://github.com/ecmwf/anemoi-transform/commit/7bb1d2d027d1b1f84b5945df6c6ad1bdec80ec79))
+
 ## [0.1.8](https://github.com/ecmwf/anemoi-transform/compare/0.1.7...0.1.8) (2025-03-31)
 
 

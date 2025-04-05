@@ -43,7 +43,7 @@ def as_gridspec(grid: Optional[Union[str, Dict[str, Any]]]) -> Optional[Dict[str
     if grid is None:
         return None
 
-    if isinstance(grid, str):
+    if isinstance(grid, (str, list, tuple)):
         return {"grid": grid}
 
     return grid
@@ -73,6 +73,11 @@ def as_griddata(grid: Optional[Union[str, Field, Dict[str, Any]]]) -> Optional[D
         return grid
 
     if isinstance(grid, str):
+        from anemoi.utils.grids import grids
+
+        return grids(grid)
+
+    if isinstance(grid, (list, tuple)):
         from anemoi.utils.grids import grids
 
         return grids(grid)
@@ -190,6 +195,7 @@ class EarthkitRegrid:
         """
         self.in_grid = as_gridspec(in_grid)
         self.out_grid = as_gridspec(out_grid)
+        self.out_griddata = as_griddata(out_grid)
         self.method = method
         if check:
             LOG.warning("Check is not supported by EarthkitRegrid")
@@ -209,14 +215,17 @@ class EarthkitRegrid:
         """
         from earthkit.regrid import interpolate
 
-        return new_field_from_numpy(
-            interpolate(
-                field.to_numpy(flatten=True),
-                in_grid=self.in_grid,
-                out_grid=self.out_grid,
-                method=self.method,
+        return new_field_from_latitudes_longitudes(
+            new_field_from_numpy(
+                interpolate(
+                    field.to_numpy(flatten=True),
+                    in_grid=self.in_grid,
+                    out_grid=self.out_grid,
+                    method=self.method,
+                ),
+                template=field,
             ),
-            template=field,
+            **self.out_griddata,
         )
 
 

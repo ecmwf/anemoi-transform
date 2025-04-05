@@ -39,7 +39,15 @@ class GetGrid(Command):
         import numpy as np
         from earthkit.data import from_source
 
-        ds = from_source(args.source, args.input)
+        if args.source == "mars":
+            # anemoi-transform get-grid --source mars grid=o400,levtype=sfc,param=2t grid-o400.npz
+            # anemoi-transform get-grid --source mars grid=0.25/0.25,levtype=sfc,param=2t grid-0p25.npz
+            input = args.input.split(",")
+            input = {k: v for k, v in (x.split("=") for x in input)}
+        else:
+            input = args.input
+
+        ds = from_source(args.source, input)
         lat, lon = ds[0].grid_points()
         np.savez(args.output, latitudes=lat, longitudes=lon)
 

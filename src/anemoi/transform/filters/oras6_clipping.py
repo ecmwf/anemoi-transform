@@ -55,6 +55,8 @@ class Oras6Clipping(MatchingFieldsFilter):
         The name of the vertically averaged sea ice temperature, by default "avg_vasit".
     tos : str, optional
         The name of the temperature of the surface field, by default "avg_tos".
+    thetao_?? : str, optional
+        The name of the temperature at various depth, model level given in place of ??, by default "avg_thetao_??".
     """
 
     @matching(
@@ -74,6 +76,28 @@ class Oras6Clipping(MatchingFieldsFilter):
             "sialb",
             "vasit",
             "tos",
+            "thetao_1",
+            "thetao_2",
+            "thetao_3",
+            "thetao_4",
+            "thetao_5",
+            "thetao_6",
+            "thetao_7",
+            "thetao_8",
+            "thetao_9",
+            "thetao_14",
+            "thetao_19",
+            "thetao_24",
+            "thetao_29",
+            "thetao_34",
+            "thetao_39",
+            "thetao_44",
+            "thetao_49",
+            "thetao_54",
+            "thetao_59",
+            "thetao_64",
+            "thetao_69",
+            "thetao_74",
         ),
     )
     def __init__(
@@ -93,6 +117,28 @@ class Oras6Clipping(MatchingFieldsFilter):
         sialb: str = "avg_sialb",
         vasit: str = "avg_vasit",
         tos: str = "avg_tos",
+        thetao_1: str = "avg_thetao_1",
+        thetao_2: str = "avg_thetao_2",
+        thetao_3: str = "avg_thetao_3",
+        thetao_4: str = "avg_thetao_4",
+        thetao_5: str = "avg_thetao_5",
+        thetao_6: str = "avg_thetao_6",
+        thetao_7: str = "avg_thetao_7",
+        thetao_8: str = "avg_thetao_8",
+        thetao_9: str = "avg_thetao_9",
+        thetao_14: str = "avg_thetao_14",
+        thetao_19: str = "avg_thetao_19",
+        thetao_24: str = "avg_thetao_24",
+        thetao_29: str = "avg_thetao_29",
+        thetao_34: str = "avg_thetao_34",
+        thetao_39: str = "avg_thetao_39",
+        thetao_44: str = "avg_thetao_44",
+        thetao_49: str = "avg_thetao_49",
+        thetao_54: str = "avg_thetao_54",
+        thetao_59: str = "avg_thetao_59",
+        thetao_64: str = "avg_thetao_64",
+        thetao_69: str = "avg_thetao_69",
+        thetao_74: str = "avg_thetao_74",
     ) -> None:
         self.siue = siue
         self.sivn = sivn
@@ -108,6 +154,28 @@ class Oras6Clipping(MatchingFieldsFilter):
         self.sialb = sialb
         self.vasit = vasit
         self.tos = tos
+        self.thetao_1 = thetao_1
+        self.thetao_2 = thetao_2
+        self.thetao_3 = thetao_3
+        self.thetao_4 = thetao_4
+        self.thetao_5 = thetao_5
+        self.thetao_6 = thetao_6
+        self.thetao_7 = thetao_7
+        self.thetao_8 = thetao_8
+        self.thetao_9 = thetao_9
+        self.thetao_14 = thetao_14
+        self.thetao_19 = thetao_19
+        self.thetao_24 = thetao_24
+        self.thetao_29 = thetao_29
+        self.thetao_34 = thetao_34
+        self.thetao_39 = thetao_39
+        self.thetao_44 = thetao_44
+        self.thetao_49 = thetao_49
+        self.thetao_54 = thetao_54
+        self.thetao_59 = thetao_59
+        self.thetao_64 = thetao_64
+        self.thetao_69 = thetao_69
+        self.thetao_74 = thetao_74
 
     def forward_transform(
         self,
@@ -125,6 +193,28 @@ class Oras6Clipping(MatchingFieldsFilter):
         sialb: ekd.Field,
         vasit: ekd.Field,
         tos: ekd.Field,
+        thetao_1: ekd.Field,
+        thetao_2: ekd.Field,
+        thetao_3: ekd.Field,
+        thetao_4: ekd.Field,
+        thetao_5: ekd.Field,
+        thetao_6: ekd.Field,
+        thetao_7: ekd.Field,
+        thetao_8: ekd.Field,
+        thetao_9: ekd.Field,
+        thetao_14: ekd.Field,
+        thetao_19: ekd.Field,
+        thetao_24: ekd.Field,
+        thetao_29: ekd.Field,
+        thetao_34: ekd.Field,
+        thetao_39: ekd.Field,
+        thetao_44: ekd.Field,
+        thetao_49: ekd.Field,
+        thetao_54: ekd.Field,
+        thetao_59: ekd.Field,
+        thetao_64: ekd.Field,
+        thetao_69: ekd.Field,
+        thetao_74: ekd.Field,
     ) -> Iterator[ekd.Field]:
         """Mask sea ice-related variables where concentration is low.
 
@@ -180,6 +270,28 @@ class Oras6Clipping(MatchingFieldsFilter):
         sialb_np = sialb.to_numpy()
         vasit_np = vasit.to_numpy()
         tos_np = tos.to_numpy()
+        thetao_1_np = thetao_1.to_numpy()
+        thetao_2_np = thetao_2.to_numpy()
+        thetao_3_np = thetao_3.to_numpy()
+        thetao_4_np = thetao_4.to_numpy()
+        thetao_5_np = thetao_5.to_numpy()
+        thetao_6_np = thetao_6.to_numpy()
+        thetao_7_np = thetao_7.to_numpy()
+        thetao_8_np = thetao_8.to_numpy()
+        thetao_9_np = thetao_9.to_numpy()
+        thetao_14_np = thetao_14.to_numpy()
+        thetao_19_np = thetao_19.to_numpy()
+        thetao_24_np = thetao_24.to_numpy()
+        thetao_29_np = thetao_29.to_numpy()
+        thetao_34_np = thetao_34.to_numpy()
+        thetao_39_np = thetao_39.to_numpy()
+        thetao_44_np = thetao_44.to_numpy()
+        thetao_49_np = thetao_49.to_numpy()
+        thetao_54_np = thetao_54.to_numpy()
+        thetao_59_np = thetao_59.to_numpy()
+        thetao_64_np = thetao_64.to_numpy()
+        thetao_69_np = thetao_69.to_numpy()
+        thetao_74_np = thetao_74.to_numpy()
 
         # Convert snow temperature from Celsius to Kelvin if the maximum value is less than 100,
         # as it indicates the temperature is likely in Celsius due to an archiving error in ORAS6.
@@ -209,6 +321,28 @@ class Oras6Clipping(MatchingFieldsFilter):
         # Sea Surface Temperature Fix: Ensure the temperature does not fall below the minimum threshold (MINTF)
         # to avoid unrealistic values in the ocean model.
         tos_np[tos_np <= MINTF] = MINTF
+        thetao_1_np[thetao_1_np <= MINTF] = MINTF
+        thetao_2_np[thetao_2_np <= MINTF] = MINTF
+        thetao_3_np[thetao_3_np <= MINTF] = MINTF
+        thetao_4_np[thetao_4_np <= MINTF] = MINTF
+        thetao_5_np[thetao_5_np <= MINTF] = MINTF
+        thetao_6_np[thetao_6_np <= MINTF] = MINTF
+        thetao_7_np[thetao_7_np <= MINTF] = MINTF
+        thetao_8_np[thetao_8_np <= MINTF] = MINTF
+        thetao_9_np[thetao_9_np <= MINTF] = MINTF
+        thetao_14_np[thetao_14_np <= MINTF] = MINTF
+        thetao_19_np[thetao_19_np <= MINTF] = MINTF
+        thetao_24_np[thetao_24_np <= MINTF] = MINTF
+        thetao_29_np[thetao_29_np <= MINTF] = MINTF
+        thetao_34_np[thetao_34_np <= MINTF] = MINTF
+        thetao_39_np[thetao_39_np <= MINTF] = MINTF
+        thetao_44_np[thetao_44_np <= MINTF] = MINTF
+        thetao_49_np[thetao_49_np <= MINTF] = MINTF
+        thetao_54_np[thetao_54_np <= MINTF] = MINTF
+        thetao_59_np[thetao_59_np <= MINTF] = MINTF
+        thetao_64_np[thetao_64_np <= MINTF] = MINTF
+        thetao_69_np[thetao_69_np <= MINTF] = MINTF
+        thetao_74_np[thetao_74_np <= MINTF] = MINTF
 
         yield self.new_field_from_numpy(siconc_np, template=siconc, param=self.siconc)
         yield self.new_field_from_numpy(siue_np, template=siue, param=self.siue)
@@ -224,3 +358,26 @@ class Oras6Clipping(MatchingFieldsFilter):
         yield self.new_field_from_numpy(sialb_np, template=sialb, param=self.sialb)
         yield self.new_field_from_numpy(vasit_np, template=vasit, param=self.vasit)
         yield self.new_field_from_numpy(tos_np, template=tos, param=self.tos)
+        yield self.new_field_from_numpy(thetao_1_np, template=thetao_1, param=self.thetao_1)
+        yield self.new_field_from_numpy(thetao_2_np, template=thetao_2, param=self.thetao_2)
+        yield self.new_field_from_numpy(thetao_3_np, template=thetao_3, param=self.thetao_3)
+        yield self.new_field_from_numpy(thetao_4_np, template=thetao_4, param=self.thetao_4)
+        yield self.new_field_from_numpy(thetao_5_np, template=thetao_5, param=self.thetao_5)
+        yield self.new_field_from_numpy(thetao_6_np, template=thetao_6, param=self.thetao_6)
+        yield self.new_field_from_numpy(thetao_7_np, template=thetao_7, param=self.thetao_7)
+        yield self.new_field_from_numpy(thetao_8_np, template=thetao_8, param=self.thetao_8)
+        yield self.new_field_from_numpy(thetao_9_np, template=thetao_9, param=self.thetao_9)
+        yield self.new_field_from_numpy(thetao_14_np, template=thetao_14, param=self.thetao_14)
+        yield self.new_field_from_numpy(thetao_19_np, template=thetao_19, param=self.thetao_19)
+        yield self.new_field_from_numpy(thetao_24_np, template=thetao_24, param=self.thetao_24)
+        yield self.new_field_from_numpy(thetao_29_np, template=thetao_29, param=self.thetao_29)
+        yield self.new_field_from_numpy(thetao_34_np, template=thetao_34, param=self.thetao_34)
+        yield self.new_field_from_numpy(thetao_39_np, template=thetao_39, param=self.thetao_39)
+        yield self.new_field_from_numpy(thetao_44_np, template=thetao_44, param=self.thetao_44)
+        yield self.new_field_from_numpy(thetao_49_np, template=thetao_49, param=self.thetao_49)
+        yield self.new_field_from_numpy(thetao_54_np, template=thetao_54, param=self.thetao_54)
+        yield self.new_field_from_numpy(thetao_59_np, template=thetao_59, param=self.thetao_59)
+        yield self.new_field_from_numpy(thetao_64_np, template=thetao_64, param=self.thetao_64)
+        yield self.new_field_from_numpy(thetao_69_np, template=thetao_69, param=self.thetao_69)
+        yield self.new_field_from_numpy(thetao_74_np, template=thetao_74, param=self.thetao_14)
+

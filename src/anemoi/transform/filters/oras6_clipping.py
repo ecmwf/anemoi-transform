@@ -380,4 +380,3 @@ class Oras6Clipping(MatchingFieldsFilter):
         yield self.new_field_from_numpy(thetao_64_np, template=thetao_64, param=self.thetao_64)
         yield self.new_field_from_numpy(thetao_69_np, template=thetao_69, param=self.thetao_69)
         yield self.new_field_from_numpy(thetao_74_np, template=thetao_74, param=self.thetao_14)
-

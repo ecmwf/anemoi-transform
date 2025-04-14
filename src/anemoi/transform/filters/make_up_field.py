@@ -44,4 +44,5 @@ class MakeUpField(MatchingFieldsFilter):
         yield self.new_field_from_numpy(template.to_numpy(), template=template, param=self.makeupname)
         yield template
 
+
 filter_registry.register("makeup-field", MakeUpField)

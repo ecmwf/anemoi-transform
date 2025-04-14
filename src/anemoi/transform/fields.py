@@ -498,6 +498,7 @@ class _NewMetadataField(WrappedField, ABC):
         if len(args) == 0 and len(kwargs) == 0:
 
             class MD:
+
                 geography = this._field.metadata().geography
 
                 def get(self, key, default=None):

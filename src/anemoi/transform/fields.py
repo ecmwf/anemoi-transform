@@ -501,8 +501,6 @@ class _NewMetadataField(WrappedField, ABC):
                 
                 geography = this._field.metadata().geography
 
-                geography = this._field.metadata().geography
-
                 def get(self, key, default=None):
 
                     value = this.mapping(key, this._field)

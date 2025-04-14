@@ -9,6 +9,7 @@
 
 
 import earthkit.data as ekd
+from earthkit.meteo import thermo
 import numpy as np
 
 from . import filter_registry
@@ -41,18 +42,7 @@ class DewPoint(MatchingFieldsFilter):
         Return the dewpoint temperature (Td, in K) along with temperature (K) and relative humidity (in %)
         """
         
-        # here we follow Bolton, 1980 
-        # https://journals.ametsoc.org/view/journals/mwre/108/7/1520-0493_1980_108_1046_tcoept_2_0_co_2.xml
-        # with T in kelvins
-                
-        pvap_ratio = np.clip(
-            (relative_humidity.to_numpy() / 100.0) * np.exp(
-            (17.67 * (temperature.to_numpy() - 273.15) ) / (temperature.to_numpy() - 29.65)
-            ),
-            a_min=1e-8, a_max=None
-            )
-        
-        td = 273.15 + 243.5 * np.log(pvap_ratio) / (17.67 - np.log(pvap_ratio)) 
+        td = thermo.dewpoint_from_relative_humidity(temperature.to_numpy(), relative_humidity.to_numpy())
 
         yield self.new_field_from_numpy(td, template=temperature, param=self.dewpoint)
         yield temperature
@@ -63,22 +53,7 @@ class DewPoint(MatchingFieldsFilter):
         This will return the relative humidity (in %) from temperature (in K) and dewpoint (Td, in K),
         along with temperature and dewpoint
         """
-        
-        # here we follow Bolton, 1980 
-        # https://journals.ametsoc.org/view/journals/mwre/108/7/1520-0493_1980_108_1046_tcoept_2_0_co_2.xml
-        # with T in kelvins
-                        
-        psat_ratio = np.exp(
-            (17.67 * (temperature.to_numpy() - 273.15) )/ (temperature.to_numpy() - 29.65)
-            )
-        
-        t_norm = (dewpoint.to_numpy() - 273.15) / 243.5
-        
-        pvap_ratio = np.exp(
-            17.67 * t_norm / (1.0 + t_norm)
-        )
-        
-        rh = 100.0 * pvap_ratio / (psat_ratio + 1e-8)
+        rh = thermo.relative_humidity_from_dewpoint(temperature.to_numpy(),dewpoint.to_numpy())
 
         yield self.new_field_from_numpy(rh, template=temperature, param=self.relative_humidity)
         yield dewpoint

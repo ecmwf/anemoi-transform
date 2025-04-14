@@ -9,6 +9,7 @@
 
 
 import earthkit.data as ekd
+from earthkit.meteo import thermo
 import numpy as np
 
 from . import filter_registry
@@ -41,19 +42,8 @@ class HumidityConversion(MatchingFieldsFilter):
         """
         This will return the relative humidity along with temperature from specific humidity and temperature
         """
-
-        level = float(humidity._metadata.get("levelist", None))
-        
-        # here we follow Bolton, 1980 
-        # https://journals.ametsoc.org/view/journals/mwre/108/7/1520-0493_1980_108_1046_tcoept_2_0_co_2.xml
-        # with T in kelvins
-                
-        psat = 6.112 * np.exp(
-            (17.67 * (temperature.to_numpy() - 273.15) )/ (temperature.to_numpy() - 29.65)
-            )
-        qsat = psat * 0.622 / (level * 100.0 - (1-0.622) * psat)
-
-        rh = humidity.to_numpy() / qsat
+        pressure = 100 * float(humidity._metadata.get("levelist", None)) # levels are measured in hectopascals
+        rh = thermo.relative_humidity_from_specific_humidity(temperature.to_numpy(),humidity.to_numpy(),pressure)
 
         yield self.new_field_from_numpy(rh, template=humidity, param=self.relative_humidity)
         yield temperature
@@ -63,18 +53,9 @@ class HumidityConversion(MatchingFieldsFilter):
         """ 
         This will return specific humidity along with temperature from relative humidity and temperature
         """
-        level = float(temperature._metadata.get("levelist", None)) 
-        
-        # here we follow Bolton, 1980 
-        # https://journals.ametsoc.org/view/journals/mwre/108/7/1520-0493_1980_108_1046_tcoept_2_0_co_2.xml
-        # with T in kelvins
-                
-        psat = 6.112 * np.exp(
-            (17.67 * (temperature.to_numpy() - 273.15) )/ (temperature.to_numpy() - 29.65)
-            )
-        qsat = psat * 0.622 / (level * 100.0 - (1.0 - 0.622) * psat)
-
-        q  = relative_humidity.to_numpy() * qsat
+        pressure = 100 * float(temperature._metadata.get("levelist", None)) # levels are measured in hectopascals
+    
+        q  = thermo.specific_humidity_from_relative_humidity(temperature.to_numpy(),relative_humidity.to_numpy(),pressure)
 
         yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
         yield temperature

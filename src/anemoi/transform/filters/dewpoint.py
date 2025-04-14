@@ -21,7 +21,7 @@ class DewPoint(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        select="param",
         forward=("temperature", "relative_humidity"),
     )
     def __init__(

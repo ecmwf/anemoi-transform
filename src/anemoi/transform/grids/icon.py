@@ -39,7 +39,7 @@ def icon_grid(path: str, refinement_level_c: int | None = None) -> tuple[np.ndar
 
     LOG.info(f"Reading ICON grid from {path}, refinement level {refinement_level_c}")
     ds = xr.open_dataset(path)
-    if "refinement_level_c" != None:
+    if refinement_level_c is not None:
         idx = ds.refinement_level_c <= refinement_level_c
     else:
         idx = slice(None)

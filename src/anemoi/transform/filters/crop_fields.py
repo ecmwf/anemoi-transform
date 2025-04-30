@@ -74,10 +74,10 @@ class CropWithMask(Filter):
             self._mask = cropping_mask(
                 self.origin_latitudes,
                 self.origin_longitudes,
-                area['north'],
-                area['west'],
-                area['south'],
-                area['east']
+                self.area['north'],
+                self.area['west'],
+                self.area['south'],
+                self.area['east']
             )
             
             self._latitudes = self.origin_latitudes[self._mask]

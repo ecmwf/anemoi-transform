@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## [0.1.10](https://github.com/ecmwf/anemoi-transform/compare/0.1.9...0.1.10) (2025-05-06)
+
+
+### Bug Fixes
+
+* change literal string to variable in `icon_grid` ([#88](https://github.com/ecmwf/anemoi-transform/issues/88)) ([a7459ea](https://github.com/ecmwf/anemoi-transform/commit/a7459ea5862d06d45c4a0f9458bbeecf589a7fa4))
+
 ## [0.1.9](https://github.com/ecmwf/anemoi-transform/compare/0.1.8...0.1.9) (2025-04-05)
 
 

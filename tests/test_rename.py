@@ -7,11 +7,52 @@ def test_rename_grib():
     from anemoi.transform.sources import source_registry
 
     source = source_registry.create("testing", "anemoi-datasets/create/grib-20100101.grib")
-    rename = filter_registry.create("rename", rename={"z": "geopotential", "t": "temperature"})
+    rename = filter_registry.create(
+        "rename",
+        rename={
+            "param": {"z": "geopotential", "t": "temperature"},
+        },
+    )
 
     for n in source | rename:
         print(n.metadata("param"), n)
         assert n.metadata("param") in ("geopotential", "temperature")
+
+    rename = filter_registry.create(
+        "rename",
+        rename={
+            "param": "{param}_{levelist}_{levtype}",
+        },
+    )
+    for n in source | rename:
+        print(n.metadata("param"), n)
+
+        param, level, levtype = n.metadata("param").split("_")
+        assert param in ("z", "t") and level in ("1000", "850", "700", "500", "400", "300") and levtype in ("pl",), (
+            param,
+            level,
+            levtype,
+        )
+
+    rename = filter_registry.create(
+        "rename",
+        rename={
+            "param": {"z": "geopotential", "t": "temperature"},
+            "levelist": {1000: "1000hPa", 850: "850hPa", 700: "700hPa", 500: "500hPa", 400: "400hPa", 300: "300hPa"},
+        },
+    )
+    for n in source | rename:
+        print(n.metadata("param"), n.metadata("levelist"), n)
+
+        param, level = n.metadata("param"), n.metadata("levelist")
+        assert param in ("geopotential", "temperature") and level in (
+            "1000hPa",
+            "850hPa",
+            "700hPa",
+            "500hPa",
+            "400hPa",
+            "300hPa",
+        ), (param, level)
 
 
 @skip_if_offline
@@ -20,7 +61,12 @@ def test_rename_netcdf():
     from anemoi.transform.sources import source_registry
 
     source = source_registry.create("testing", "anemoi-datasets/create/netcdf.nc")
-    rename = filter_registry.create("rename", rename={"t2m": "2m temprature", "msl": "mean sea level pressure"})
+    rename = filter_registry.create(
+        "rename",
+        rename={
+            "param": {"t2m": "2m temprature", "msl": "mean sea level pressure"},
+        },
+    )
 
     for n in source | rename:
         print(n.metadata("param"), n)

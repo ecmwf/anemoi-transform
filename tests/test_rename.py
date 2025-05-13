@@ -6,7 +6,7 @@ def test_rename_grib():
     from anemoi.transform.filters import filter_registry
     from anemoi.transform.sources import source_registry
 
-    source = source_registry.create("testing", "anemoi-datasets/create/grib-20100101.grib")
+    source = source_registry.create("testing", dataset="anemoi-datasets/create/grib-20100101.grib")
     rename = filter_registry.create(
         "rename",
         rename={
@@ -42,9 +42,10 @@ def test_rename_grib():
         },
     )
     for n in source | rename:
-        print(n.metadata("param"), n.metadata("levelist"), n)
+        print(n.metadata("param", "levelist"), n)
 
-        param, level = n.metadata("param"), n.metadata("levelist")
+        param, level = n.metadata("param", "levelist")
+
         assert param in ("geopotential", "temperature") and level in (
             "1000hPa",
             "850hPa",
@@ -60,7 +61,7 @@ def test_rename_netcdf():
     from anemoi.transform.filters import filter_registry
     from anemoi.transform.sources import source_registry
 
-    source = source_registry.create("testing", "anemoi-datasets/create/netcdf.nc")
+    source = source_registry.create("testing", dataset="anemoi-datasets/create/netcdf.nc")
     rename = filter_registry.create(
         "rename",
         rename={

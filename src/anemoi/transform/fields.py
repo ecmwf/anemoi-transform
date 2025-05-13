@@ -520,17 +520,21 @@ class _NewMetadataField(WrappedField, ABC):
                     mars[k] = m
             return mars
 
-        if len(args) == 1:
-            value = self.mapping(args[0], self._field)
+        def _val(a):
+            value = self.mapping(a, self._field)
             if value is MISSING_METADATA:
-                return self._field.metadata(*args, **kwargs)
+                return self._field.metadata(a, **kwargs)
 
             if callable(value):
-                return value(self, args[0], self._field.metadata())
+                return value(self, a, self._field.metadata())
 
             return value
 
-        return self._field.metadata(*args, **kwargs)
+        result = [_val(a) for a in args]
+        if len(result) == 1:
+            return result[0]
+
+        return tuple(result)
 
 
 class NewMetadataField(_NewMetadataField):

@@ -33,9 +33,7 @@ def test_uv_to_ddff_and_back():
     uv_to_ddff = filter_registry.create("uv_to_ddff")
     ddff_to_uv = filter_registry.create("ddff_to_uv")
 
-    noop = filter_registry.create("noop")
-
-    for original, converted in zip(source | noop, source | uv_to_ddff | ddff_to_uv):
+    for original, converted in zip(source, source | uv_to_ddff | ddff_to_uv):
         assert np.allclose(original.to_numpy(), converted.to_numpy()), (
             (original.metadata("param"), original.metadata("levelist")),
             (converted.metadata("param"), converted.metadata("levelist")),

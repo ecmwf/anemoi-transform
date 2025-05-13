@@ -19,9 +19,13 @@ from anemoi.transform.sources import source_registry
 class Testing(Source):
     """A demo source."""
 
-    def __init__(self, *, dataset=None) -> None:
+    def __init__(self, *, dataset=None, fields=None) -> None:
         if dataset is not None:
             self.ds = ekd.from_source("file", get_test_data(dataset))
+
+        if fields is not None:
+            assert isinstance(fields, list), "Fields should be a list"
+            self.ds = ekd.from_source("list-of-dicts", fields)
 
         assert self.ds is not None, "Dataset not found"
 

@@ -1,10 +1,11 @@
 from anemoi.utils.testing import skip_if_offline
 
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.sources import source_registry
+
 
 @skip_if_offline
 def test_rename_grib():
-    from anemoi.transform.filters import filter_registry
-    from anemoi.transform.sources import source_registry
 
     source = source_registry.create("testing", dataset="anemoi-datasets/create/grib-20100101.grib")
     rename = filter_registry.create(

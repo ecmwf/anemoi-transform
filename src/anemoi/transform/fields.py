@@ -509,6 +509,9 @@ class _NewMetadataField(WrappedField, ABC):
 
                     return this._field.metadata().get(key, default)
 
+                def keys(self):
+                    return this._field.metadata().keys()
+
             return MD()
 
         if kwargs.get("namespace"):

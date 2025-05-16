@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+## [0.1.11](https://github.com/ecmwf/anemoi-transform/compare/0.1.10...0.1.11) (2025-05-16)
+
+
+### Features
+
+* Extend Variable Class ([#94](https://github.com/ecmwf/anemoi-transform/issues/94)) ([dd32ccf](https://github.com/ecmwf/anemoi-transform/commit/dd32ccfcfae54d17b02d82aa869b39dff886df41))
+* thermo conversions ([#86](https://github.com/ecmwf/anemoi-transform/issues/86)) ([fce0db5](https://github.com/ecmwf/anemoi-transform/commit/fce0db53c6352fdc39b9dc2f3ff9e2715dd8d279))
+
 ## [0.1.10](https://github.com/ecmwf/anemoi-transform/compare/0.1.9...0.1.10) (2025-05-06)
 
 

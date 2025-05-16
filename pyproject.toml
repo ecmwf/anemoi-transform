@@ -33,15 +33,18 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.4.4",
-  "earthkit-data",
-  "earthkit-meteo",
+  "anemoi-utils>=0.4.20",
+  "cfunits",
+  "earthkit-data>=0.12.4",
+  "earthkit-meteo>=0.3",
+  "earthkit-regrid>=0.4",
 ]
 
 optional-dependencies.all = [ "anemoi-transform" ]
@@ -51,7 +54,7 @@ optional-dependencies.docs = [
   "nbsphinx",
   "pandoc",
   "requests",
-  "sphinx",
+  "sphinx>=8.2",
   "sphinx-argparse<0.5",
   "sphinx-rtd-theme",
   "termcolor",
@@ -68,3 +71,14 @@ scripts.anemoi-transform = "anemoi.transform.__main__:main"
 
 [tool.setuptools_scm]
 version_file = "src/anemoi/transform/_version.py"
+
+[tool.mypy]
+strict = false
+exclude = [
+  "docs/**",
+]
+
+[tool.pydocstringformatter]
+write = true
+exclude = "docs/**"
+style = "numpydoc"

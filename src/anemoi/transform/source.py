@@ -8,9 +8,10 @@
 # nor does it submit to any jurisdiction.
 
 
-from .transform import Transform
+from anemoi.transform.transform import Transform
 
 
 class Source(Transform):
-    def backward(self, data):
-        raise NotImplementedError("Sources do not support backward transformations")
+    """A source transform that provides data."""
+
+    pass

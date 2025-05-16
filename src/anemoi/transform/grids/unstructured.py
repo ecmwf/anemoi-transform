@@ -9,6 +9,10 @@
 
 
 import logging
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 from urllib.parse import urlparse
 
 import numpy as np
@@ -19,26 +23,54 @@ LOG = logging.getLogger(__name__)
 
 
 class Geography:
-    """This class retrieve the latitudes and longitudes of unstructured grids,
+    """This class retrieves the latitudes and longitudes of unstructured grids,
     and checks if the fields are compatible with the grid.
+
+    Parameters
+    ----------
+    latitudes : np.ndarray
+        Array of latitude values.
+    longitudes : np.ndarray
+        Array of longitude values.
+    uuidOfHGrid : str, optional
+        UUID of the horizontal grid.
     """
 
-    def __init__(self, latitudes, longitudes, uuidOfHGrid=None):
-
+    def __init__(self, latitudes: np.ndarray, longitudes: np.ndarray, uuidOfHGrid: Optional[str] = None) -> None:
         assert isinstance(latitudes, np.ndarray), type(latitudes)
         assert isinstance(longitudes, np.ndarray), type(longitudes)
-
         assert len(latitudes) == len(longitudes)
 
         self.uuidOfHGrid = uuidOfHGrid
         self.latitudes = latitudes
         self.longitudes = longitudes
 
-    def shape(self):
+    def shape(self) -> Tuple[int, ...]:
+        """Returns the shape of the latitude array.
+
+        Returns
+        -------
+        Tuple[int, ...]
+            Shape of the latitude array.
+        """
         return self.latitudes.shape
 
 
-def _load(url_or_path, param):
+def _load(url_or_path: str, param: str) -> Tuple[np.ndarray, str]:
+    """Loads data from a given URL or file path.
+
+    Parameters
+    ----------
+    url_or_path : str
+        URL or file path to load data from.
+    param : str
+        Parameter to select from the data source.
+
+    Returns
+    -------
+    Tuple[np.ndarray, str]
+        Tuple containing the data as a flattened numpy array and the UUID of the horizontal grid.
+    """
     parsed = urlparse(url_or_path)
     if parsed.scheme:
         source = "url"
@@ -55,36 +87,104 @@ def _load(url_or_path, param):
 
 
 class UnstructuredGridField:
-    """An unstructured field."""
+    """An unstructured field.
 
-    def __init__(self, geography):
+    Parameters
+    ----------
+    geography : Geography
+        Geography object containing latitude and longitude information.
+    """
+
+    def __init__(self, geography: Geography) -> None:
         self.geography = geography
 
-    def metadata(self, *args, default=None, **kwargs):
+    def metadata(self, *args: Any, default: Any = None, **kwargs: Any) -> Any:
+        """Retrieves metadata for the field.
 
+        Parameters
+        ----------
+        *args : Any
+            Positional arguments for metadata retrieval.
+        default : Any, optional
+            Default value if no metadata is found.
+        **kwargs : Any
+            Keyword arguments for metadata retrieval.
+
+        Returns
+        -------
+        Any
+            Metadata value or default if not found.
+        """
         if len(args) == 0 and len(kwargs) == 0:
             return self
 
         return default
 
-    def grid_points(self):
+    def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Returns the grid points (latitudes and longitudes).
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            Tuple containing arrays of latitudes and longitudes.
+        """
         return self.geography.latitudes, self.geography.longitudes
 
     @property
-    def resolution(self):
+    def resolution(self) -> str:
+        """Resolution of the grid."""
         return "unknown"
 
     @property
-    def shape(self):
+    def shape(self) -> Tuple[int, ...]:
+        """Shape of the grid."""
         return self.geography.shape()
 
-    def to_latlon(self, flatten=False):
+    def to_latlon(self, flatten: bool = False) -> Dict[str, np.ndarray]:
+        """Converts the grid to latitude and longitude.
+
+        Parameters
+        ----------
+        flatten : bool, optional
+            Whether to flatten the arrays, by default False.
+
+        Returns
+        -------
+        Dict[str, np.ndarray]
+            Dictionary containing latitude and longitude arrays.
+        """
         return dict(lat=self.geography.latitudes, lon=self.geography.longitudes)
 
 
 class UnstructuredGridFieldList(FieldArray):
+    """List of unstructured grid fields."""
+
     @classmethod
-    def from_grib(cls, latitudes_url_or_path, longitudes_url_or_path, latitudes_param="tlat", longitudes_params="tlon"):
+    def from_grib(
+        cls,
+        latitudes_url_or_path: str,
+        longitudes_url_or_path: str,
+        latitudes_param: str = "tlat",
+        longitudes_params: str = "tlon",
+    ) -> "UnstructuredGridFieldList":
+        """Create an UnstructuredGridFieldList from GRIB files.
+
+        Parameters
+        ----------
+        latitudes_url_or_path : str
+            URL or file path for the latitudes data.
+        longitudes_url_or_path : str
+            URL or file path for the longitudes data.
+        latitudes_param : str, optional
+            Parameter name for latitudes, by default "tlat".
+        longitudes_params : str, optional
+            Parameter name for longitudes, by default "tlon".
+
+        Returns
+        -------
+        UnstructuredGridFieldList
+            The created UnstructuredGridFieldList.
+        """
         latitudes, latitudes_uuid = _load(latitudes_url_or_path, latitudes_param)
         longitudes, longitudes_uuid = _load(longitudes_url_or_path, longitudes_params)
 
@@ -94,7 +194,21 @@ class UnstructuredGridFieldList(FieldArray):
         return cls([UnstructuredGridField(Geography(latitudes, longitudes))])
 
     @classmethod
-    def from_values(cls, *, latitudes, longitudes):
+    def from_values(cls, *, latitudes: Any, longitudes: Any) -> "UnstructuredGridFieldList":
+        """Create an UnstructuredGridFieldList from latitude and longitude values.
+
+        Parameters
+        ----------
+        latitudes : Any
+            Latitude values.
+        longitudes : Any
+            Longitude values.
+
+        Returns
+        -------
+        UnstructuredGridFieldList
+            The created UnstructuredGridFieldList.
+        """
         if isinstance(latitudes, (list, tuple)):
             latitudes = np.array(latitudes)
 

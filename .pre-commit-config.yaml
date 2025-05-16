@@ -10,7 +10,7 @@ repos:
     entry: jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace
     additional_dependencies: [jupyter]
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
   - id: check-yaml # Check YAML files for syntax errors only
     args: [--unsafe, --allow-multiple-documents]
@@ -27,12 +27,12 @@ repos:
     -   id: python-check-blanket-noqa # Check for # noqa: all
     -   id: python-no-log-warn # Check for log.warn
 - repo: https://github.com/psf/black-pre-commit-mirror
-  rev: 24.8.0
+  rev: 25.1.0
   hooks:
   - id: black
     args: [--line-length=120]
 - repo: https://github.com/pycqa/isort
-  rev: 5.13.2
+  rev: 6.0.1
   hooks:
   - id: isort
     args:
@@ -40,14 +40,13 @@ repos:
     - --force-single-line-imports
     - --profile black
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.6.4
+  rev: v0.11.8
   hooks:
   - id: ruff
     args:
     - --line-length=120
     - --fix
     - --exit-non-zero-on-fix
-    - --preview
     - --exclude=docs/**/*_.py
 - repo: https://github.com/sphinx-contrib/sphinx-lint
   rev: v1.0.0
@@ -58,13 +57,18 @@ repos:
   rev: v0.0.14
   hooks:
   - id: rstfmt
-    exclude: 'cli/.*' # Because we use argparse
+    exclude: '(cli|schemas)/.*' # Because we use argparse and pydantic sphinx directives
+- repo: https://github.com/b8raoult/pre-commit-docconvert
+  rev: "0.1.5"
+  hooks:
+  - id: docconvert
+    args: ["numpy"]
 - repo: https://github.com/tox-dev/pyproject-fmt
-  rev: "2.2.3"
+  rev: "v2.5.1"
   hooks:
   - id: pyproject-fmt
 -   repo: https://github.com/jshwi/docsig # Check docstrings against function sig
-    rev: v0.60.1
+    rev: v0.69.3
     hooks:
     -   id: docsig
         args:
@@ -73,9 +77,7 @@ repos:
         - --check-overridden # Check overridden methods
         - --check-protected  # Check protected methods
         - --check-class      # Check class docstrings
-        - --disable=E113     # Disable empty docstrings
-        - --summary          # Print a summary
+        - --disable=SIG101,SIG102     # Disable empty docstrings
 ci:
   autoupdate_schedule: monthly
-ci:
-  autoupdate_schedule: monthly
+  autoupdate_commit_msg: "chore(deps): pre-commit.ci autoupdate"

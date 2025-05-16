@@ -8,54 +8,92 @@
 # nor does it submit to any jurisdiction.
 
 
-from . import Variable
+from typing import Any
+from typing import Dict
+from typing import Union
+
+from anemoi.transform.variables import Variable
 
 
 class VariableFromMarsVocabulary(Variable):
     """A variable that is defined by the Mars vocabulary."""
 
-    def __init__(self, name, data: dict) -> None:
+    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+        """Initialize the variable with a name and data.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        data : dict
+            The data defining the variable.
+        """
         super().__init__(name)
         self.data = data
         self.mars = self.data.get("mars", {})
 
     @property
-    def is_pressure_level(self):
+    def is_pressure_level(self) -> bool:
+        """Check if the variable is at a pressure level."""
         return self.mars.get("levtype", None) == "pl"
 
     @property
-    def level(self):
+    def level(self) -> Union[str, None]:
+        """Get the level of the variable."""
         return self.mars.get("levelist", None)
 
     @property
-    def is_constant_in_time(self):
+    def is_constant_in_time(self) -> bool:
+        """Check if the variable is constant in time."""
         return self.data.get("constant_in_time", False)
 
     @property
-    def is_from_input(self):
+    def is_from_input(self) -> bool:
+        """Check if the variable is from input data."""
         return "mars" in self.data
 
     @property
-    def is_computed_forcing(self):
+    def is_computed_forcing(self) -> bool:
+        """Check if the variable is a computed forcing."""
         return self.data.get("computed_forcing", False)
 
     @property
-    def is_accumulation(self):
+    def is_accumulation(self) -> bool:
+        """Check if the variable is an accumulation."""
         return self.data.get("process") == "accumulation"
 
     @property
-    def is_instantanous(self):
-        return "process" not in self.data.get
+    def is_instantanous(self) -> bool:
+        """Check if the variable is instantaneous."""
+        return "process" not in self.data
 
     @property
-    def grib_keys(self):
+    def time_processing(self):
+        """Get the time processing type of the variable."""
+        return self.data.get("process")
+
+    @property
+    def grib_keys(self) -> Dict[str, Any]:
+        """Get the GRIB keys of the variable."""
         return self.data.get("mars", {}).copy()
 
-    def similarity(self, other):
+    def similarity(self, other: Any) -> int:
+        """Calculate the similarity between this variable and another.
+
+        Parameters
+        ----------
+        other : Any
+            The other variable to compare with.
+
+        Returns
+        -------
+        int
+            The similarity score between the two variables.
+        """
         if not isinstance(other, VariableFromMarsVocabulary):
             return 0
 
-        def __similarity(a, b):
+        def __similarity(a: Any, b: Any) -> int:
             if isinstance(a, dict) and isinstance(b, dict):
                 return sum(__similarity(a[k], b[k]) for k in set(a.keys()) & set(b.keys()))
 
@@ -70,19 +108,69 @@ class VariableFromMarsVocabulary(Variable):
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""
 
-    def __init__(self, name, data: dict) -> None:
+    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+        """Initialize the variable with a name and data.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        data : dict
+            The data defining the variable.
+        """
         super().__init__(name, data)
 
 
 class VariableFromEarthkit(VariableFromMarsVocabulary):
     """A variable that is defined by an EarthKit field."""
 
-    def __init__(self, name, field, namespace="mars") -> None:
+    def __init__(self, name: str, field: Any, namespace: str = "mars") -> None:
+        """Initialize the variable with a name, field, and namespace.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        field : Any
+            The EarthKit field defining the variable.
+        namespace : str, optional
+            The namespace for the field metadata, by default "mars".
+        """
         super().__init__(name, field.metadata(namespace=namespace))
         self.field = field
 
-    def is_pressure_level(self):
+    def is_pressure_level(self) -> bool:
+        """Check if the variable is at a pressure level.
+
+        Returns
+        -------
+        bool
+            True if the variable is at a pressure level, False otherwise.
+        """
         return self.field.is_pressure_level()
 
-    def level(self):
+    def level(self) -> Any:
+        """Get the level of the variable.
+
+        Returns
+        -------
+        Any
+            The level of the variable.
+        """
         return self.field.level()
+
+
+class PostProcessedVariable(VariableFromMarsVocabulary):
+    """A variable that is defined by a post-processed dictionary."""
+
+    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+        """Initialize the variable with a name and data.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        data : dict
+            The data defining the variable.
+        """
+        super().__init__(name, data)

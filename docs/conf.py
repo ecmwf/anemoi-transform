@@ -60,6 +60,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    # "sphinx.ext.apidoc",
     "sphinxarg.ext",
 ]
 
@@ -105,6 +106,10 @@ intersphinx_mapping = {
         "https://anemoi-transform.readthedocs.io/en/latest/",
         ("../../anemoi-transform/docs/_build/html/objects.inv", None),
     ),
+    "anemoi-plugins": (
+        "https://anemoi-plugins.readthedocs.io/en/latest/",
+        ("../../anemoi-plugins/docs/_build/html/objects.inv", None),
+    ),
 }
 
 # -- Options for HTML output -------------------------------------------------
@@ -124,3 +129,28 @@ html_css_files = ["style.css"]
 todo_include_todos = not read_the_docs_build
 
 autodoc_member_order = "bysource"  # Keep file order
+
+
+# apidoc_modules = [
+#     {
+#         'path': '../src/anemoi',
+#         'destination': '_api/',
+#         'max_depth': 4,
+#         'follow_links': False,
+#         'separate_modules': False,
+#         'include_private': False,
+#         'no_headings': False,
+#         'module_first': True,
+#         'template_dir': '_templates/apidoc',
+#         'automodule_options': {
+#             'members', 'show-inheritance', 'undoc-members'
+#         },
+#     },
+# ]
+
+html_context = {
+    "display_github": True,
+    "github_user": "ecmwf",
+    "github_repo": "anemoi-transform",
+    "github_version": "main/docs/",
+}

@@ -10,10 +10,12 @@
 
 import logging
 
-from .transform import Transform
+from anemoi.transform.transform import Transform
 
 LOG = logging.getLogger(__name__)
 
 
 class Filter(Transform):
+    """A filter transform that processes data."""
+
     pass

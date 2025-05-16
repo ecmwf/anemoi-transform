@@ -109,6 +109,18 @@ class Variable(ABC):
 
     @property
     @abstractmethod
+    def is_model_level(self) -> bool:
+        """Check if the variable is a pressure level."""
+        pass
+
+    @property
+    @abstractmethod
+    def is_surface_level(self) -> bool:
+        """Check if the variable is on the surface."""
+        pass
+
+    @property
+    @abstractmethod
     def level(self) -> Any:
         """Get the level of the variable."""
         pass
@@ -135,8 +147,12 @@ class Variable(ABC):
     @abstractmethod
     def is_accumulation(self) -> bool:
         """Check if the variable is an accumulation."""
-
         pass
+
+    @property
+    def param(self) -> str:
+        """Get the parameter name of the variable."""
+        return self.name
 
     # This may need to move to a different class
     @property

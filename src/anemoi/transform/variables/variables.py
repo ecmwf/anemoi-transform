@@ -33,9 +33,19 @@ class VariableFromMarsVocabulary(Variable):
         self.mars = self.data.get("mars", {})
 
     @property
+    def is_surface_level(self) -> bool:
+        """Check if the variable is at a surface level."""
+        return self.mars.get("levtype", None) == "sfc"
+
+    @property
     def is_pressure_level(self) -> bool:
         """Check if the variable is at a pressure level."""
         return self.mars.get("levtype", None) == "pl"
+
+    @property
+    def is_model_level(self) -> bool:
+        """Check if the variable is at a model level."""
+        return self.mars.get("levtype", None) == "ml"
 
     @property
     def level(self) -> Union[str, None]:
@@ -76,6 +86,11 @@ class VariableFromMarsVocabulary(Variable):
     def grib_keys(self) -> Dict[str, Any]:
         """Get the GRIB keys of the variable."""
         return self.data.get("mars", {}).copy()
+
+    @property
+    def param(self) -> str:
+        """Get the parameter of the variable."""
+        return self.mars.get("param", super().param)
 
     def similarity(self, other: Any) -> int:
         """Calculate the similarity between this variable and another.
@@ -139,24 +154,14 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
         super().__init__(name, field.metadata(namespace=namespace))
         self.field = field
 
+    @property
     def is_pressure_level(self) -> bool:
-        """Check if the variable is at a pressure level.
-
-        Returns
-        -------
-        bool
-            True if the variable is at a pressure level, False otherwise.
-        """
+        """Check if the variable is at a pressure level."""
         return self.field.is_pressure_level()
 
+    @property
     def level(self) -> Any:
-        """Get the level of the variable.
-
-        Returns
-        -------
-        Any
-            The level of the variable.
-        """
+        """Get the level of the variable."""
         return self.field.level()
 
 

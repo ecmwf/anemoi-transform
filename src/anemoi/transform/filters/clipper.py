@@ -7,9 +7,11 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Iterator, Optional
-import numpy as np
+from typing import Iterator
+from typing import Optional
+
 import earthkit.data as ekd
+import numpy as np
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter

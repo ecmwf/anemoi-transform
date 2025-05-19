@@ -88,8 +88,8 @@ class GroupByParam:
                 keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
                 key = {k: f.metadata(k) for k in keys}
 
-            if not keys:
-                raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
+                if not keys:
+                    raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
 
             param = key.pop("param", f.metadata("param"))
 

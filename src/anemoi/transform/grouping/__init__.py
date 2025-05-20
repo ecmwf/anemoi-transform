@@ -81,13 +81,11 @@ class GroupByParam:
         """
         assert callable(other), type(other)
         groups: Dict[Tuple[Tuple[str, Any], ...], Dict[str, Any]] = defaultdict(dict)
-
         for f in data:
             key = f.metadata(namespace="mars")
             if not key:
                 keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
                 key = {k: f.metadata(k) for k in keys}
-
                 if not keys:
                     raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
 

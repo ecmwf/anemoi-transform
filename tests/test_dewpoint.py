@@ -12,7 +12,6 @@ prototype = {
 relative_humidity_source = [
     {"param": "r", "values": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0], **prototype},
     {"param": "t", "values": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0], **prototype},
-
 ]
 
 dewpoint_source = [
@@ -39,6 +38,8 @@ def test_relative_humidity_to_dewpoint():
         )
 
 
+def test_relative_humidity_to_dewpoint_from_file():
+
     # this grib file is CERRA data that contains 2t and 2r
     source = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_20240601_single_level.grib")
 
@@ -57,7 +58,6 @@ def test_relative_humidity_to_dewpoint():
     assert np.any(source.ds.sel(param='2r').to_numpy(flatten=True) != output_dict['2d'].flatten()), "Arrays are  different"
 
 
-
 def test_dewpoint_to_relative_humidity():
 
     source = source_registry.create("testing", fields=dewpoint_source)
@@ -74,6 +74,8 @@ def test_dewpoint_to_relative_humidity():
             original.to_numpy() == converted.to_numpy(),
             original.to_numpy() - converted.to_numpy(),
         )
+
+def test_dewpoint_to_relative_humidity_from_file():
 
     source = source_registry.create("testing", dataset="anemoi-transform/filters/era_20240601_single_level_dewpoint.grib")
     d_2_r = filter_registry.create("d_2_r",relative_humidity="2r", temperature='2t',dewpoint='2d')

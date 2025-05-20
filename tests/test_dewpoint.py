@@ -63,6 +63,7 @@ def test_relative_humidity_to_dewpoint_from_file():
     ), "Arrays are  different"
 
 
+
 def test_dewpoint_to_relative_humidity():
 
     source = source_registry.create("testing", fields=dewpoint_source)
@@ -79,6 +80,9 @@ def test_dewpoint_to_relative_humidity():
             original.to_numpy() == converted.to_numpy(),
             original.to_numpy() - converted.to_numpy(),
         )
+
+
+def test_dewpoint_to_relative_humidity_from_file():
 
     source = source_registry.create(
         "testing", dataset="anemoi-transform/filters/era_20240601_single_level_dewpoint.grib"

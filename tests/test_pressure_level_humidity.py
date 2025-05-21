@@ -25,43 +25,51 @@ pressure_level_specific_humidity_source = [
 
 
 def test_presurre_level_specific_humidity_to_relative_humidity_from_file():
-    source = source_registry.create("testing", dataset='anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib')
+    source = source_registry.create(
+        "testing", dataset="anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib"
+    )
 
     q_2_r = filter_registry.create("q_2_r")
 
-    output= source | q_2_r
-    assert len(list(output))==6 # since we have 2 levels
-    output = np.stack([v.to_numpy() for v in list(output) if 'r' in v.metadata('param')]).flatten()
+    output = source | q_2_r
+    assert len(list(output)) == 6  # since we have 2 levels
+    output = np.stack([v.to_numpy() for v in list(output) if "r" in v.metadata("param")]).flatten()
 
-    output_era_r = source_registry.create("testing", dataset="anemoi-transform/filters/era_r.npy").ds.to_numpy().flatten()
+    output_era_r = (
+        source_registry.create("testing", dataset="anemoi-transform/filters/era_r.npy").ds.to_numpy().flatten()
+    )
     np.testing.assert_allclose(output, output_era_r)
-    
+
 
 def test_presurre_level_relative_humidity_to_specific_humidity_from_file():
-    source = source_registry.create("testing", dataset='anemoi-transform/filters/cerra_20240601_pressure_levels.grib')
+    source = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_20240601_pressure_levels.grib")
 
     r_2_q = filter_registry.create("r_2_q")
 
-    output= source | r_2_q
-    assert len(list(output))==6 # since we have 2 levels
-    output = np.stack([v.to_numpy() for v in list(output) if 'q' in v.metadata('param')]).flatten()
+    output = source | r_2_q
+    assert len(list(output)) == 6  # since we have 2 levels
+    output = np.stack([v.to_numpy() for v in list(output) if "q" in v.metadata("param")]).flatten()
 
-    output_cerra_q = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_q.npy").ds.to_numpy().flatten()
+    output_cerra_q = (
+        source_registry.create("testing", dataset="anemoi-transform/filters/cerra_q.npy").ds.to_numpy().flatten()
+    )
     np.testing.assert_allclose(output, output_cerra_q)
 
 
 def test_presurre_level_relative_humidity_to_specific_humidity_from_file_AROME():
-    source = source_registry.create("testing", dataset='anemoi-transform/filters/r_t_PAAROME_1S40_ECH0_ISOBARE.grib')
+    source = source_registry.create("testing", dataset="anemoi-transform/filters/r_t_PAAROME_1S40_ECH0_ISOBARE.grib")
 
     r_2_q = filter_registry.create("r_2_q")
     q_2_r = filter_registry.create("q_2_r")
-    output= source | r_2_q
-    assert len(list(output))==6 # since we have 2 levels
-    output = np.stack([v.to_numpy() for v in list(output) if 'q' in v.metadata('param')]).flatten()
-    output_cerra_q = source_registry.create("testing", dataset="anemoi-transform/filters/arome_specific_humidity.npy").ds.to_numpy().flatten()
+    output = source | r_2_q
+    assert len(list(output)) == 6  # since we have 2 levels
+    output = np.stack([v.to_numpy() for v in list(output) if "q" in v.metadata("param")]).flatten()
+    output_cerra_q = (
+        source_registry.create("testing", dataset="anemoi-transform/filters/arome_specific_humidity.npy")
+        .ds.to_numpy()
+        .flatten()
+    )
     np.testing.assert_allclose(output, output_cerra_q)
-
-
 
 
 if __name__ == "__main__":

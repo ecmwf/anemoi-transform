@@ -63,6 +63,7 @@ def test_relative_humidity_to_dewpoint_from_file():
         source.ds.sel(param="2r").to_numpy(flatten=True) != output_dict["2d"].flatten()
     ), "Arrays are  different"
 
+
 def test_dewpoint_to_relative_humidity():
 
     source = source_registry.create("testing", fields=dewpoint_source)
@@ -80,10 +81,13 @@ def test_dewpoint_to_relative_humidity():
             original.to_numpy() - converted.to_numpy(),
         )
 
+
 def test_dewpoint_to_relative_humidity_from_file():
 
-    source = source_registry.create("testing", dataset="anemoi-transform/filters/era_20240601_single_level_dewpoint.grib")
-    d_2_r = filter_registry.create("d_2_r",relative_humidity="2r", temperature='2t',dewpoint='2d')
+    source = source_registry.create(
+        "testing", dataset="anemoi-transform/filters/era_20240601_single_level_dewpoint.grib"
+    )
+    d_2_r = filter_registry.create("d_2_r", relative_humidity="2r", temperature="2t", dewpoint="2d")
 
     output = source | d_2_r
     assert len(list(output)) == 3

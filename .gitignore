@@ -46,7 +46,6 @@ docs/_api/
 /site
 *.mo
 *.pot
-docs/_api/
 
 # Environments
 .env
@@ -95,6 +94,11 @@ dmypy.json
 *.csv
 *.xlsx
 *.xls
+*.json
+*.txt
+*.zip
+*.db
+*.tgz
 
 # ML artifacts
 wandb/
@@ -121,7 +125,8 @@ tmp/
 temp/
 logs/
 _dev/
-outputs
+_api/
+./outputs
 *tmp_data/
 
 # Project specific

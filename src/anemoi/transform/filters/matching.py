@@ -84,7 +84,7 @@ def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
 class matching:
     """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
 
-    def __init__(self, *, select: str, forward: list = [], backward: list = []) -> None:
+    def __init__(self, *, select: str, forward: list = [], backward: list = [], return_inputs: Literal["all", "none"] | List[str]) -> None:
         """Initialize the matching decorator.
 
         Parameters
@@ -95,6 +95,9 @@ class matching:
             List of forward arguments, by default [].
         backward : list, optional
             List of backward arguments, by default [].
+        return_inputs: Literal["all", "none"] | List[str], optional
+            Indicate which one of the input values for the filter should be kept, by default "none"
+            "all" will return all inputs, while a List[str] will select the inputs as defined by the user.
         """
         self.select = select
 
@@ -109,6 +112,7 @@ class matching:
 
         self.forward = forward
         self.backward = backward
+        self.return_inputs  = return_inputss
 
     def __call__(self, method: Callable) -> Callable:
         """Wrap the method with forward and backward argument initialization.
@@ -156,6 +160,7 @@ class matching:
             obj._select = self.select
             obj._forward_arguments = forward
             obj._backward_arguments = backward
+            obj.return_inputs = self.return_inputs
             obj._initialised = True
             return method(obj, *args, **kwargs)
 

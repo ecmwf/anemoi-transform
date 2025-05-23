@@ -9,12 +9,15 @@
 
 
 from typing import Iterator
+from typing import List
+from typing import Literal
 
 import earthkit.data as ekd
 
 from . import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
+
 
 
 class VerticalVelocity(MatchingFieldsFilter):
@@ -26,9 +29,32 @@ class VerticalVelocity(MatchingFieldsFilter):
         select="param",
         forward=("w_component", "temperature", "humidity"),
         backward=("wz_component", "temperature", "humidity"),
+        return_inputs=["temperature", "humidity"]
     )
-    def __init__(self, *, w_component="w", wz_component="wz", temperature="t", humidity="q", return_inputs="none"):
-        self.return_inputs = return_inputs
+    def __init__(
+        self,
+        *,
+        w_component: str ="w",
+        wz_component: str ="wz",
+        temperature: str ="t",
+        humidity: str ="q",
+        ):
+        
+        """Initialize the VerticalVelocity filter.
+
+        Parameters
+        ----------
+        w_component : str, optional
+            Name of the W component, by default "w".
+        wz_component : str, optional
+            Name of the Wz (in m/s) component, by default "wz".
+        temperature : str, optional
+            Name of the temperature parameter, by default "t".
+        humidity : str, optional
+            Name of the humidity parameter, by default "q".
+        return_inputs : Literal["all", "none"] | List[str], optional
+            List of which filter inputs should be returned, by default ["temperature", "humidity"]
+        """
         # wind speed in Pa/s
         self.w_component = w_component
         # wind speed in m/s

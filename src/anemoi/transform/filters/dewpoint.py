@@ -8,6 +8,10 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Iterator
+from typing import List
+from typing import Literal
+
 import earthkit.data as ekd
 from earthkit.meteo import thermo
 
@@ -22,9 +26,24 @@ class DewPoint(MatchingFieldsFilter):
     @matching(
         select="param",
         forward=("temperature", "relative_humidity"),
+        return_inputs=["temperature"]
     )
-    def __init__(self, *, relative_humidity="r", temperature="t", dewpoint="d"):
+    def __init__(
+        self, 
+        *, 
+        relative_humidity: str="r",
+        temperature: str="t",
+        dewpoint: str="d",
+        ):
+        """Initialize the DewPoint filter.
 
+        Parameters
+        ----------
+        relative_humidity : str, optional
+            Name of the humidity parameter, by default "r".
+        temperature : str, optional
+            Name of the temperature parameter, by default "t".
+        """
         self.relative_humidity = relative_humidity
         self.temperature = temperature
         self.dewpoint = dewpoint

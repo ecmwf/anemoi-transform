@@ -63,7 +63,7 @@ class WindComponents(MatchingFieldsFilter):
         self.wind_direction = wind_direction
         self.convention = convention
         self.radians = radians
-
+        
         assert not self.radians, "Radians not (yet) supported"
 
     def forward_transform(self, u_component: ekd.Field, v_component: ekd.Field) -> Iterator[ekd.Field]:

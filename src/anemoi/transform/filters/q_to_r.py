@@ -30,11 +30,13 @@ class HumidityConversion(MatchingFieldsFilter):
         relative_humidity="r",
         temperature="t",
         humidity="q",
+        return_inputs="none"
     ):
 
         self.relative_humidity = relative_humidity
         self.temperature = temperature
         self.humidity = humidity
+        self.return_inputs = return_inputs
 
     def forward_transform(self, humidity: ekd.Field, temperature: ekd.Field) -> ekd.Field:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
@@ -42,8 +44,7 @@ class HumidityConversion(MatchingFieldsFilter):
         rh = thermo.relative_humidity_from_specific_humidity(temperature.to_numpy(), humidity.to_numpy(), pressure)
 
         yield self.new_field_from_numpy(rh, template=humidity, param=self.relative_humidity)
-        yield temperature
-        yield humidity
+
 
     def backward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> ekd.Field:
         """This will return specific humidity along with temperature from relative humidity and temperature"""
@@ -54,8 +55,6 @@ class HumidityConversion(MatchingFieldsFilter):
         )
 
         yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
-        yield temperature
-        yield relative_humidity
 
 
 filter_registry.register("q_2_r", HumidityConversion)

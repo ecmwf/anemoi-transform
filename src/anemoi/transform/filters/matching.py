@@ -12,10 +12,12 @@ import logging
 from abc import abstractmethod
 from functools import wraps
 from inspect import signature
+from itertools import chain
 from typing import Any
 from typing import Callable
 from typing import Iterator
 from typing import List
+from typing import Literal
 from typing import Tuple
 
 import earthkit.data as ekd
@@ -166,6 +168,9 @@ class MatchingFieldsFilter(Filter):
     """
 
     _initialised = False
+    # to return filter inputs if needed.
+    # strings in the list must be in forward or backward args, otherwise this will fail
+    return_inputs: Literal["all", "none"] | List[str] = "none"
 
     @property
     def forward_arguments(self) -> dict:
@@ -211,16 +216,32 @@ class MatchingFieldsFilter(Filter):
             Transformed data.
         """
         args = []
+        match self.return_inputs:
+            case "all":
+                returned_input_list = self.forward_arguments
+            case "none":
+                returned_input_list = []
+            case _:
+                if not isinstance(self.return_inputs, list):
+                    raise ValueError("Return inputs must be 'all', 'none', or List[str].")
+                if not set(self.return_inputs) <= set(self.forward_arguments):
+                    raise ValueError("Returned input names must be in the forward arguments")
+                returned_input_list = self.return_inputs
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
+
+        def inputs_generator(**kwargs):
+            for name in returned_input_list:
+                if name in kwargs:
+                    yield kwargs[name]
 
         named_args = self._forward_arguments_types[0]
 
         def forward_transform_named(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
-            return self.forward_transform(**kwargs)
+            return chain(inputs_generator(**kwargs), self.forward_transform(**kwargs))
 
         return self._transform(
             data,
@@ -242,16 +263,33 @@ class MatchingFieldsFilter(Filter):
             Transformed data.
         """
         args = []
+        match self.return_inputs:
+            case "all":
+                returned_input_list = self.backward_arguments
+            case "none":
+                returned_input_list = []
+            case _:
+                if not isinstance(self.return_inputs, list):
+                    raise ValueError("Return inputs must be 'all', 'none', or List[str].")
+                if not set(self.return_inputs) <= set(self.backward_arguments):
+                    raise ValueError("Returned input names must be in the backward arguments")
+
+                returned_input_list = self.return_inputs
 
         for name in self.backward_arguments:
             args.append(getattr(self, name))
+
+        def inputs_generator(**kwargs):
+            for name in returned_input_list:
+                if name in kwargs:
+                    yield kwargs[name]
 
         named_args = self._backward_arguments_types[0]
 
         def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.backward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
-            return self.backward_transform(**kwargs)
+            return chain(inputs_generator(**kwargs), self.backward_transform(**kwargs))
 
         return self._transform(
             data,
@@ -288,7 +326,6 @@ class MatchingFieldsFilter(Filter):
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)
-
         return self.new_fieldlist_from_list(result)
 
     def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, param: str) -> ekd.Field:

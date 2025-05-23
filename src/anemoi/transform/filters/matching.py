@@ -235,8 +235,9 @@ class MatchingFieldsFilter(Filter):
             for name in returned_input_list:
                 if name in kwargs:
                     yield kwargs[name]
+
         named_args = self._forward_arguments_types[0]
-           
+
         def forward_transform_named(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
@@ -282,7 +283,7 @@ class MatchingFieldsFilter(Filter):
             for name in returned_input_list:
                 if name in kwargs:
                     yield kwargs[name]
-              
+
         named_args = self._backward_arguments_types[0]
 
         def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:

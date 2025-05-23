@@ -1,9 +1,9 @@
 import numpy as np
+from utils import ListSource
+from utils import convert_to_ekd_fieldlist
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
-from utils import convert_to_ekd_fieldlist, ListSource
-import earthkit.data as ekd
 
 prototype = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -22,7 +22,6 @@ dewpoint_source = [
 ]
 
 
-
 def test_relative_humidity_to_dewpoint():
 
     source_relative = source_registry.create("testing", fields=relative_humidity_source)
@@ -31,15 +30,17 @@ def test_relative_humidity_to_dewpoint():
     r_2_d = filter_registry.create("r_2_d")
     d_2_r = filter_registry.create("d_2_r")
 
-    dewpoint_transform_output=source_relative | r_2_d
+    dewpoint_transform_output = source_relative | r_2_d
     assert len(list(dewpoint_transform_output)) == 3
 
-    relative_humidity_transform_output=source_dewpoint | d_2_r
+    relative_humidity_transform_output = source_dewpoint | d_2_r
     assert len(list(relative_humidity_transform_output)) == 3
 
-    dewpoint_transform_output = ListSource(convert_to_ekd_fieldlist(dewpoint_transform_output).sel(param=['d','t']))
-    relative_transform_output = ListSource(convert_to_ekd_fieldlist(list(dewpoint_transform_output | d_2_r)).sel(param=['r','t']))
-    
+    dewpoint_transform_output = ListSource(convert_to_ekd_fieldlist(dewpoint_transform_output).sel(param=["d", "t"]))
+    relative_transform_output = ListSource(
+        convert_to_ekd_fieldlist(list(dewpoint_transform_output | d_2_r)).sel(param=["r", "t"])
+    )
+
     for original, converted in zip(source_relative, relative_transform_output):
         assert np.allclose(original.to_numpy(), converted.to_numpy()), (
             (original.metadata("param")),
@@ -87,9 +88,10 @@ def test_dewpoint_to_relative_humidity():
     relative_transform_output = source_dewpoint | d_2_r
     assert len(list(relative_transform_output)) == 3
 
-    relative_transform_output = ListSource(convert_to_ekd_fieldlist(relative_transform_output).sel(param=['r','t']))
-    dewpoint_transform_output = ListSource(convert_to_ekd_fieldlist(list(relative_transform_output | r_2_d)).sel(param=['d','t']))
-
+    relative_transform_output = ListSource(convert_to_ekd_fieldlist(relative_transform_output).sel(param=["r", "t"]))
+    dewpoint_transform_output = ListSource(
+        convert_to_ekd_fieldlist(list(relative_transform_output | r_2_d)).sel(param=["d", "t"])
+    )
 
     for original, converted in zip(source_dewpoint, dewpoint_transform_output):
         assert np.allclose(original.to_numpy(), converted.to_numpy()), (

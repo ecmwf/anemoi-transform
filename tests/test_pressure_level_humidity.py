@@ -2,6 +2,7 @@ import numpy as np
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
+from utils import convert_to_ekd_fieldlist, ListSource
 
 prototype = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -24,7 +25,7 @@ pressure_level_specific_humidity_source = [
 ]
 
 
-def test_presurre_level_specific_humidity_to_relative_humidity_from_file():
+def test_pressure_level_specific_humidity_to_relative_humidity_from_file():
     source = source_registry.create(
         "testing", dataset="anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib"
     )
@@ -40,8 +41,34 @@ def test_presurre_level_specific_humidity_to_relative_humidity_from_file():
     )
     np.testing.assert_allclose(output, output_era_r)
 
+def test_pressure_level_specific_humidity_to_relative_humidity():
+    source_specific_humidity = source_registry.create(
+        "testing", fields=pressure_level_specific_humidity_source
+    )
 
-def test_presurre_level_relative_humidity_to_specific_humidity_from_file():
+    q_2_r = filter_registry.create("q_2_r")
+    r_2_q = filter_registry.create("r_2_q")
+
+    relative_humidity_transform_output = source_specific_humidity | q_2_r
+    assert len(list(relative_humidity_transform_output)) == 6  # since we have 2 levels
+
+    relative_humidity_transform_output = ListSource(convert_to_ekd_fieldlist(relative_humidity_transform_output).sel(param=['r','t']))
+    specific_humidity_transform_output = ListSource(convert_to_ekd_fieldlist(list(relative_humidity_transform_output | r_2_q)).sel(param=['q','t']))
+
+    assert len(specific_humidity_transform_output.fields)==4
+
+    for original, converted in zip(source_specific_humidity, specific_humidity_transform_output):
+        assert np.allclose(original.to_numpy(), converted.to_numpy()), (
+            (original.metadata("param")),
+            (converted.metadata("param")),
+            original.to_numpy(),
+            converted.to_numpy(),
+            original.to_numpy() == converted.to_numpy(),
+            original.to_numpy() - converted.to_numpy(),
+        )
+
+
+def test_pressure_level_relative_humidity_to_specific_humidity_from_file():
     source = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_20240601_pressure_levels.grib")
 
     r_2_q = filter_registry.create("r_2_q")
@@ -56,7 +83,7 @@ def test_presurre_level_relative_humidity_to_specific_humidity_from_file():
     np.testing.assert_allclose(output, output_cerra_q)
 
 
-def test_presurre_level_relative_humidity_to_specific_humidity_from_file_AROME():
+def test_pressure_level_relative_humidity_to_specific_humidity_from_file_AROME():
     source = source_registry.create("testing", dataset="anemoi-transform/filters/r_t_PAAROME_1S40_ECH0_ISOBARE.grib")
 
     r_2_q = filter_registry.create("r_2_q")
@@ -70,6 +97,31 @@ def test_presurre_level_relative_humidity_to_specific_humidity_from_file_AROME()
         .flatten()
     )
     np.testing.assert_allclose(output, output_cerra_q)
+
+def test_pressure_level_relative_humidity_to_relative_humidity():
+    source_relative_humidity = source_registry.create(
+        "testing", fields=pressure_level_relative_humidity_source
+    )
+    q_2_r = filter_registry.create("q_2_r")
+    r_2_q = filter_registry.create("r_2_q")
+
+    specific_humidity_transform_output = source_relative_humidity | r_2_q
+    assert len(list(specific_humidity_transform_output)) == 6  # since we have 2 levels
+
+    specific_humidity_transform_output = ListSource(convert_to_ekd_fieldlist(specific_humidity_transform_output).sel(param=['q','t']))
+    relative_humidity_transform_output = ListSource(convert_to_ekd_fieldlist(list(specific_humidity_transform_output | q_2_r)).sel(param=['r','t']))
+
+    assert len(relative_humidity_transform_output.fields)==4
+
+    for original, converted in zip(source_relative_humidity, relative_humidity_transform_output):
+        assert np.allclose(original.to_numpy(), converted.to_numpy()), (
+            (original.metadata("param")),
+            (converted.metadata("param")),
+            original.to_numpy(),
+            converted.to_numpy(),
+            original.to_numpy() == converted.to_numpy(),
+            original.to_numpy() - converted.to_numpy(),
+        )
 
 
 if __name__ == "__main__":

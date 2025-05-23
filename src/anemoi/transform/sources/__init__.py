@@ -8,6 +8,28 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+
 from anemoi.utils.registry import Registry
 
 source_registry = Registry(__name__)
+
+
+def create_source(context: Any, config: Any) -> Any:
+    """Create a source from the given context and configuration.
+
+    Parameters
+    ----------
+    context : Any
+        The context in which the source is created.
+    config : Any
+        The configuration for the source.
+
+    Returns
+    -------
+    Any
+        The created source.
+    """
+    source = source_registry.from_config(config)
+    source.context = context
+    return source

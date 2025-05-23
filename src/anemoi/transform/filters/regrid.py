@@ -43,7 +43,7 @@ def as_gridspec(grid: Optional[Union[str, Dict[str, Any]]]) -> Optional[Dict[str
     if grid is None:
         return None
 
-    if isinstance(grid, str):
+    if isinstance(grid, (str, list, tuple)):
         return {"grid": grid}
 
     return grid
@@ -73,6 +73,11 @@ def as_griddata(grid: Optional[Union[str, Field, Dict[str, Any]]]) -> Optional[D
         return grid
 
     if isinstance(grid, str):
+        from anemoi.utils.grids import grids
+
+        return grids(grid)
+
+    if isinstance(grid, (list, tuple)):
         from anemoi.utils.grids import grids
 
         return grids(grid)
@@ -109,6 +114,7 @@ class RegridFilter(Filter):
         interpolator : Optional[Any]
             The interpolator to use.
         """
+
         self.in_grid = in_grid
         self.out_grid = out_grid
         self.method = method
@@ -119,12 +125,12 @@ class RegridFilter(Filter):
 
         Parameters
         ----------
-        data : Any
+        data : ekd.FieldList
             The input data to be transformed.
 
         Returns
         -------
-        Any
+        ekd.FieldList
             The transformed data.
         """
         return self._interpolate(data, self.in_grid, self.out_grid, self.method)
@@ -134,12 +140,12 @@ class RegridFilter(Filter):
 
         Parameters
         ----------
-        data : Any
+        data : ekd.FieldList
             The input data to be transformed.
 
         Returns
         -------
-        Any
+        ekd.FieldList
             The transformed data.
         """
         return self._interpolate(data, self.out_grid, self.in_grid, self.method)
@@ -173,7 +179,7 @@ class RegridFilter(Filter):
 class EarthkitRegrid:
     """Default interpolator using earthkit."""
 
-    def __init__(self, in_grid: Any, out_grid: Any, method: str, matrix: str, check: bool) -> None:
+    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, matrix: str, check: bool) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -189,6 +195,7 @@ class EarthkitRegrid:
         """
         self.in_grid = as_gridspec(in_grid)
         self.out_grid = as_gridspec(out_grid)
+        self.out_griddata = as_griddata(out_grid)
         self.method = method
         if check:
             LOG.warning("Check is not supported by EarthkitRegrid")
@@ -208,21 +215,24 @@ class EarthkitRegrid:
         """
         from earthkit.regrid import interpolate
 
-        return new_field_from_numpy(
-            interpolate(
-                field.to_numpy(flatten=True),
-                in_grid=self.in_grid,
-                out_grid=self.out_grid,
-                method=self.method,
+        return new_field_from_latitudes_longitudes(
+            new_field_from_numpy(
+                interpolate(
+                    field.to_numpy(flatten=True),
+                    in_grid=self.in_grid,
+                    out_grid=self.out_grid,
+                    method=self.method,
+                ),
+                template=field,
             ),
-            template=field,
+            **self.out_griddata,
         )
 
 
 class MIRMatrix:
     """Assume matrix was created by `anemoi-transform make-regrid-matrix`."""
 
-    def __init__(self, in_grid: Any, out_grid: Any, method: str, matrix: str, check: bool) -> None:
+    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, matrix: str, check: bool) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -289,7 +299,7 @@ class ScipyKDTreeNearestNeighbours:
 
     nearest_grid_points = None
 
-    def __init__(self, in_grid: Any, out_grid: Any, method: str, matrix: str = None, check: bool = False) -> None:
+    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, matrix: str = None, check: bool = False) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -414,4 +424,4 @@ def make_interpolator(
     """
     interpolator = _interpolator(in_grid, out_grid, method, matrix, check, interpolator)
 
-    return globals()[interpolator](in_grid, out_grid, method, matrix, check)
+    return globals()[interpolator](in_grid=in_grid, out_grid=out_grid, method=method, matrix=matrix, check=check)

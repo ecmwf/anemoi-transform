@@ -8,17 +8,32 @@
 # nor does it submit to any jurisdiction.
 
 import logging
+from abc import ABC
+from abc import abstractmethod
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
 
+import earthkit.data as ekd
 import numpy as np
 from earthkit.data.core.geography import Geography
 from earthkit.data.indexing.fieldlist import SimpleFieldList
 
+from anemoi.transform.grids import Grid
+
 LOG = logging.getLogger(__name__)
+
+MISSING_METADATA = object()
+
+
+class Flavour(ABC):
+
+    @abstractmethod
+    def __call__(self, key: str, field: ekd.Field) -> Any:
+        """Called during field metadata lookup, so it can be modified"""
+        pass
 
 
 def new_fieldlist_from_list(fields: List[Any]) -> SimpleFieldList:
@@ -61,27 +76,28 @@ class WrappedField:
         self._field = field
 
     def __getattr__(self, name: str) -> Any:
-        """Custom attribute access method for the NewField class.
+        """Custom attribute access method for the WrappedField class.
 
-        This method intercepts attribute access and provides custom behavior for certain attributes.
-        If the attribute name is "clone" or "copy", an AttributeError is raised indicating that forwarding
-        of these attributes is not supported. For other attributes, a warning is logged if the attribute
-        name is not in the predefined list of supported attributes.
+        Parameters
+        ----------
+        name : str
+            The name of the attribute being accessed.
 
-        Args:
-            name (str): The name of the attribute being accessed.
+        Returns
+        -------
+        Any
+            The value of the attribute from the underlying _field object.
 
-        Returns:
-            Any: The value of the attribute from the underlying _field object.
-
-        Raises:
-            AttributeError: If the attribute name is "clone" or "copy".
+        Raises
+        ------
+        AttributeError
+            If the attribute name is "clone" or "copy".
         """
         if name in (
             "clone",
             "copy",
         ):
-            raise AttributeError(f"NewField: forwarding of `{name}` is not supported")
+            raise AttributeError(f"{self}: forwarding of `{name}` is not supported")
 
         if name not in (
             "mars_area",
@@ -89,24 +105,57 @@ class WrappedField:
             "to_numpy",
             "metadata",
             "shape",
+            "grid_points",
+            "handle",
         ):
-            LOG.warning(f"NewField: forwarding `{name}`")
+            LOG.warning(f"{self}: forwarding `{name}`")
 
         return getattr(self._field, name)
 
     def __repr__(self) -> str:
         """Return the string representation of the field.
 
-        This method returns the string representation of the `_field` attribute,
-        which provides a human-readable description of the object.
-
-        Returns:
-            str: The string representation of the `_field` attribute.
+        Returns
+        -------
+        str
+            The string representation of the `_field` attribute.
         """
-        return f"{self.__class__.__name__ }({repr(self._field)})"
+        return f"{self.__class__.__name__ }({repr(self._field)}, {self._repr_specific()})"
 
-    def clone(self, **kwargs):
+    def _repr_specific(self) -> str:
+        """Return a string representation of the specific field type.
+
+        Returns
+        -------
+        str
+            The string representation of the specific field type.
+        """
+        return f"(No specific representation for {self.__class__.__name__})"
+
+    def clone(self, **kwargs: Any) -> "NewClonedField":
+        """Clone the field with new metadata.
+
+        Parameters
+        ----------
+        **kwargs : Any
+            The new metadata for the cloned field.
+
+        Returns
+        -------
+        NewClonedField
+            The cloned field with the provided metadata.
+        """
         return NewClonedField(self, **kwargs)
+
+    def __iter__(self) -> Any:
+        """Return an iterator over the field.
+
+        Returns
+        -------
+        Any
+            An iterator over the `_field` attribute.
+        """
+        raise NotImplementedError(f"{self}: iterating is not supported")
 
 
 class NewDataField(WrappedField):
@@ -124,6 +173,11 @@ class NewDataField(WrappedField):
         super().__init__(field)
         self._data = data
         self.shape = data.shape
+
+    @property
+    def values(self) -> np.ndarray:
+        """Get the values of the field."""
+        return self.to_numpy(flatten=True)
 
     def to_numpy(self, flatten: bool = False, dtype: Optional[type] = None, index: Optional[Any] = None) -> np.ndarray:
         """Convert the field data to a numpy array.
@@ -150,6 +204,9 @@ class NewDataField(WrappedField):
         if index is not None:
             data = data[index]
         return data
+
+    def _repr_specific(self) -> str:
+        return f"(shape={self._data.shape})"
 
 
 class GeoMetadata(Geography):
@@ -262,8 +319,8 @@ class GeoMetadata(Geography):
         raise NotImplementedError()
 
 
-class NewGridField(WrappedField):
-    """Change the grid of a field.
+class NewLatLonField(WrappedField):
+    """Change the latitudes and longitudes of a field.
 
     Parameters
     ----------
@@ -306,16 +363,6 @@ class NewGridField(WrappedField):
         assert flatten
         return dict(lat=self._latitudes, lon=self._longitudes)
 
-    def __repr__(self) -> str:
-        """Get the string representation of the field.
-
-        Returns
-        -------
-        str
-            The string representation of the field.
-        """
-        return f"NewGridField({len(self._latitudes), self._field})"
-
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
         """Get the metadata of the field.
 
@@ -338,20 +385,98 @@ class NewGridField(WrappedField):
         return metadata
 
 
-class NewMetadataField(WrappedField):
-    """Change the metadata of a field.
+class NewGridField(WrappedField):
+    """Change the grid of a field.
 
     Parameters
     ----------
     field : Any
         The field object to wrap.
-    **kwargs : Any
-        The new metadata for the field.
+    grid: Grid
+        The new grid for the field.
     """
 
-    def __init__(self, field: Any, **kwargs: Any) -> None:
+    def __init__(self, field: Any, grid: Grid) -> None:
         super().__init__(field)
-        self._metadata = kwargs
+        self._grid = grid
+
+    def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Get the grid points of the field.
+
+        Returns
+        -------
+        tuple
+            The latitudes and longitudes of the field.
+        """
+        return self._grid.latlon()
+
+    def to_latlon(self, flatten: bool = True) -> Dict[str, np.ndarray]:
+        """Convert the grid points to latitude and longitude.
+
+        Parameters
+        ----------
+        flatten : bool, optional
+            Whether to flatten the arrays, by default True.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the latitudes and longitudes.
+        """
+        assert flatten
+        coords = self._grid.latlon()
+        return dict(lat=coords[0], lon=coords[1])
+
+    def __repr__(self) -> str:
+        """Get the string representation of the field.
+
+        Returns
+        -------
+        str
+            The string representation of the field.
+        """
+        return f"NewGridField({self._field}, {self._grid})"
+
+    def metadata(self, *args: Any, **kwargs: Any) -> Any:
+        """Get the metadata of the field.
+
+        Parameters
+        ----------
+        *args : Any
+            Additional arguments.
+        **kwargs : Any
+            Additional keyword arguments.
+
+        Returns
+        -------
+        Any
+            The metadata of the field.
+        """
+        metadata = self._field.metadata(*args, **kwargs)
+        if hasattr(metadata, "geography"):
+            metadata.geography = GeoMetadata(self)
+
+        return metadata
+
+    @property
+    def _latitudes(self) -> np.ndarray:
+        """Get the latitudes of the field."""
+        return self._grid.latlon()[0]
+
+    @property
+    def _longitudes(self) -> np.ndarray:
+        """Get the longitudes of the field."""
+        return self._grid.latlon()[1]
+
+
+class _NewMetadataField(WrappedField, ABC):
+    """Change the metadata of a field."""
+
+    def __init__(self, field: Any) -> None:
+        super().__init__(field)
+
+    @abstractmethod
+    def mapping(self, key: str, field: ekd.Field) -> Any: ...
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
         """Get the metadata of the field.
@@ -374,9 +499,13 @@ class NewMetadataField(WrappedField):
 
             class MD:
 
+                geography = this._field.metadata().geography
+
                 def get(self, key, default=None):
-                    if key in this._metadata:
-                        return this._metadata[key]
+
+                    value = this.mapping(key, this._field)
+                    if value is not MISSING_METADATA:
+                        return value
 
                     return this._field.metadata().get(key, default)
 
@@ -386,20 +515,53 @@ class NewMetadataField(WrappedField):
             assert len(args) == 0, (args, kwargs)
             mars = self._field.metadata(**kwargs).copy()
             for k in list(mars.keys()):
-                if k in self._metadata:
-                    mars[k] = self._metadata[k]
+                m = self.mapping(k, self._field)
+                if m is not MISSING_METADATA:
+                    mars[k] = m
             return mars
 
-        if len(args) == 1 and args[0] in self._metadata:
-            value = self._metadata[args[0]]
+        if len(args) == 1:
+            value = self.mapping(args[0], self._field)
+            if value is MISSING_METADATA:
+                return self._field.metadata(*args, **kwargs)
+
             if callable(value):
                 return value(self, args[0], self._field.metadata())
+
             return value
 
         return self._field.metadata(*args, **kwargs)
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__ }({repr(self._field)},{self._metadata})"
+
+class NewMetadataField(_NewMetadataField):
+    """Change the metadata of a field.
+
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    **kwargs : Any
+        The new metadata for the field.
+    """
+
+    def __init__(self, field: Any, **kwargs: Any) -> None:
+        super().__init__(field)
+        self.kwargs = kwargs
+
+    def mapping(self, key: str, field: ekd.Field) -> Any:
+        return self.kwargs.get(key, MISSING_METADATA)
+
+    def _repr_specific(self):
+        return f"(metadata={self.kwargs})"
+
+
+class NewFlavouredField(_NewMetadataField):
+    def __init__(self, field: Any, flavour: Flavour) -> None:
+        super().__init__(field)
+        self.flavour = flavour
+
+    def mapping(self, key: str, field: ekd.Field) -> Any:
+        return self.flavour(key, field)
 
 
 class NewValidDateTimeField(NewMetadataField):
@@ -424,13 +586,35 @@ class NewValidDateTimeField(NewMetadataField):
 
 
 class NewClonedField(WrappedField):
-    """Wrapper around a field object that clones the field."""
+    """Wrapper around a field object that clones the field.
 
-    def __init__(self, field, **metadata):
+    Parameters
+    ----------
+    field : Any
+        The field object to wrap.
+    **metadata : Any
+        The new metadata for the cloned field.
+    """
+
+    def __init__(self, field: Any, **metadata: Any) -> None:
         super().__init__(field)
         self._metadata = metadata
 
-    def metadata(self, *args, **kwargs):
+    def metadata(self, *args: Any, **kwargs: Any) -> Any:
+        """Get the metadata of the cloned field.
+
+        Parameters
+        ----------
+        *args : Any
+            Additional arguments.
+        **kwargs : Any
+            Additional keyword arguments.
+
+        Returns
+        -------
+        Any
+            The metadata of the cloned field.
+        """
         if len(args) == 1:
             if args[0] in self._metadata:
                 if callable(self._metadata[args[0]]):
@@ -441,6 +625,9 @@ class NewClonedField(WrappedField):
                 return self._metadata[args[0]]
 
         return self._field.metadata(*args, **kwargs)
+
+    def _repr_specific(self):
+        return f"(metadata={self._metadata})"
 
 
 def new_field_from_numpy(array: np.ndarray, *, template: WrappedField, **metadata: Any) -> NewMetadataField:
@@ -518,4 +705,30 @@ def new_field_from_latitudes_longitudes(
     NewGridField
         The new field with the provided latitudes and longitudes.
     """
-    return NewGridField(template, latitudes, longitudes)
+    return NewLatLonField(template, latitudes, longitudes)
+
+
+def new_field_from_grid(
+    template: WrappedField,
+    grid: Grid,
+) -> NewGridField:
+    """Create a new field from a grid.
+
+    Parameters
+    ----------
+    template : WrappedField
+        The template field to use.
+    grid : Grid
+        The grid for the new field.
+
+    Returns
+    -------
+    NewGridField
+        The new field with the provided grid.
+    """
+    return NewGridField(template, grid)
+
+
+def new_flavoured_field(field: Any, flavour: Flavour) -> NewFlavouredField:
+    """Create a new field with a flavour."""
+    return NewFlavouredField(field, flavour)

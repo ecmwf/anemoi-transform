@@ -8,6 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Iterator
+
 import earthkit.data as ekd
 
 from . import filter_registry
@@ -21,7 +23,7 @@ class VerticalVelocity(MatchingFieldsFilter):
     """
 
     @matching(
-        match="param",
+        select="param",
         forward=("w_component", "temperature", "humidity"),
         backward=("wz_component", "temperature", "humidity"),
     )
@@ -34,9 +36,27 @@ class VerticalVelocity(MatchingFieldsFilter):
         self.temperature = temperature
         self.humidity = humidity
 
-    def forward_transform(self, w_component: ekd.Field, temperature: ekd.Field, humidity: ekd.Field) -> ekd.Field:
-        """Pa/s to m/s
-        This will return the fields that are used but not modified (temperature and humidity)
+    def forward_transform(
+        self,
+        w_component: ekd.Field,
+        temperature: ekd.Field,
+        humidity: ekd.Field,
+    ) -> Iterator[ekd.Field]:
+        """Convert vertical wind speed from Pa/s to m/s.
+
+        Parameters
+        ----------
+        w_component : ekd.Field
+            The vertical wind speed in Pa/s.
+        temperature : ekd.Field
+            The temperature field.
+        humidity : ekd.Field
+            The humidity field.
+
+        Returns
+        -------
+        Iterator[ekd.Field]
+            The vertical wind speed in m/s.
         """
 
         level = float(w_component._metadata.get("levelist", None))
@@ -46,9 +66,24 @@ class VerticalVelocity(MatchingFieldsFilter):
 
         yield self.new_field_from_numpy(wz, template=w_component, param=self.wz_component)
 
-    def backward_transform(self, wz_component: ekd.Field, temperature: ekd.Field, humidity: ekd.Field) -> ekd.Field:
-        """m/s to Pa/s
-        This will return the fields that are used but not modified (temperature and humidity)
+    def backward_transform(
+        self, wz_component: ekd.Field, temperature: ekd.Field, humidity: ekd.Field
+    ) -> Iterator[ekd.Field]:
+        """Convert vertical wind speed from m/s to Pa/s.
+
+        Parameters
+        ----------
+        wz_component : ekd.Field
+            The vertical wind speed in m/s.
+        temperature : ekd.Field
+            The temperature field.
+        humidity : ekd.Field
+            The humidity field.
+
+        Returns
+        -------
+        Iterator[ekd.Field]
+            The vertical wind speed in Pa/s.
         """
 
         level = float(wz_component._metadata.get("levelist", None))

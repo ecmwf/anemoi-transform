@@ -84,7 +84,9 @@ def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
 class matching:
     """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
 
-    def __init__(self, *, select: str, forward: list = [], backward: list = [], return_inputs: Literal["all", "none"] | List[str]) -> None:
+    def __init__(
+        self, *, select: str, forward: list = [], backward: list = [], return_inputs: Literal["all", "none"] | List[str]
+    ) -> None:
         """Initialize the matching decorator.
 
         Parameters
@@ -112,7 +114,7 @@ class matching:
 
         self.forward = forward
         self.backward = backward
-        self.return_inputs  = return_inputs
+        self.return_inputs = return_inputs
 
     def __call__(self, method: Callable) -> Callable:
         """Wrap the method with forward and backward argument initialization.
@@ -240,8 +242,9 @@ class MatchingFieldsFilter(Filter):
             for name in returned_input_list:
                 if name in kwargs:
                     yield kwargs[name]
+
         named_args = self._forward_arguments_types[0]
-           
+
         def forward_transform_named(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
@@ -287,7 +290,7 @@ class MatchingFieldsFilter(Filter):
             for name in returned_input_list:
                 if name in kwargs:
                     yield kwargs[name]
-              
+
         named_args = self._backward_arguments_types[0]
 
         def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:

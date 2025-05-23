@@ -9,15 +9,12 @@
 
 
 from typing import Iterator
-from typing import List
-from typing import Literal
 
 import earthkit.data as ekd
 
 from . import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
-
 
 
 class VerticalVelocity(MatchingFieldsFilter):
@@ -29,17 +26,16 @@ class VerticalVelocity(MatchingFieldsFilter):
         select="param",
         forward=("w_component", "temperature", "humidity"),
         backward=("wz_component", "temperature", "humidity"),
-        return_inputs=["temperature", "humidity"]
+        return_inputs=["temperature", "humidity"],
     )
     def __init__(
         self,
         *,
-        w_component: str ="w",
-        wz_component: str ="wz",
-        temperature: str ="t",
-        humidity: str ="q",
-        ):
-        
+        w_component: str = "w",
+        wz_component: str = "wz",
+        temperature: str = "t",
+        humidity: str = "q",
+    ):
         """Initialize the VerticalVelocity filter.
 
         Parameters

@@ -8,8 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 from typing import Iterator
-from typing import List
-from typing import Literal
 
 import earthkit.data as ekd
 from earthkit.meteo import thermo
@@ -26,14 +24,14 @@ class HumidityConversion(MatchingFieldsFilter):
         select="param",
         forward=("temperature", "humidity"),
         backward=("relative_humidity", "temperature"),
-        return_inputs=["temperature"]
+        return_inputs=["temperature"],
     )
     def __init__(
         self,
         *,
-        relative_humidity: str ="r",
-        temperature: str ="t",
-        humidity: str ="q",
+        relative_humidity: str = "r",
+        temperature: str = "t",
+        humidity: str = "q",
     ):
         """Initialize the VerticalVelocity filter.
 
@@ -45,7 +43,7 @@ class HumidityConversion(MatchingFieldsFilter):
             Name of the temperature parameter, by default "t".
         humidity : str, optional
             Name of the humidity parameter, by default "q".
-        
+
         """
         self.relative_humidity = relative_humidity
         self.temperature = temperature
@@ -57,7 +55,6 @@ class HumidityConversion(MatchingFieldsFilter):
         rh = thermo.relative_humidity_from_specific_humidity(temperature.to_numpy(), humidity.to_numpy(), pressure)
 
         yield self.new_field_from_numpy(rh, template=humidity, param=self.relative_humidity)
-
 
     def backward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """This will return specific humidity along with temperature from relative humidity and temperature"""

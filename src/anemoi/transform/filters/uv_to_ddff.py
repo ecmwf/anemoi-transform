@@ -18,6 +18,7 @@ from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
 
+
 @filter_registry.register("uv_to_ddff")
 class WindComponents(MatchingFieldsFilter):
     """A filter to convert wind speed and direction to U and V components,

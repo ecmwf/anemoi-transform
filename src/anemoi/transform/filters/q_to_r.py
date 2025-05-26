@@ -16,6 +16,7 @@ from . import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
 
+
 @filter_registry.register("q_to_r")
 class HumidityConversion(MatchingFieldsFilter):
     """A filter to convert specific humidity to relative humidity with standard thermodynamical formulas."""
@@ -66,6 +67,7 @@ class HumidityConversion(MatchingFieldsFilter):
         )
 
         yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
+
 
 filter_registry.register("q_2_r", HumidityConversion)
 filter_registry.register("r_2_q", HumidityConversion.reversed)

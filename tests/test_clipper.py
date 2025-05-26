@@ -10,9 +10,8 @@
 from typing import Any
 from typing import Optional
 
-import numpy.testing as npt
 import numpy as np
-from pytest import approx
+import numpy.testing as npt
 
 from anemoi.transform.filters.clipper import Clipper
 from anemoi.transform.testing import fieldlist_fixture
@@ -30,6 +29,7 @@ def test_clipper_1(fieldlist: Optional[Any] = None) -> None:
     ref = np.clip(data, 1.0, None)
 
     npt.assert_allclose(clipped[0].to_numpy(), ref)
+
 
 def test_clipper_2(fieldlist: Optional[Any] = None) -> None:
     if fieldlist is None:

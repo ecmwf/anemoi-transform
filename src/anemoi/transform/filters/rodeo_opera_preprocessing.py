@@ -109,8 +109,8 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         self,
         *,
         total_precipitation: str = "tp",
-        quality: str = "quality",
-        mask: str = "mask",
+        quality: str = "qi",
+        mask: str = "dm",
         max_total_precipitation: int = MAX_TP,
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
@@ -159,7 +159,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         )
 
         # 2nd - apply clipping
-        total_precipitation_cleaned, quality = clip_opera(
+        total_precipitation_cleaned, quality_clipped = clip_opera(
             tp=total_precipitation_masked,
             quality=quality.to_numpy(),
             max_total_precipitation=self.max_total_precipitation,
@@ -168,3 +168,5 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
         )
+        yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
+        yield mask

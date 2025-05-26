@@ -39,7 +39,7 @@ class VerticalVelocity(MatchingFieldsFilter):
         temperature: str ="t",
         humidity: str ="q",
         return_inputs: Literal["all", "none"] | List[str] =["temperature", "humidity"]
-
+    )
         """Initialize the VerticalVelocity filter.
 
         Parameters

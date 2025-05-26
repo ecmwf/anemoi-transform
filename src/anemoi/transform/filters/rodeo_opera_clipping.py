@@ -17,7 +17,7 @@ from anemoi.transform.filters.matching import matching
 
 from .rodeo_opera_preprocessing import clip_opera
 
-FACTOR_TP = 1000 # convert from mm to m
+FACTOR_TP = 1000  # convert from mm to m
 
 
 @filter_registry.register("rodeo_opera_clipping")

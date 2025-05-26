@@ -15,7 +15,7 @@ from . import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
 
-
+@filter_registry.register("dewpoint")
 class DewPoint(MatchingFieldsFilter):
     """A filter to extract dewpoint temperature from relative humidity and temperature"""
 

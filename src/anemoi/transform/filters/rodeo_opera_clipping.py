@@ -17,7 +17,7 @@ from anemoi.transform.filters.matching import matching
 
 from .rodeo_opera_preprocessing import clip_opera
 
-MAX_TP = 1000
+FACTOR_TP = 1000 # convert from mm to m
 
 
 @filter_registry.register("rodeo_opera_clipping")
@@ -94,7 +94,7 @@ class RodeoOperaClipping(MatchingFieldsFilter):
             max_total_precipitation=self.max_total_precipitation,
         )
 
-        total_precipitation_cleaned = total_precipitation_cleaned / MAX_TP
+        total_precipitation_cleaned = total_precipitation_cleaned / FACTOR_TP
 
         yield self.new_field_from_numpy(
             total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation

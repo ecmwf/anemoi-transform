@@ -19,7 +19,7 @@ from .rodeo_opera_preprocessing import clip_opera
 
 FACTOR_TP = 1000  # convert from mm to m
 
-MAX_TP = 10000 # clip TP
+MAX_TP = 10000  # clip TP
 
 
 @filter_registry.register("rodeo_opera_clipping")

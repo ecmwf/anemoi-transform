@@ -17,7 +17,9 @@ from anemoi.transform.filters.matching import matching
 
 from .rodeo_opera_preprocessing import clip_opera
 
-MAX_TP = 10000
+FACTOR_TP = 1000  # convert from mm to m
+
+MAX_TP = 10000  # clip TP
 
 
 @filter_registry.register("rodeo_opera_clipping")
@@ -30,17 +32,23 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         The name of the total_precipitation field, by default "tp".
     max_total_precipitation : int, optional
         The maximum value for tp, by default MAX_TP.
+    quality : ekd.Field
+        The quality data.
+    mask : ekd.Field
+        The mask data.
     """
 
     @matching(
         select="param",
-        forward=("total_precipitation"),
+        forward=("total_precipitation", "quality", "mask"),
     )
     def __init__(
         self,
         *,
         total_precipitation: str = "tp",
         max_total_precipitation: int = MAX_TP,
+        quality: str = "qi",
+        mask: str = "dm",
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
 
@@ -50,13 +58,21 @@ class RodeoOperaClipping(MatchingFieldsFilter):
             The name of the tp field, by default "tp".
         max_total_precipitation : int, optional
             The maximum value for tp, by default MAX_TP.
+        quality : ekd.Field
+            The quality data.
+        mask : ekd.Field
+            The mask data.
         """
         self.total_precipitation = total_precipitation
         self.max_total_precipitation = max_total_precipitation
+        self.quality = quality
+        self.mask = mask
 
     def forward_transform(
         self,
         total_precipitation: ekd.Field,
+        quality,
+        mask,
     ) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 
@@ -64,17 +80,26 @@ class RodeoOperaClipping(MatchingFieldsFilter):
                 ----------
                 total_precipitation : ekd.Field
                     The tp data.
-
+                quality : ekd.Field
+                    The quality data.
+                mask : ekd.Field
+                    The mask data.
                 Returns
                 -------
                 Iterator[ekd.Field]
                     Transformed fields.
         |
         """
-        total_precipitation_cleaned = clip_opera(
-            tp=total_precipitation.to_numpy(), max_total_precipitation=self.max_total_precipitation
+        total_precipitation_cleaned, quality_clipped = clip_opera(
+            tp=total_precipitation.to_numpy(),
+            quality=quality.to_numpy(),
+            max_total_precipitation=self.max_total_precipitation,
         )
+
+        total_precipitation_cleaned = total_precipitation_cleaned / FACTOR_TP
 
         yield self.new_field_from_numpy(
             total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
         )
+        yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
+        yield mask

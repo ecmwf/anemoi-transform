@@ -30,7 +30,7 @@ def test_pressure_level_specific_humidity_to_relative_humidity_from_file():
         "testing", dataset="anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib"
     )
 
-    q_2_r = filter_registry.create("q_2_r")
+    q_2_r = filter_registry.create("q_2_r",return_inputs='all')
 
     output = source | q_2_r
     assert len(list(output)) == 6  # since we have 2 levels
@@ -57,7 +57,17 @@ def test_pressure_level_specific_humidity_to_relative_humidity():
 
     assert len(specific_humidity_transform_output.fields)==4
 
-    for original, converted in zip(source_specific_humidity, specific_humidity_transform_output):
+    for original, converted in zip(source_specific_humidity.ds.sel(param='t'),specific_humidity_transform_output.fields.sel(param='t')):
+        assert np.allclose(original.to_numpy(), converted.to_numpy()), (
+            (original.metadata("param")),
+            (converted.metadata("param")),
+            original.to_numpy(),
+            converted.to_numpy(),
+            original.to_numpy() == converted.to_numpy(),
+            original.to_numpy() - converted.to_numpy(),
+        )
+
+    for original, converted in zip(source_specific_humidity.ds.sel(param='q'),specific_humidity_transform_output.fields.sel(param='q')):
         assert np.allclose(original.to_numpy(), converted.to_numpy()), (
             (original.metadata("param")),
             (converted.metadata("param")),
@@ -113,7 +123,17 @@ def test_pressure_level_relative_humidity_to_relative_humidity():
 
     assert len(relative_humidity_transform_output.fields)==4
 
-    for original, converted in zip(source_relative_humidity, relative_humidity_transform_output):
+    for original, converted in zip(source_relative_humidity.ds.sel(param='r'), relative_humidity_transform_output.fields.sel(param='r')):
+        assert np.allclose(original.to_numpy(), converted.to_numpy()), (
+            (original.metadata("param")),
+            (converted.metadata("param")),
+            original.to_numpy(),
+            converted.to_numpy(),
+            original.to_numpy() == converted.to_numpy(),
+            original.to_numpy() - converted.to_numpy(),
+        )
+
+    for original, converted in zip(source_relative_humidity.ds.sel(param='t'), relative_humidity_transform_output.fields.sel(param='t')):
         assert np.allclose(original.to_numpy(), converted.to_numpy()), (
             (original.metadata("param")),
             (converted.metadata("param")),

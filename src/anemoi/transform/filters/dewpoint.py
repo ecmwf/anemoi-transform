@@ -7,7 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Iterator, List, Literal
+from typing import Iterator
+from typing import List
+from typing import Literal
 
 import earthkit.data as ekd
 from earthkit.meteo import thermo

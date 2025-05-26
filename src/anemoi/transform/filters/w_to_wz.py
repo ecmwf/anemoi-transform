@@ -14,7 +14,7 @@ from typing import Literal
 
 import earthkit.data as ekd
 
-from . import filter_registry
+from anemoi.transform.filters import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
 

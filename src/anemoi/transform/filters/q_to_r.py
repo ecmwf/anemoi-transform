@@ -12,10 +12,9 @@ from typing import Iterator
 import earthkit.data as ekd
 from earthkit.meteo import thermo
 
-from . import filter_registry
+from anemoi.transform.filters import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
-
 
 @filter_registry.register("q_to_r")
 class HumidityConversion(MatchingFieldsFilter):
@@ -28,7 +27,7 @@ class HumidityConversion(MatchingFieldsFilter):
     )
     def __init__(
         self,
-        *,
+        *,P
         relative_humidity: str = "r",
         temperature: str = "t",
         humidity: str = "q",

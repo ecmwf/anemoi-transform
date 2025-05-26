@@ -30,7 +30,7 @@ def test_pressure_level_specific_humidity_to_relative_humidity_from_file():
         "testing", dataset="anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib"
     )
 
-    q_2_r = filter_registry.create("q_2_r",return_inputs='all')
+    q_2_r = filter_registry.create("q_2_r")
 
     output = source | q_2_r
     assert len(list(output)) == 6  # since we have 2 levels

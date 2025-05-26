@@ -30,6 +30,10 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         The name of the total_precipitation field, by default "tp".
     max_total_precipitation : int, optional
         The maximum value for tp, by default MAX_TP.
+    quality : ekd.Field
+        The quality data.
+    mask : ekd.Field
+        The mask data.
     """
 
     @matching(
@@ -41,8 +45,8 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         *,
         total_precipitation: str = "tp",
         max_total_precipitation: int = MAX_TP,
-        quality: str = 'qi',
-        mask: str ='dm',
+        quality: str = "qi",
+        mask: str = "dm",
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
 

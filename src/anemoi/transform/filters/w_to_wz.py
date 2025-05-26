@@ -19,7 +19,6 @@ from .matching import MatchingFieldsFilter
 from .matching import matching
 
 
-
 class VerticalVelocity(MatchingFieldsFilter):
     """A filter to convert vertical wind speed expressed in m/s to vertical wind speed expressed in Pa/s using the hydrostatic hypothesis,
     and back.
@@ -38,7 +37,7 @@ class VerticalVelocity(MatchingFieldsFilter):
         temperature: str ="t",
         humidity: str ="q",
         return_inputs: Literal["all", "none"] | List[str] =["temperature", "humidity"]
-        
+
         """Initialize the VerticalVelocity filter.
 
         Parameters

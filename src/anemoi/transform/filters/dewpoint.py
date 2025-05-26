@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 
-
 import earthkit.data as ekd
 from earthkit.meteo import thermo
 
@@ -25,13 +24,13 @@ class DewPoint(MatchingFieldsFilter):
         forward=("temperature", "relative_humidity"),
     )
     def __init__(
-        self, 
-        *, 
-        relative_humidity: str="r",
-        temperature: str="t",
-        dewpoint: str="d",
-        return_inputs : Literal["all", "none"] | List[str] =["temperature"]
-        ):
+        self,
+        *,
+        relative_humidity: str = "r",
+        temperature: str = "t",
+        dewpoint: str = "d",
+        return_inputs: Literal["all", "none"] | List[str] = ["temperature"],
+    ):
         """Initialize the DewPoint filter.
 
         Parameters
@@ -61,6 +60,7 @@ class DewPoint(MatchingFieldsFilter):
         rh = thermo.relative_humidity_from_dewpoint(temperature.to_numpy(), dewpoint.to_numpy())
 
         yield self.new_field_from_numpy(rh, template=temperature, param=self.relative_humidity)
+
 
 filter_registry.register("r_2_d", DewPoint)
 filter_registry.register("d_2_r", DewPoint.reversed)

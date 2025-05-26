@@ -23,15 +23,15 @@ class HumidityConversion(MatchingFieldsFilter):
     @matching(
         select="param",
         forward=("temperature", "humidity"),
-        backward=("relative_humidity", "temperature"), 
+        backward=("relative_humidity", "temperature"),
     )
     def __init__(
         self,
         *,
-        relative_humidity: str ="r",
-        temperature: str ="t",
-        humidity: str ="q",
-        return_inputs: Literal["all", "none"] | List[str] =["temperature"]
+        relative_humidity: str = "r",
+        temperature: str = "t",
+        humidity: str = "q",
+        return_inputs: Literal["all", "none"] | List[str] = ["temperature"],
     ):
         """Initialize the VerticalVelocity filter.
 

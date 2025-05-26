@@ -41,8 +41,8 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         *,
         total_precipitation: str = "tp",
         max_total_precipitation: int = MAX_TP,
-        quality: str = 'qi',
-        mask: str ='dm',
+        quality: str = "qi",
+        mask: str = "dm",
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
 

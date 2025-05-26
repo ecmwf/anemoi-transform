@@ -34,11 +34,11 @@ class VerticalVelocity(MatchingFieldsFilter):
     def __init__(
         self,
         *,
-        w_component: str ="w",
-        wz_component: str ="wz",
-        temperature: str ="t",
-        humidity: str ="q",
-        return_inputs: Literal["all", "none"] | List[str] =["temperature", "humidity"]
+        w_component: str = "w",
+        wz_component: str = "wz",
+        temperature: str = "t",
+        humidity: str = "q",
+        return_inputs: Literal["all", "none"] | List[str] = ["temperature", "humidity"],
     ):
         """Initialize the VerticalVelocity filter.
 

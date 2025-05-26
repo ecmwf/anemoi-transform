@@ -34,7 +34,7 @@ class RodeoOperaClipping(MatchingFieldsFilter):
 
     @matching(
         select="param",
-        forward=("total_precipitation","quality","mask"),
+        forward=("total_precipitation", "quality", "mask"),
     )
     def __init__(
         self,
@@ -90,12 +90,10 @@ class RodeoOperaClipping(MatchingFieldsFilter):
             max_total_precipitation=self.max_total_precipitation,
         )
 
-        total_precipitation_cleaned = total_precipitation_cleaned/MAX_TP
+        total_precipitation_cleaned = total_precipitation_cleaned / MAX_TP
 
         yield self.new_field_from_numpy(
             total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
         )
-        yield self.new_field_from_numpy(
-            quality_clipped, template=quality, param=self.quality
-        )
+        yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
         yield mask

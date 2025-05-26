@@ -19,6 +19,8 @@ from .rodeo_opera_preprocessing import clip_opera
 
 FACTOR_TP = 1000  # convert from mm to m
 
+MAX_TP = 10000 # clip TP
+
 
 @filter_registry.register("rodeo_opera_clipping")
 class RodeoOperaClipping(MatchingFieldsFilter):
@@ -44,7 +46,7 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         self,
         *,
         total_precipitation: str = "tp",
-        max_total_precipitation: int = FACTOR_TP,
+        max_total_precipitation: int = MAX_TP,
         quality: str = "qi",
         mask: str = "dm",
     ) -> None:

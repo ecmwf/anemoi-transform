@@ -20,7 +20,6 @@ from .matching import MatchingFieldsFilter
 from .matching import matching
 
 
-@filter_registry.register("q_to_r")
 class HumidityConversion(MatchingFieldsFilter):
     """A filter to convert specific humidity to relative humidity with standard thermodynamical formulas."""
 

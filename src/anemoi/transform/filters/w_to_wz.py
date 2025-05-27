@@ -20,7 +20,6 @@ from .matching import MatchingFieldsFilter
 from .matching import matching
 
 
-@filter_registry.register("w_to_wz")
 class VerticalVelocity(MatchingFieldsFilter):
     """A filter to convert vertical wind speed expressed in m/s to vertical wind speed expressed in Pa/s using the hydrostatic hypothesis,
     and back.

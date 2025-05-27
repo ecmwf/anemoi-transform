@@ -81,16 +81,22 @@ def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
     return has_params, has_args, has_kwargs
 
 
-def inputs_generator(input_list: List[str], **kwargs)->Iterator[ekd.Field]:
+def inputs_generator(input_list: List[str], **kwargs) -> Iterator[ekd.Field]:
     for name in input_list:
         if name in kwargs:
             yield kwargs[name]
+
 
 class matching:
     """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
 
     def __init__(
-        self, *, select: str, forward: list = [], backward: list = [], return_inputs: Literal["all", "none"] | List[str] = "none"
+        self,
+        *,
+        select: str,
+        forward: list = [],
+        backward: list = [],
+        return_inputs: Literal["all", "none"] | List[str] = "none",
     ) -> None:
         """Initialize the matching decorator.
 
@@ -184,10 +190,9 @@ class MatchingFieldsFilter(Filter):
     # strings in the list must be in forward or backward args, otherwise this will fail
     return_inputs: Literal["all", "none"] | List[str] = "none"
 
+    def _match_arguments(self, argument_type: Literal["forward", "backward"]) -> List[str]:
 
-    def _match_arguments(self, argument_type: Literal['forward', 'backward']) -> List[str]:
-
-        arguments = self.forward_arguments if argument_type=='forward' else self.backward_arguments
+        arguments = self.forward_arguments if argument_type == "forward" else self.backward_arguments
 
         match self.return_inputs:
             case "all":
@@ -196,7 +201,9 @@ class MatchingFieldsFilter(Filter):
                 returned_input_list = []
             case _:
                 if not isinstance(self.return_inputs, list):
-                    raise ValueError(f"Return inputs must be 'all', 'none', or List[str], got {type(self.return_inputs)}")
+                    raise ValueError(
+                        f"Return inputs must be 'all', 'none', or List[str], got {type(self.return_inputs)}"
+                    )
                 if not set(self.return_inputs) <= set(arguments):
                     raise ValueError(f"Returned input names must subset {argument_type} arguments ({arguments})")
                 returned_input_list = self.return_inputs
@@ -246,11 +253,10 @@ class MatchingFieldsFilter(Filter):
             Transformed data.
         """
         args = []
-        returned_input_list = self._match_arguments('forward')
+        returned_input_list = self._match_arguments("forward")
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
-
 
         named_args = self._forward_arguments_types[0]
 
@@ -279,7 +285,7 @@ class MatchingFieldsFilter(Filter):
             Transformed data.
         """
         args = []
-        returned_input_list = self._match_arguments('backward')
+        returned_input_list = self._match_arguments("backward")
 
         for name in self.backward_arguments:
             args.append(getattr(self, name))

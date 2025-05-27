@@ -184,11 +184,11 @@ class MatchingFieldsFilter(Filter):
     # strings in the list must be in forward or backward args, otherwise this will fail
     return_inputs: Literal["all", "none"] | List[str] = "none"
 
-    
+
     def _match_arguments(self, argument_type: Literal['forward', 'backward']) -> List[str]:
-        
+
         arguments = self.forward_arguments is argument_type=='forward' else self.backward_arguments
-        
+
         match self.return_inputs:
             case "all":
                 returned_input_list = arguments
@@ -201,7 +201,7 @@ class MatchingFieldsFilter(Filter):
                     raise ValueError(f"Returned input names must subset {argument_type} arguments ({arguments})")
                 returned_input_list = self.return_inputs
         return returned_input_list
-    
+
     @property
     def forward_arguments(self) -> dict:
         """Get the forward arguments.
@@ -280,7 +280,7 @@ class MatchingFieldsFilter(Filter):
         """
         args = []
         returned_input_list = self._match_arguments('backward')
-        
+
         for name in self.backward_arguments:
             args.append(getattr(self, name))
 

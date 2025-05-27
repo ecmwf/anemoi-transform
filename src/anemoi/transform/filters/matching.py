@@ -290,11 +290,6 @@ class MatchingFieldsFilter(Filter):
         for name in self.backward_arguments:
             args.append(getattr(self, name))
 
-        def inputs_generator(**kwargs):
-            for name in returned_input_list:
-                if name in kwargs:
-                    yield kwargs[name]
-
         named_args = self._backward_arguments_types[0]
 
         def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:

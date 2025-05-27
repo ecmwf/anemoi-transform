@@ -81,11 +81,16 @@ def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
     return has_params, has_args, has_kwargs
 
 
+def inputs_generator(input_list: List[str], **kwargs)->Iterator(ekd.Field):
+    for name in input_list:
+        if name in kwargs:
+            yield kwargs[name]
+
 class matching:
     """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
 
     def __init__(
-        self, *, select: str, forward: list = [], backward: list = [], return_inputs: Literal["all", "none"] | List[str]
+        self, *, select: str, forward: list = [], backward: list = [], return_inputs: Literal["all", "none"] | List[str] = "none"
     ) -> None:
         """Initialize the matching decorator.
 
@@ -179,6 +184,24 @@ class MatchingFieldsFilter(Filter):
     # strings in the list must be in forward or backward args, otherwise this will fail
     return_inputs: Literal["all", "none"] | List[str] = "none"
 
+    
+    def _match_arguments(self, argument_type: Literal['forward', 'backward']) -> List[str]:
+        
+        arguments = self.forward_arguments is argument_type=='forward' else self.backward_arguments
+        
+        match self.return_inputs:
+            case "all":
+                returned_input_list = arguments
+            case "none":
+                returned_input_list = []
+            case _:
+                if not isinstance(self.return_inputs, list):
+                    raise ValueError(f"Return inputs must be 'all', 'none', or List[str], got {type(self.return_inputs)}")
+                if not set(self.return_inputs) <= set(arguments):
+                    raise ValueError(f"Returned input names must subset {argument_type} arguments ({arguments})")
+                returned_input_list = self.return_inputs
+        return returned_input_list
+    
     @property
     def forward_arguments(self) -> dict:
         """Get the forward arguments.
@@ -223,32 +246,18 @@ class MatchingFieldsFilter(Filter):
             Transformed data.
         """
         args = []
-        match self.return_inputs:
-            case "all":
-                returned_input_list = self.forward_arguments
-            case "none":
-                returned_input_list = []
-            case _:
-                if not isinstance(self.return_inputs, list):
-                    raise ValueError("Return inputs must be 'all', 'none', or List[str].")
-                if not set(self.return_inputs) <= set(self.forward_arguments):
-                    raise ValueError("Returned input names must be in the forward arguments")
-                returned_input_list = self.return_inputs
+        returned_input_list = self._match_arguments('forward')
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
 
-        def inputs_generator(**kwargs):
-            for name in returned_input_list:
-                if name in kwargs:
-                    yield kwargs[name]
 
         named_args = self._forward_arguments_types[0]
 
         def forward_transform_named(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
-            return chain(inputs_generator(**kwargs), self.forward_transform(**kwargs))
+            return chain(inputs_generator(returned_input_list, **kwargs), self.forward_transform(**kwargs))
 
         return self._transform(
             data,
@@ -270,19 +279,8 @@ class MatchingFieldsFilter(Filter):
             Transformed data.
         """
         args = []
-        match self.return_inputs:
-            case "all":
-                returned_input_list = self.backward_arguments
-            case "none":
-                returned_input_list = []
-            case _:
-                if not isinstance(self.return_inputs, list):
-                    raise ValueError("Return inputs must be 'all', 'none', or List[str].")
-                if not set(self.return_inputs) <= set(self.backward_arguments):
-                    raise ValueError("Returned input names must be in the backward arguments")
-
-                returned_input_list = self.return_inputs
-
+        returned_input_list = self._match_arguments('backward')
+        
         for name in self.backward_arguments:
             args.append(getattr(self, name))
 
@@ -296,7 +294,7 @@ class MatchingFieldsFilter(Filter):
         def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.backward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
-            return chain(inputs_generator(**kwargs), self.backward_transform(**kwargs))
+            return chain(inputs_generator(returned_input_list, **kwargs), self.backward_transform(**kwargs))
 
         return self._transform(
             data,

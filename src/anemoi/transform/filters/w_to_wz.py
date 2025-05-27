@@ -55,6 +55,7 @@ class VerticalVelocity(MatchingFieldsFilter):
         return_inputs : Literal["all", "none"] | List[str], optional
             List of which filter inputs should be returned, by default ["temperature", "humidity"]
         """
+        self.return_inputs = return_inputs
         # wind speed in Pa/s
         self.w_component = w_component
         # wind speed in m/s

@@ -47,6 +47,7 @@ class DewPoint(MatchingFieldsFilter):
         return_inputs : Literal["all", "none"] | List[str], optional
             List of which filter inputs should be returned, by default ["temperature"
         """
+        self.return_inputs = return_inputs
         self.relative_humidity = relative_humidity
         self.temperature = temperature
         self.dewpoint = dewpoint

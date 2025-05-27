@@ -81,7 +81,7 @@ def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
     return has_params, has_args, has_kwargs
 
 
-def inputs_generator(input_list: List[str], **kwargs)->Iterator(ekd.Field):
+def inputs_generator(input_list: List[str], **kwargs)->Iterator[ekd.Field]:
     for name in input_list:
         if name in kwargs:
             yield kwargs[name]
@@ -187,7 +187,7 @@ class MatchingFieldsFilter(Filter):
 
     def _match_arguments(self, argument_type: Literal['forward', 'backward']) -> List[str]:
 
-        arguments = self.forward_arguments is argument_type=='forward' else self.backward_arguments
+        arguments = self.forward_arguments if argument_type=='forward' else self.backward_arguments
 
         match self.return_inputs:
             case "all":

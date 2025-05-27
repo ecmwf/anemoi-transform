@@ -739,3 +739,36 @@ def new_field_from_grid(
 def new_flavoured_field(field: Any, flavour: Flavour) -> NewFlavouredField:
     """Create a new field with a flavour."""
     return NewFlavouredField(field, flavour)
+
+
+class FieldSelection:
+    """A class for specifying which fields to process."""
+
+    ALLOWED_KEYS = {"param", "levelist"}
+
+    def __init__(self, **kwargs):
+        self._spec = kwargs
+        self._validate_spec()
+        self._sanitise_spec()
+        self._all = len(self._spec) == 0
+
+    def _validate_spec(self):
+        if not set(self._spec).issubset(self.ALLOWED_KEYS):
+            raise ValueError(f"Invalid keys in spec: {tuple(self._spec)} - only {self.ALLOWED_KEYS} are allowed.")
+
+    def _sanitise_spec(self):
+        for key, value in list(self._spec.items()):
+            if isinstance(value, (str, int, float, bool)):
+                self._spec[key] = (value,)
+            elif value is None or (isinstance(value, (list, tuple)) and len(value) == 0):
+                del self._spec[key]
+            elif not isinstance(value, (list, tuple)):
+                raise ValueError(f"Invalid value for key {key}: {value}")
+
+    def match(self, field):
+        if self._all:
+            return True
+        try:
+            return all(field.metadata(key) in values for key, values in self._spec.items())
+        except KeyError:
+            return False

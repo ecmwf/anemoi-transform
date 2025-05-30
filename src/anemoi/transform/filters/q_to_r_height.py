@@ -348,6 +348,12 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
         self.surface_pressure = surface_pressure
         self.specific_humidity_at_model_levels = specific_humidity_at_model_levels
         self.temperature_at_model_levels = temperature_at_model_levels
+        self.specific_humidity_at_height_level = specific_humidity_at_height_level
+        self.relative_humidity_at_height_level = relative_humidity_at_height_level
+        self.temperature_at_height_level = temperature_at_height_level
+        self.surface_pressure = surface_pressure
+        self.specific_humidity_at_model_levels = specific_humidity_at_model_levels
+        self.temperature_at_model_levels = temperature_at_model_levels
 
         if isinstance(AB, str):
             AB = AB.upper()
@@ -363,8 +369,7 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
         self.A = np.array(AB["A"])
         self.B = np.array(AB["B"])
 
-    def _get_pressure_at_heigh_level(
-        self,
+    def _get_pressure_at_heigh_level(self,
         surface_pressure: ekd.Field,
         specific_humidity_at_model_levels: ekd.FieldList,
         temperature_at_model_levels: ekd.FieldList,
@@ -392,50 +397,41 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
             specific_humidity_at_model_levels.to_numpy(),
             temperature_at_model_levels.to_numpy(),
             surface_pressure.to_numpy(),
+            self.A,
+            self.B,
         )
 
         # For now We need to go from qv --> td --> rh to take into account
         # the mixed / ice phase when T ~ 0C / T < 0C
         # See https://github.com/ecmwf/earthkit-meteo/issues/15
-        dewpoint_at_height_level = thermo.dewpoint_from_specific_humidity(
-            specific_humidity_at_height_level.to_numpy(), pressure_at_height_level
-        )
-        relative_humidity_at_height_level = thermo.relative_humidity_from_dewpoint(
-            temperature_at_height_level.to_numpy(), dewpoint_at_height_level
-        )
+        dewpoint_at_height_level = thermo.dewpoint_from_specific_humidity(specific_humidity_at_height_level.to_numpy(), pressure_at_height_level)
+        relative_humidity_at_height_level = thermo.relative_humidity_from_dewpoint(temperature_at_height_level.to_numpy(), dewpoint_at_height_level)
 
         yield self.new_field_from_numpy(
-            relative_humidity_at_height_level,
-            template=specific_humidity_at_height_level,
-            param=self.relative_humidity_at_height_level,
+            relative_humidity_at_height_level, template=specific_humidity_at_height_level, param=self.relative_humidity_at_height_level
         )
         yield temperature_at_height_level
         yield specific_humidity_at_height_level
 
-    def backward_transform(
-        self,
+    def backward_transform(self, 
         relative_humidity_at_height_level: ekd.Field,
         temperature_at_height_level: ekd.Field,
         surface_pressure: ekd.Field,
         specific_humidity_at_model_levels: ekd.FieldList,
-        temperature_at_model_levels: ekd.FieldList,
-    ) -> Iterator[ekd.Field]:
+        temperature_at_model_levels: ekd.FieldList
+        ) -> Iterator[ekd.Field]:
         """This will return the specific humidity along with temperature from relative humidity and temperature"""
-
+        
         pressure_at_height_level = self._get_pressure_at_heigh_level(
             specific_humidity_at_model_levels.to_numpy(),
             temperature_at_model_levels.to_numpy(),
             surface_pressure.to_numpy(),
-        )
+            )
 
-        specific_humidity_at_height_level = thermo.specific_humidity_from_relative_humidity(
-            temperature_at_height_level, relative_humidity_at_height_level, pressure_at_height_level
-        )
+        specific_humidity_at_height_level = thermo.specific_humidity_from_relative_humidity(temperature_at_height_level, relative_humidity_at_height_level, pressure_at_height_level)
 
         yield self.new_field_from_numpy(
-            specific_humidity_at_height_level,
-            template=relative_humidity_at_height_level,
-            param=self.specific_humidity_at_height_level,
+            specific_humidity_at_height_level, template=relative_humidity_at_height_level, param=self.specific_humidity_at_height_level
         )
         yield temperature_at_height_level
         yield relative_humidity_at_height_level

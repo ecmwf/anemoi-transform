@@ -119,5 +119,5 @@ class WindComponents(MatchingFieldsFilter):
         yield self.new_field_from_numpy(v, template=wind_direction, param=self.v_component)
 
 
-filter_registry.register("uv_2_ddff", WindComponents)
-filter_registry.register("ddff_2_uv", WindComponents.reversed)
+filter_registry.register("uv_to_ddff", WindComponents)
+filter_registry.register("ddff_to_uv", WindComponents.reversed)

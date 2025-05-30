@@ -27,18 +27,18 @@ def test_relative_humidity_to_dewpoint():
     source_relative = source_registry.create("testing", fields=relative_humidity_source)
     source_dewpoint = source_registry.create("testing", fields=dewpoint_source)
 
-    r_2_d = filter_registry.create("r_2_d")
-    d_2_r = filter_registry.create("d_2_r")
+    r_to_d = filter_registry.create("r_to_d")
+    d_to_r = filter_registry.create("d_to_r")
 
-    dewpoint_transform_output = source_relative | r_2_d
+    dewpoint_transform_output = source_relative | r_to_d
     assert len(list(dewpoint_transform_output)) == 3
 
-    relative_humidity_transform_output = source_dewpoint | d_2_r
+    relative_humidity_transform_output = source_dewpoint | d_to_r
     assert len(list(relative_humidity_transform_output)) == 3
 
     dewpoint_transform_output = ListSource(convert_to_ekd_fieldlist(dewpoint_transform_output).sel(param=["d", "t"]))
     relative_transform_output = ListSource(
-        convert_to_ekd_fieldlist(list(dewpoint_transform_output | d_2_r)).sel(param=["r", "t"])
+        convert_to_ekd_fieldlist(list(dewpoint_transform_output | d_to_r)).sel(param=["r", "t"])
     )
 
     for original, converted in zip(source_relative, relative_transform_output):
@@ -59,9 +59,9 @@ def test_relative_humidity_to_dewpoint_from_file():
 
     # !TODO THE TEST DOESN'T WORK IF THE VARIABLES OF INPUT DOESN'T MATCH THE FORWARD DEFAULTS
     # ! the code doesn't crash but do not produce the expected output - we should catch that
-    r_2_d = filter_registry.create("r_2_d", relative_humidity="2r", temperature="2t", dewpoint="2d")
+    r_to_d = filter_registry.create("r_to_d", relative_humidity="2r", temperature="2t", dewpoint="2d")
 
-    output = source | r_2_d
+    output = source | r_to_d
     assert len(list(output)) == 3
     output_dict = {v.metadata("param"): v.to_numpy() for v in list(output)}
 
@@ -82,15 +82,15 @@ def test_dewpoint_to_relative_humidity():
 
     source_dewpoint = source_registry.create("testing", fields=dewpoint_source)
 
-    d_2_r = filter_registry.create("d_2_r")
-    r_2_d = filter_registry.create("r_2_d")
+    d_to_r = filter_registry.create("d_to_r")
+    r_to_d = filter_registry.create("r_to_d")
 
-    relative_transform_output = source_dewpoint | d_2_r
+    relative_transform_output = source_dewpoint | d_to_r
     assert len(list(relative_transform_output)) == 3
 
     relative_transform_output = ListSource(convert_to_ekd_fieldlist(relative_transform_output).sel(param=["r", "t"]))
     dewpoint_transform_output = ListSource(
-        convert_to_ekd_fieldlist(list(relative_transform_output | r_2_d)).sel(param=["d", "t"])
+        convert_to_ekd_fieldlist(list(relative_transform_output | r_to_d)).sel(param=["d", "t"])
     )
 
     for original, converted in zip(source_dewpoint, dewpoint_transform_output):
@@ -109,9 +109,9 @@ def test_dewpoint_to_relative_humidity_from_file():
     source = source_registry.create(
         "testing", dataset="anemoi-transform/filters/era_20240601_single_level_dewpoint.grib"
     )
-    d_2_r = filter_registry.create("d_2_r", relative_humidity="2r", temperature="2t", dewpoint="2d")
+    d_to_r = filter_registry.create("d_to_r", relative_humidity="2r", temperature="2t", dewpoint="2d")
 
-    output = source | d_2_r
+    output = source | d_to_r
     assert len(list(output)) == 3
     output_dict = {v.metadata("param"): v.to_numpy() for v in list(output)}
 

@@ -54,5 +54,5 @@ class DewPoint(MatchingFieldsFilter):
         yield temperature
 
 
-filter_registry.register("r_2_d", DewPoint)
-filter_registry.register("d_2_r", DewPoint.reversed)
+filter_registry.register("r_to_d", DewPoint)
+filter_registry.register("d_to_r", DewPoint.reversed)

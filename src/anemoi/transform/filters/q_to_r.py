@@ -58,5 +58,5 @@ class HumidityConversion(MatchingFieldsFilter):
         yield relative_humidity
 
 
-filter_registry.register("q_2_r", HumidityConversion)
-filter_registry.register("r_2_q", HumidityConversion.reversed)
+filter_registry.register("q_to_r", HumidityConversion)
+filter_registry.register("r_to_q", HumidityConversion.reversed)

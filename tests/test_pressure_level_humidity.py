@@ -1,9 +1,9 @@
 import numpy as np
-from utils import ListSource
-from utils import convert_to_ekd_fieldlist
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
+from anemoi.transform.testing import ListSource
+from anemoi.transform.testing import convert_to_ekd_fieldlist
 
 prototype = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -13,16 +13,16 @@ prototype = {
 
 pressure_level_relative_humidity_source = [
     {"param": "r", "levelist": 500, "values": [0.01, 0.02, 0.03, 0.04, 0.05, 0.06], **prototype},
-    {"param": "t", "levelist": 500, "values": [10, 10, 10, 10, 10, 10], **prototype},
+    {"param": "t", "levelist": 500, "values": [250, 250, 250, 250, 250, 250], **prototype},
     {"param": "r", "levelist": 800, "values": [0.01, 0.02, 0.03, 0.04, 0.05, 0.06], **prototype},
-    {"param": "t", "levelist": 800, "values": [10, 10, 10, 10, 10, 10], **prototype},
+    {"param": "t", "levelist": 800, "values": [250, 250, 250, 250, 250, 250], **prototype},
 ]
 
 pressure_level_specific_humidity_source = [
     {"param": "q", "levelist": 500, "values": [0.01, 0.02, 0.03, 0.04, 0.05, 0.06], **prototype},
-    {"param": "t", "levelist": 500, "values": [10, 10, 10, 10, 10, 10], **prototype},
-    {"param": "q", "levelist": 800, "values": [0.01, 0.02, 0.03, 0.04, 0.05, 0.06], **prototype},
-    {"param": "t", "levelist": 800, "values": [10, 10, 10, 10, 10, 10], **prototype},
+    {"param": "t", "levelist": 500, "values": [250, 250, 250, 250, 250, 250], **prototype},
+    {"param": "q", "levelist": 800, "values": [0.001, 0.002, 0.003, 0.004, 0.005, 0.006], **prototype},
+    {"param": "t", "levelist": 800, "values": [250, 250, 250, 250, 250, 250], **prototype},
 ]
 
 
@@ -105,7 +105,6 @@ def test_pressure_level_relative_humidity_to_specific_humidity_from_file_AROME()
     source = source_registry.create("testing", dataset="anemoi-transform/filters/r_t_PAAROME_1S40_ECH0_ISOBARE.grib")
 
     r_to_q = filter_registry.create("r_to_q")
-    q_to_r = filter_registry.create("q_to_r")
     output = source | r_to_q
     assert len(list(output)) == 6  # since we have 2 levels
     output = np.stack([v.to_numpy() for v in list(output) if "q" in v.metadata("param")]).flatten()

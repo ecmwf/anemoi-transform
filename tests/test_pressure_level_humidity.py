@@ -31,9 +31,9 @@ def test_pressure_level_specific_humidity_to_relative_humidity_from_file():
         "testing", dataset="anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib"
     )
 
-    q_2_r = filter_registry.create("q_2_r")
+    q_to_r = filter_registry.create("q_to_r")
 
-    output = source | q_2_r
+    output = source | q_to_r
     assert len(list(output)) == 6  # since we have 2 levels
     output = np.stack([v.to_numpy() for v in list(output) if "r" in v.metadata("param")]).flatten()
 
@@ -46,17 +46,17 @@ def test_pressure_level_specific_humidity_to_relative_humidity_from_file():
 def test_pressure_level_specific_humidity_to_relative_humidity():
     source_specific_humidity = source_registry.create("testing", fields=pressure_level_specific_humidity_source)
 
-    q_2_r = filter_registry.create("q_2_r")
-    r_2_q = filter_registry.create("r_2_q")
+    q_to_r = filter_registry.create("q_to_r")
+    r_to_q = filter_registry.create("r_to_q")
 
-    relative_humidity_transform_output = source_specific_humidity | q_2_r
+    relative_humidity_transform_output = source_specific_humidity | q_to_r
     assert len(list(relative_humidity_transform_output)) == 6  # since we have 2 levels
 
     relative_humidity_transform_output = ListSource(
         convert_to_ekd_fieldlist(relative_humidity_transform_output).sel(param=["r", "t"])
     )
     specific_humidity_transform_output = ListSource(
-        convert_to_ekd_fieldlist(list(relative_humidity_transform_output | r_2_q)).sel(param=["q", "t"])
+        convert_to_ekd_fieldlist(list(relative_humidity_transform_output | r_to_q)).sel(param=["q", "t"])
     )
 
     assert len(specific_humidity_transform_output.fields) == 4
@@ -85,9 +85,9 @@ def test_pressure_level_specific_humidity_to_relative_humidity():
 def test_pressure_level_relative_humidity_to_specific_humidity_from_file():
     source = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_20240601_pressure_levels.grib")
 
-    r_2_q = filter_registry.create("r_2_q")
+    r_to_q = filter_registry.create("r_to_q")
 
-    output = source | r_2_q
+    output = source | r_to_q
     assert len(list(output)) == 6  # since we have 2 levels
     output = np.stack([v.to_numpy() for v in list(output) if "q" in v.metadata("param")]).flatten()
 
@@ -100,9 +100,9 @@ def test_pressure_level_relative_humidity_to_specific_humidity_from_file():
 def test_pressure_level_relative_humidity_to_specific_humidity_from_file_AROME():
     source = source_registry.create("testing", dataset="anemoi-transform/filters/r_t_PAAROME_1S40_ECH0_ISOBARE.grib")
 
-    r_2_q = filter_registry.create("r_2_q")
-    q_2_r = filter_registry.create("q_2_r")
-    output = source | r_2_q
+    r_to_q = filter_registry.create("r_to_q")
+    q_to_r = filter_registry.create("q_to_r")
+    output = source | r_to_q
     assert len(list(output)) == 6  # since we have 2 levels
     output = np.stack([v.to_numpy() for v in list(output) if "q" in v.metadata("param")]).flatten()
     output_cerra_q = (
@@ -115,17 +115,17 @@ def test_pressure_level_relative_humidity_to_specific_humidity_from_file_AROME()
 
 def test_pressure_level_relative_humidity_to_relative_humidity():
     source_relative_humidity = source_registry.create("testing", fields=pressure_level_relative_humidity_source)
-    q_2_r = filter_registry.create("q_2_r")
-    r_2_q = filter_registry.create("r_2_q")
+    q_to_r = filter_registry.create("q_to_r")
+    r_to_q = filter_registry.create("r_to_q")
 
-    specific_humidity_transform_output = source_relative_humidity | r_2_q
+    specific_humidity_transform_output = source_relative_humidity | r_to_q
     assert len(list(specific_humidity_transform_output)) == 6  # since we have 2 levels
 
     specific_humidity_transform_output = ListSource(
         convert_to_ekd_fieldlist(specific_humidity_transform_output).sel(param=["q", "t"])
     )
     relative_humidity_transform_output = ListSource(
-        convert_to_ekd_fieldlist(list(specific_humidity_transform_output | q_2_r)).sel(param=["r", "t"])
+        convert_to_ekd_fieldlist(list(specific_humidity_transform_output | q_to_r)).sel(param=["r", "t"])
     )
 
     assert len(relative_humidity_transform_output.fields) == 4

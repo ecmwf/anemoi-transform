@@ -12,10 +12,12 @@ import logging
 from abc import abstractmethod
 from functools import wraps
 from inspect import signature
+from itertools import chain
 from typing import Any
 from typing import Callable
 from typing import Iterator
 from typing import List
+from typing import Literal
 from typing import Tuple
 
 import earthkit.data as ekd
@@ -79,10 +81,23 @@ def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
     return has_params, has_args, has_kwargs
 
 
+def inputs_generator(input_list: List[str], **kwargs) -> Iterator[ekd.Field]:
+    for name in input_list:
+        if name in kwargs:
+            yield kwargs[name]
+
+
 class matching:
     """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
 
-    def __init__(self, *, select: str, forward: list = [], backward: list = []) -> None:
+    def __init__(
+        self,
+        *,
+        select: str,
+        forward: list = [],
+        backward: list = [],
+        return_inputs: Literal["all", "none"] | List[str] = "none",
+    ) -> None:
         """Initialize the matching decorator.
 
         Parameters
@@ -93,6 +108,9 @@ class matching:
             List of forward arguments, by default [].
         backward : list, optional
             List of backward arguments, by default [].
+        return_inputs: Literal["all", "none"] | List[str], optional
+            Indicate which one of the input values for the filter should be kept, by default "none"
+            "all" will return all inputs, while a List[str] will select the inputs as defined by the user.
         """
         self.select = select
 
@@ -107,6 +125,7 @@ class matching:
 
         self.forward = forward
         self.backward = backward
+        self.return_inputs = return_inputs
 
     def __call__(self, method: Callable) -> Callable:
         """Wrap the method with forward and backward argument initialization.
@@ -154,6 +173,7 @@ class matching:
             obj._select = self.select
             obj._forward_arguments = forward
             obj._backward_arguments = backward
+            obj.return_inputs = self.return_inputs
             obj._initialised = True
             return method(obj, *args, **kwargs)
 
@@ -166,6 +186,28 @@ class MatchingFieldsFilter(Filter):
     """
 
     _initialised = False
+    # to return filter inputs if needed.
+    # strings in the list must be in forward or backward args, otherwise this will fail
+    return_inputs: Literal["all", "none"] | List[str] = "none"
+
+    def _match_arguments(self, argument_type: Literal["forward", "backward"]) -> List[str]:
+
+        arguments = self.forward_arguments if argument_type == "forward" else self.backward_arguments
+
+        match self.return_inputs:
+            case "all":
+                returned_input_list = arguments
+            case "none":
+                returned_input_list = []
+            case _:
+                if not isinstance(self.return_inputs, list):
+                    raise ValueError(
+                        f"Return inputs must be 'all', 'none', or List[str], got {type(self.return_inputs)}"
+                    )
+                if not set(self.return_inputs) <= set(arguments):
+                    raise ValueError(f"Returned input names must subset {argument_type} arguments ({arguments})")
+                returned_input_list = self.return_inputs
+        return returned_input_list
 
     @property
     def forward_arguments(self) -> dict:
@@ -211,6 +253,7 @@ class MatchingFieldsFilter(Filter):
             Transformed data.
         """
         args = []
+        returned_input_list = self._match_arguments("forward")
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
@@ -220,7 +263,7 @@ class MatchingFieldsFilter(Filter):
         def forward_transform_named(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
-            return self.forward_transform(**kwargs)
+            return chain(inputs_generator(returned_input_list, **kwargs), self.forward_transform(**kwargs))
 
         return self._transform(
             data,
@@ -242,6 +285,7 @@ class MatchingFieldsFilter(Filter):
             Transformed data.
         """
         args = []
+        returned_input_list = self._match_arguments("backward")
 
         for name in self.backward_arguments:
             args.append(getattr(self, name))
@@ -251,7 +295,7 @@ class MatchingFieldsFilter(Filter):
         def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
             assert len(fields) == len(self.backward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
-            return self.backward_transform(**kwargs)
+            return chain(inputs_generator(returned_input_list, **kwargs), self.backward_transform(**kwargs))
 
         return self._transform(
             data,
@@ -288,7 +332,6 @@ class MatchingFieldsFilter(Filter):
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)
-
         return self.new_fieldlist_from_list(result)
 
     def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, param: str) -> ekd.Field:

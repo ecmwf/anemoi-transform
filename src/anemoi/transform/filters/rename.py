@@ -41,7 +41,6 @@ class DictRename:
 
     def rename(self, field):
         md = field.metadata(self.what, default=None)
-        print(self.what, md, self.renaming)
         if md is None:
             return field
 
@@ -49,7 +48,6 @@ class DictRename:
             return field
 
         kwargs = {self.what: self.renaming[md]}
-        print(kwargs)
 
         return new_field_with_metadata(template=field, **kwargs)
 
@@ -71,12 +69,9 @@ class Rename(Filter):
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
 
         result = []
-
         for field in data:
-
             for _, renamer in self._rename.items():
                 field = renamer.rename(field)
-
             result.append(field)
 
         return new_fieldlist_from_list(result)

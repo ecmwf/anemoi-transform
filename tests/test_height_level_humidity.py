@@ -47,24 +47,8 @@ def test_specific_humidity_to_relative_humidity_from_file():
     )
 
     output = source | q_to_r_height
-<<<<<<< HEAD
     assert len(list(output)) == 3  # since we have 2 levels
     output = np.stack([v.to_numpy() for v in list(output)]).flatten()
-=======
-
-    # q_to_r_height = filter_registry.create("q_to_r_height",height=2, AB=AB_coefficients)
-    # output= list(q_to_r_height.forward_transform(
-    #     specific_humidity_at_height_level = source.ds.sel(param='2sh'),
-    #     temperature_at_height_level =source.ds.sel(param='2t'),
-    #     surface_pressure= source.ds.sel(param='sp'),
-    #     specific_humidity_at_model_levels = source.ds.sel(param='q'),
-    #     temperature_at_model_levels = source.ds.sel(param='t'),
-    # ))
-    print((list(output)))
-    stop
-    # assert len(list(output)) == 6  # since we have 2 levels
-    # output = np.stack([v.to_numpy() for v in list(output) if "q" in v.metadata("param")]).flatten()
->>>>>>> b350cd781d005e2bbc735adf0ba5d5fe80d9a9d8
 
     output_r_height = (
         source_registry.create(
@@ -73,14 +57,7 @@ def test_specific_humidity_to_relative_humidity_from_file():
         .ds.to_numpy()
         .flatten()
     )
-<<<<<<< HEAD
     np.testing.assert_allclose(output, output_r_height)
-=======
-    print(output_r_height)
-    print(output_r_height.metadata("param"))
-    # np.testing.assert_allclose(output, output_r_height)
-
->>>>>>> b350cd781d005e2bbc735adf0ba5d5fe80d9a9d8
 
 def test_specific_humidity_to_relative_humidity():
     pass

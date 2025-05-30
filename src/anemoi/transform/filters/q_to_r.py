@@ -48,11 +48,9 @@ class HumidityConversion(MatchingFieldsFilter):
     def backward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """This will return specific humidity along with temperature from relative humidity and temperature"""
         pressure = 100 * float(temperature.metadata("levelist"))  # levels are measured in hectopascals
-
         q = thermo.specific_humidity_from_relative_humidity(
             temperature.to_numpy(), relative_humidity.to_numpy(), pressure
         )
-
         yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
         yield relative_humidity
         yield temperature

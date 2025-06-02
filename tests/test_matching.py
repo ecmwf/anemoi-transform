@@ -16,6 +16,7 @@ import pytest
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
 
+
 class MockField:
     def __init__(self, param, **meta):
         self._param = param

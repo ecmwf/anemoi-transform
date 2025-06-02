@@ -51,13 +51,10 @@ def test_relative_humidity_to_dewpoint():
             original.to_numpy() - converted.to_numpy(),
         )
 
-
 def test_relative_humidity_to_dewpoint_from_file():
     # this grib file is CERRA data that contains 2t and 2r
     source = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_20240601_single_level.grib")
-
-    # !TODO THE TEST DOESN'T WORK IF THE VARIABLES OF INPUT DOESN'T MATCH THE FORWARD DEFAULTS
-    # ! the code doesn't crash but do not produce the expected output - we should catch that
+    
     r_to_d = filter_registry.create("r_to_d", relative_humidity="2r", temperature="2t", dewpoint="2d")
 
     output = source | r_to_d

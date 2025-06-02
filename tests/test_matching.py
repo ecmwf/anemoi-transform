@@ -31,10 +31,6 @@ class MockField:
 class MockFieldList(list):
     pass
 
-
-# --- Concrete implementation of MatchingFieldsFilter ---
-
-
 class AddFields(MatchingFieldsFilter):
     @matching(select="param", forward=["a", "b"])
     def __init__(self, a, b):
@@ -50,9 +46,6 @@ class AddFields(MatchingFieldsFilter):
 
     def new_fieldlist_from_list(self, fields):
         return MockFieldList(fields)
-
-
-# --- Tests ---
 
 
 def test_matching_decorator_initializes_correctly():

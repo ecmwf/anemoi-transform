@@ -1,9 +1,13 @@
-import pytest
-import numpy as np
 from typing import Iterator
-from anemoi.transform.filters.matching import MatchingFieldsFilter, matching
+
+import numpy as np
+import pytest
+
+from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 # --- Mock Field and FieldList for testing ---
+
 
 class MockField:
     def __init__(self, param, **meta):
@@ -16,11 +20,13 @@ class MockField:
             return dict(self._meta, param=self._param)
         return self._param
 
+
 class MockFieldList(list):
     pass
 
 
 # --- Concrete implementation of MatchingFieldsFilter ---
+
 
 class AddFields(MatchingFieldsFilter):
     @matching(select="param", forward=["a", "b"])
@@ -41,10 +47,12 @@ class AddFields(MatchingFieldsFilter):
 
 # --- Tests ---
 
+
 def test_matching_decorator_initializes_correctly():
     filter_instance = AddFields("a", "b")
     assert filter_instance._initialised
     assert filter_instance.forward_arguments == {"a": "a", "b": "b"}
+
 
 def test_forward_transform_adds_fields():
     a = MockField("a", step=0, level=850)
@@ -57,6 +65,7 @@ def test_forward_transform_adds_fields():
     assert isinstance(result[0], MockField)
     assert result[0]._param == "c"
 
+
 def test_missing_component_raises():
     a = MockField("a", step=0, level=850)
     # Missing 'b'
@@ -64,6 +73,7 @@ def test_missing_component_raises():
     f = AddFields(a="a", b="b")
     with pytest.raises(ValueError, match="Missing component"):
         _ = f.forward(data)
+
 
 def test_duplicate_component_raises():
     a1 = MockField("a", step=0, level=850)
@@ -74,9 +84,11 @@ def test_duplicate_component_raises():
     with pytest.raises(ValueError, match="Duplicate component"):
         _ = f.forward(data)
 
+
 def test_uninitialised_filter_raises():
     class BadFilter(MatchingFieldsFilter):
-        def forward_transform(self, *args): pass
+        def forward_transform(self, *args):
+            pass
 
     bf = BadFilter()
     with pytest.raises(ValueError):

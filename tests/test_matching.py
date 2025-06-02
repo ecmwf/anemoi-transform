@@ -32,6 +32,7 @@ class MockField:
 class MockFieldList(list):
     pass
 
+
 class AddFields(MatchingFieldsFilter):
     @matching(select="param", forward=["a", "b"])
     def __init__(self, a, b):

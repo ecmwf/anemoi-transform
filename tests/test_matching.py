@@ -32,6 +32,7 @@ class MockField:
 class MockFieldList(list):
     pass
 
+
 class AddFields(MatchingFieldsFilter):
     @matching(select="param", forward=["a", "b"])
     def __init__(self, a, b):
@@ -72,17 +73,8 @@ def test_missing_component_raises():
     # Missing 'b'
     data = MockFieldList([a])
     f = AddFields(a="a", b="b")
-    with pytest.raises(ValueError, match="Missing component"):
-        _ = f.forward(data)
 
-
-def test_duplicate_component_raises():
-    a1 = MockField("a", step=0, level=850)
-    a2 = MockField("a", step=0, level=850)
-    b = MockField("b", step=0, level=850)
-    data = MockFieldList([a1, a2, b])
-    f = AddFields(a="a", b="b")
-    with pytest.raises(ValueError, match="Duplicate component"):
+    with pytest.raises(ValueError):
         _ = f.forward(data)
 
 

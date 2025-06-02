@@ -197,6 +197,11 @@ class MatchingFieldsFilter(Filter):
 
         return self._backward_arguments
 
+    def _check_metadata_match(self,data: ekd.FieldList,args:List[str]):
+        input_vars = [field.metadata('param') for field in data]
+        error_msg = f"Please ensure your filter is configured to match the input variables metadata current mismatch between inputs {input_vars} and filter metadata {args}"
+        assert sorted(input_vars) == sorted(args), error_msg
+
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Transform the data using the forward transformation function.
 
@@ -214,6 +219,8 @@ class MatchingFieldsFilter(Filter):
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
+
+        self._check_metadata_match(data,args)
 
         named_args = self._forward_arguments_types[0]
 
@@ -245,6 +252,8 @@ class MatchingFieldsFilter(Filter):
 
         for name in self.backward_arguments:
             args.append(getattr(self, name))
+
+        self._check_metadata_match(data,args)
 
         named_args = self._backward_arguments_types[0]
 

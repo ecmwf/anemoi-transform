@@ -194,15 +194,13 @@ class MatchingFieldsFilter(Filter):
 
         arguments = self.forward_arguments if argument_type == "forward" else self.backward_arguments
 
-        if self.return_inputs=="all":
+        if self.return_inputs == "all":
             returned_input_list = arguments
-        elif self.return_inputs=="none":
-                returned_input_list = []
+        elif self.return_inputs == "none":
+            returned_input_list = []
         else:
             if not isinstance(self.return_inputs, list):
-                raise ValueError(
-                    f"Return inputs must be 'all', 'none', or List[str], got {type(self.return_inputs)}"
-                )
+                raise ValueError(f"Return inputs must be 'all', 'none', or List[str], got {type(self.return_inputs)}")
             if not set(self.return_inputs) <= set(arguments):
                 raise ValueError(f"Returned input names must subset {argument_type} arguments ({arguments})")
             returned_input_list = self.return_inputs

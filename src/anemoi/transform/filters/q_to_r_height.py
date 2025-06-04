@@ -348,12 +348,6 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
         self.surface_pressure = surface_pressure
         self.specific_humidity_at_model_levels = specific_humidity_at_model_levels
         self.temperature_at_model_levels = temperature_at_model_levels
-        self.specific_humidity_at_height_level = specific_humidity_at_height_level
-        self.relative_humidity_at_height_level = relative_humidity_at_height_level
-        self.temperature_at_height_level = temperature_at_height_level
-        self.surface_pressure = surface_pressure
-        self.specific_humidity_at_model_levels = specific_humidity_at_model_levels
-        self.temperature_at_model_levels = temperature_at_model_levels
 
         if isinstance(AB, str):
             AB = AB.upper()
@@ -398,8 +392,6 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
             specific_humidity_at_model_levels.to_numpy(),
             temperature_at_model_levels.to_numpy(),
             surface_pressure.to_numpy(),
-            self.A,
-            self.B,
         )
 
         # For now We need to go from qv --> td --> rh to take into account

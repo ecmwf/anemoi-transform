@@ -30,8 +30,8 @@ class MockField:
 
 
 class MockFieldList(list):
-    pass
-
+    def metadata(self, name):
+            return [getattr(f, "metadata")("mars")[name] for f in self]
 
 class AddFields(MatchingFieldsFilter):
     @matching(select="param", forward=["a", "b"])

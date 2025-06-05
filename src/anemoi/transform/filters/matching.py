@@ -197,13 +197,22 @@ class MatchingFieldsFilter(Filter):
 
         return self._backward_arguments
 
-    def _check_metadata_match(self, data: ekd.FieldList, args: List[str]):
-        input_vars = [field.metadata("param") for field in data]
+    def _check_metadata_match(self, data: ekd.FieldList, args: List[str]) -> None:
+        """Checks the parameters names of the data and the groups match
+
+        Parameters
+        ----------
+        data : str
+            List with grouped input param names
+        args : str
+            List with fields to group by.
+        """
+
         error_msg = (
             f"Please ensure your filter is configured to match the input variables metadata "
-            f"current mismatch between inputs {input_vars} and filter metadata {args}"
+            f"current mismatch between inputs {data} and filter metadata {args}"
         )
-        if not set(args).issubset(input_vars):
+        if sorted(data) != sorted(args):
             raise ValueError(error_msg)
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
@@ -223,8 +232,6 @@ class MatchingFieldsFilter(Filter):
 
         for name in self.forward_arguments:
             args.append(getattr(self, name))
-
-        self._check_metadata_match(data, args)
 
         named_args = self._forward_arguments_types[0]
 
@@ -256,8 +263,6 @@ class MatchingFieldsFilter(Filter):
 
         for name in self.backward_arguments:
             args.append(getattr(self, name))
-
-        self._check_metadata_match(data, args)
 
         named_args = self._backward_arguments_types[0]
 
@@ -297,8 +302,10 @@ class MatchingFieldsFilter(Filter):
         result = []
 
         grouping = GroupByParam(group_by)
+        grouping._get_groups(data, other=result.append)
+        self._check_metadata_match(grouping.groups_params, group_by)
 
-        for matching in grouping.iterate(data, other=result.append):
+        for matching in grouping.iterate(data):
             for f in transform(*matching):
                 result.append(f)
 

@@ -64,8 +64,10 @@ class GroupByParam:
             params = [params]
         self.params = _flatten(params)
 
-    def _get_groups(self, data: List[Any], other: Callable[[Any], None] = _lost):
+    def _get_groups(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> None:
+        assert callable(other), type(other)
         self.groups: Dict[Tuple[Tuple[str, Any], ...], Dict[str, Any]] = defaultdict(dict)
+        self.groups_params = set()
         for f in data:
             key = f.metadata(namespace="mars")
             if not key:
@@ -85,26 +87,21 @@ class GroupByParam:
             if param in self.groups[key]:
                 raise ValueError(f"Duplicate component {param} for {key}")
             self.groups[key][param] = f
+            self.groups_params.add(param)
 
-    def iterate(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[Tuple[Any, ...]]:
+    def iterate(self, data: List[Any]) -> Iterator[Tuple[Any, ...]]:
         """Iterate over the data and group fields by parameters.
 
         Parameters
         ----------
         data : list of Any
             List of data fields to group.
-        other : callable, optional
-            Function to call for fields that do not match the parameters, by default _lost.
 
         Returns
         -------
         Iterator[Tuple[Any, ...]]
             Iterator yielding tuples of grouped fields.
         """
-        assert callable(other), type(other)
-
-        self._get_groups(data, other)
-
         for _, group in self.groups.items():
             if len(group) != len(self.params):
                 for p in data:

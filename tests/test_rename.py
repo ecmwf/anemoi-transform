@@ -25,7 +25,6 @@ def test_rename_grib():
     )
 
     for n in source | rename:
-        print(n.metadata("param"), n)
         assert n.metadata("param") in ("geopotential", "temperature")
 
     rename = filter_registry.create(
@@ -35,8 +34,6 @@ def test_rename_grib():
         },
     )
     for n in source | rename:
-        print(n.metadata("param"), n)
-
         param, level, levtype = n.metadata("param").split("_")
         assert param in ("z", "t") and level in ("1000", "850", "700", "500", "400", "300") and levtype in ("pl",), (
             param,
@@ -52,8 +49,6 @@ def test_rename_grib():
         },
     )
     for n in source | rename:
-        print(n.metadata("param", "levelist"), n)
-
         param, level = n.metadata("param", "levelist")
 
         assert param in ("geopotential", "temperature") and level in (
@@ -80,7 +75,6 @@ def test_rename_netcdf():
     )
 
     for n in source | rename:
-        print(n.metadata("param"), n)
         assert n.metadata("param") in ("2m temprature", "mean sea level pressure")
 
 

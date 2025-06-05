@@ -199,8 +199,12 @@ class MatchingFieldsFilter(Filter):
 
     def _check_metadata_match(self, data: ekd.FieldList, args: List[str]):
         input_vars = [field.metadata("param") for field in data]
-        error_msg = f"Please ensure your filter is configured to match the input variables metadata current mismatch between inputs {input_vars} and filter metadata {args}"
-        assert sorted(input_vars) == sorted(args), error_msg
+        error_msg = (
+            f"Please ensure your filter is configured to match the input variables metadata "
+            f"current mismatch between inputs {input_vars} and filter metadata {args}"
+        )
+        if not set(args).issubset(input_vars):
+            raise ValueError(error_msg)
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Transform the data using the forward transformation function.

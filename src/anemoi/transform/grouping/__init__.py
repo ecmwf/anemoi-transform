@@ -64,23 +64,8 @@ class GroupByParam:
             params = [params]
         self.params = _flatten(params)
 
-    def iterate(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[Tuple[Any, ...]]:
-        """Iterate over the data and group fields by parameters.
-
-        Parameters
-        ----------
-        data : list of Any
-            List of data fields to group.
-        other : callable, optional
-            Function to call for fields that do not match the parameters, by default _lost.
-
-        Returns
-        -------
-        Iterator[Tuple[Any, ...]]
-            Iterator yielding tuples of grouped fields.
-        """
-        assert callable(other), type(other)
-        groups: Dict[Tuple[Tuple[str, Any], ...], Dict[str, Any]] = defaultdict(dict)
+    def _get_groups(self, data: List[Any], other: Callable[[Any], None] = _lost):
+        self.groups: Dict[Tuple[Tuple[str, Any], ...], Dict[str, Any]] = defaultdict(dict)
         for f in data:
             key = f.metadata(namespace="mars")
             if not key:
@@ -97,15 +82,33 @@ class GroupByParam:
 
             key = tuple(key.items())
 
-            if param in groups[key]:
+            if param in self.groups[key]:
                 raise ValueError(f"Duplicate component {param} for {key}")
+            self.groups[key][param] = f
 
-            groups[key][param] = f
+    def iterate(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[Tuple[Any, ...]]:
+        """Iterate over the data and group fields by parameters.
 
-        for _, group in groups.items():
+        Parameters
+        ----------
+        data : list of Any
+            List of data fields to group.
+        other : callable, optional
+            Function to call for fields that do not match the parameters, by default _lost.
+
+        Returns
+        -------
+        Iterator[Tuple[Any, ...]]
+            Iterator yielding tuples of grouped fields.
+        """
+        assert callable(other), type(other)
+
+        self._get_groups(data, other)
+
+        for _, group in self.groups.items():
             if len(group) != len(self.params):
                 for p in data:
                     print(p)
-                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(group.keys())}")
+                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(self.group.keys())}")
 
             yield tuple(group[p] for p in self.params)

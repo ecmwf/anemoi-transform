@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
+import logging
 from collections import defaultdict
 from typing import Any
 from typing import Callable
@@ -15,6 +16,8 @@ from typing import Dict
 from typing import Iterator
 from typing import List
 from typing import Tuple
+
+LOG = logging.getLogger(__name__)
 
 
 def _lost(f: Any) -> None:
@@ -88,20 +91,24 @@ class GroupByParam:
                 raise ValueError(f"Duplicate component {param} for {key}")
             self.groups[key][param] = f
             self.groups_params.add(param)
+        LOG.info(f"Params groups: {self.groups_params}")
 
-    def iterate(self, data: List[Any]) -> Iterator[Tuple[Any, ...]]:
+    def iterate(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[Tuple[Any, ...]]:
         """Iterate over the data and group fields by parameters.
 
         Parameters
         ----------
         data : list of Any
             List of data fields to group.
+        other : callable, optional
+            Function to call for fields that do not match the parameters, by default _lost.
 
         Returns
         -------
         Iterator[Tuple[Any, ...]]
             Iterator yielding tuples of grouped fields.
         """
+        self._get_groups(data, other=other)
         for _, group in self.groups.items():
             if len(group) != len(self.params):
                 for p in data:

@@ -212,7 +212,7 @@ class MatchingFieldsFilter(Filter):
             f"Please ensure your filter is configured to match the input variables metadata "
             f"current mismatch between inputs {data} and filter metadata {args}"
         )
-        if sorted(data) != sorted(args):
+        if not set(args).issubset(data):
             raise ValueError(error_msg)
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
@@ -302,10 +302,9 @@ class MatchingFieldsFilter(Filter):
         result = []
 
         grouping = GroupByParam(group_by)
-        grouping._get_groups(data, other=result.append)
-        self._check_metadata_match(grouping.groups_params, group_by)
-
-        for matching in grouping.iterate(data):
+        input_params = set(data.metadata("param"))
+        self._check_metadata_match(input_params, group_by)
+        for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)
 

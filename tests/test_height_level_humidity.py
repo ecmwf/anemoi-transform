@@ -1,5 +1,6 @@
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
+import numpy as np
 
 prototype = {
     "latitudes": [10.0, 0.0, -10.0],

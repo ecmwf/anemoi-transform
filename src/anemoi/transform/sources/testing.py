@@ -17,9 +17,22 @@ from anemoi.transform.sources import source_registry
 
 @source_registry.register("testing")
 class Testing(Source):
-    """A demo source."""
+    """A demo source for use in testing.
 
-    def __init__(self, *, dataset=None, fields=None) -> None:
+    Note: Either dataset or fields must be provided.
+
+    Parameters
+    ----------
+    dataset : str, optional
+        Dataset name to load from the test data bucket.
+    fields : list[dict], optional
+        List of dictionaries containing the field specifications (e.g. keys of param, level, values).
+    """
+
+    def __init__(self, *, dataset: str | None = None, fields: list[dict] | None = None) -> None:
+        if dataset is None and fields is None:
+            raise ValueError("Either dataset or fields must be provided")
+
         if dataset is not None:
             self.ds = ekd.from_source("file", get_test_data(dataset))
 

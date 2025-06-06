@@ -71,7 +71,7 @@ def test_relative_humidity_to_dewpoint(relative_humidity_source):
     assert np.allclose(result.to_numpy(), expected_dewpoint)
 
 
-def test_round_trip_relative_humidity_to_dewpoint(relative_humidity_source):
+def test_relative_humidity_to_dewpoint_round_trip(relative_humidity_source):
     r_to_d = filter_registry.create("r_to_d")
     d_to_r = filter_registry.create("d_to_r")
     # drop r to be sure it is reconstructed properly
@@ -151,7 +151,7 @@ def test_dewpoint_to_relative_humidity(dewpoint_source):
     assert np.allclose(result.to_numpy(), expected_humidity)
 
 
-def test_round_trip_dewpoint_to_relative_humidity(dewpoint_source):
+def test_dewpoint_to_relative_humidity_round_trip(dewpoint_source):
     d_to_r = filter_registry.create("d_to_r")
     r_to_d = filter_registry.create("r_to_d")
     # drop d to be sure it is reconstructed properly

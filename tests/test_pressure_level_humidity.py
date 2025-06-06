@@ -88,7 +88,7 @@ def test_pressure_level_specific_humidity_to_relative_humidity(specific_humidity
         assert np.allclose(result, expected_relative_humidity)
 
 
-def test_round_trip_pressure_level_specific_humidity_to_relative_humidity(specific_humidity_source):
+def test_pressure_level_specific_humidity_to_relative_humidity_round_trip(specific_humidity_source):
     q_to_r = filter_registry.create("q_to_r")
     r_to_q = filter_registry.create("r_to_q")
 
@@ -170,7 +170,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity(relative_humidity
         assert np.allclose(result, expected_specific_humidity)
 
 
-def test_round_trip_pressure_level_relative_humidity_to_specific_humidity(relative_humidity_source):
+def test_pressure_level_relative_humidity_to_specific_humidity_round_trip(relative_humidity_source):
     r_to_q = filter_registry.create("r_to_q")
     q_to_r = filter_registry.create("q_to_r")
     specific_humidity_source = SelectFieldSource(relative_humidity_source | r_to_q, params=["q", "t"])

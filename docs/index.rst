@@ -64,6 +64,13 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    cli/overview
 
 .. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Creating filters
+
+   filters/matching-filters
+
+.. toctree::
    :maxdepth: 5
    :hidden:
    :caption: CLI

@@ -8,12 +8,15 @@
 # nor does it submit to any jurisdiction.
 
 
-from anemoi.transform.transform import Transform
+import earthkit.data as ekd
+
+from anemoi.transform.fields import new_empty_fieldlist
+from anemoi.transform.filter import Filter
+from anemoi.transform.filters import filter_registry
 
 
-class Source(Transform):
-    """A source transform that provides data."""
+@filter_registry.register("empty")
+class Empty(Filter):
 
-    def __iter__(self):
-        """Iterate over the source."""
-        return iter(self.forward())
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        return new_empty_fieldlist()

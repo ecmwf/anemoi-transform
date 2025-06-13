@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.12](https://github.com/ecmwf/anemoi-transform/compare/0.1.11...0.1.12) (2025-06-13)
+
+
+### Features
+
+* General purpose clipping filter ([#96](https://github.com/ecmwf/anemoi-transform/issues/96)) ([f70b1ab](https://github.com/ecmwf/anemoi-transform/commit/f70b1abc37844046e1f2a7bf9ba60818ccfbecaa))
+
 ## [0.1.11](https://github.com/ecmwf/anemoi-transform/compare/0.1.10...0.1.11) (2025-05-26)
 
 

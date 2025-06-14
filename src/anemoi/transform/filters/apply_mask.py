@@ -7,6 +7,8 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import logging
+
 import earthkit.data as ekd
 import numpy as np
 
@@ -14,6 +16,23 @@ from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters import filter_registry
+
+LOG = logging.getLogger(__name__)
+
+OPERATORS = {
+    ">": np.greater,
+    "<": np.less,
+    "==": np.equal,
+    "!=": np.not_equal,
+    ">=": np.greater_equal,
+    "<=": np.less_equal,
+    "gt": np.greater,
+    "lt": np.less,
+    "eq": np.equal,
+    "ne": np.not_equal,
+    "ge": np.greater_equal,
+    "le": np.less_equal,
+}
 
 
 @filter_registry.register("apply_mask")
@@ -24,8 +43,9 @@ class MaskVariable(Filter):
         self,
         *,
         path: str,
-        mask_value: int = 1,
+        mask_value: float = None,
         threshold: float = None,
+        threshold_operator: str = ">",
         rename: str = None,
     ):
         """Initialize the MaskVariable filter.
@@ -42,10 +62,18 @@ class MaskVariable(Filter):
             New name for the masked variable, by default None.
         """
 
-        mask = ekd.from_source("file", path)[0].to_numpy().astype(bool)
+        mask = ekd.from_source("file", path)[0].to_numpy(flatten=True)
+
+        if mask_value is None and threshold is None:
+            raise ValueError("Either `mask_value` or `threshold` must be provided.")
 
         if threshold is not None:
-            self._mask = mask > threshold
+            if threshold_operator not in OPERATORS:
+                raise ValueError(
+                    f"Invalid threshold operator: {threshold_operator}. "
+                    f"Valid operators are: {', '.join(OPERATORS.keys())}."
+                )
+            self._mask = OPERATORS[threshold_operator](mask, threshold)
         else:
             self._mask = mask == mask_value
 

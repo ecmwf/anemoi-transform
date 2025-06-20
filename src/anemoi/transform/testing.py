@@ -12,6 +12,9 @@ from typing import Any
 import earthkit.data as ekd
 from anemoi.utils.testing import get_test_data
 
+from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.source import Source
+
 
 def fieldlist_fixture(name: str = "2t-sp.grib") -> Any:
     """Fixture to create a fieldlist for testing.
@@ -27,3 +30,16 @@ def fieldlist_fixture(name: str = "2t-sp.grib") -> Any:
         The created fieldlist.
     """
     return ekd.from_source("file", get_test_data(f"anemoi-filters/{name}"))
+
+
+class SelectFieldSource(Source):
+    def __init__(self, fields, params=None):
+        self._fields = fields
+        self.params = params
+
+    def forward(self, *args, **kwargs):
+        fields = []
+        for f in self._fields:
+            if self.params and f.metadata("param") in self.params:
+                fields.append(f)
+        return new_fieldlist_from_list(fields)

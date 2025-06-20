@@ -78,9 +78,9 @@ def make_global_on_lam_mask(lat1, lon1, lat2, lon2, output=None, **kwargs):
 
     from anemoi.transform.spatial import global_on_lam_mask
 
-    mask = global_on_lam_mask(lat1, lon1, lat2, lon2, **kwargs)
+    mask = global_on_lam_mask(lat2, lon2, lat1, lon1, **kwargs)
     if output is not None:
-        np.savez(output, mask)
+        np.savez(output, mask=mask)
 
 
 class MakeRegridMatrix(Command):
@@ -156,21 +156,7 @@ class MakeRegridMatrix(Command):
             check(args.input1, lat1, lon1)
             check(args.input2, lat2, lon2)
 
-        LOG.info(f"Creating MIR interpolation matrix from {args.input1} to {args.input2}...")
-        sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=args.mir, **kwargs)
-
-        LOG.info("MIR interpolation matrix created successfully.")
-        np.savez(
-            args.output,
-            matrix_data=sparse_array.data,
-            matrix_indices=sparse_array.indices,
-            matrix_indptr=sparse_array.indptr,
-            matrix_shape=sparse_array.shape,
-            in_latitudes=lat1,
-            in_longitudes=lon1,
-            out_latitudes=lat2,
-            out_longitudes=lon2,
-        )
+        make_global_on_lam_mask(lat1, lon1, lat2, lon2, output=args.output, **kwargs)
 
 
 command = MakeRegridMatrix

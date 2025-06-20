@@ -19,7 +19,14 @@ from anemoi.transform.sources import source_registry
 class Testing(Source):
     """A demo source."""
 
-    def __init__(self, *, dataset=None, fields=None) -> None:
+    def __init__(self, *, dataset=None, fields=None, path=None, field_list=None) -> None:
+
+        if field_list is not None:
+            self.ds = field_list
+
+        if path is not None:
+            self.ds = ekd.from_source("file", path)
+
         if dataset is not None:
             self.ds = ekd.from_source("file", get_test_data(dataset))
 

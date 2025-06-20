@@ -15,6 +15,7 @@ from typing import Optional
 from typing import Union
 
 import earthkit.data as ekd
+import numpy as np
 import tqdm
 from earthkit.data.core.fieldlist import Field
 
@@ -118,14 +119,7 @@ class RegridFilter(Filter):
         self.in_grid = in_grid
         self.out_grid = out_grid
         self.method = method
-        self.interpolator = make_interpolator(
-            in_grid,
-            out_grid,
-            method,
-            matrix,
-            mask,
-            check,
-        )
+        self.interpolator = make_interpolator(method, matrix, mask, check)
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward regridding transformation.
@@ -140,42 +134,7 @@ class RegridFilter(Filter):
         ekd.FieldList
             The transformed data.
         """
-        return self._interpolate(data, self.in_grid, self.out_grid, self.method)
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the backward regridding transformation.
-
-        Parameters
-        ----------
-        data : ekd.FieldList
-            The input data to be transformed.
-
-        Returns
-        -------
-        ekd.FieldList
-            The transformed data.
-        """
-        return self._interpolate(data, self.out_grid, self.in_grid, self.method)
-
-    def _interpolate(self, data: Any) -> Any:
-        """Interpolate the data from one grid to another.
-
-        Parameters
-        ----------
-        data : Any
-            The input data to be interpolated.
-        in_grid : Any
-            The input grid specification.
-        out_grid : Any
-            The output grid specification.
-        method : str
-            The interpolation method.
-
-        Returns
-        -------
-        Any
-            The interpolated data.
-        """
         result = []
         for field in tqdm.tqdm(data, desc="Regridding"):
             result.append(self.interpolator(field))
@@ -360,7 +319,63 @@ class ScipyKDTreeNearestNeighbours:
         return new_field_from_latitudes_longitudes(new_field_from_numpy(data, template=field), **self.out_grid)
 
 
+class MaskedRegrid:
+    """Interpolator tools for the grids that are not supported yet by earthkit."""
+
+    out_latitudes = None
+    out_longitudes = None
+
+    def __init__(self, *, mask: str, check: bool) -> None:
+        """Parameters
+        -------------
+        in_grid : Any
+            The input grid specification.
+        out_grid : Any
+            The output grid specification.
+        method : str
+            The interpolation method.
+        matrix : str, optional
+            The regrid matrix file path.
+        check : bool
+            Whether to perform checks.
+        """
+
+        if check:
+            LOG.warning("Check is not supported by MaskedRegrid")
+
+        self.mask = np.load(mask)["mask"]
+        print(f"Mask shape: {self.mask.shape}")
+
+    def __call__(self, field: Any) -> Any:
+        """Interpolate the field data using nearest neighbours.
+
+        Parameters
+        ----------
+        field : Any
+            The field to be interpolated.
+
+        Returns
+        -------
+        Any
+            The interpolated field.
+        """
+
+        data = field.to_numpy(flatten=True)
+
+        data = data[..., self.mask]
+
+        if self.out_latitudes is None or self.out_longitudes is None:
+            in_latitudes, in_longitudes = field.grid_points()
+            self.out_latitudes = in_latitudes[self.mask]
+            self.out_longitudes = in_longitudes[self.mask]
+
+        return new_field_from_latitudes_longitudes(
+            new_field_from_numpy(data, template=field), latitudes=self.out_latitudes, longitudes=self.out_longitudes
+        )
+
+
 def _interpolator(
+    *,
     method: str = None,
     matrix: str = None,
     mask: str = None,
@@ -369,20 +384,12 @@ def _interpolator(
 
     Parameters
     ----------
-    in_grid : Any
-        The input grid specification.
-    out_grid : Any
-        The output grid specification.
     method : str, optional
         The interpolation method.
     matrix : str, optional
         The regrid matrix file path.
     mask : str, optional
         The mask file path.
-    check : bool, optional
-        Whether to perform checks.
-    interpolator : Any, optional
-        The interpolator to use.
 
     Returns
     -------
@@ -407,10 +414,7 @@ def make_interpolator(method: str = None, matrix: str = None, mask: str = None, 
 
     Parameters
     ----------
-    in_grid : Any
-        The input grid specification.
-    out_grid : Any
-        The output grid specification.
+
     method : str, optional
         The interpolation method.
     matrix : str, optional
@@ -419,21 +423,13 @@ def make_interpolator(method: str = None, matrix: str = None, mask: str = None, 
         The mask file path.
     check : bool, optional
         Whether to perform checks.
-    interpolator : Any, optional
-        The interpolator to use.
 
     Returns
     -------
     Any
         The created interpolator.
     """
-    interpolator = _interpolator(
-        method,
-        matrix,
-        mask,
-        check,
-        interpolator,
-    )
+    interpolator = _interpolator(method=method, matrix=matrix, mask=mask)
 
     kwargs = {
         "method": method,

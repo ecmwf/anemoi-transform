@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 
-import base64
 import logging
 from typing import Any
 from typing import List
@@ -21,6 +20,7 @@ from numpy.typing import NDArray
 
 LOG = logging.getLogger(__name__)
 EARTH_RADIUS = 6_371
+
 
 def _plot_mask(
     path: str,
@@ -91,18 +91,22 @@ def _plot_mask(
     if isinstance(path, str):
         plt.savefig(path + "-global-zoomed.png")
 
+
 def _resolution(points) -> float:
     from scipy.spatial import cKDTree
+
     distances, _ = cKDTree(points).query(points, k=2)
     return np.min(distances[:, 1])
+
 
 def _distance_km_to_resolution(function, distance_km, lam_points, global_points) -> float:
     if isinstance(distance_km, (int, float)):
         distance = distance_km / EARTH_RADIUS
     else:
-        distance = _resolution( {"lam": lam_points, "global": global_points, None: global_points}[distance_km])
+        distance = _resolution({"lam": lam_points, "global": global_points, None: global_points}[distance_km])
         LOG.info(f"{function} using distance = {distance * EARTH_RADIUS} km")
     return distance
+
 
 # TODO: Use the one from anemoi.utils.grids instead
 # from anemoi.utils.grids import ...
@@ -353,7 +357,11 @@ def cutout_mask(
     lam_points = np.array(xyx).transpose()
 
     min_distance = _distance_km_to_resolution(
-        "cutout_mask", min_distance_km, lam_points, global_points,)
+        "cutout_mask",
+        min_distance_km,
+        lam_points,
+        global_points,
+    )
 
     # Use a cKDTree to find the nearest points
     distances, indices = cKDTree(lam_points).query(global_points, k=neighbours)
@@ -470,6 +478,7 @@ def thinning_mask(
 
     return indices
 
+
 def global_on_lam_mask(
     lats: NDArray[Any],
     lons: NDArray[Any],
@@ -477,10 +486,9 @@ def global_on_lam_mask(
     global_lons: NDArray[Any],
     distance_km: float = None,
 ) -> NDArray[Any]:
-    """Return the list of points in [global_lats, global_lons] closest to [lats, lons] .
-
-    """
+    """Return the list of points in [global_lats, global_lons] closest to [lats, lons] ."""
     from scipy.spatial import cKDTree
+
     distance = None
 
     assert global_lats.ndim == 1
@@ -499,13 +507,16 @@ def global_on_lam_mask(
     lam_points = np.array(xyx).transpose()
 
     distance = _distance_km_to_resolution(
-        "global_on_lam_mask",distance_km, lam_points, global_points,)
-
+        "global_on_lam_mask",
+        distance_km,
+        lam_points,
+        global_points,
+    )
 
     if distance is not None:
         # Use a cKDTree to find the nearest points with a distance limit
         indices = cKDTree(global_points).query_ball_point(lam_points, distance)
-        indices = np.array(sorted(set( i for sublist in indices for i in sublist)))
+        indices = np.array(sorted(set(i for sublist in indices for i in sublist)))
     else:
         _, indices = cKDTree(global_points).query(lam_points, k=1)
 
@@ -608,15 +619,15 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     import earthkit.data as ekd
-    glob = ekd.from_source('file', 'tmp/2t-ea.grib')
-    lam = ekd.from_source('file', 'tmp/2t-rr.grib')
+
+    glob = ekd.from_source("file", "tmp/2t-ea.grib")
+    lam = ekd.from_source("file", "tmp/2t-rr.grib")
 
     global_lats, global_lons = glob[0].grid_points()
 
     lats, lons = lam[0].grid_points()
 
-    mask = global_on_lam_mask(lats, lons, global_lats, global_lons,
-                              distance_km=100)
+    mask = global_on_lam_mask(lats, lons, global_lats, global_lons, distance_km=100)
     print(mask)
     import matplotlib.pyplot as plt
 

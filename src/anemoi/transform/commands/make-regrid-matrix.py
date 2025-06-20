@@ -14,6 +14,36 @@ import os
 from anemoi.transform.commands import Command
 
 
+def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **kwargs):
+
+    import numpy as np
+    from earthkit.regrid.utils.mir import mir_make_matrix
+
+    sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=mir, **kwargs)
+
+    np.savez(
+        output,
+        matrix_data=sparse_array.data,
+        matrix_indices=sparse_array.indices,
+        matrix_indptr=sparse_array.indptr,
+        matrix_shape=sparse_array.shape,
+        in_latitudes=lat1,
+        in_longitudes=lon1,
+        out_latitudes=lat2,
+        out_longitudes=lon2,
+    )
+
+
+def make_global_on_lam_mask(lat1, lon1, lat2, lon2, output=None, **kwargs):
+    import numpy as np
+
+    from anemoi.transform.spatial import global_on_lam_mask
+
+    mask = global_on_lam_mask(lat1, lon1, lat2, lon2, **kwargs)
+    if output is not None:
+        np.savez(output, mask)
+
+
 class MakeRegridMatrix(Command):
     """Extract the grid from a pair GRIB or NetCDF files extract the MIR interpolation matrix to be used
     by earthkit-regrid.
@@ -49,7 +79,6 @@ class MakeRegridMatrix(Command):
         """
         import numpy as np
         from earthkit.data import from_source
-        from earthkit.regrid.utils.mir import mir_make_matrix
 
         _, ext1 = os.path.splitext(args.input1)
         if ext1 in (".npz", ".npy"):
@@ -74,19 +103,10 @@ class MakeRegridMatrix(Command):
             key, value = arg.split("=")
             kwargs[key] = value
 
-        sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=args.mir, **kwargs)
-
-        np.savez(
-            args.output,
-            matrix_data=sparse_array.data,
-            matrix_indices=sparse_array.indices,
-            matrix_indptr=sparse_array.indptr,
-            matrix_shape=sparse_array.shape,
-            in_latitudes=lat1,
-            in_longitudes=lon1,
-            out_latitudes=lat2,
-            out_longitudes=lon2,
-        )
+        if False:
+            make_mir_matrix(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2, output=args.output, mir=args.mir, **kwargs)
+        else:
+            make_global_on_lam_mask(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2, output=args.output, **kwargs)
 
 
 command = MakeRegridMatrix

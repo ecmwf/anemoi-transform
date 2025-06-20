@@ -9,9 +9,48 @@
 
 
 import argparse
+import logging
 import os
 
 from anemoi.transform.commands import Command
+
+LOG = logging.getLogger(__name__)
+
+
+def get_lat_lon(ds):
+    try:
+        return ds[0].grid_points()
+    except TypeError:
+        # This is a workaround for datasets that do not have data variables,
+        # but have latitude and longitude coordinates.
+        import xarray as xr
+
+        ds = xr.open_dataset(ds.path)
+        lat = ds["latitude"].values.flatten()
+        lon = ds["longitude"].values.flatten()
+        return lat, lon
+
+    raise ValueError("No grid points found in the dataset.")
+
+
+def check(input_file, latitudes, longitudes):
+    LOG.info(f"Checking for duplicate lat/lon pairs in {input_file}...")
+    seen = set()
+    for lat, lon in zip(latitudes, longitudes):
+        if (lat, lon) in seen:
+            raise ValueError(f"Duplicate latitude/longitude pair found in {input_file}: ({lat}, {lon})")
+        seen.add((lat, lon))
+
+
+def round_lat_lon(latitudes, longitudes, rounding):
+    import numpy as np
+
+    # 1 deg = 111.32 km
+    D = 111.32 * 1000  # in meters
+    for n in range(rounding):
+        D /= 10
+    LOG.info(f"Rounding latitudes and longitudes to {rounding} decimal places ({D} m).")
+    return np.round(latitudes, rounding), np.round(longitudes, rounding)
 
 
 def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **kwargs):
@@ -62,6 +101,12 @@ class MakeRegridMatrix(Command):
 
         command_parser.add_argument("--mir", default=os.environ.get("MIR_COMMAND", "mir"), help="MIR command")
 
+        command_parser.add_argument(
+            "--rounding", type=int, help="Round latitudes and longitudes to this precision (default: None)."
+        )
+        command_parser.add_argument(
+            "--check", action="store_true", help="Check for duplicate lat/lon pairs in the input files."
+        )
         command_parser.add_argument("input1", help="Input file (GRIB or NetCDF).")
         command_parser.add_argument("input2", help="Input file (GRIB or NetCDF).")
 
@@ -87,7 +132,7 @@ class MakeRegridMatrix(Command):
             lon1 = ds1["longitudes"]
         else:
             ds1 = from_source(args.source1, args.input1)
-            lat1, lon1 = ds1[0].grid_points()
+            lat1, lon1 = get_lat_lon(ds1)
 
         _, ext2 = os.path.splitext(args.input2)
         if ext2 in (".npz", ".npy"):
@@ -96,17 +141,36 @@ class MakeRegridMatrix(Command):
             lon2 = ds2["longitudes"]
         else:
             ds2 = from_source(args.source2, args.input2)
-            lat2, lon2 = ds2[0].grid_points()
+            lat2, lon2 = get_lat_lon(ds2)
 
         kwargs = {}
         for arg in args.kwargs:
             key, value = arg.split("=")
             kwargs[key] = value
 
-        if False:
-            make_mir_matrix(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2, output=args.output, mir=args.mir, **kwargs)
-        else:
-            make_global_on_lam_mask(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2, output=args.output, **kwargs)
+        if args.rounding is not None:
+            lat1, lon1 = round_lat_lon(lat1, lon1, args.rounding)
+            lat2, lon2 = round_lat_lon(lat2, lon2, args.rounding)
+
+        if args.check:
+            check(args.input1, lat1, lon1)
+            check(args.input2, lat2, lon2)
+
+        LOG.info(f"Creating MIR interpolation matrix from {args.input1} to {args.input2}...")
+        sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=args.mir, **kwargs)
+
+        LOG.info("MIR interpolation matrix created successfully.")
+        np.savez(
+            args.output,
+            matrix_data=sparse_array.data,
+            matrix_indices=sparse_array.indices,
+            matrix_indptr=sparse_array.indptr,
+            matrix_shape=sparse_array.shape,
+            in_latitudes=lat1,
+            in_longitudes=lon1,
+            out_latitudes=lat2,
+            out_longitudes=lon2,
+        )
 
 
 command = MakeRegridMatrix

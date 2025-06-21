@@ -18,11 +18,13 @@
 import logging
 
 from anemoi.utils.testing import get_test_data
+from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
 
 
+@skip_if_offline
 def test_regrid_mask():
 
     mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")

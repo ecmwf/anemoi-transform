@@ -23,26 +23,9 @@ from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
+from anemoi.transform.testing import compare_npz_files
 
 LOG = logging.getLogger(__name__)
-
-
-def compare_npz_files(file1, file2):
-    import numpy as np
-
-    data1 = np.load(file1)
-    data2 = np.load(file2)
-
-    assert set(data1.keys()) == set(
-        data2.keys()
-    ), f"Keys in NPZ files do not match {set(data1.keys())} and {set(data2.keys())}"
-
-    for key in data1.keys():
-        try:
-            assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"
-        except Exception as e:
-            LOG.error(f"Error comparing key {key} :between {file1} and {file2}: {e}")
-            raise
 
 
 @skip_if_offline

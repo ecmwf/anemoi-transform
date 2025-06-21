@@ -1,0 +1,221 @@
+# (C) Copyright 2025 Anemoi contributors.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+
+
+import argparse
+import logging
+import os
+
+from anemoi.transform.commands import Command
+
+LOG = logging.getLogger(__name__)
+
+
+def _ds_to_lat_lon(ds):
+    try:
+        return ds[0].grid_points()
+    except TypeError:
+        # This is a workaround for datasets that do not have data variables,
+        # but have latitude and longitude coordinates.
+        import xarray as xr
+
+        ds = xr.open_dataset(ds.path)
+        lat = ds["latitude"].values.flatten()
+        lon = ds["longitude"].values.flatten()
+        return lat, lon
+
+
+def _path_to_lat_lon(path):
+    """Extract latitudes and longitudes from a file path."""
+    import earthkit.data as ekd
+    import numpy as np
+
+    if path.endswith(".npz"):
+        data = np.load(path)
+        return data["latitudes"], data["longitudes"]
+
+    ds = ekd.from_source("file", path)
+    return _ds_to_lat_lon(ds)
+
+
+def check(input_file, latitudes, longitudes):
+    LOG.info(f"Checking for duplicate lat/lon pairs in {input_file}...")
+    seen = set()
+    for lat, lon in zip(latitudes, longitudes):
+        if (lat, lon) in seen:
+            raise ValueError(f"Duplicate latitude/longitude pair found in {input_file}: ({lat}, {lon})")
+        seen.add((lat, lon))
+
+
+def round_lat_lon(latitudes, longitudes, rounding):
+    import numpy as np
+
+    # 1 deg = 111.32 km
+    D = 111.32 * 1000  # in meters
+    for n in range(rounding):
+        D /= 10
+    LOG.info(f"Rounding latitudes and longitudes to {rounding} decimal places ({D} m).")
+    return np.round(latitudes, rounding), np.round(longitudes, rounding)
+
+
+def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **kwargs):
+
+    import numpy as np
+    from earthkit.regrid.utils.mir import mir_make_matrix
+
+    sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=mir, **kwargs)
+
+    np.savez(
+        output,
+        matrix_data=sparse_array.data,
+        matrix_indices=sparse_array.indices,
+        matrix_indptr=sparse_array.indptr,
+        matrix_shape=sparse_array.shape,
+        in_latitudes=lat1,
+        in_longitudes=lon1,
+        out_latitudes=lat2,
+        out_longitudes=lon2,
+    )
+
+
+def make_global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, output, **kwargs):
+    import numpy as np
+
+    from anemoi.transform.spatial import global_on_lam_mask
+
+    mask = global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, **kwargs)
+    np.savez(output, mask=mask)
+
+
+class MakeMIRMatrix:
+    """Extract the grid from a pair GRIB or NetCDF files extract the MIR interpolation matrix to be used
+    by earthkit-regrid.
+    """
+
+    def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
+        """Add arguments to the command parser.
+
+        Parameters
+        ----------
+        command_parser : argparse.ArgumentParser
+            The argument parser to add arguments to.
+        """
+        command_parser.add_argument("--source-grid", help="Input file (GRIB or NetCDF).", required=True)
+        command_parser.add_argument("--target-grid", help="Input file (GRIB or NetCDF).", required=True)
+
+        command_parser.add_argument(
+            "--mir", default=os.environ.get("MIR_COMMAND", "mir"), help="MIR command (default: 'mir')."
+        )
+        command_parser.add_argument(
+            "--rounding",
+            type=int,
+            help="Round latitudes and longitudes to this precision (default: None).",
+        )
+        command_parser.add_argument("--check", action="store_true", help="Check for duplicate lat/lon pairs.")
+        command_parser.add_argument("kwargs", nargs="*", help="MIR arguments.")
+        command_parser.add_argument(
+            "--output",
+            type=str,
+            help="Output NPZ file. The name will be used to determine the type of regrid file to create.",
+            required=True,
+        )
+
+    def run(self, args: argparse.Namespace) -> None:
+        """Run the command with the provided arguments.
+
+        Parameters
+        ----------
+        args : argparse.Namespace
+            The arguments to run the command with.
+        """
+
+        source_lat, source_lon = _path_to_lat_lon(args.source_grid)
+        target_lat, target_lon = _path_to_lat_lon(args.target_grid)
+
+        kwargs = {}
+        # for arg in args.kwargs:
+        #     key, value = arg.split("=")
+        #     kwargs[key] = value
+
+        if args.rounding is not None:
+            source_lat, source_lon = round_lat_lon(source_lat, source_lon, args.rounding)
+            target_lat, target_lon = round_lat_lon(target_lat, target_lon, args.rounding)
+
+        if args.check:
+            check(args.source_grid, source_lat, source_lon)
+            check(args.target_grid, target_lat, target_lon)
+
+        make_mir_matrix(source_lat, source_lon, target_lat, target_lon, output=args.output, mir=args.mir, **kwargs)
+
+
+class MakeGlobalOnLamMask:
+
+    def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
+        """Add arguments to the command parser.
+
+        Parameters
+        ----------
+        command_parser : argparse.ArgumentParser
+            The argument parser to add arguments to.
+        """
+        command_parser.add_argument("--lam-grid", help="Input file (GRIB or NetCDF).", required=True)
+        command_parser.add_argument("--global-grid", help="Input file (GRIB or NetCDF).", required=True)
+        command_parser.add_argument(
+            "--output",
+            type=str,
+            help="Output NPZ file. The name will be used to determine the type of regrid file to create.",
+            required=True,
+        )
+
+    def run(self, args: argparse.Namespace) -> None:
+        """Run the command with the provided arguments.
+
+        Parameters
+        ----------
+        args : argparse.Namespace
+            The arguments to run the command with.
+        """
+
+        lam_lat, lam_lon = _path_to_lat_lon(args.lam_grid)
+        lam_lat, lam_lon = _path_to_lat_lon(args.global_grid)
+
+        make_global_on_lam_mask(lam_lat, lam_lon, lam_lat, lam_lon, output=args.output)
+
+
+OPTIONS = {
+    "mir-matrix": MakeMIRMatrix,
+    "global-on-lam-mask": MakeGlobalOnLamMask,
+}
+
+
+class MakeRegridFile(Command):
+    """Extract the grid from a pair GRIB or NetCDF files extract the MIR interpolation matrix to be used
+    by earthkit-regrid.
+    """
+
+    def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
+        """Add arguments to the command parser.
+
+        Parameters
+        ----------
+        command_parser : argparse.ArgumentParser
+            The argument parser to add arguments to.
+        """
+
+        subparsers = command_parser.add_subparsers(dest="type", required=True)
+
+        for k, v in OPTIONS.items():
+            subparser = subparsers.add_parser(k, help=v.__doc__)
+            v().add_arguments(subparser)
+
+    def run(self, args: argparse.Namespace) -> None:
+        OPTIONS[args.type]().run(args)
+
+
+command = MakeRegridFile

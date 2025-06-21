@@ -17,17 +17,61 @@
 
 import logging
 
+from anemoi.utils.testing import cli_testing
 from anemoi.utils.testing import get_test_data
 from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
 
+LOG = logging.getLogger(__name__)
+
+
+def compare_npz_files(file1, file2):
+    import numpy as np
+
+    data1 = np.load(file1)
+    data2 = np.load(file2)
+
+    assert set(data1.keys()) == set(
+        data2.keys()
+    ), f"Keys in NPZ files do not match {set(data1.keys())} and {set(data2.keys())}"
+
+    for key in data1.keys():
+        try:
+            assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"
+        except Exception as e:
+            LOG.error(f"Error comparing key {key} :between {file1} and {file2}: {e}")
+            raise
+
+
+@skip_if_offline
+def test_make_regrid_mask():
+
+    era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
+    carra = get_test_data("anemoi-transform/filters/regrid/2t-rr.grib")
+    mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")
+
+    cli_testing(
+        "anemoi-transform",
+        "make-regrid-file",
+        "global-on-lam-mask",
+        "--global-grid",
+        era5,
+        "--lam-grid",
+        carra,
+        "--output",
+        "ea-over-rr-mask.npz",
+    )
+
+    compare_npz_files(mask, "ea-over-rr-mask.npz")
+
 
 @skip_if_offline
 def test_regrid_mask():
 
     mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")
+    mask = "ea-over-rr-mask.npz"
 
     era5 = source_registry.create(
         "testing",

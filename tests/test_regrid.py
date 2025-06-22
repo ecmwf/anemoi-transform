@@ -29,6 +29,42 @@ LOG = logging.getLogger(__name__)
 
 
 @skip_if_offline
+def test_make_regrid_matrix():
+
+    era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
+    carra = get_test_data("anemoi-transform/filters/regrid/2t-rr.grib")
+    mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")
+
+    cli_testing(
+        "anemoi-transform",
+        "make-regrid-file",
+        "mir-matrix",
+        "--global-grid",
+        era5,
+        "--lam-grid",
+        carra,
+        "--output",
+        "ea-over-rr-mask.npz",
+    )
+
+    compare_npz_files(mask, "ea-over-rr-mask.npz")
+
+
+@skip_if_offline
+def test_regrid_matrix():
+
+    matrix = get_test_data("anemoi-transform/filters/regrid/n320-to-o96.npz")
+
+    era5 = source_registry.create(
+        "testing",
+        dataset="anemoi-transform/filters/regrid/2t-ea.grib",
+    )
+    regrid = filter_registry.create("regrid", matrix=matrix)
+    for _ in era5 | regrid:
+        pass
+
+
+@skip_if_offline
 def test_make_regrid_mask():
 
     era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
@@ -54,7 +90,6 @@ def test_make_regrid_mask():
 def test_regrid_mask():
 
     mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")
-    mask = "ea-over-rr-mask.npz"
 
     era5 = source_registry.create(
         "testing",

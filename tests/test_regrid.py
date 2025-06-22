@@ -33,27 +33,27 @@ def test_make_regrid_matrix():
 
     era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
     carra = get_test_data("anemoi-transform/filters/regrid/2t-rr.grib")
-    mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")
+    mask = get_test_data("anemoi-transform/filters/regrid/ea-to-rr-matrix.npz")
 
     cli_testing(
         "anemoi-transform",
         "make-regrid-file",
         "mir-matrix",
-        "--global-grid",
+        "--source-grid",
         era5,
-        "--lam-grid",
+        "--target-grid",
         carra,
         "--output",
-        "ea-over-rr-mask.npz",
+        "ea-to-rr-matrix.npz",
     )
 
-    compare_npz_files(mask, "ea-over-rr-mask.npz")
+    compare_npz_files(mask, "ea-to-rr-matrix.npz")
 
 
 @skip_if_offline
 def test_regrid_matrix():
 
-    matrix = get_test_data("anemoi-transform/filters/regrid/n320-to-o96.npz")
+    matrix = get_test_data("anemoi-transform/filters/regrid/ea-to-rr-matrix.npz")
 
     era5 = source_registry.create(
         "testing",

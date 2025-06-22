@@ -127,6 +127,6 @@ def test_regrid_mask():
 
 
 if __name__ == "__main__":
-    test_regrid_nearest()
-    # from anemoi.utils.testing import run_tests
-    # run_tests(globals())
+    from anemoi.utils.testing import run_tests
+
+    run_tests(globals())

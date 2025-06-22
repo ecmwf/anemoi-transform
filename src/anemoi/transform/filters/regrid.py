@@ -119,7 +119,9 @@ class RegridFilter(Filter):
         self.in_grid = in_grid
         self.out_grid = out_grid
         self.method = method
-        self.interpolator = make_interpolator(method, matrix, mask, check)
+        self.interpolator = make_interpolator(
+            in_grid=in_grid, out_grid=out_grid, method=method, matrix=matrix, mask=mask, check=check
+        )
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward regridding transformation.
@@ -145,7 +147,7 @@ class RegridFilter(Filter):
 class EarthkitRegrid:
     """Default interpolator using earthkit."""
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, check: bool) -> None:
+    def __init__(self, *, in_grid: Any, out_grid: Any, method: str = "linear", check: bool = False) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -258,7 +260,7 @@ class ScipyKDTreeNearestNeighbours:
 
     nearest_grid_points = None
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, matrix: str = None, check: bool = False) -> None:
+    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, check: bool = False) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -273,6 +275,8 @@ class ScipyKDTreeNearestNeighbours:
             Whether to perform checks.
         """
         if method != "nearest":
+            # Rename to scipy_kdtree_nearest_neighbours
+            # To use earthkit.regrid nearest
             raise NotImplementedError(f"ScipyKDTreeNearestNeighbours does not support {method}, only 'nearest'")
 
         self.in_grid = as_griddata(in_grid)
@@ -404,17 +408,31 @@ def _interpolator(
         return "MaskedRegrid"
 
     if method == "nearest":
+        # Use nearest neighbours with Scipy KDTree
+        # earthkit.regrid used method 'nearest-neighbour' or 'nn'
+        # maybe rename to scipy_nearest_neighbours
         return "ScipyKDTreeNearestNeighbours"
 
     return "EarthkitRegrid"
 
 
-def make_interpolator(method: str = None, matrix: str = None, mask: str = None, check: bool = False) -> Any:
+def make_interpolator(
+    in_grid: Any = None,
+    out_grid: Any = None,
+    method: str = None,
+    matrix: str = None,
+    mask: str = None,
+    check: bool = False,
+) -> Any:
     """Create an interpolator.
 
     Parameters
     ----------
 
+    in_grid : Any, optional
+        The input grid specification.
+    out_grid : Any, optional
+        The output grid specification.
     method : str, optional
         The interpolation method.
     matrix : str, optional
@@ -432,6 +450,8 @@ def make_interpolator(method: str = None, matrix: str = None, mask: str = None, 
     interpolator = _interpolator(method=method, matrix=matrix, mask=mask)
 
     kwargs = {
+        "in_grid": in_grid,
+        "out_grid": out_grid,
         "method": method,
         "matrix": matrix,
         "mask": mask,

@@ -19,6 +19,7 @@ import logging
 
 from anemoi.utils.testing import cli_testing
 from anemoi.utils.testing import get_test_data
+from anemoi.utils.testing import skip_if_missing_command
 from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
@@ -29,6 +30,7 @@ LOG = logging.getLogger(__name__)
 
 
 @skip_if_offline
+@skip_if_missing_command("mir")
 def test_make_regrid_matrix():
 
     era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
@@ -87,6 +89,30 @@ def test_make_regrid_mask():
 
 
 @skip_if_offline
+def test_regrid_ekd():
+
+    era5 = source_registry.create(
+        "testing",
+        dataset="anemoi-transform/filters/regrid/2t-ea.grib",
+    )
+    regrid = filter_registry.create("regrid", in_grid="N320", out_grid=[0.25, 0.25])
+    for _ in era5 | regrid:
+        pass
+
+
+@skip_if_offline
+def test_regrid_nearest():
+
+    era5 = source_registry.create(
+        "testing",
+        dataset="anemoi-transform/filters/regrid/2t-ea.grib",
+    )
+    regrid = filter_registry.create("regrid", in_grid="N320", out_grid="O96", method="nearest")
+    for _ in era5 | regrid:
+        pass
+
+
+@skip_if_offline
 def test_regrid_mask():
 
     mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")
@@ -101,9 +127,6 @@ def test_regrid_mask():
 
 
 if __name__ == "__main__":
-    """Run all test functions that start with 'test_'."""
-    logging.basicConfig(level=logging.INFO)
-    for name, obj in list(globals().items()):
-        if name.startswith("test_") and callable(obj):
-            print(f"Running {name}...")
-            obj()
+    test_regrid_nearest()
+    # from anemoi.utils.testing import run_tests
+    # run_tests(globals())

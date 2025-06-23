@@ -631,7 +631,11 @@ if __name__ == "__main__":
     print(mask)
     import matplotlib.pyplot as plt
 
+    lat = global_lats[mask]
+    lon = global_lons[mask]
+    lon = np.where(lon >= 180, lon - 360, lon)
+
     fig = plt.figure(figsize=(10, 5))
-    plt.scatter(global_lons[mask], global_lats[mask], s=0.1, c="k")
+    plt.scatter(lon, lat, s=0.1, c="k")
     # plt.scatter(lons, lats, s=0.01)
     plt.savefig("cutout.png")

@@ -628,7 +628,7 @@ if __name__ == "__main__":
     lats, lons = lam[0].grid_points()
 
     mask = global_on_lam_mask(lats, lons, global_lats, global_lons, distance_km=100)
-    print(mask)
+    print(len(mask))
     import matplotlib.pyplot as plt
 
     lat = global_lats[mask]

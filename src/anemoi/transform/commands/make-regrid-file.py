@@ -167,6 +167,12 @@ class MakeGlobalOnLamMask:
         command_parser.add_argument("--lam-grid", help="Input file (GRIB or NetCDF).", required=True)
         command_parser.add_argument("--global-grid", help="Input file (GRIB or NetCDF).", required=True)
         command_parser.add_argument(
+            "--distance-km",
+            type=float,
+            default=None,
+            help="Distance in kilometers to consider for the mask. If None, use the spacing of the global grid.",
+        )
+        command_parser.add_argument(
             "--output",
             type=str,
             help="Output NPZ file. The name will be used to determine the type of regrid file to create.",
@@ -185,7 +191,7 @@ class MakeGlobalOnLamMask:
         lam_lat, lam_lon = _path_to_lat_lon(args.lam_grid)
         lam_lat, lam_lon = _path_to_lat_lon(args.global_grid)
 
-        make_global_on_lam_mask(lam_lat, lam_lon, lam_lat, lam_lon, output=args.output)
+        make_global_on_lam_mask(lam_lat, lam_lon, lam_lat, lam_lon, output=args.output, distance_km=args.distance_km)
 
 
 OPTIONS = {

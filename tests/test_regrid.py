@@ -21,6 +21,7 @@ from anemoi.utils.testing import cli_testing
 from anemoi.utils.testing import get_test_data
 from anemoi.utils.testing import skip_if_missing_command
 from anemoi.utils.testing import skip_if_offline
+from anemoi.utils.testing import skip_slow_tests
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
@@ -31,6 +32,7 @@ LOG = logging.getLogger(__name__)
 
 @skip_if_offline
 @skip_if_missing_command("mir")
+@skip_slow_tests
 def test_make_regrid_matrix():
 
     era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
@@ -67,6 +69,7 @@ def test_regrid_matrix():
 
 
 @skip_if_offline
+@skip_slow_tests
 def test_make_regrid_mask():
 
     era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")

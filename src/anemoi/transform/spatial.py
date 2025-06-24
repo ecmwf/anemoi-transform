@@ -620,14 +620,14 @@ if __name__ == "__main__":
 
     import earthkit.data as ekd
 
-    glob = ekd.from_source("file", "tmp/2t-ea.grib")
-    lam = ekd.from_source("file", "tmp/2t-rr.grib")
+    glob = ekd.from_source("file", "tmp/era5.grib")
+    lam = ekd.from_source("file", "tmp/carra-east.grib")
 
     global_lats, global_lons = glob[0].grid_points()
 
     lats, lons = lam[0].grid_points()
 
-    mask = global_on_lam_mask(lats, lons, global_lats, global_lons, distance_km=100)
+    mask = global_on_lam_mask(lats, lons, global_lats, global_lons)
     print(len(mask))
     import matplotlib.pyplot as plt
 

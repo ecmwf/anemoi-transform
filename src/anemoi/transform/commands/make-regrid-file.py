@@ -189,9 +189,11 @@ class MakeGlobalOnLamMask:
         """
 
         lam_lat, lam_lon = _path_to_lat_lon(args.lam_grid)
-        lam_lat, lam_lon = _path_to_lat_lon(args.global_grid)
+        global_lat, global_lon = _path_to_lat_lon(args.global_grid)
 
-        make_global_on_lam_mask(lam_lat, lam_lon, lam_lat, lam_lon, output=args.output, distance_km=args.distance_km)
+        make_global_on_lam_mask(
+            lam_lat, lam_lon, global_lat, global_lon, output=args.output, distance_km=args.distance_km
+        )
 
 
 OPTIONS = {

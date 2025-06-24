@@ -32,16 +32,14 @@ def fieldlist_fixture(name: str = "2t-sp.grib") -> Any:
     return ekd.from_source("file", get_test_data(f"anemoi-filters/{name}"))
 
 
-def convert_to_ekd_fieldlist(output):
-    ds = ekd.SimpleFieldList()
-    for f in output:
-        ds.append(f)
-    return ds
-
-
-class ListSource(Source):
-    def __init__(self, fields):
-        self.fields = convert_to_ekd_fieldlist(fields)
+class SelectFieldSource(Source):
+    def __init__(self, fields, params=None):
+        self._fields = fields
+        self.params = params
 
     def forward(self, *args, **kwargs):
-        return new_fieldlist_from_list(self.fields)
+        fields = []
+        for f in self._fields:
+            if self.params and f.metadata("param") in self.params:
+                fields.append(f)
+        return new_fieldlist_from_list(fields)

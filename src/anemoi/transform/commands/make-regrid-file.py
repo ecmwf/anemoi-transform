@@ -178,6 +178,11 @@ class MakeGlobalOnLamMask:
             help="Output NPZ file. The name will be used to determine the type of regrid file to create.",
             required=True,
         )
+        command_parser.add_argument(
+            "--plot",
+            type=str,
+            help="A path in which to plot the mask.",
+        )
 
     def run(self, args: argparse.Namespace) -> None:
         """Run the command with the provided arguments.
@@ -192,7 +197,7 @@ class MakeGlobalOnLamMask:
         global_lat, global_lon = _path_to_lat_lon(args.global_grid)
 
         make_global_on_lam_mask(
-            lam_lat, lam_lon, global_lat, global_lon, output=args.output, distance_km=args.distance_km
+            lam_lat, lam_lon, global_lat, global_lon, output=args.output, distance_km=args.distance_km, plot=args.plot
         )
 
 

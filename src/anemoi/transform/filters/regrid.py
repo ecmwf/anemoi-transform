@@ -15,6 +15,7 @@ from typing import Optional
 from typing import Union
 
 import earthkit.data as ekd
+import numpy as np
 import tqdm
 from earthkit.data.core.fieldlist import Field
 
@@ -96,8 +97,8 @@ class RegridFilter(Filter):
         out_grid: Optional[Any] = None,
         method: Optional[str] = None,
         matrix: Optional[str] = None,
+        mask: Optional[str] = None,
         check: bool = False,
-        interpolator: Optional[Any] = None,
     ) -> None:
         """Parameters
         -------------
@@ -109,16 +110,18 @@ class RegridFilter(Filter):
             The interpolation method.
         matrix : Optional[str]
             The regrid matrix file path.
+        mask : Optional[str]
+            The mask file path.
         check : bool
             Whether to perform checks.
-        interpolator : Optional[Any]
-            The interpolator to use.
         """
 
         self.in_grid = in_grid
         self.out_grid = out_grid
         self.method = method
-        self.interpolator = make_interpolator(in_grid, out_grid, method, matrix, check, interpolator)
+        self.interpolator = make_interpolator(
+            in_grid=in_grid, out_grid=out_grid, method=method, matrix=matrix, mask=mask, check=check
+        )
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward regridding transformation.
@@ -133,42 +136,7 @@ class RegridFilter(Filter):
         ekd.FieldList
             The transformed data.
         """
-        return self._interpolate(data, self.in_grid, self.out_grid, self.method)
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the backward regridding transformation.
-
-        Parameters
-        ----------
-        data : ekd.FieldList
-            The input data to be transformed.
-
-        Returns
-        -------
-        ekd.FieldList
-            The transformed data.
-        """
-        return self._interpolate(data, self.out_grid, self.in_grid, self.method)
-
-    def _interpolate(self, data: Any, in_grid: Any, out_grid: Any, method: str) -> Any:
-        """Interpolate the data from one grid to another.
-
-        Parameters
-        ----------
-        data : Any
-            The input data to be interpolated.
-        in_grid : Any
-            The input grid specification.
-        out_grid : Any
-            The output grid specification.
-        method : str
-            The interpolation method.
-
-        Returns
-        -------
-        Any
-            The interpolated data.
-        """
         result = []
         for field in tqdm.tqdm(data, desc="Regridding"):
             result.append(self.interpolator(field))
@@ -179,7 +147,7 @@ class RegridFilter(Filter):
 class EarthkitRegrid:
     """Default interpolator using earthkit."""
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, matrix: str, check: bool) -> None:
+    def __init__(self, *, in_grid: Any, out_grid: Any, method: str = "linear", check: bool = False) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -232,7 +200,7 @@ class EarthkitRegrid:
 class MIRMatrix:
     """Assume matrix was created by `anemoi-transform make-regrid-matrix`."""
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, matrix: str, check: bool) -> None:
+    def __init__(self, *, matrix: str, check: bool) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -251,21 +219,14 @@ class MIRMatrix:
 
         self.check = check
 
-        if in_grid is not None:
-            raise ValueError("in_grid is not supported by MIRMatrix")
-
-        if out_grid is not None:
-            raise ValueError("out_grid is not supported by MIRMatrix")
-
-        if method is not None:
-            raise ValueError("method is not supported by MIRMatrix")
-
-        # Assume matrix was created by `anemoi-transform make-regrid-matrix`
+        if self.check:
+            LOG.warning("Check is not supported by MIRMatrix")
 
         loaded = dict(np.load(matrix))
 
         self.matrix = csr_array(
-            (loaded["matrix_data"], loaded["matrix_indices"], loaded["matrix_indptr"]), shape=loaded["matrix_shape"]
+            (loaded["matrix_data"], loaded["matrix_indices"], loaded["matrix_indptr"]),
+            shape=loaded["matrix_shape"],
         )
 
         self.in_grid = dict(latitudes=loaded["in_latitudes"], longitudes=loaded["in_longitudes"])
@@ -299,7 +260,7 @@ class ScipyKDTreeNearestNeighbours:
 
     nearest_grid_points = None
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, matrix: str = None, check: bool = False) -> None:
+    def __init__(self, *, in_grid: Any = None, out_grid: Any = None, method: str, check: bool = False) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -314,6 +275,8 @@ class ScipyKDTreeNearestNeighbours:
             Whether to perform checks.
         """
         if method != "nearest":
+            # Rename to scipy_kdtree_nearest_neighbours
+            # To use earthkit.regrid nearest
             raise NotImplementedError(f"ScipyKDTreeNearestNeighbours does not support {method}, only 'nearest'")
 
         self.in_grid = as_griddata(in_grid)
@@ -343,7 +306,7 @@ class ScipyKDTreeNearestNeighbours:
             assert self.in_grid is not None, field
 
         if self.nearest_grid_points is None:
-            from anemoi.utils.grids import nearest_grid_points
+            from anemoi.transform.spatial import nearest_grid_points
 
             self.nearest_grid_points = nearest_grid_points(
                 self.in_grid["latitudes"],
@@ -360,68 +323,143 @@ class ScipyKDTreeNearestNeighbours:
         return new_field_from_latitudes_longitudes(new_field_from_numpy(data, template=field), **self.out_grid)
 
 
+class MaskedRegrid:
+    """Interpolator tools for the grids that are not supported yet by earthkit."""
+
+    out_latitudes = None
+    out_longitudes = None
+
+    def __init__(self, *, mask: str, check: bool) -> None:
+        """Parameters
+        -------------
+        in_grid : Any
+            The input grid specification.
+        out_grid : Any
+            The output grid specification.
+        method : str
+            The interpolation method.
+        matrix : str, optional
+            The regrid matrix file path.
+        check : bool
+            Whether to perform checks.
+        """
+
+        if check:
+            LOG.warning("Check is not supported by MaskedRegrid")
+
+        self.mask = np.load(mask)["mask"]
+        print(f"Mask shape: {self.mask.shape}")
+
+    def __call__(self, field: Any) -> Any:
+        """Interpolate the field data using nearest neighbours.
+
+        Parameters
+        ----------
+        field : Any
+            The field to be interpolated.
+
+        Returns
+        -------
+        Any
+            The interpolated field.
+        """
+
+        data = field.to_numpy(flatten=True)
+
+        data = data[..., self.mask]
+
+        if self.out_latitudes is None or self.out_longitudes is None:
+            in_latitudes, in_longitudes = field.grid_points()
+            self.out_latitudes = in_latitudes[self.mask]
+            self.out_longitudes = in_longitudes[self.mask]
+
+        return new_field_from_latitudes_longitudes(
+            new_field_from_numpy(data, template=field), latitudes=self.out_latitudes, longitudes=self.out_longitudes
+        )
+
+
 def _interpolator(
-    in_grid: Any, out_grid: Any, method: str = None, matrix: str = None, check: bool = False, interpolator: Any = None
+    *,
+    method: str = None,
+    matrix: str = None,
+    mask: str = None,
 ) -> str:
     """Determine the interpolator to use.
 
     Parameters
     ----------
-    in_grid : Any
-        The input grid specification.
-    out_grid : Any
-        The output grid specification.
     method : str, optional
         The interpolation method.
     matrix : str, optional
         The regrid matrix file path.
-    check : bool, optional
-        Whether to perform checks.
-    interpolator : Any, optional
-        The interpolator to use.
+    mask : str, optional
+        The mask file path.
 
     Returns
     -------
     str
         The interpolator to use.
     """
-    if interpolator is not None:
-        return interpolator
 
     if matrix is not None:
         return "MIRMatrix"
 
+    if mask is not None:
+        return "MaskedRegrid"
+
     if method == "nearest":
+        # Use nearest neighbours with Scipy KDTree
+        # earthkit.regrid used method 'nearest-neighbour' or 'nn'
+        # maybe rename to scipy_nearest_neighbours
         return "ScipyKDTreeNearestNeighbours"
 
     return "EarthkitRegrid"
 
 
 def make_interpolator(
-    in_grid: Any, out_grid: Any, method: str = None, matrix: str = None, check: bool = False, interpolator: Any = None
+    in_grid: Any = None,
+    out_grid: Any = None,
+    method: str = None,
+    matrix: str = None,
+    mask: str = None,
+    check: bool = False,
 ) -> Any:
     """Create an interpolator.
 
     Parameters
     ----------
-    in_grid : Any
+
+    in_grid : Any, optional
         The input grid specification.
-    out_grid : Any
+    out_grid : Any, optional
         The output grid specification.
     method : str, optional
         The interpolation method.
     matrix : str, optional
         The regrid matrix file path.
+    mask : str, optional
+        The mask file path.
     check : bool, optional
         Whether to perform checks.
-    interpolator : Any, optional
-        The interpolator to use.
 
     Returns
     -------
     Any
         The created interpolator.
     """
-    interpolator = _interpolator(in_grid, out_grid, method, matrix, check, interpolator)
+    interpolator = _interpolator(method=method, matrix=matrix, mask=mask)
 
-    return globals()[interpolator](in_grid=in_grid, out_grid=out_grid, method=method, matrix=matrix, check=check)
+    kwargs = {
+        "in_grid": in_grid,
+        "out_grid": out_grid,
+        "method": method,
+        "matrix": matrix,
+        "mask": mask,
+        "check": check,
+    }
+
+    for key, value in list(kwargs.items()):
+        if value is None:
+            del kwargs[key]
+
+    return globals()[interpolator](**kwargs)

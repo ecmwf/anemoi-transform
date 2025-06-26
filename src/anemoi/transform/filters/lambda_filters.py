@@ -86,7 +86,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
         else:
             self.backward_fn = backward_fn
 
-        self.param = param if isinstance(param, list) else [param]
+        self.param = param
         self.fn_args = fn_args
         self.fn_kwargs = fn_kwargs
 

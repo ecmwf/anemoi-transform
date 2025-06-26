@@ -260,7 +260,7 @@ class ScipyKDTreeNearestNeighbours:
 
     nearest_grid_points = None
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, check: bool = False) -> None:
+    def __init__(self, *, in_grid: Any = None, out_grid: Any = None, method: str, check: bool = False) -> None:
         """Parameters
         -------------
         in_grid : Any

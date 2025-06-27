@@ -7,12 +7,13 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import pytest
-import earthkit.data as ekd
-
 from typing import Any
 
+import earthkit.data as ekd
+import pytest
+
 pytest_plugins = ["anemoi.utils.testing"]
+
 
 @pytest.fixture
 def fieldlist_fixture(get_test_data: callable, name: str = "2t-sp.grib") -> Any:
@@ -30,4 +31,5 @@ def fieldlist_fixture(get_test_data: callable, name: str = "2t-sp.grib") -> Any:
             The created fieldlist.
         """
         return ekd.from_source("file", get_test_data(f"anemoi-filters/{name}"))
+
     return _fieldlist_fixture

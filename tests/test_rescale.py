@@ -15,10 +15,9 @@ from pytest import approx
 
 from anemoi.transform.filters.rescale import Convert
 from anemoi.transform.filters.rescale import Rescale
-from anemoi.transform.testing import fieldlist_fixture
 
 
-def test_rescale(fieldlist: Optional[Any] = None) -> None:
+def test_rescale(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -> None:
     """Test rescaling temperature from Kelvin to Celsius and back.
 
     Parameters
@@ -40,7 +39,7 @@ def test_rescale(fieldlist: Optional[Any] = None) -> None:
     npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
 
 
-def test_convert(fieldlist: Optional[Any] = None) -> None:
+def test_convert(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -> None:
     """Test converting temperature from Kelvin to Celsius and back.
 
     Parameters

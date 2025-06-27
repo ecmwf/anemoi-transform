@@ -9,6 +9,14 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.12](https://github.com/ecmwf/anemoi-transform/compare/0.1.11...0.1.12) (2025-06-27)
+
+
+### Features
+
+* General purpose clipping filter ([#96](https://github.com/ecmwf/anemoi-transform/issues/96)) ([f70b1ab](https://github.com/ecmwf/anemoi-transform/commit/f70b1abc37844046e1f2a7bf9ba60818ccfbecaa))
+* Set resolution metadata in filter operation. ([#98](https://github.com/ecmwf/anemoi-transform/issues/98)) ([7844fea](https://github.com/ecmwf/anemoi-transform/commit/7844fea7cf5f849a9dfd7242440eb9721d0ee9f8))
+
 ## [0.1.11](https://github.com/ecmwf/anemoi-transform/compare/0.1.10...0.1.11) (2025-05-26)
 
 

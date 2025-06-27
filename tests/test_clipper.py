@@ -14,10 +14,9 @@ import numpy as np
 import numpy.testing as npt
 
 from anemoi.transform.filters.clipper import Clipper
-from anemoi.transform.testing import fieldlist_fixture
 
 
-def test_clipper_1(fieldlist: Optional[Any] = None) -> None:
+def test_clipper_1(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -> None:
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
     fieldlist = fieldlist.sel(param="2t")
@@ -31,7 +30,7 @@ def test_clipper_1(fieldlist: Optional[Any] = None) -> None:
     npt.assert_allclose(clipped[0].to_numpy(), ref)
 
 
-def test_clipper_2(fieldlist: Optional[Any] = None) -> None:
+def test_clipper_2(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -> None:
     if fieldlist is None:
         fieldlist = fieldlist_fixture()
     fieldlist = fieldlist.sel(param="2t")

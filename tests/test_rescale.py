@@ -22,6 +22,8 @@ def test_rescale(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -
 
     Parameters
     ----------
+    fieldlist_fixture : callable
+        A fixture to create a fieldlist for testing.
     fieldlist : Optional[Any], optional
         The fieldlist to use for testing, by default None.
     """
@@ -44,6 +46,8 @@ def test_convert(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -
 
     Parameters
     ----------
+    fieldlist_fixture : callable
+        A fixture to create a fieldlist for testing.
     fieldlist : Optional[Any], optional
         The fieldlist to use for testing, by default None.
     """

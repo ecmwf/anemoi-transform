@@ -42,6 +42,8 @@ def test_singlefieldlambda(fieldlist_fixture: callable, fieldlist: Optional[Any]
 
     Parameters
     ----------
+    fieldlist_fixture : callable
+        A fixture to create a fieldlist for testing.
     fieldlist : Optional[Any], optional
         The fieldlist to use for testing, by default None.
     """

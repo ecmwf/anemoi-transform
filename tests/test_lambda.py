@@ -15,7 +15,6 @@ from typing import Optional
 import numpy.testing as npt
 
 from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
-from anemoi.transform.testing import fieldlist_fixture
 
 sys.path.append(Path(__file__).parents[1].as_posix())
 
@@ -38,11 +37,13 @@ def _do_something(field: Any, a: float) -> Any:
     return field.clone(values=field.values * a)
 
 
-def test_singlefieldlambda(fieldlist: Optional[Any] = None) -> None:
+def test_singlefieldlambda(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -> None:
     """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
 
     Parameters
     ----------
+    fieldlist_fixture : callable
+        A fixture to create a fieldlist for testing.
     fieldlist : Optional[Any], optional
         The fieldlist to use for testing, by default None.
     """

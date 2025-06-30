@@ -10,17 +10,16 @@ import pytest
 from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.sources import source_registry
 
 
 @pytest.fixture
-def grib_source():
-    return source_registry.create("testing", dataset="anemoi-datasets/create/grib-20100101.grib")
+def grib_source(test_source):
+    return test_source("anemoi-datasets/create/grib-20100101.grib")
 
 
 @pytest.fixture
-def netcdf_source():
-    return source_registry.create("testing", dataset="anemoi-datasets/create/netcdf.nc")
+def netcdf_source(test_source):
+    return test_source("anemoi-datasets/create/netcdf.nc")
 
 
 @skip_if_offline

@@ -12,9 +12,8 @@ import pytest
 from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.sources import source_registry
-from anemoi.transform.testing import SelectFieldSource
 
+from .utils import SelectFieldSource
 from .utils import assert_fields_equal
 from .utils import collect_fields_by_param
 
@@ -31,21 +30,21 @@ D_VALUES = np.array([[294.34245300, 292.02214050], [278.56315613, 281.47135925],
 
 
 @pytest.fixture
-def relative_humidity_source():
+def relative_humidity_source(test_source):
     RELATIVE_HUMIDITY_SPEC = [
         {"param": "r", "values": R_VALUES, **MOCK_FIELD_METADATA},
         {"param": "t", "values": T_VALUES, **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=RELATIVE_HUMIDITY_SPEC)
+    return test_source(RELATIVE_HUMIDITY_SPEC)
 
 
 @pytest.fixture
-def dewpoint_source():
+def dewpoint_source(test_source):
     DEWPOINT_SPEC = [
         {"param": "d", "values": D_VALUES, **MOCK_FIELD_METADATA},
         {"param": "t", "values": T_VALUES, **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=DEWPOINT_SPEC)
+    return test_source(DEWPOINT_SPEC)
 
 
 def test_relative_humidity_to_dewpoint(relative_humidity_source):
@@ -99,9 +98,9 @@ def test_relative_humidity_to_dewpoint_round_trip(relative_humidity_source):
 
 
 @skip_if_offline
-def test_relative_humidity_to_dewpoint_from_file():
+def test_relative_humidity_to_dewpoint_from_file(test_source):
     # this grib file is CERRA data that contains 2t and 2r
-    source = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_20240601_single_level.grib")
+    source = test_source("anemoi-transform/filters/cerra_20240601_single_level.grib")
     r_to_d = filter_registry.create("r_to_d", relative_humidity="2r", temperature="2t", dewpoint="2d")
     pipeline = source | r_to_d
 
@@ -118,11 +117,7 @@ def test_relative_humidity_to_dewpoint_from_file():
             assert_fields_equal(input_field, output_field)
 
     # test pipeline output matches known good output
-    expected_dewpoint = (
-        source_registry.create("testing", dataset="anemoi-transform/filters/cerra_2d.npy")
-        .ds.to_numpy()
-        .reshape(1069, 1069)
-    )
+    expected_dewpoint = test_source("anemoi-transform/filters/cerra_2d.npy").ds.to_numpy().reshape(1069, 1069)
     assert len(output_fields["2d"]) == 1
     result = output_fields["2d"][0]
     assert np.allclose(result.to_numpy(), expected_dewpoint)
@@ -178,10 +173,8 @@ def test_dewpoint_to_relative_humidity_round_trip(dewpoint_source):
             assert_fields_equal(intermediate_field, output_field)
 
 
-def test_dewpoint_to_relative_humidity_from_file():
-    dewpoint_source = source_registry.create(
-        "testing", dataset="anemoi-transform/filters/era_20240601_single_level_dewpoint.grib"
-    )
+def test_dewpoint_to_relative_humidity_from_file(test_source):
+    dewpoint_source = test_source("anemoi-transform/filters/era_20240601_single_level_dewpoint.grib")
     d_to_r = filter_registry.create("d_to_r", relative_humidity="2r", temperature="2t", dewpoint="2d")
     pipeline = dewpoint_source | d_to_r
 
@@ -198,9 +191,7 @@ def test_dewpoint_to_relative_humidity_from_file():
             assert_fields_equal(input_field, output_field)
 
     # test pipeline output matches known good output
-    expected_relative_humidity = (
-        source_registry.create("testing", dataset="anemoi-transform/filters/era5_2r.npy").ds.to_numpy().reshape(9, 18)
-    )
+    expected_relative_humidity = test_source("anemoi-transform/filters/era5_2r.npy").ds.to_numpy().reshape(9, 18)
     assert len(output_fields["2r"]) == 1
     result = output_fields["2r"][0]
     assert np.allclose(result.to_numpy(), expected_relative_humidity)

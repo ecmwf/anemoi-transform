@@ -11,7 +11,6 @@ import numpy as np
 import pytest
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.sources import source_registry
 
 from .utils import assert_fields_equal
 from .utils import collect_fields_by_param
@@ -32,21 +31,21 @@ FF_VALUES = np.array([[153.37349864, 148.45827835], [105.27908047, 99.18178736],
 
 
 @pytest.fixture
-def uv_source():
+def uv_source(test_source):
     UV_SPEC = [
         {"param": "u", "values": U_VALUES, **MOCK_FIELD_METADATA},
         {"param": "v", "values": V_VALUES, **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=UV_SPEC)
+    return test_source(UV_SPEC)
 
 
 @pytest.fixture
-def ddff_source():
+def ddff_source(test_source):
     DDFF_SPEC = [
         {"param": "ws", "values": DD_VALUES, **MOCK_FIELD_METADATA},
         {"param": "wdir", "values": FF_VALUES, **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=DDFF_SPEC)
+    return test_source(DDFF_SPEC)
 
 
 def test_uv_to_ddff(uv_source):

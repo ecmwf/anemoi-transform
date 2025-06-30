@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.sources import source_registry
 
 from .utils import assert_fields_equal
 from .utils import collect_fields_by_param
@@ -28,20 +27,20 @@ SIN_MWD_VALUES = np.array([[0.44817262, 0.52311930], [0.96465370, 0.98718704], [
 
 
 @pytest.fixture
-def mwd_source():
+def mwd_source(test_source):
     MWD_SPEC = [
         {"param": "mwd", "values": MWD_VALUES, **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=MWD_SPEC)
+    return test_source(MWD_SPEC)
 
 
 @pytest.fixture
-def cos_sin_mwd_source():
+def cos_sin_mwd_source(test_source):
     COS_SIN_MWD = [
         {"param": "cos_mwd", "values": COS_MWD_VALUES, **MOCK_FIELD_METADATA},
         {"param": "sin_mwd", "values": SIN_MWD_VALUES, **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=COS_SIN_MWD)
+    return test_source(COS_SIN_MWD)
 
 
 def test_cos_sin_mean_wave_direction(mwd_source):

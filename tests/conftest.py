@@ -7,29 +7,41 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Any
-
 import earthkit.data as ekd
 import pytest
+
+from anemoi.transform.source import Source
+from anemoi.transform.sources import source_registry
 
 pytest_plugins = ["anemoi.utils.testing"]
 
 
+@source_registry.register("testing")
+class TestingSource(Source):
+    def __init__(self, *, dataset: str | list[dict]) -> None:
+        assert dataset is not None, "Dataset cannot be None"
+        self.ds = dataset
+
+    def forward(self, *args, **kwargs):
+        return self.ds
+
+
 @pytest.fixture
-def fieldlist_fixture(get_test_data: callable, name: str = "2t-sp.grib") -> Any:
-    def _fieldlist_fixture() -> Any:
-        """Fixture to create a fieldlist for testing.
+def fieldlist(get_test_data: callable) -> ekd.FieldList:
+    """Fixture to create a fieldlist for testing."""
+    return ekd.from_source("file", get_test_data("anemoi-filters/2t-sp.grib"))
 
-        Parameters
-        ----------
-        name : str, optional
-            The name of the fieldlist to create, by default "2t-sp.grib".
 
-        Returns
-        -------
-        Any
-            The created fieldlist.
-        """
-        return ekd.from_source("file", get_test_data(f"anemoi-filters/{name}"))
+@pytest.fixture
+def test_source(get_test_data: callable) -> callable:
+    def _source(dataset: str | list[dict]) -> Source:
+        """Create a source from a known file or a list of dicts for testing."""
+        if isinstance(dataset, str):
+            ds = ekd.from_source("file", get_test_data(dataset))
+        elif isinstance(dataset, list):
+            ds = ekd.from_source("list-of-dicts", dataset)
+        else:
+            raise ValueError("dataset must be a string or a list of dicts")
+        return source_registry.create("testing", dataset=ds)
 
-    return _fieldlist_fixture
+    return _source

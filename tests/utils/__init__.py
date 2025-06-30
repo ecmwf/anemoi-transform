@@ -11,6 +11,9 @@ from collections import defaultdict
 
 import numpy as np
 
+from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.source import Source
+
 
 def collect_fields_by_param(pipeline):
     fields = defaultdict(list)
@@ -31,3 +34,16 @@ def assert_fields_equal(field_a, field_b):
         except KeyError:
             continue
     assert np.allclose(field_a.to_numpy(), field_b.to_numpy())
+
+
+class SelectFieldSource(Source):
+    def __init__(self, fields, params=None):
+        self._fields = fields
+        self.params = params
+
+    def forward(self, *args, **kwargs):
+        fields = []
+        for f in self._fields:
+            if self.params and f.metadata("param") in self.params:
+                fields.append(f)
+        return new_fieldlist_from_list(fields)

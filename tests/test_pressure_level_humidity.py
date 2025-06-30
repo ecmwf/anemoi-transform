@@ -13,9 +13,8 @@ import pytest
 from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.sources import source_registry
-from anemoi.transform.testing import SelectFieldSource
 
+from .utils import SelectFieldSource
 from .utils import assert_fields_equal
 from .utils import collect_fields_by_param
 
@@ -42,25 +41,25 @@ R_VALUES = {
 
 
 @pytest.fixture
-def relative_humidity_source():
+def relative_humidity_source(test_source):
     PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC = [
         {"param": "r", "levelist": 850, "values": R_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 850, "values": T_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "r", "levelist": 1000, "values": R_VALUES[1000], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 1000, "values": T_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
+    return test_source(PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
 
 
 @pytest.fixture
-def specific_humidity_source():
+def specific_humidity_source(test_source):
     PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC = [
         {"param": "q", "levelist": 850, "values": Q_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 850, "values": T_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "q", "levelist": 1000, "values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 1000, "values": T_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC)
+    return test_source(PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC)
 
 
 def test_pressure_level_specific_humidity_to_relative_humidity(specific_humidity_source):
@@ -116,10 +115,8 @@ def test_pressure_level_specific_humidity_to_relative_humidity_round_trip(specif
 
 
 @skip_if_offline
-def test_pressure_level_specific_humidity_to_relative_humidity_from_file():
-    source = source_registry.create(
-        "testing", dataset="anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib"
-    )
+def test_pressure_level_specific_humidity_to_relative_humidity_from_file(test_source):
+    source = test_source("anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib")
     q_to_r = filter_registry.create("q_to_r")
     pipeline = source | q_to_r
 
@@ -140,9 +137,7 @@ def test_pressure_level_specific_humidity_to_relative_humidity_from_file():
     fields = map(lambda f: f.to_numpy(), fields)
     result = np.stack(list(fields)).flatten()
 
-    expected_relative_humidity = (
-        source_registry.create("testing", dataset="anemoi-transform/filters/era_r.npy").ds.to_numpy().flatten()
-    )
+    expected_relative_humidity = test_source("anemoi-transform/filters/era_r.npy").ds.to_numpy().flatten()
     assert np.allclose(result, expected_relative_humidity)
 
 
@@ -197,8 +192,8 @@ def test_pressure_level_relative_humidity_to_specific_humidity_round_trip(relati
 
 
 @skip_if_offline
-def test_pressure_level_relative_humidity_to_specific_humidity_from_file():
-    source = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_20240601_pressure_levels.grib")
+def test_pressure_level_relative_humidity_to_specific_humidity_from_file(test_source):
+    source = test_source("anemoi-transform/filters/cerra_20240601_pressure_levels.grib")
     r_to_q = filter_registry.create("r_to_q")
     pipeline = source | r_to_q
 
@@ -219,9 +214,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity_from_file():
     fields = map(lambda f: f.to_numpy(), fields)
     result = np.stack(list(fields)).flatten()
 
-    expected_specific_humidity = (
-        source_registry.create("testing", dataset="anemoi-transform/filters/cerra_q.npy").ds.to_numpy().flatten()
-    )
+    expected_specific_humidity = test_source("anemoi-transform/filters/cerra_q.npy").ds.to_numpy().flatten()
     assert np.allclose(result, expected_specific_humidity)
 
 

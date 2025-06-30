@@ -68,7 +68,7 @@ def test_rename_grib_dict_multiple(grib_source):
     pipeline = grib_source | rename
 
     for original, result in zip(grib_source, pipeline):
-        assert result.metadata("levelist") == f"{original.metadata("levelist")}hPa"
+        assert result.metadata("levelist") == f"{original.metadata('levelist')}hPa"
         if original.metadata("param") == "z":
             assert result.metadata("param") == "geopotential"
         elif original.metadata("param") == "t":

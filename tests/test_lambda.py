@@ -10,12 +10,11 @@
 import sys
 from pathlib import Path
 from typing import Any
-from typing import Optional
 
+import earthkit.data as ekd
 import numpy.testing as npt
 
 from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
-from anemoi.transform.testing import fieldlist_fixture
 
 sys.path.append(Path(__file__).parents[1].as_posix())
 
@@ -38,17 +37,14 @@ def _do_something(field: Any, a: float) -> Any:
     return field.clone(values=field.values * a)
 
 
-def test_singlefieldlambda(fieldlist: Optional[Any] = None) -> None:
+def test_singlefieldlambda(fieldlist: ekd.FieldList) -> None:
     """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
 
     Parameters
     ----------
-    fieldlist : Optional[Any], optional
-        The fieldlist to use for testing, by default None.
+    fieldlist : ekd.FieldList
+        The fieldlist to use for testing.
     """
-    if fieldlist is None:
-        fieldlist = fieldlist_fixture()
-
     fieldlist = fieldlist.sel(param="sp")
 
     def undo_something(field: Any, a: float) -> Any:

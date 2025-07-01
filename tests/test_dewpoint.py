@@ -1,127 +1,200 @@
+# (C) Copyright 2025 Anemoi contributors.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+
 import numpy as np
+import pytest
+from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.sources import source_registry
-from anemoi.transform.testing import ListSource
-from anemoi.transform.testing import convert_to_ekd_fieldlist
 
-prototype = {
+from .utils import SelectFieldSource
+from .utils import assert_fields_equal
+from .utils import collect_fields_by_param
+
+MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
     "longitudes": [20, 40.0],
     "valid_datetime": "2018-08-01T09:00:00Z",
 }
+R_VALUES = np.array([[78.13834333, 71.28598853], [99.17328572, 44.52144788], [56.49667261, 86.10495618]])
 
-relative_humidity_source = [
-    {"param": "r", "values": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0], **prototype},
-    {"param": "t", "values": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0], **prototype},
-]
+T_VALUES = np.array([[298.42488098, 297.55574036], [278.68269348, 293.99324036], [300.61042786, 300.40144348]])
 
-dewpoint_source = [
-    {"param": "d", "values": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0], **prototype},
-    {"param": "t", "values": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0], **prototype},
-]
+D_VALUES = np.array([[294.34245300, 292.02214050], [278.56315613, 281.47135925], [291.19792175, 297.87370300]])
 
 
-def test_relative_humidity_to_dewpoint():
+@pytest.fixture
+def relative_humidity_source(test_source):
+    RELATIVE_HUMIDITY_SPEC = [
+        {"param": "r", "values": R_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "t", "values": T_VALUES, **MOCK_FIELD_METADATA},
+    ]
+    return test_source(RELATIVE_HUMIDITY_SPEC)
 
-    source_relative = source_registry.create("testing", fields=relative_humidity_source)
-    source_dewpoint = source_registry.create("testing", fields=dewpoint_source)
 
+@pytest.fixture
+def dewpoint_source(test_source):
+    DEWPOINT_SPEC = [
+        {"param": "d", "values": D_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "t", "values": T_VALUES, **MOCK_FIELD_METADATA},
+    ]
+    return test_source(DEWPOINT_SPEC)
+
+
+def test_relative_humidity_to_dewpoint(relative_humidity_source):
+    r_to_d = filter_registry.create("r_to_d")
+    pipeline = relative_humidity_source | r_to_d
+
+    input_fields = collect_fields_by_param(relative_humidity_source)
+    output_fields = collect_fields_by_param(pipeline)
+
+    # check for expected params
+    assert set(input_fields) == {"r", "t"}
+    assert set(output_fields) == {"r", "t", "d"}
+
+    # test unchanged fields agree
+    for param in ("r", "t"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
+
+    # test new output matches expected values
+    assert len(output_fields["d"]) == 1
+    result = output_fields["d"][0]
+    expected_dewpoint = D_VALUES
+    assert np.allclose(result.to_numpy(), expected_dewpoint)
+
+
+def test_relative_humidity_to_dewpoint_round_trip(relative_humidity_source):
     r_to_d = filter_registry.create("r_to_d")
     d_to_r = filter_registry.create("d_to_r")
+    # drop r to be sure it is reconstructed properly
+    dewpoint_source = SelectFieldSource(relative_humidity_source | r_to_d, params=["t", "d"])
+    pipeline = dewpoint_source | d_to_r
 
-    dewpoint_transform_output = source_relative | r_to_d
-    assert len(list(dewpoint_transform_output)) == 3
+    input_fields = collect_fields_by_param(relative_humidity_source)
+    intermediate_fields = collect_fields_by_param(dewpoint_source)
+    output_fields = collect_fields_by_param(pipeline)
 
-    relative_humidity_transform_output = source_dewpoint | d_to_r
-    assert len(list(relative_humidity_transform_output)) == 3
+    # check for expected params
+    assert set(input_fields) == {"r", "t"}
+    assert set(intermediate_fields) == {"d", "t"}
+    assert set(output_fields) == {"r", "d", "t"}
 
-    dewpoint_transform_output = ListSource(convert_to_ekd_fieldlist(dewpoint_transform_output).sel(param=["d", "t"]))
-    relative_transform_output = ListSource(
-        convert_to_ekd_fieldlist(list(dewpoint_transform_output | d_to_r)).sel(param=["r", "t"])
-    )
+    # test unchanged fields agree from beginning to end
+    for param in ("r", "t"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
 
-    for original, converted in zip(source_relative, relative_transform_output):
-        assert np.allclose(original.to_numpy(), converted.to_numpy()), (
-            (original.metadata("param")),
-            (converted.metadata("param")),
-            original.to_numpy(),
-            converted.to_numpy(),
-            original.to_numpy() == converted.to_numpy(),
-            original.to_numpy() - converted.to_numpy(),
-        )
+    # test intermediate fields are unchanged
+    for param in ("d", "t"):
+        for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
+            assert_fields_equal(intermediate_field, output_field)
 
 
-def test_relative_humidity_to_dewpoint_from_file():
-
+@skip_if_offline
+def test_relative_humidity_to_dewpoint_from_file(test_source):
     # this grib file is CERRA data that contains 2t and 2r
-    source = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_20240601_single_level.grib")
-
+    source = test_source("anemoi-transform/filters/cerra_20240601_single_level.grib")
     r_to_d = filter_registry.create("r_to_d", relative_humidity="2r", temperature="2t", dewpoint="2d")
+    pipeline = source | r_to_d
 
-    output = source | r_to_d
-    assert len(list(output)) == 3
-    output_dict = {v.metadata("param"): v.to_numpy() for v in list(output)}
+    input_fields = collect_fields_by_param(source)
+    output_fields = collect_fields_by_param(pipeline)
 
-    output_cerra_2d = (
-        source_registry.create("testing", dataset="anemoi-transform/filters/cerra_2d.npy")
-        .ds.to_numpy()
-        .reshape(1069, 1069)
-    )
-    np.testing.assert_allclose(output_dict["2d"], output_cerra_2d)
+    # check for expected params
+    assert set(input_fields) == {"2t", "2r"}
+    assert set(output_fields) == {"2t", "2r", "2d"}
 
-    assert np.sum(np.isnan(output_dict["2d"])) == 0
-    assert np.any(
-        source.ds.sel(param="2r").to_numpy(flatten=True) != output_dict["2d"].flatten()
-    ), "Arrays are  different"
+    # test unchanged fields agree
+    for param in ("2r", "2t"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
+
+    # test pipeline output matches known good output
+    expected_dewpoint = test_source("anemoi-transform/filters/cerra_2d.npy").ds.to_numpy().reshape(1069, 1069)
+    assert len(output_fields["2d"]) == 1
+    result = output_fields["2d"][0]
+    assert np.allclose(result.to_numpy(), expected_dewpoint)
 
 
-def test_dewpoint_to_relative_humidity():
+def test_dewpoint_to_relative_humidity(dewpoint_source):
+    d_to_r = filter_registry.create("d_to_r")
+    pipeline = dewpoint_source | d_to_r
 
-    source_dewpoint = source_registry.create("testing", fields=dewpoint_source)
+    input_fields = collect_fields_by_param(dewpoint_source)
+    output_fields = collect_fields_by_param(pipeline)
 
+    # check for expected params
+    assert set(input_fields) == {"d", "t"}
+    assert set(output_fields) == {"d", "t", "r"}
+
+    # test unchanged fields agree
+    for param in ("d", "t"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
+
+    # test new output matches expected values
+    assert len(output_fields["r"]) == 1
+    result = output_fields["r"][0]
+    expected_humidity = R_VALUES
+    assert np.allclose(result.to_numpy(), expected_humidity)
+
+
+def test_dewpoint_to_relative_humidity_round_trip(dewpoint_source):
     d_to_r = filter_registry.create("d_to_r")
     r_to_d = filter_registry.create("r_to_d")
+    # drop d to be sure it is reconstructed properly
+    relative_humidity_source = SelectFieldSource(dewpoint_source | d_to_r, params=["t", "r"])
+    pipeline = relative_humidity_source | r_to_d
 
-    relative_transform_output = source_dewpoint | d_to_r
-    assert len(list(relative_transform_output)) == 3
+    input_fields = collect_fields_by_param(dewpoint_source)
+    intermediate_fields = collect_fields_by_param(relative_humidity_source)
+    output_fields = collect_fields_by_param(pipeline)
 
-    relative_transform_output = ListSource(convert_to_ekd_fieldlist(relative_transform_output).sel(param=["r", "t"]))
-    dewpoint_transform_output = ListSource(
-        convert_to_ekd_fieldlist(list(relative_transform_output | r_to_d)).sel(param=["d", "t"])
-    )
+    # check for expected params
+    assert set(input_fields) == {"d", "t"}
+    assert set(intermediate_fields) == {"r", "t"}
+    assert set(output_fields) == {"r", "d", "t"}
 
-    for original, converted in zip(source_dewpoint, dewpoint_transform_output):
-        assert np.allclose(original.to_numpy(), converted.to_numpy()), (
-            (original.metadata("param")),
-            (converted.metadata("param")),
-            original.to_numpy(),
-            converted.to_numpy(),
-            original.to_numpy() == converted.to_numpy(),
-            original.to_numpy() - converted.to_numpy(),
-        )
+    # test unchanged fields agree from beginning to end
+    for param in ("d", "t"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
+
+    # test intermediate fields are unchanged
+    for param in ("r", "t"):
+        for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
+            assert_fields_equal(intermediate_field, output_field)
 
 
-def test_dewpoint_to_relative_humidity_from_file():
-
-    source = source_registry.create(
-        "testing", dataset="anemoi-transform/filters/era_20240601_single_level_dewpoint.grib"
-    )
+def test_dewpoint_to_relative_humidity_from_file(test_source):
+    dewpoint_source = test_source("anemoi-transform/filters/era_20240601_single_level_dewpoint.grib")
     d_to_r = filter_registry.create("d_to_r", relative_humidity="2r", temperature="2t", dewpoint="2d")
+    pipeline = dewpoint_source | d_to_r
 
-    output = source | d_to_r
-    assert len(list(output)) == 3
-    output_dict = {v.metadata("param"): v.to_numpy() for v in list(output)}
+    input_fields = collect_fields_by_param(dewpoint_source)
+    output_fields = collect_fields_by_param(pipeline)
 
-    era5_2r = (
-        source_registry.create("testing", dataset="anemoi-transform/filters/era5_2r.npy").ds.to_numpy().reshape(9, 18)
-    )
-    np.testing.assert_allclose(output_dict["2r"], era5_2r)
+    # check for expected params
+    assert set(input_fields) == {"2t", "2d"}
+    assert set(output_fields) == {"2t", "2d", "2r"}
 
-    assert np.sum(np.isnan(output_dict["2r"])) == 0
-    assert np.any(
-        source.ds.sel(param="2d").to_numpy(flatten=True) != output_dict["2r"].flatten()
-    ), "Arrays are  different"
+    # test unchanged fields agree
+    for param in ("2t", "2d"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
+
+    # test pipeline output matches known good output
+    expected_relative_humidity = test_source("anemoi-transform/filters/era5_2r.npy").ds.to_numpy().reshape(9, 18)
+    assert len(output_fields["2r"]) == 1
+    result = output_fields["2r"][0]
+    assert np.allclose(result.to_numpy(), expected_relative_humidity)
 
 
 if __name__ == "__main__":

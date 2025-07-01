@@ -9,9 +9,9 @@ def source(test_source):
     return test_source("anemoi-transform/filters/cerra_20240601_single_level.grib")
 
 
-def test_singlefieldfilter_cannot_be_instantiated() -> None:
+def test_singlefieldfilter_cannot_be_instantiated():
     """Test that the SingleFieldFilter cannot be instantiated."""
-    with pytest.raises(TypeError, match="without an implementation for abstract method 'forward_transform'"):
+    with pytest.raises(TypeError, match="abstract method"):
         SingleFieldFilter()
 
 

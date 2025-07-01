@@ -7,6 +7,8 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from typing import Union
+
 import earthkit.data as ekd
 import pytest
 
@@ -18,7 +20,7 @@ pytest_plugins = ["anemoi.utils.testing"]
 
 @source_registry.register("testing")
 class TestingSource(Source):
-    def __init__(self, *, dataset: str | list[dict]) -> None:
+    def __init__(self, *, dataset: Union[str, list[dict]]) -> None:
         assert dataset is not None, "Dataset cannot be None"
         self.ds = dataset
 
@@ -34,7 +36,7 @@ def fieldlist(get_test_data: callable) -> ekd.FieldList:
 
 @pytest.fixture
 def test_source(get_test_data: callable) -> callable:
-    def _source(dataset: str | list[dict]) -> Source:
+    def _source(dataset: Union[str, list[dict]]) -> Source:
         """Create a source from a known file or a list of dicts for testing."""
         if isinstance(dataset, str):
             ds = ekd.from_source("file", get_test_data(dataset))

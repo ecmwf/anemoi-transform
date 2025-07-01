@@ -1,6 +1,9 @@
+import numpy as np
+
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
-import numpy as np
+from anemoi.transform.testing import convert_to_ekd_fieldlist
+import earthkit.meteo as ekm
 
 prototype = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -47,18 +50,30 @@ def test_specific_humidity_to_relative_humidity_from_file():
     )
 
     output = source | q_to_r_height
-    assert len(list(output)) == 3  # since we have 2 levels
-    output = np.stack([v.to_numpy() for v in list(output)]).flatten()
 
-    output_r_height = (
-        source_registry.create(
-            "testing", dataset="anemoi-transform/filters/single_level_specific_humidity_to_relative_humidity.grib"
-        )
-        .ds.to_numpy()
-        .flatten()
+    # Input has 6 params (2d, 2sh, 2t, sp, t and q) 
+    # output should have 5 params (2d, 2sh, 2t, sp and new 2rh), t and q at height levels are dropped
+    assert len(list(output)) == 5 
+
+    relative_humidity_transform_output = convert_to_ekd_fieldlist(output).sel(
+        param="2r"
+    ).to_numpy()   
+    temperature_transform_output = convert_to_ekd_fieldlist(output).sel(
+        param="2t"
+    ).to_numpy()
+    dewpoint_transform_output = convert_to_ekd_fieldlist(output).sel(
+        param="2d"
+    ).to_numpy()
+
+    # Input doesn't have relative humidity, but we can get it from 
+    # the dewpoint temperature
+    relative_humidity_input = ekm.thermo.relative_humidity_from_dewpoint(
+        t = temperature_transform_output,
+        td = dewpoint_transform_output
     )
-    np.testing.assert_allclose(output, output_r_height)
 
+    # TODO: Find out what the correct rtol is!
+    np.testing.assert_allclose(relative_humidity_transform_output, relative_humidity_input)
 
 def test_specific_humidity_to_relative_humidity():
     pass

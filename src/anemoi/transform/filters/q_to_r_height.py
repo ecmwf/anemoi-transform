@@ -327,6 +327,7 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
             "specific_humidity_at_model_levels",
             "temperature_at_model_levels",
         ),
+        vertical = True,
     )
     def __init__(
         self,
@@ -365,17 +366,17 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
 
     def _get_pressure_at_heigh_level(
         self,
-        surface_pressure: ekd.Field,
-        specific_humidity_at_model_levels: ekd.FieldList,
         temperature_at_model_levels: ekd.FieldList,
+        specific_humidity_at_model_levels: ekd.FieldList,
+        surface_pressure: ekd.Field
     ):
-        return vertical.pressure_at_height_level(
-            self.height,
-            specific_humidity_at_model_levels,
-            temperature_at_model_levels,
-            surface_pressure,
-            self.A,
-            self.B,
+        return vertical.pressure_at_height_levels(
+            height = self.height,
+            t = temperature_at_model_levels,
+            q = specific_humidity_at_model_levels,
+            sp = surface_pressure,
+            A = self.A,
+            B = self.B,
         )
 
     def forward_transform(
@@ -388,29 +389,38 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
     ) -> Iterator[ekd.Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
 
-        pressure_at_height_level = self._get_pressure_at_heigh_level(
-            specific_humidity_at_model_levels.to_numpy(),
-            temperature_at_model_levels.to_numpy(),
-            surface_pressure.to_numpy(),
-        )
+        # Make sure model levels are ordered ascending (highest level first):
+        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
+        temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
 
+        pressure_at_height_level = self._get_pressure_at_heigh_level(
+            temperature_at_model_levels.to_numpy(),
+            specific_humidity_at_model_levels.to_numpy(),
+            surface_pressure.to_numpy()       
+        )
+        
         # For now We need to go from qv --> td --> rh to take into account
         # the mixed / ice phase when T ~ 0C / T < 0C
         # See https://github.com/ecmwf/earthkit-meteo/issues/15
         dewpoint_at_height_level = thermo.dewpoint_from_specific_humidity(
-            specific_humidity_at_height_level.to_numpy(), pressure_at_height_level
+            q = specific_humidity_at_height_level.to_numpy(), 
+            p = pressure_at_height_level
         )
         relative_humidity_at_height_level = thermo.relative_humidity_from_dewpoint(
-            temperature_at_height_level.to_numpy(), dewpoint_at_height_level
+            t = temperature_at_height_level.to_numpy(),
+            td = dewpoint_at_height_level
         )
 
+        # Return the fields
         yield self.new_field_from_numpy(
             relative_humidity_at_height_level,
             template=specific_humidity_at_height_level,
             param=self.relative_humidity_at_height_level,
         )
         yield temperature_at_height_level
-        yield specific_humidity_at_height_level
+        #TODO Do we wan't to keep specific hum. when we have converted it?
+        yield specific_humidity_at_height_level  
+        yield surface_pressure
 
     def backward_transform(
         self,
@@ -423,7 +433,7 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
         """This will return the specific humidity along with temperature from relative humidity and temperature"""
 
         pressure_at_height_level = self._get_pressure_at_heigh_level(
-            specific_humidity_at_model_levels.to_numpy(),
+            np.stack([level.to_numpy() for level in specific_humidity_at_model_levels.values()]),
             temperature_at_model_levels.to_numpy(),
             surface_pressure.to_numpy(),
         )
@@ -439,6 +449,7 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
         )
         yield temperature_at_height_level
         yield relative_humidity_at_height_level
+        yield surface_pressure
 
 
 filter_registry.register("q_to_r_height", HumidityConversionAtHeightLevel)

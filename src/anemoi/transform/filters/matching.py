@@ -228,15 +228,11 @@ class MatchingFieldsFilter(Filter):
         ekd.FieldList
             Transformed data.
         """
-        args = []
-
-        for name in self.forward_arguments:
-            args.append(getattr(self, name))
+        args = self._get_args(self.forward_arguments)
 
         named_args = self._forward_arguments_types[0]
 
         def forward_transform_named(*fields: ekd.Field) -> Iterator[ekd.Field]:
-            assert len(fields) == len(self.forward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
             return self.forward_transform(**kwargs)
 
@@ -245,6 +241,16 @@ class MatchingFieldsFilter(Filter):
             forward_transform_named if named_args else self.forward_transform,
             *args,
         )
+
+    def _get_args(self, arguments) -> list:
+        args = []
+        for name in arguments:
+            args_name = getattr(self, name)
+            if type(args_name) is not list:
+                args.append(args_name)
+            else:
+                args.extend(args_name)
+        return args
 
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Transform the data using the backward transformation function.
@@ -259,10 +265,7 @@ class MatchingFieldsFilter(Filter):
         ekd.FieldList
             Transformed data.
         """
-        args = []
-
-        for name in self.backward_arguments:
-            args.append(getattr(self, name))
+        args = self._get_args(self.backward_arguments)
 
         named_args = self._backward_arguments_types[0]
 

@@ -75,7 +75,7 @@ def test_missing_component_raises():
     data = MockFieldList([a])
     f = AddFields(a="a", b="b")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         _ = f.forward(data)
 
 

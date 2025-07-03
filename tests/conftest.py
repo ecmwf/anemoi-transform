@@ -27,9 +27,6 @@ class TestingSource(Source):
     def forward(self, *args, **kwargs):
         return self.ds
 
-    def metadata(self, key="param"):
-        return self.ds.metadata(key)
-
 
 @pytest.fixture
 def fieldlist(get_test_data: callable) -> ekd.FieldList:

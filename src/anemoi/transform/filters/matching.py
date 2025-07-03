@@ -229,7 +229,6 @@ class MatchingFieldsFilter(Filter):
             Transformed data.
         """
         args = self._get_args(self.forward_arguments)
-
         named_args = self._forward_arguments_types[0]
 
         def forward_transform_named(*fields: ekd.Field) -> Iterator[ekd.Field]:
@@ -270,7 +269,6 @@ class MatchingFieldsFilter(Filter):
         named_args = self._backward_arguments_types[0]
 
         def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
-            assert len(fields) == len(self.backward_arguments)
             kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
             return self.backward_transform(**kwargs)
 
@@ -306,6 +304,9 @@ class MatchingFieldsFilter(Filter):
 
         grouping = GroupByParam(group_by)
         input_params = set(data.metadata("param"))
+
+        assert len(input_params) == len(group_by)
+
         self._check_metadata_match(input_params, group_by)
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):

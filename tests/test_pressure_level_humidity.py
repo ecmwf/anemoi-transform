@@ -192,6 +192,37 @@ def test_pressure_level_relative_humidity_to_specific_humidity_round_trip(relati
 
 
 @skip_if_offline
+def test_pressure_level_relative_humidity_to_specific_humidity_from_file_arome(test_source):
+    source = test_source("anemoi-transform/filters/r_t_PAAROME_1S40_ECH0_ISOBARE.grib")
+    r_to_q = filter_registry.create("r_to_q")
+    pipeline = source | r_to_q
+
+    input_fields = collect_fields_by_param(source)
+    output_fields = collect_fields_by_param(pipeline)
+
+    # check for expected params
+    assert set(input_fields) == {"t", "r"}
+    assert set(output_fields) == {"q", "t", "r"}
+
+    # test unchanged fields agree
+    for param in ("t", "r"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
+
+    # test pipeline output matches known good output
+    fields = sorted(output_fields["q"], key=lambda f: f.metadata("levelist"))
+    fields = map(lambda f: f.to_numpy(), fields)
+    result = np.stack(list(fields))
+    result = result.flatten()
+
+    expected_specific_humidity = (
+        test_source("anemoi-transform/filters/arome_specific_humidity.npy").ds.to_numpy().flatten()
+    )
+
+    assert np.allclose(result, expected_specific_humidity, equal_nan=True)
+
+
+@skip_if_offline
 def test_pressure_level_relative_humidity_to_specific_humidity_from_file(test_source):
     source = test_source("anemoi-transform/filters/cerra_20240601_pressure_levels.grib")
     r_to_q = filter_registry.create("r_to_q")

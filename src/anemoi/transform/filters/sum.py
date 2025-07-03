@@ -61,7 +61,6 @@ class Sum(Filter):
         for key, values in needed_fields.items():
             index = list(needed_fields.keys()).index(key)
             c = values.to_numpy(flatten=True)
-            print(np.sum(c), key)
             s.append(np.sum(c))
             result.append(new_field_from_numpy(np.sum(c), template=needed_fields[key], param=self.output[index]))
         if self.aggregated:

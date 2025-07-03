@@ -47,8 +47,8 @@ def sum_input_source(test_source):
         {"param": "t", "levelist": 850, "values": T_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "r", "levelist": 1000, "values": R_VALUES[1000], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 1000, "values": T_VALUES[1000], **MOCK_FIELD_METADATA},
-        {"param": "d", "levelist": 850, "values": R_VALUES[1000], **MOCK_FIELD_METADATA},
-        {"param": "d", "levelist": 1000, "values": T_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"param": "q", "levelist": 850, "values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"param": "q", "levelist": 1000, "values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
     return test_source(PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
 

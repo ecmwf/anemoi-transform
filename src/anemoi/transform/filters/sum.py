@@ -8,35 +8,67 @@
 # nor does it submit to any jurisdiction.
 
 
-from typing import Iterator
+from collections import defaultdict
+from typing import Dict
+from typing import Hashable
 from typing import List
+from typing import Tuple
 
 import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters import filter_registry
-
-from .matching import MatchingFieldsFilter
-from .matching import matching
 
 
 @filter_registry.register("sum")
-class Sum(MatchingFieldsFilter):
+class Sum(Filter):
 
-    @matching(
-        select="param",
-        forward=("input_variables",),
-        backward=("summed_variable",),
-    )
-    def __init__(self, *, input_variables: List[str], summed_variable: str = "sum"):
-        self.input_variables = input_variables
-        self.summed_variable = summed_variable
+    def __init__(self, *, params: List[str], aggregated: bool = True, output: str):
+        """Computes the sum over a set of variables.
 
-    def forward_transform(self, input_variables: ekd.Field) -> Iterator[ekd.Field]:
-        """Compute the element-wise sum of the input fields"""
-        summed = np.sum(input_variables.to_numpy(), axis=0)
-        # Use the first field as template for metadata
-        yield self.new_field_from_numpy(summed, template=input_variables, param=self.summed_variable)
+        Args:
+            context (Any): The execution context.
+            aggregated (Bool): If True aggregates the sum for all variables listed in params.
+            params (List[str]): The list of parameters to sum over.
+            output (str): The name for the output field.
 
-    def backward_transform(self, data: ekd.FieldList) -> Iterator[ekd.Field]:
+        Returns:
+            ekd.FieldList: The resulting FieldArray with summed fields.
+        """
+        self.params = params
+        self.output = output
+        self.aggregated = aggregated
+
+        if not self.aggregated:
+            assert len(self.output) == len(self.params)
+
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+
+        needed_fields: Dict[Tuple[Hashable, ...], Dict[str, ekd.Field]] = defaultdict(dict)
+        result = []
+        for f in data:
+            param = f.metadata("param")
+            if param in self.params:
+                needed_fields[param] = f
+
+        if set(needed_fields.values()).issubset(self.params):
+            raise ValueError("Missing fields")
+
+        s = []
+        for key, values in needed_fields.items():
+            index = list(needed_fields.keys()).index(key)
+            c = values.to_numpy(flatten=True)
+            print(np.sum(c), key)
+            s.append(np.sum(c))
+            result.append(new_field_from_numpy(np.sum(c), template=needed_fields[key], param=self.output[index]))
+        if self.aggregated:
+            s = np.sum(s)
+            result = [new_field_from_numpy(np.sum(s), template=needed_fields[self.params[0]], param=self.output)]
+
+        return new_fieldlist_from_list(result)
+
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         raise NotImplementedError("Sum filter is not reversible")

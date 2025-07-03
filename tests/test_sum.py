@@ -62,10 +62,8 @@ def sum_output_source(test_source):
 def test_sum_fields(sum_input_source):
 
     sum_filter = filter_registry.create("sum", input_variables=["r", "t"], summed_variable="sum")
-    # print(list(sum_filter.forward_transform(input_variables=relative_humidity_source))[0].to_numpy().shape)
     pipeline = sum_input_source | sum_filter
     output_fields = collect_fields_by_param(pipeline)
-
     # # Check the output contains the sum field and original inputs
     assert set(output_fields) == {"sum"}
 

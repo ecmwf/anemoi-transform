@@ -72,10 +72,10 @@ def test_sum_fields(sum_input_source):
 
     # Check there is only one field as output
     assert len(output_fields["sum"]) == 1
-    print(output_fields["sum"][0].to_numpy())
 
     # Validate the sum field
     actual_sum_field = output_fields["sum"][0].to_numpy()
+    assert actual_sum_field.shape == R_VALUES[850].shape
     assert np.allclose(actual_sum_field, EXPECTED_SUM)
 
 

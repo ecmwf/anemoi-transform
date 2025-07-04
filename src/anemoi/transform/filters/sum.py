@@ -38,7 +38,7 @@ class Sum(Filter):
         self.output = output
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """sum over variables and levels
+        """sum over variables
 
         Parameters:
         ----------

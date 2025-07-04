@@ -35,9 +35,8 @@ R_VALUES = {
     1000: np.array([[82.88058853, 90.86496353], [68.26144791, 62.40207291], [89.31613541, 99.25949478]]),
 }
 
-EXPECTED_SUM = np.array([2184.72179414])
 
-EXPECTED_SUM_NOT_AGGREGATED = np.array([492.98470307, 1691.7370910700001])
+EXPECTED_SUM = np.array([[705.34283352, 744.44830227], [695.71197415, 726.79791165], [726.78228665, 687.97955227]])
 
 
 @pytest.fixture
@@ -45,9 +44,9 @@ def sum_input_source(test_source):
     PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC = [
         {"param": "r", "levelist": 850, "values": R_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 850, "values": T_VALUES[850], **MOCK_FIELD_METADATA},
+        {"param": "q", "levelist": 850, "values": Q_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "r", "levelist": 1000, "values": R_VALUES[1000], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 1000, "values": T_VALUES[1000], **MOCK_FIELD_METADATA},
-        {"param": "q", "levelist": 850, "values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
         {"param": "q", "levelist": 1000, "values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
     return test_source(PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
@@ -65,23 +64,7 @@ def sum_output_source(test_source):
 @skip_if_offline
 def test_sum_fields(sum_input_source):
 
-    sum_filter = filter_registry.create("sum", params=["r", "t"], output=["r_agg", "t_agg"], aggregated=False)
-    pipeline = sum_input_source | sum_filter
-    output_fields = collect_fields_by_param(pipeline)
-    # Check the output contains the sum field and original inputs
-    assert set(output_fields) == {"r_agg", "t_agg"}
-    # Check there is only one field as output
-    assert len(output_fields) == 2
-
-    # Validate the sum field
-    assert np.allclose(output_fields["r_agg"][0].to_numpy(), EXPECTED_SUM_NOT_AGGREGATED[0])
-    assert np.allclose(output_fields["t_agg"][0].to_numpy(), EXPECTED_SUM_NOT_AGGREGATED[1])
-
-
-@skip_if_offline
-def test_sum_fields_agg(sum_input_source):
-
-    sum_filter = filter_registry.create("sum", params=["r", "t"], output="sum", aggregated=True)
+    sum_filter = filter_registry.create("sum", params=["r", "t"], output="sum")
     pipeline = sum_input_source | sum_filter
     output_fields = collect_fields_by_param(pipeline)
     # Check the output contains the sum field and original inputs

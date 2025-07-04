@@ -7,9 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Any
-from typing import Optional
-
+import earthkit.data as ekd
 import numpy.testing as npt
 from pytest import approx
 
@@ -17,19 +15,15 @@ from anemoi.transform.filters.rescale import Convert
 from anemoi.transform.filters.rescale import Rescale
 
 
-def test_rescale(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -> None:
+def test_rescale(fieldlist: ekd.FieldList) -> None:
     """Test rescaling temperature from Kelvin to Celsius and back.
 
     Parameters
     ----------
-    fieldlist_fixture : callable
-        A fixture to create a fieldlist for testing.
-    fieldlist : Optional[Any], optional
-        The fieldlist to use for testing, by default None.
+    fieldlist : ekd.FieldList
+        The fieldlist to use for testing.
     """
 
-    if fieldlist is None:
-        fieldlist = fieldlist_fixture()
     fieldlist = fieldlist.sel(param="2t")
     # rescale from K to °C
     k_to_deg = Rescale(scale=1.0, offset=-273.15, param="2t")
@@ -41,18 +35,14 @@ def test_rescale(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -
     npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
 
 
-def test_convert(fieldlist_fixture: callable, fieldlist: Optional[Any] = None) -> None:
+def test_convert(fieldlist: ekd.FieldList) -> None:
     """Test converting temperature from Kelvin to Celsius and back.
 
     Parameters
     ----------
-    fieldlist_fixture : callable
-        A fixture to create a fieldlist for testing.
-    fieldlist : Optional[Any], optional
-        The fieldlist to use for testing, by default None.
+    fieldlist : ekd.FieldList
+        The fieldlist to use for testing.
     """
-    if fieldlist is None:
-        fieldlist = fieldlist_fixture()
     try:
         # rescale from K to °C
         fieldlist = fieldlist.sel(param="2t")

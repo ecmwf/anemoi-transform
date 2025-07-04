@@ -68,6 +68,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    :hidden:
    :caption: Creating filters
 
+   filters/single-field-filters
    filters/matching-filters
 
 .. toctree::

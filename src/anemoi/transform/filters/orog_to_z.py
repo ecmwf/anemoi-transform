@@ -77,5 +77,5 @@ class Orography(MatchingFieldsFilter):
         yield z
 
 
-filter_registry.register("orog_2_z", Orography)
-filter_registry.register("z_2_orog", Orography.reversed)
+filter_registry.register("orog_to_z", Orography)
+filter_registry.register("z_to_orog", Orography.reversed)

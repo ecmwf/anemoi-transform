@@ -7,11 +7,15 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from typing import Iterator
+from typing import List
+from typing import Literal
 
 import earthkit.data as ekd
 from earthkit.meteo import thermo
 
-from . import filter_registry
+from anemoi.transform.filters import filter_registry
+
 from .matching import MatchingFieldsFilter
 from .matching import matching
 
@@ -27,25 +31,37 @@ class HumidityConversion(MatchingFieldsFilter):
     def __init__(
         self,
         *,
-        relative_humidity="r",
-        temperature="t",
-        humidity="q",
+        relative_humidity: str = "r",
+        temperature: str = "t",
+        humidity: str = "q",
+        return_inputs: Literal["all", "none"] | List[str] = ["temperature"],
     ):
+        """Initialize the VerticalVelocity filter.
 
+        Parameters
+        ----------
+        relative_humidity : str, optional
+            Name of the humidity parameter, by default "q".
+        temperature : str, optional
+            Name of the temperature parameter, by default "t".
+        humidity : str, optional
+            Name of the humidity parameter, by default "q".
+        return_inputs : Literal["all", "none"] | List[str], optional
+            List of which filter inputs should be returned, by default ["temperature"]
+        """
+        self.return_inputs = return_inputs
         self.relative_humidity = relative_humidity
         self.temperature = temperature
         self.humidity = humidity
 
-    def forward_transform(self, humidity: ekd.Field, temperature: ekd.Field) -> ekd.Field:
+    def forward_transform(self, humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
         pressure = 100 * float(humidity._metadata.get("levelist", None))  # levels are measured in hectopascals
         rh = thermo.relative_humidity_from_specific_humidity(temperature.to_numpy(), humidity.to_numpy(), pressure)
 
         yield self.new_field_from_numpy(rh, template=humidity, param=self.relative_humidity)
-        yield temperature
-        yield humidity
 
-    def backward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> ekd.Field:
+    def backward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """This will return specific humidity along with temperature from relative humidity and temperature"""
         pressure = 100 * float(temperature._metadata.get("levelist", None))  # levels are measured in hectopascals
 
@@ -54,8 +70,6 @@ class HumidityConversion(MatchingFieldsFilter):
         )
 
         yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
-        yield temperature
-        yield relative_humidity
 
 
 filter_registry.register("q_2_r", HumidityConversion)

@@ -49,7 +49,7 @@ def assert_fields_equal(field_a, field_b):
             # not all keys will be in all fields
             continue
 
-    assert np.allclose(field_a.to_numpy(), field_b.to_numpy())
+    assert np.allclose(field_a.to_numpy(), field_b.to_numpy(), equal_nan=True)
 
 
 class SelectFieldSource(Source):

@@ -29,8 +29,7 @@ class Sum(Filter):
     def __init__(self, *, params: List[str], aggregated: bool = True, output: str):
         """Computes the sum over a set of variables.
 
-        Args:
-            context (Any): The execution context.
+        Parameters:
             aggregated (Bool): If True aggregates the sum for all variables listed in params.
             params (List[str]): The list of parameters to sum over.
             output (str): The name for the output field.

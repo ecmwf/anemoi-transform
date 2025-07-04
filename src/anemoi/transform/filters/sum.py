@@ -51,24 +51,32 @@ class Sum(Filter):
             The resulting FieldArray with summed fields.
         """
 
-        needed_fields = defaultdict(list)
+        result = []
+        s = defaultdict(list)
+        templates = defaultdict(list)
 
         for f in data:
             param = f.metadata("param")
             if param in self.params:
-                needed_fields[param].append(f.to_numpy())
+                s[param].append(f.to_numpy())
+                templates[param].append(f)
+            else:
+                result.append(f)
 
-        assert set(needed_fields.keys()) == set(self.params)
+        assert set(s.keys()) == set(self.params)
 
-        s = []
-        template = None
-        for key, values in needed_fields.items():
-            print(np.stack(values).shape, np.sum(np.stack(values), axis=0).shape)
-            s.append(np.sum(np.stack(values), axis=0))
-            template = needed_fields[key]
-        return new_fieldlist_from_list(
-            [new_field_from_numpy(np.sum(np.stack(s), axis=0), template=template, param=self.output)]
-        )
+        sum_values = []
+        for param in s.keys():
+            sum_values.append(np.stack(s[param]))
+        stack_summed = np.stack(sum_values)
+
+        for level in range(stack_summed.shape[1]):
+            template_level = templates[self.params[0]][level]
+            result.append(
+                new_field_from_numpy(np.sum(stack_summed[:, level], axis=0), template=template_level, param=self.output)
+            )
+
+        return new_fieldlist_from_list(result)
 
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         raise NotImplementedError("Sum filter is not reversible")

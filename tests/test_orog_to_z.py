@@ -24,7 +24,7 @@ MOCK_FIELD_METADATA = {
 }
 OROG_VALUES = np.array([[0.78, 0.71], [0.99, 0.44], [0.56, 0.86]])
 
-Z_VALUES = np.array([[7.649187,6.9627215], [9.7085835,4.314926], [5.491724, 8.433719]])
+Z_VALUES = np.array([[7.649187, 6.9627215], [9.7085835, 4.314926], [5.491724, 8.433719]])
 
 
 @pytest.fixture
@@ -51,10 +51,10 @@ def test_orog_to_z(orography_source):
 
     # check for expected params
     assert set(input_fields) == {"orog"}
-    assert set(output_fields) == {"z",'orog'}
+    assert set(output_fields) == {"z", "orog"}
 
     # test unchanged fields agree
-    for param in ("orog"):
+    for param in "orog":
         for input_field, output_field in zip(input_fields[param], output_fields[param]):
             assert_fields_equal(input_field, output_field)
 
@@ -79,15 +79,15 @@ def test_orog_to_z_round_trip(orography_source):
     # check for expected params
     assert set(input_fields) == {"orog"}
     assert set(intermediate_fields) == {"z"}
-    assert set(output_fields) == {"z",'orog'}
+    assert set(output_fields) == {"z", "orog"}
 
     # test unchanged fields agree from beginning to end
-    for param in ("orog"):
+    for param in "orog":
         for input_field, output_field in zip(input_fields[param], output_fields[param]):
             assert_fields_equal(input_field, output_field)
 
     # test intermediate fields are unchanged
-    for param in ("z"):
+    for param in "z":
         for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
             assert_fields_equal(intermediate_field, output_field)
 
@@ -104,7 +104,7 @@ def test_orog_to_z_from_file(test_source):
 
     # check for expected params
     assert set(input_fields) == {"orog"}
-    assert set(output_fields) == {"z","orog"}
+    assert set(output_fields) == {"z", "orog"}
 
     # test pipeline output matches known good output
     expected_geopotential = test_source("anemoi-transform/filters/carra_geopotential.npy").ds.to_numpy()
@@ -112,6 +112,7 @@ def test_orog_to_z_from_file(test_source):
     result = output_fields["z"][0]
     print(result)
     assert np.allclose(result.to_numpy(), expected_geopotential)
+
 
 if __name__ == "__main__":
     """Run all test functions that start with 'test_'."""

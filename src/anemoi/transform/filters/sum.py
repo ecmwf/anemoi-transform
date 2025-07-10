@@ -9,10 +9,12 @@
 
 
 from collections import defaultdict
+from typing import Dict
+from typing import Hashable
 from typing import List
+from typing import Tuple
 
 import earthkit.data as ekd
-import numpy as np
 
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
@@ -37,44 +39,47 @@ class Sum(Filter):
         self.params = params
         self.output = output
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """sum over variables
+    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
+        """Computes the sum over a set of variables.
 
-        Parameters:
-        ----------
-        data : ekd.FieldList)
-            The input FieldArray with the variables to be summed according to self.params
+        Args:
+            fields (List[Any]): The list of input fields.
 
         Returns:
-        ----------
-        ekd.FieldList:
-            The resulting FieldArray with summed fields.
+            ekd.FieldList: The resulting FieldArray with summed fields.
         """
-
         result = []
-        s = defaultdict(list)
-        templates = defaultdict(list)
 
-        for f in data:
-            param = f.metadata("param")
+        needed_fields: Dict[Tuple[Hashable, ...], Dict[str, ekd.Field]] = defaultdict(dict)
+
+        for f in fields:
+            key = f.metadata(namespace="mars")
+            param = key.pop("param", None)
+            if param is None:
+                param = f.metadata("param")
             if param in self.params:
-                s[param].append(f.to_numpy())
-                templates[param].append(f)
+                key = tuple(key.items())
+
+                if param in needed_fields[key]:
+                    raise ValueError(f"Duplicate field {param} for {key}")
+
+                needed_fields[key][param] = f
             else:
                 result.append(f)
 
-        assert set(s.keys()) == set(self.params)
+        for keys, values in needed_fields.items():
 
-        sum_values = []
-        for param in s.keys():
-            sum_values.append(np.stack(s[param]))
-        stack_summed = np.stack(sum_values)
+            if len(values) != len(self.params):
+                raise ValueError("Missing fields")
 
-        for level in range(stack_summed.shape[1]):
-            template_level = templates[self.params[0]][level]
-            result.append(
-                new_field_from_numpy(np.sum(stack_summed[:, level], axis=0), template=template_level, param=self.output)
-            )
+            s = None
+            for k, v in values.items():
+                c = v.to_numpy(flatten=True)
+                if s is None:
+                    s = c
+                else:
+                    s += c
+            result.append(new_field_from_numpy(s, template=values[list(values.keys())[0]], param=self.output))
 
         return new_fieldlist_from_list(result)
 

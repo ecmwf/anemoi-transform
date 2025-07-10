@@ -126,6 +126,7 @@ def test_ddff_to_uv_round_trip(ddff_source):
     assert set(input_fields) == {"ws", "wdir"}
     assert set(intermediate_fields) == {"u", "v"}
     assert set(output_fields) == {"ws", "wdir"}
+
     for param in ("ws", "wdir"):
         for input_field, output_field in zip(input_fields[param], output_fields[param]):
             assert_fields_equal(input_field, output_field)

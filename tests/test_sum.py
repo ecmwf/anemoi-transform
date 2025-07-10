@@ -21,30 +21,21 @@ MOCK_FIELD_METADATA = {
 }
 
 # TODO: filter does not support fields with multiple levels...
-T_VALUES = {
-    850: np.array([[293.32301331, 284.21559143], [260.53981018, 291.18824768], [279.88941956, 248.87574768]]),
-    #    1000: np.array([[291.22831726, 289.85136414], [271.29277039, 301.67362976], [287.53691101, 250.15409851]]),
-}
+T_VALUES = np.array([[293.32301331, 284.21559143], [260.53981018, 291.18824768], [279.88941956, 248.87574768]])
 
-Q_VALUES = {
-    850: np.array([[0.00657578, 0.00769957], [0.00147607, 0.01088967], [0.00505508, 0.00044559]]),
-    #    1000: np.array([[0.01075057, 0.01080445], [0.00226020, 0.01525551], [0.00914679, 0.00047560]]),
-}
+Q_VALUES = np.array([[0.00657578, 0.00769957], [0.00147607, 0.01088967], [0.00505508, 0.00044559]])
 
-R_VALUES = {
-    850: np.array([[37.91091442, 79.51638317], [95.61794567, 71.53396130], [70.03982067, 89.69021130]]),
-    #    1000: np.array([[82.88058853, 90.86496353], [68.26144791, 62.40207291], [89.31613541, 99.25949478]]),
-}
+R_VALUES = np.array([[37.91091442, 79.51638317], [95.61794567, 71.53396130], [70.03982067, 89.69021130]])
 
-EXPECTED_SUM = {lev: (R_VALUES[lev] + T_VALUES[lev]).flatten() for lev in R_VALUES}
+EXPECTED_SUM = (R_VALUES + T_VALUES).flatten()
 
 
 @pytest.fixture
 def sum_input_source(test_source):
     PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC = [
-        {"param": "r", "levelist": 850, "values": R_VALUES[850], **MOCK_FIELD_METADATA},
-        {"param": "t", "levelist": 850, "values": T_VALUES[850], **MOCK_FIELD_METADATA},
-        {"param": "q", "levelist": 850, "values": Q_VALUES[850], **MOCK_FIELD_METADATA},
+        {"param": "r", "levelist": 850, "values": R_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "t", "levelist": 850, "values": T_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "q", "levelist": 850, "values": Q_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
 
@@ -64,8 +55,8 @@ def test_sum_fields(sum_input_source):
 
     # Validate the sum field
     # arrays are flattened in sum
-    assert output_fields["sum"][0].to_numpy().shape == EXPECTED_SUM[850].shape
-    assert np.allclose(output_fields["sum"][0].to_numpy(), EXPECTED_SUM[850])
+    assert output_fields["sum"][0].to_numpy().shape == EXPECTED_SUM.shape
+    assert np.allclose(output_fields["sum"][0].to_numpy(), EXPECTED_SUM)
 
 
 def test_sum_filter_backward_not_implemented(sum_input_source):

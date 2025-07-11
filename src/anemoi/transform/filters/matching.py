@@ -197,6 +197,24 @@ class MatchingFieldsFilter(Filter):
 
         return self._backward_arguments
 
+    def _check_metadata_match(self, data: ekd.FieldList, args: List[str]) -> None:
+        """Checks the parameters names of the data and the groups match
+
+        Parameters
+        ----------
+        data : str
+            List with grouped input param names
+        args : str
+            List with fields to group by.
+        """
+
+        error_msg = (
+            f"Please ensure your filter is configured to match the input variables metadata "
+            f"current mismatch between inputs {data} and filter metadata {args}"
+        )
+        if not set(args).issubset(data):
+            raise ValueError(error_msg)
+
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Transform the data using the forward transformation function.
 
@@ -284,7 +302,8 @@ class MatchingFieldsFilter(Filter):
         result = []
 
         grouping = GroupByParam(group_by)
-
+        input_params = set(data.metadata("param"))
+        self._check_metadata_match(input_params, group_by)
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)

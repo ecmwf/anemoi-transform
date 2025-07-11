@@ -28,12 +28,12 @@ class Orography(SingleFieldFilter):
         # select only fields where the param is self.z
         return {"param": self.z}
 
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+    def forward_transform(self, orog: ekd.Field) -> ekd.Field:
         """Convert orography in m to surface geopotential in m²/s².
 
         Parameters
         ----------
-        field : ekd.Field
+        orog : ekd.Field
             The orography field in m.
 
         Returns
@@ -42,16 +42,14 @@ class Orography(SingleFieldFilter):
             The surface geopotential in m²/s².
         """
         new_metadata = {"param": self.z}
-        return self.new_field_from_numpy(
-            field.to_numpy() * g_gravitational_acceleration, template=field, **new_metadata
-        )
+        return self.new_field_from_numpy(orog.to_numpy() * g_gravitational_acceleration, template=orog, **new_metadata)
 
-    def backward_transform(self, field: ekd.Field) -> ekd.Field:
+    def backward_transform(self, z: ekd.Field) -> ekd.Field:
         """Convert surface geopotential in m²/s² to orography in m.
 
         Parameters
         ----------
-        field : ekd.Field
+        z : ekd.Field
             The surface geopotential in m²/s².
 
         Returns
@@ -60,9 +58,7 @@ class Orography(SingleFieldFilter):
             The orography in m.
         """
         orig_metadata = {"param": self.orog}
-        return self.new_field_from_numpy(
-            field.to_numpy() / g_gravitational_acceleration, template=field, **orig_metadata
-        )
+        return self.new_field_from_numpy(z.to_numpy() / g_gravitational_acceleration, template=z, **orig_metadata)
 
 
 filter_registry.register("orog_to_z", Orography)

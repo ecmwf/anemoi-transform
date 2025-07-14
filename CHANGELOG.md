@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.13](https://github.com/ecmwf/anemoi-transform/compare/0.1.12...0.1.13) (2025-07-14)
+
+
+### Bug Fixes
+
+* Warn rather than fail on metadata mismatch in matching filter ([#126](https://github.com/ecmwf/anemoi-transform/issues/126)) ([bd4fa73](https://github.com/ecmwf/anemoi-transform/commit/bd4fa73f761852622e19314361db9a6f9f69b9de))
+
 ## [0.1.12](https://github.com/ecmwf/anemoi-transform/compare/0.1.11...0.1.12) (2025-07-14)
 
 

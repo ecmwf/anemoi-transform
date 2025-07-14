@@ -87,3 +87,16 @@ def test_uninitialised_filter_raises():
     bf = BadFilter()
     with pytest.raises(ValueError):
         _ = bf.forward_arguments
+
+
+def test_metadata_mismatch_warning(caplog):
+    c = MockField("c", step=0, level=850)
+    d = MockField("d", step=0, level=850)
+    data = MockFieldList([c, d])
+
+    f = AddFields(a="a", b="b")
+
+    with caplog.at_level("WARNING"):
+        f.forward(data)
+
+    assert "Please ensure your filter is configured to match the input variables metadata" in caplog.text

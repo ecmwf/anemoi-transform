@@ -113,6 +113,6 @@ class GroupByParam:
             if len(group) != len(self.params):
                 for p in data:
                     print(p)
-                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(self.group.keys())}")
+                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(self.groups.keys())}")
 
             yield tuple(group[p] for p in self.params)

@@ -13,6 +13,7 @@ from typing import Any
 
 import earthkit.data as ekd
 import numpy.testing as npt
+from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
 
@@ -37,6 +38,7 @@ def _do_something(field: Any, a: float) -> Any:
     return field.clone(values=field.values * a)
 
 
+@skip_if_offline
 def test_singlefieldlambda(fieldlist: ekd.FieldList) -> None:
     """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
 

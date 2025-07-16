@@ -9,12 +9,14 @@
 
 import earthkit.data as ekd
 import numpy.testing as npt
+from anemoi.utils.testing import skip_if_offline
 from pytest import approx
 
 from anemoi.transform.filters.rescale import Convert
 from anemoi.transform.filters.rescale import Rescale
 
 
+@skip_if_offline
 def test_rescale(fieldlist: ekd.FieldList) -> None:
     """Test rescaling temperature from Kelvin to Celsius and back.
 
@@ -35,6 +37,7 @@ def test_rescale(fieldlist: ekd.FieldList) -> None:
     npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
 
 
+@skip_if_offline
 def test_convert(fieldlist: ekd.FieldList) -> None:
     """Test converting temperature from Kelvin to Celsius and back.
 

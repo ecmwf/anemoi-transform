@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.14](https://github.com/ecmwf/anemoi-transform/compare/0.1.13...0.1.14) (2025-07-16)
+
+
+### Bug Fixes
+
+* Remove need for nested rename in YAML ([#128](https://github.com/ecmwf/anemoi-transform/issues/128)) ([d92bf7f](https://github.com/ecmwf/anemoi-transform/commit/d92bf7fcd91ad0114c17aa0ee2c08a1370d14c99))
+
 ## [0.1.13](https://github.com/ecmwf/anemoi-transform/compare/0.1.12...0.1.13) (2025-07-14)
 
 

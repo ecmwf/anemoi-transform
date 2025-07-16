@@ -26,9 +26,7 @@ def netcdf_source(test_source):
 def test_rename_grib_dict_rename(grib_source):
     rename = filter_registry.create(
         "rename",
-        rename={
-            "param": {"z": "geopotential", "t": "temperature"},
-        },
+        param = {"z": "geopotential", "t": "temperature"},       
     )
     pipeline = grib_source | rename
 
@@ -45,9 +43,7 @@ def test_rename_grib_dict_rename(grib_source):
 def test_rename_grib_format_rename(grib_source):
     rename = filter_registry.create(
         "rename",
-        rename={
-            "param": "{param}_{levelist}_{levtype}",
-        },
+        param = "{param}_{levelist}_{levtype}",
     )
     pipeline = grib_source | rename
 
@@ -59,10 +55,8 @@ def test_rename_grib_format_rename(grib_source):
 def test_rename_grib_dict_multiple(grib_source):
     rename = filter_registry.create(
         "rename",
-        rename={
-            "param": {"z": "geopotential", "t": "temperature"},
-            "levelist": {1000: "1000hPa", 850: "850hPa", 700: "700hPa", 500: "500hPa", 400: "400hPa", 300: "300hPa"},
-        },
+        param={"z": "geopotential", "t": "temperature"},
+        levelist={1000: "1000hPa", 850: "850hPa", 700: "700hPa", 500: "500hPa", 400: "400hPa", 300: "300hPa"},
     )
     pipeline = grib_source | rename
 
@@ -80,9 +74,7 @@ def test_rename_grib_dict_multiple(grib_source):
 def test_rename_netcdf(netcdf_source):
     rename = filter_registry.create(
         "rename",
-        rename={
-            "param": {"t2m": "2m temperature", "msl": "mean sea level pressure"},
-        },
+        param={"t2m": "2m temperature", "msl": "mean sea level pressure"},
     )
     pipeline = netcdf_source | rename
 

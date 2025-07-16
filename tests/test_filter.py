@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filter import SingleFieldFilter
 
@@ -95,6 +96,7 @@ def test_singlefieldfilter_prepare():
         TestFilter(positive_number=-1)
 
 
+@skip_if_offline
 def test_singlefieldfilter_only_forward_transform(source):
     """Test when the SingleFieldFilter only implements the forward_transform method."""
 
@@ -108,6 +110,7 @@ def test_singlefieldfilter_only_forward_transform(source):
         assert np.allclose(original.to_numpy() + 1, result.to_numpy())
 
 
+@skip_if_offline
 def test_singlefieldfilter_not_reversible_raises(source):
     """Test that the SingleFieldFilter raises an error when the filter is not reversible."""
 
@@ -120,6 +123,7 @@ def test_singlefieldfilter_not_reversible_raises(source):
             pass
 
 
+@skip_if_offline
 def test_singlefieldfilter_forward_and_backward_transform(source):
     """Test that the SingleFieldFilter works transforms both forwards and backwards."""
 
@@ -138,6 +142,7 @@ def test_singlefieldfilter_forward_and_backward_transform(source):
         assert np.allclose(original.to_numpy() + 1, result.to_numpy())
 
 
+@skip_if_offline
 def test_singlefieldfilter_simple_roundtrip(source):
     """Test that the SingleFieldFilter round trips successfully."""
 
@@ -155,6 +160,7 @@ def test_singlefieldfilter_simple_roundtrip(source):
         assert np.allclose(original.to_numpy(), result.to_numpy())
 
 
+@skip_if_offline
 def test_singlefieldfilter_forward_select(source):
     """Test that the SingleFieldFilter is able to select on the forward transform."""
 
@@ -182,6 +188,7 @@ def test_singlefieldfilter_forward_select(source):
     assert set(result_params) == {"2t", "2r"}
 
 
+@skip_if_offline
 def test_singlefieldfilter_backward_select(source):
     """Test that the SingleFieldFilter is able to select on the backward transform."""
 
@@ -212,6 +219,7 @@ def test_singlefieldfilter_backward_select(source):
     assert set(result_params) == {"2t", "2r"}
 
 
+@skip_if_offline
 def test_singlefieldfilter_backward_using_forward_select(source):
     """Test that the SingleFieldFilter is able to select in both directions with only forward select."""
 
@@ -241,6 +249,7 @@ def test_singlefieldfilter_backward_using_forward_select(source):
     assert set(result_params) == {"2t", "2r"}
 
 
+@skip_if_offline
 def test_singlefieldfilter_complex_roundtrip(source):
     """Test that the SingleFieldFilter is able to change both the data and metadata and select appropriately."""
 

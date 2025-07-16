@@ -173,6 +173,7 @@ def test_dewpoint_to_relative_humidity_round_trip(dewpoint_source):
             assert_fields_equal(intermediate_field, output_field)
 
 
+@skip_if_offline
 def test_dewpoint_to_relative_humidity_from_file(test_source):
     dewpoint_source = test_source("anemoi-transform/filters/era_20240601_single_level_dewpoint.grib")
     d_to_r = filter_registry.create("d_to_r", relative_humidity="2r", temperature="2t", dewpoint="2d")

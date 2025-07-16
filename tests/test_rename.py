@@ -52,6 +52,7 @@ def test_rename_grib_format_rename(grib_source):
         assert result.metadata("param") == f"{orig_param}_{orig_level}_{orig_levtype}"
 
 
+@skip_if_offline
 def test_rename_grib_dict_multiple(grib_source):
     rename = filter_registry.create(
         "rename",

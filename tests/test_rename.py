@@ -26,7 +26,7 @@ def netcdf_source(test_source):
 def test_rename_grib_dict_rename(grib_source):
     rename = filter_registry.create(
         "rename",
-        param = {"z": "geopotential", "t": "temperature"},       
+        param={"z": "geopotential", "t": "temperature"},
     )
     pipeline = grib_source | rename
 
@@ -43,7 +43,7 @@ def test_rename_grib_dict_rename(grib_source):
 def test_rename_grib_format_rename(grib_source):
     rename = filter_registry.create(
         "rename",
-        param = "{param}_{levelist}_{levtype}",
+        param="{param}_{levelist}_{levtype}",
     )
     pipeline = grib_source | rename
 

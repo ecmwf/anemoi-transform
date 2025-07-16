@@ -65,7 +65,6 @@ class Rename(Filter):
                 self._rename[key] = DictRename(key, value)
             else:
                 raise ValueError(f"Invalid value for rename: {key}: {value}")
-        
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
 

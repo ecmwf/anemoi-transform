@@ -7,12 +7,20 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-
+import logging
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
 from typing import Union
 
+from anemoi.utils.dates import as_timedelta
+
 from anemoi.transform.variables import Variable
+
+if TYPE_CHECKING:
+    from datetime import timedelta
+
+LOG = logging.getLogger(__name__)
 
 
 class VariableFromMarsVocabulary(Variable):
@@ -81,6 +89,19 @@ class VariableFromMarsVocabulary(Variable):
     def time_processing(self):
         """Get the time processing type of the variable."""
         return self.data.get("process")
+
+    @property
+    def period(self) -> Union["timedelta", None]:
+        """Get the variable's period as a timedelta.
+        Returns None for instantaneous variables or if this infomation is missing.
+        """
+        if not self.is_valid_over_a_period or not (period := self.data.get("period")):
+            return None
+
+        if not isinstance(period, list) or len(period) != 2:
+            return None
+
+        return as_timedelta(period[1]) - as_timedelta(period[0])
 
     @property
     def grib_keys(self) -> Dict[str, Any]:

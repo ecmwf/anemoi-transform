@@ -29,6 +29,7 @@ def test_variables() -> None:
 
     assert not msl.is_pressure_level
     assert msl.level is None
+    assert msl.period == as_timedelta(0)
 
     avg_tos: Variable = Variable.from_dict(
         "avg_tos", {"mars": {"param": "avg_tos", "levtype": "o2d"}, "period": [5, "6h"], "process": "average"}

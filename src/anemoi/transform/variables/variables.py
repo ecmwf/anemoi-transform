@@ -94,9 +94,12 @@ class VariableFromMarsVocabulary(Variable):
     @property
     def period(self) -> Union["timedelta", None]:
         """Get the variable's period as a timedelta.
-        Returns None for instantaneous variables or if this infomation is missing.
+        For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
         """
-        if not self.is_valid_over_a_period or not (period := self.data.get("period")):
+        if self.is_instantanous:
+            return as_timedelta(0)
+
+        if not (period := self.data.get("period")):
             return None
 
         if not isinstance(period, Sized) or len(period) != 2:

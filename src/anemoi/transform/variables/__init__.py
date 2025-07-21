@@ -158,7 +158,7 @@ class Variable(ABC):
     @abstractmethod
     def period(self) -> Union["timedelta", None]:
         """Get the variable's period as a timedelta.
-        Returns None for instantaneous variables or if this infomation is missing.
+        For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
         """
         pass
 

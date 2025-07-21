@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 import logging
+from collections.abc import Sized
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
@@ -98,7 +99,7 @@ class VariableFromMarsVocabulary(Variable):
         if not self.is_valid_over_a_period or not (period := self.data.get("period")):
             return None
 
-        if not isinstance(period, list) or len(period) != 2:
+        if not isinstance(period, Sized) or len(period) != 2:
             return None
 
         return as_timedelta(period[1]) - as_timedelta(period[0])

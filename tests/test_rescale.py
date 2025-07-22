@@ -21,6 +21,7 @@ def skip_missing_udunits2():
     """Skip tests if udunits2 package is not available."""
     # Can't use utils.testing.skip_missing_packages because it only fails
     # when cfunits.Units is imported...
+    # NB: cfunits depends on udunits2 which is a system library and not installed with pip
     try:
         from cfunits import Units  # noqa: F401
 

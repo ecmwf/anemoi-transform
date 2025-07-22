@@ -14,6 +14,7 @@ from pytest import approx
 
 from anemoi.transform.filters.rescale import Convert
 from anemoi.transform.filters.rescale import Rescale
+from anemoi.utils.testing import skip_if_offline
 
 
 def skip_missing_udunits2():
@@ -28,6 +29,7 @@ def skip_missing_udunits2():
         return pytest.mark.skip(reason="udunits2 not found")
 
 
+@skip_if_offline
 def test_rescale(fieldlist: ekd.FieldList) -> None:
     """Test rescaling temperature from Kelvin to Celsius and back.
 
@@ -49,6 +51,7 @@ def test_rescale(fieldlist: ekd.FieldList) -> None:
 
 
 @skip_missing_udunits2()
+@skip_if_offline
 def test_convert(fieldlist: ekd.FieldList) -> None:
     """Test converting temperature from Kelvin to Celsius and back.
 

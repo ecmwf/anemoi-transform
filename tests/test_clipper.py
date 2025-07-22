@@ -10,10 +10,12 @@
 import earthkit.data as ekd
 import numpy as np
 import numpy.testing as npt
+from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters.clipper import Clipper
 
 
+@skip_if_offline
 def test_clipper_1(fieldlist: ekd.FieldList) -> None:
     fieldlist = fieldlist.sel(param="2t")
 
@@ -26,6 +28,7 @@ def test_clipper_1(fieldlist: ekd.FieldList) -> None:
     npt.assert_allclose(clipped[0].to_numpy(), ref)
 
 
+@skip_if_offline
 def test_clipper_2(fieldlist: ekd.FieldList) -> None:
     fieldlist = fieldlist.sel(param="2t")
 

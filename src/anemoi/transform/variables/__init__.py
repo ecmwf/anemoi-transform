@@ -9,8 +9,13 @@
 
 from abc import ABC
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
+from typing import Union
+
+if TYPE_CHECKING:
+    from datetime import timedelta
 
 
 class Variable(ABC):
@@ -142,6 +147,20 @@ class Variable(ABC):
         """Check if the variable is valid over a period."""
 
         return not self.is_instantanous
+
+    @property
+    @abstractmethod
+    def time_processing(self):
+        """Get the time processing type of the variable."""
+        pass
+
+    @property
+    @abstractmethod
+    def period(self) -> Union["timedelta", None]:
+        """Get the variable's period as a timedelta.
+        For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
+        """
+        pass
 
     @property
     @abstractmethod

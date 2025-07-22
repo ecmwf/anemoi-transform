@@ -10,11 +10,11 @@
 import earthkit.data as ekd
 import numpy.testing as npt
 import pytest
+from anemoi.utils.testing import skip_if_offline
 from pytest import approx
 
 from anemoi.transform.filters.rescale import Convert
 from anemoi.transform.filters.rescale import Rescale
-from anemoi.utils.testing import skip_if_offline
 
 
 def skip_missing_udunits2():

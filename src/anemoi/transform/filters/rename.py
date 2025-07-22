@@ -55,16 +55,16 @@ class DictRename:
 @filter_registry.register("rename")
 class Rename(Filter):
 
-    def __init__(self, *, rename: dict):
+    def __init__(self, **kwargs):
 
         self._rename = {}
-        for key, value in rename.items():
+        for key, value in kwargs.items():
             if isinstance(value, str):
                 self._rename[key] = FormatRename(key, value)
             elif isinstance(value, dict):
                 self._rename[key] = DictRename(key, value)
             else:
-                raise ValueError(f"Invalid value for rename: {value}")
+                raise ValueError(f"Invalid value for rename: {key}: {value}")
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
 

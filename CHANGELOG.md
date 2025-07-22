@@ -9,6 +9,31 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.13](https://github.com/ecmwf/anemoi-transform/compare/0.1.12...0.1.13) (2025-07-14)
+
+
+### Bug Fixes
+
+* Warn rather than fail on metadata mismatch in matching filter ([#126](https://github.com/ecmwf/anemoi-transform/issues/126)) ([bd4fa73](https://github.com/ecmwf/anemoi-transform/commit/bd4fa73f761852622e19314361db9a6f9f69b9de))
+
+## [0.1.12](https://github.com/ecmwf/anemoi-transform/compare/0.1.11...0.1.12) (2025-07-14)
+
+
+### Features
+
+* Add orography to surface geopotential filter ([#115](https://github.com/ecmwf/anemoi-transform/issues/115)) ([9b7fd8d](https://github.com/ecmwf/anemoi-transform/commit/9b7fd8d74227461e7bb2f4abd1775ea9342da461))
+* Add SingleFieldFilter ([#104](https://github.com/ecmwf/anemoi-transform/issues/104)) ([914d1df](https://github.com/ecmwf/anemoi-transform/commit/914d1df883732c12b32cb4f4f0e0389875e044d7))
+* Filter migration from anemoi-datasets + testing ([#93](https://github.com/ecmwf/anemoi-transform/issues/93)) ([abfb33d](https://github.com/ecmwf/anemoi-transform/commit/abfb33d20f26604d481099e9ed8a0a4fe4e1f2cd))
+* General purpose clipping filter ([#96](https://github.com/ecmwf/anemoi-transform/issues/96)) ([f70b1ab](https://github.com/ecmwf/anemoi-transform/commit/f70b1abc37844046e1f2a7bf9ba60818ccfbecaa))
+* Migrate sum filter ([#121](https://github.com/ecmwf/anemoi-transform/issues/121)) ([3b5596e](https://github.com/ecmwf/anemoi-transform/commit/3b5596e37797a645582b6a2b49b5eae4c1391c90))
+* Set resolution metadata in filter operation. ([#98](https://github.com/ecmwf/anemoi-transform/issues/98)) ([7844fea](https://github.com/ecmwf/anemoi-transform/commit/7844fea7cf5f849a9dfd7242440eb9721d0ee9f8))
+
+
+### Bug Fixes
+
+* Docs sphinx dependency python&gt;=3.11 ([#116](https://github.com/ecmwf/anemoi-transform/issues/116)) ([29f6290](https://github.com/ecmwf/anemoi-transform/commit/29f62906b53af2db87520ec2a93406258861e677))
+* Fixed typo in error message ([#120](https://github.com/ecmwf/anemoi-transform/issues/120)) ([242c836](https://github.com/ecmwf/anemoi-transform/commit/242c836e6ca4c267755ea143f4d83993ba61471f))
+
 ## [0.1.11](https://github.com/ecmwf/anemoi-transform/compare/0.1.10...0.1.11) (2025-05-26)
 
 

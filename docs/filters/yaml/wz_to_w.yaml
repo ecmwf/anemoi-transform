@@ -4,8 +4,10 @@ input:
       # mars, grib, netcdf, etc.
       # source attributes here
       # ...
-      # Must load geometric vertical velocity
+      # Must load vertical wind speed, temperature and humidity
 
   - wz_to_w:
-      wz: wz # Name of geometric vertical velocity (input) variable
-      x: z # Name of pressure vertical velocity (output) variable
+      w_component: w # Name of wind vertical velocity in m/s (input) variable
+      temperature: t # Name of temperature (input) variable
+      humidity: q # Name of humidity (input) variable
+      wz_component: wz_component # Name of geometric vertical velocity in Pa/s (output) variable

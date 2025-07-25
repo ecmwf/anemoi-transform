@@ -2,11 +2,12 @@
  uv_to_ddff
 ############
 
-The ``uv_to_ddff`` filter converts geometric vertical velocity (provided in
-m/s) to vertical velocity in pressure coordinates (Pa/s). This filter
-must follow a source that provides geometric vertical velocity.
-Geometric vertical velocity is removed by the filter, and pressure
-vertical velocity is added.
+The ``uv_to_ddff`` filter converts wind speed and direction from U and V components,
+and back This filter a source that provides the wind (U and V) components.
+For details regarding the exact formula used please refer 
+to `earthkit-meteo <https://github.com/ecmwf/earthkit-meteo/blob/develop/src/earthkit/meteo/wind/array/wind.py>`_ `xy_to_polar` formula.
+
+
 
 .. literalinclude:: yaml/uv_to_ddff.yaml
    :language: yaml

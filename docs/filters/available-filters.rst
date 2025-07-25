@@ -11,7 +11,7 @@ To know which filters are available in anemoi-transform you can run the command:
    anemoi-transform filters list
 
 
-.. code:: note
+.. note:: 
    
    While the docs focus on the forward transformation of these filters, many of them 
    also include a reverse transform. Please refer to the code implementation for details.

@@ -6,7 +6,7 @@ input:
       # ...
       # Must load vertical wind speed, temperature and humidity
 
-  - wz_to_w:
+  - w_to_wz:
       w_component: w # Name of wind vertical velocity in m/s (input) variable
       temperature: t # Name of temperature (input) variable
       humidity: q # Name of humidity (input) variable

@@ -1,8 +1,8 @@
-##################
- VerticalVelocity
-##################
+#########
+ wz_to_w
+#########
 
-The ``VerticalVelocity`` filter converts geometric vertical velocity (provided in
+The ``wz_to_w`` filter converts geometric vertical velocity (provided in
 m/s) to vertical velocity in pressure coordinates (Pa/s). This filter
 must follow a source that provides geometric vertical velocity.
 Geometric vertical velocity is removed by the filter, and pressure

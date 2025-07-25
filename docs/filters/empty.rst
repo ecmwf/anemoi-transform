@@ -1,5 +1,5 @@
 #######
- Empty
+ empty
 #######
 
 The ``empty`` filter is for debugging purposes. It always returns an

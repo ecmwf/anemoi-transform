@@ -23,3 +23,4 @@
    noop
    q_to_r
    uv_to_ddff
+   regrid

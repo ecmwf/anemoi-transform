@@ -4,18 +4,20 @@
  Available Filters
 ###################
 
-To know which filters are available in anemoi-transform you can run the command:
+To know which filters are available in anemoi-transform you can run the
+command:
 
 .. code:: bash
 
    anemoi-transform filters list
 
+.. note::
 
-.. note:: 
-   
-   While the docs focus on the forward transformation of these filters, many of them 
-   also include a reverse transform. Please refer to the code implementation for details.
-   Examples about how to use the filters can also be found as part of the unit tests of `anemoi-transform`.
+   While the docs focus on the forward transformation of these filters,
+   many of them also include a reverse transform. Please refer to the
+   code implementation for details. Examples about how to use the
+   filters can also be found as part of the unit tests of
+   `anemoi-transform`.
 
 .. toctree::
    :maxdepth: 1

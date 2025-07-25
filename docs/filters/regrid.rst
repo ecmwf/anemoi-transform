@@ -18,7 +18,8 @@ input/output coordinates, the indices, and the weights of the
 interpolation.
 
 ``regrid`` filter must follow a source or another filter in a
-`building-pipe <https://anemoi.readthedocs.io/projects/datasets/en/latest/datasets/building/operations.html#pipe>`_
+`building-pipe
+<https://anemoi.readthedocs.io/projects/datasets/en/latest/datasets/building/operations.html#pipe>`_
 operation.
 
 .. literalinclude:: yaml/regrid1.yaml

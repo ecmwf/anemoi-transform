@@ -27,10 +27,9 @@ class Filters(Command):
         subparsers = command_parser.add_subparsers(dest="subcommand", required=True)
         list_filters = subparsers.add_parser(
             "list",
-            help='List avaialble filters',
-            description='List available filters',
+            help="List avaialble filters",
+            description="List available filters",
         )
-
 
     def run(self, args: argparse.Namespace) -> None:
         """Run the command with the provided arguments.
@@ -42,12 +41,11 @@ class Filters(Command):
         """
         if args.subcommand == "list":
             from anemoi.transform.filters import filter_registry
+
             filters = filter_registry.registered
             print("Available Filters:\n" + "-" * 18)
             for f in sorted(filters):
                 print(f"- {f}")
-
-
 
 
 command = Filters

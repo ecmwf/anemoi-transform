@@ -25,7 +25,7 @@ class Filters(Command):
             The argument parser to add arguments to.
         """
         subparsers = command_parser.add_subparsers(dest="subcommand", required=True)
-        list_filters = subparsers.add_parser(
+        _ = subparsers.add_parser(
             "list",
             help="List avaialble filters",
             description="List available filters",

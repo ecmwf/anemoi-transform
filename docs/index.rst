@@ -70,6 +70,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 
    filters/single-field-filters
    filters/matching-filters
+   filters/available-filters
 
 .. toctree::
    :maxdepth: 5

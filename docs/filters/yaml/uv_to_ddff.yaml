@@ -1,0 +1,13 @@
+input:
+  pipe:
+  - source:
+      # mars, grib, netcdf, etc.
+      # source attributes here
+      # ...
+      # Must load wind velocity components
+
+  - uv_to_ddff:
+      u_component: u # Name of u wind component (input) variable
+      v_component: v # Name of v wind component (input) variable
+      wind_speed: ws # Name of wind speed (output) variable
+      wind_direction: wdir # Name of wind direction (output) variable

@@ -1,0 +1,12 @@
+input:
+  pipe:
+  - source:
+      # mars, grib, netcdf, etc.
+      # source attributes here
+      # ...
+      # Must load the input variable
+
+  - earthkitfieldlambda:
+      param: "2t" # Name of variable (input) to be transformed
+      fn: "lambda x, s: x.clone(values=x.values - s)"
+      fn_args: [273.15]

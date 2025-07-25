@@ -1,0 +1,13 @@
+input:
+  pipe:
+  - source:
+      # mars, grib, netcdf, etc.
+      # source attributes here
+      # ...
+      # Must load vertical wind speed, temperature and humidity
+
+  - w_to_wz:
+      w_component: w # Name of wind vertical velocity in m/s (input) variable
+      temperature: t # Name of temperature (input) variable
+      humidity: q # Name of humidity (input) variable
+      wz_component: wz_component # Name of geometric vertical velocity in Pa/s (output) variable

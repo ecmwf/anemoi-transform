@@ -11,6 +11,18 @@ command:
 
    anemoi-transform filters list
 
+   Available Filters: #example output
+   ------------------
+   - apply-mask
+   - clear-step
+   - clip
+   - convert
+   - cos-sin-mean-wave-direction
+   - d-to-r
+   - ddff-to-uv
+   - earthkitfieldlambda
+   ...
+
 .. note::
 
    While the docs focus on the forward transformation of these filters,

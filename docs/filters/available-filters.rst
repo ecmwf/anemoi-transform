@@ -4,8 +4,12 @@
  Available Filters
 ###################
 
+To know which filters are available in anemoi-transform you can run the command:
 
+.. code-block:: bash
+    % anemoi-transform filters list
 
+This command 
 
 
 .. toctree::

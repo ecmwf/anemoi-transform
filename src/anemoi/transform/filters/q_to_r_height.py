@@ -399,16 +399,14 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
             surface_pressure.to_numpy()       
         )
         
-        # For now We need to go from qv --> td --> rh to take into account
-        # the mixed / ice phase when T ~ 0C / T < 0C
-        # See https://github.com/ecmwf/earthkit-meteo/issues/15
-        dewpoint_at_height_level = thermo.dewpoint_from_specific_humidity(
-            q = specific_humidity_at_height_level.to_numpy(), 
-            p = pressure_at_height_level
-        )
-        relative_humidity_at_height_level = thermo.relative_humidity_from_dewpoint(
+        # If we want to take into account the mixed / ice phase when T ~ 0C / T < 0C
+        # Then it is best to go through td: q --> td --> rh. (see https://github.com/ecmwf/earthkit-meteo/issues/15)
+        # However, going straight to relative humidity seems to be a closer match to the RH values calculated by IFS
+
+        relative_humidity_at_height_level = thermo.relative_humidity_from_specific_humidity(
             t = temperature_at_height_level.to_numpy(),
-            td = dewpoint_at_height_level
+            q = specific_humidity_at_height_level.to_numpy(),
+            p = pressure_at_height_level
         )
 
         # Return the fields
@@ -432,14 +430,20 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
     ) -> Iterator[ekd.Field]:
         """This will return the specific humidity along with temperature from relative humidity and temperature"""
 
+        # Make sure model levels are ordered ascending (highest level first):
+        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
+        temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
+
         pressure_at_height_level = self._get_pressure_at_heigh_level(
-            np.stack([level.to_numpy() for level in specific_humidity_at_model_levels.values()]),
             temperature_at_model_levels.to_numpy(),
+            specific_humidity_at_model_levels.to_numpy(),
             surface_pressure.to_numpy(),
         )
 
         specific_humidity_at_height_level = thermo.specific_humidity_from_relative_humidity(
-            temperature_at_height_level, relative_humidity_at_height_level, pressure_at_height_level
+            t=temperature_at_height_level.to_numpy(),
+            r=relative_humidity_at_height_level.to_numpy(),
+            p=pressure_at_height_level
         )
 
         yield self.new_field_from_numpy(

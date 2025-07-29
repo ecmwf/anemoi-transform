@@ -45,7 +45,7 @@ def source(test_source):
 
 
 @pytest.fixture()
-def ekd_from_source(source):
+def ekd_from_source():
     def side_effect(source_type, path):
         mock_field = mock.Mock()
         if source_type != "file":

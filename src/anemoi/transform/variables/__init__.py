@@ -9,8 +9,13 @@
 
 from abc import ABC
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
+from typing import Union
+
+if TYPE_CHECKING:
+    from datetime import timedelta
 
 
 class Variable(ABC):
@@ -109,6 +114,18 @@ class Variable(ABC):
 
     @property
     @abstractmethod
+    def is_model_level(self) -> bool:
+        """Check if the variable is a pressure level."""
+        pass
+
+    @property
+    @abstractmethod
+    def is_surface_level(self) -> bool:
+        """Check if the variable is on the surface."""
+        pass
+
+    @property
+    @abstractmethod
     def level(self) -> Any:
         """Get the level of the variable."""
         pass
@@ -133,10 +150,28 @@ class Variable(ABC):
 
     @property
     @abstractmethod
+    def time_processing(self):
+        """Get the time processing type of the variable."""
+        pass
+
+    @property
+    @abstractmethod
+    def period(self) -> Union["timedelta", None]:
+        """Get the variable's period as a timedelta.
+        For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
+        """
+        pass
+
+    @property
+    @abstractmethod
     def is_accumulation(self) -> bool:
         """Check if the variable is an accumulation."""
-
         pass
+
+    @property
+    def param(self) -> str:
+        """Get the parameter name of the variable."""
+        return self.name
 
     # This may need to move to a different class
     @property

@@ -7,12 +7,21 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-
+import logging
+from collections.abc import Sized
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Dict
 from typing import Union
 
+from anemoi.utils.dates import as_timedelta
+
 from anemoi.transform.variables import Variable
+
+if TYPE_CHECKING:
+    from datetime import timedelta
+
+LOG = logging.getLogger(__name__)
 
 
 class VariableFromMarsVocabulary(Variable):
@@ -33,9 +42,19 @@ class VariableFromMarsVocabulary(Variable):
         self.mars = self.data.get("mars", {})
 
     @property
+    def is_surface_level(self) -> bool:
+        """Check if the variable is at a surface level."""
+        return self.mars.get("levtype", None) == "sfc"
+
+    @property
     def is_pressure_level(self) -> bool:
         """Check if the variable is at a pressure level."""
         return self.mars.get("levtype", None) == "pl"
+
+    @property
+    def is_model_level(self) -> bool:
+        """Check if the variable is at a model level."""
+        return self.mars.get("levtype", None) == "ml"
 
     @property
     def level(self) -> Union[str, None]:
@@ -73,9 +92,30 @@ class VariableFromMarsVocabulary(Variable):
         return self.data.get("process")
 
     @property
+    def period(self) -> Union["timedelta", None]:
+        """Get the variable's period as a timedelta.
+        For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
+        """
+        if self.is_instantanous:
+            return as_timedelta(0)
+
+        if not (period := self.data.get("period")):
+            return None
+
+        if not isinstance(period, Sized) or len(period) != 2:
+            return None
+
+        return as_timedelta(period[1]) - as_timedelta(period[0])
+
+    @property
     def grib_keys(self) -> Dict[str, Any]:
         """Get the GRIB keys of the variable."""
         return self.data.get("mars", {}).copy()
+
+    @property
+    def param(self) -> str:
+        """Get the parameter of the variable."""
+        return self.mars.get("param", super().param)
 
     def similarity(self, other: Any) -> int:
         """Calculate the similarity between this variable and another.
@@ -139,24 +179,14 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
         super().__init__(name, field.metadata(namespace=namespace))
         self.field = field
 
+    @property
     def is_pressure_level(self) -> bool:
-        """Check if the variable is at a pressure level.
-
-        Returns
-        -------
-        bool
-            True if the variable is at a pressure level, False otherwise.
-        """
+        """Check if the variable is at a pressure level."""
         return self.field.is_pressure_level()
 
+    @property
     def level(self) -> Any:
-        """Get the level of the variable.
-
-        Returns
-        -------
-        Any
-            The level of the variable.
-        """
+        """Get the level of the variable."""
         return self.field.level()
 
 

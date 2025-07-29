@@ -8,6 +8,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
+
+## [0.1.14](https://github.com/ecmwf/anemoi-transform/compare/0.1.13...0.1.14) (2025-07-22)
+
+
+### Features
+
+* **variable:** Period property for non-instant fields ([#132](https://github.com/ecmwf/anemoi-transform/issues/132)) ([a086896](https://github.com/ecmwf/anemoi-transform/commit/a086896e9cf4c5f7987e50b993296fcae1bc080a))
+
+
+### Bug Fixes
+
+* Remove need for nested rename in YAML ([#128](https://github.com/ecmwf/anemoi-transform/issues/128)) ([d92bf7f](https://github.com/ecmwf/anemoi-transform/commit/d92bf7fcd91ad0114c17aa0ee2c08a1370d14c99))
+
+## [0.1.13](https://github.com/ecmwf/anemoi-transform/compare/0.1.12...0.1.13) (2025-07-14)
+
+
+### Bug Fixes
+
+* Warn rather than fail on metadata mismatch in matching filter ([#126](https://github.com/ecmwf/anemoi-transform/issues/126)) ([bd4fa73](https://github.com/ecmwf/anemoi-transform/commit/bd4fa73f761852622e19314361db9a6f9f69b9de))
+
+## [0.1.12](https://github.com/ecmwf/anemoi-transform/compare/0.1.11...0.1.12) (2025-07-14)
+
+
+### Features
+
+* Add orography to surface geopotential filter ([#115](https://github.com/ecmwf/anemoi-transform/issues/115)) ([9b7fd8d](https://github.com/ecmwf/anemoi-transform/commit/9b7fd8d74227461e7bb2f4abd1775ea9342da461))
+* Add SingleFieldFilter ([#104](https://github.com/ecmwf/anemoi-transform/issues/104)) ([914d1df](https://github.com/ecmwf/anemoi-transform/commit/914d1df883732c12b32cb4f4f0e0389875e044d7))
+* Filter migration from anemoi-datasets + testing ([#93](https://github.com/ecmwf/anemoi-transform/issues/93)) ([abfb33d](https://github.com/ecmwf/anemoi-transform/commit/abfb33d20f26604d481099e9ed8a0a4fe4e1f2cd))
+* General purpose clipping filter ([#96](https://github.com/ecmwf/anemoi-transform/issues/96)) ([f70b1ab](https://github.com/ecmwf/anemoi-transform/commit/f70b1abc37844046e1f2a7bf9ba60818ccfbecaa))
+* Migrate sum filter ([#121](https://github.com/ecmwf/anemoi-transform/issues/121)) ([3b5596e](https://github.com/ecmwf/anemoi-transform/commit/3b5596e37797a645582b6a2b49b5eae4c1391c90))
+* Set resolution metadata in filter operation. ([#98](https://github.com/ecmwf/anemoi-transform/issues/98)) ([7844fea](https://github.com/ecmwf/anemoi-transform/commit/7844fea7cf5f849a9dfd7242440eb9721d0ee9f8))
+
+
+### Bug Fixes
+
+* Docs sphinx dependency python&gt;=3.11 ([#116](https://github.com/ecmwf/anemoi-transform/issues/116)) ([29f6290](https://github.com/ecmwf/anemoi-transform/commit/29f62906b53af2db87520ec2a93406258861e677))
+* Fixed typo in error message ([#120](https://github.com/ecmwf/anemoi-transform/issues/120)) ([242c836](https://github.com/ecmwf/anemoi-transform/commit/242c836e6ca4c267755ea143f4d83993ba61471f))
+
+## [0.1.11](https://github.com/ecmwf/anemoi-transform/compare/0.1.10...0.1.11) (2025-05-26)
+
+
+### Features
+
+* Extend Variable Class ([#94](https://github.com/ecmwf/anemoi-transform/issues/94)) ([dd32ccf](https://github.com/ecmwf/anemoi-transform/commit/dd32ccfcfae54d17b02d82aa869b39dff886df41))
+* thermo conversions ([#86](https://github.com/ecmwf/anemoi-transform/issues/86)) ([fce0db5](https://github.com/ecmwf/anemoi-transform/commit/fce0db53c6352fdc39b9dc2f3ff9e2715dd8d279))
+
+
+### Bug Fixes
+
+* Rodeo delivery ([#101](https://github.com/ecmwf/anemoi-transform/issues/101)) ([54ccd7f](https://github.com/ecmwf/anemoi-transform/commit/54ccd7f95813e8f58353b8593c41ef21218ea1c3))
+
+## [Unreleased](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.0.9...HEAD)
+
+## [0.0.9](https://github.com/ecmwf/anemoi-utils/transform/0.0.5...HEAD/compare/0.0.8...0.0.9) - 2024-11-01
+## [0.1.10](https://github.com/ecmwf/anemoi-transform/compare/0.1.9...0.1.10) (2025-05-06)
+
+
+### Bug Fixes
+
+* change literal string to variable in `icon_grid` ([#88](https://github.com/ecmwf/anemoi-transform/issues/88)) ([a7459ea](https://github.com/ecmwf/anemoi-transform/commit/a7459ea5862d06d45c4a0f9458bbeecf589a7fa4))
+
 ## [0.1.9](https://github.com/ecmwf/anemoi-transform/compare/0.1.8...0.1.9) (2025-04-05)
 
 

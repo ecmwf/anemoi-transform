@@ -76,7 +76,7 @@ def test_height_level_specific_humidity_to_relative_humidity_from_file(test_sour
 def test_specific_humidity_to_relative_humidity():
     pass
 
-
+@skip_if_offline
 def test_relative_humidity_to_specific_humidity_from_file(test_source):
     source = test_source("anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib")
     input_relative_humidity = test_source("anemoi-transform/filters/single_level_relative_humidity.npy").ds.to_numpy()

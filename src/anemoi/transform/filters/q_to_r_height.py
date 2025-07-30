@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 from typing import Iterator
 from typing import Union
+from numpy.typing import NDArray
 
 import earthkit.data as ekd
 import numpy as np
@@ -368,10 +369,14 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
 
     def _get_pressure_at_heigh_level(
         self,
-        temperature_at_model_levels: ekd.FieldList,
-        specific_humidity_at_model_levels: ekd.FieldList,
-        surface_pressure: ekd.Field
-    ):
+        temperature_at_model_levels: NDArray,
+        specific_humidity_at_model_levels: NDArray,
+        surface_pressure: NDArray
+    ) -> NDArray:
+        
+        assert self.A.shape[-1] == temperature_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than temperature_at_model_levels"
+        assert self.A.shape[-1] == specific_humidity_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than specific_humidity_at_model_levels"
+
         return vertical.pressure_at_height_levels(
             height = self.height,
             t = temperature_at_model_levels,
@@ -515,12 +520,18 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         self.A = np.array(AB["A"])
         self.B = np.array(AB["B"])
 
+        assert self.A.shape == self.B.shape, "A and B coefficients must have same shape"
+
     def _get_pressure_at_heigh_level(
         self,
-        temperature_at_model_levels: ekd.FieldList,
-        specific_humidity_at_model_levels: ekd.FieldList,
-        surface_pressure: ekd.Field
-    ):
+        temperature_at_model_levels: NDArray,
+        specific_humidity_at_model_levels: NDArray,
+        surface_pressure: NDArray
+    ) -> NDArray:
+        
+        assert self.A.shape[-1] == temperature_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than temperature_at_model_levels"
+        assert self.A.shape[-1] == specific_humidity_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than specific_humidity_at_model_levels"
+
         return vertical.pressure_at_height_levels(
             height = self.height,
             t = temperature_at_model_levels,
@@ -533,7 +544,6 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
     def forward_transform(
         self,
         specific_humidity_at_height_level: ekd.Field,
-        #temperature_at_height_level: ekd.Field,
         surface_pressure: ekd.Field,
         specific_humidity_at_model_levels: ekd.FieldList,
         temperature_at_model_levels: ekd.FieldList,
@@ -572,7 +582,6 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
     def backward_transform(
         self,
         dewpoint_temperature_at_height_level: ekd.Field,
-        #temperature_at_height_level: ekd.Field,
         surface_pressure: ekd.Field,
         specific_humidity_at_model_levels: ekd.FieldList,
         temperature_at_model_levels: ekd.FieldList,

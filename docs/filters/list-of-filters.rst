@@ -27,9 +27,9 @@ command:
 
    While the docs focus on the forward transformation of these filters,
    many of them also include a reverse transform. Please refer to the
-   code implementation for details. Examples about how to use the
-   filters can also be found as part of the unit tests of
-   `anemoi-transform`.
+   code implementation for details. While the documentation is a work 
+   in progress, please consider looking at the unit tests for examples
+   of how filters can be used.
 
 .. toctree::
    :maxdepth: 1

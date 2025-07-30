@@ -4,8 +4,8 @@
 
 When building a dataset for a specific model, it is possible that the
 source grid or resolution does not fit the needs. In that case, it is
-possible to add a filter to interpolate the data to a target grid. It will call the
-``interpolate`` function from `earthkit-regrid
+possible to add a filter to interpolate the data to a target grid. It
+will call the ``interpolate`` function from `earthkit-regrid
 <https://earthkit-regrid.readthedocs.io/en/latest/interpolate.html>`_ if
 the keys ``method``, ``in_grid`` and ``out_grid`` are provided and if a
 `pre-generated matrix

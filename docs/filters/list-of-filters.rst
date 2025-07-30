@@ -37,13 +37,13 @@ command:
    :caption: Using datasets
 
    earthkitfieldlambda
-   empty    
-   noop  
-   orog_to_z  
-   q_to_r  
-   r_to_d  
-   regrid  
-   rename  
-   sum  
-   uv_to_ddff  
-   w_to_wz  
+   empty
+   noop
+   orog_to_z
+   q_to_r
+   r_to_d
+   regrid
+   rename
+   sum
+   uv_to_ddff
+   w_to_wz

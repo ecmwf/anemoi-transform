@@ -124,6 +124,7 @@ class GroupByParamVertical(GroupByParam):
         assert callable(other), type(other)
         self.groups: Dict[Tuple[Tuple[str, Any], ...], Dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
+        levels = defaultdict(list)
         for f in data:
             key = f.metadata(namespace="mars")
             if not key:
@@ -135,7 +136,7 @@ class GroupByParamVertical(GroupByParam):
             param = key.pop("param", f.metadata("param"))
             _ = key.pop("levtype", None)
             level = key.pop("levelist",None)
-            levels = []
+
             if param not in self.params:
                 other(f)
                 continue
@@ -148,7 +149,7 @@ class GroupByParamVertical(GroupByParam):
                 self.groups[key][param] = f
             else:
                 if param in self.groups[key]:
-                    if level in levels:
+                    if level in levels[param]:
                         raise ValueError(f"Duplicate component {param} for {key} and level {level}")
                     else:
                         self.groups[key][param].append(f)
@@ -156,5 +157,6 @@ class GroupByParamVertical(GroupByParam):
                     ds = SimpleFieldList()
                     ds.append(f)
                     self.groups[key][param] = ds
+                levels[param].append(level)
             self.groups_params.add(param)
         LOG.info(f"Params groups: {self.groups_params}")

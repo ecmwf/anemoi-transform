@@ -18,8 +18,8 @@ from . import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
 
-# A-coefficients defining the model levels
-# B-coefficients defining the model levels
+# A and B-coefficients defining the model levels for different models 
+# Only IFS implemented for now
 PREDEFINED_AB = {
     "IFS_137": {
         "A": [
@@ -305,10 +305,12 @@ PREDEFINED_AB = {
     }
 }
 
+# Protection against zero relative or specific humidity when calculating dewpoint temperature
+EPS_SPECIFIC = 1.e-8
 
-class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
-    """A filter to convert specific humidity to relative humidity
-    at a specified height level (in meters) with standard thermodynamical formulas/
+class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
+    """A filter to convert specific humidity (kg/kg) to relative humidity (%)
+    at a specified height level (in meters) with standard thermodynamical formulas
     """
 
     @matching(
@@ -455,6 +457,152 @@ class HumidityConversionAtHeightLevel(MatchingFieldsFilter):
         yield relative_humidity_at_height_level
         yield surface_pressure
 
+filter_registry.register("q_to_r_height", SpecificToRelativeAtHeightLevel)
+filter_registry.register("r_to_q_height", SpecificToRelativeAtHeightLevel.reversed)
 
-filter_registry.register("q_to_r_height", HumidityConversionAtHeightLevel)
-filter_registry.register("r_to_q_height", HumidityConversionAtHeightLevel.reversed)
+
+class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
+    """A filter to convert specific humidity (kg/kg) to dewpoint temperature (K)
+    at a specified height level (in meters) with standard thermodynamical formulas
+    """
+
+    @matching(
+        select="param",
+        forward=(
+            "specific_humidity_at_height_level",
+            "surface_pressure",
+            "specific_humidity_at_model_levels",
+            "temperature_at_model_levels",
+        ),
+        backward=(
+            "dewpoint_temperature_at_height_level",
+            "surface_pressure",
+            "specific_humidity_at_model_levels",
+            "temperature_at_model_levels",
+        ),
+        vertical = True,
+    )
+    def __init__(
+        self,
+        *,
+        height: float = 2.0,
+        specific_humidity_at_height_level: str = "2q",
+        dewpoint_temperature_at_height_level: str = "2d",
+        surface_pressure: str = "sp",
+        specific_humidity_at_model_levels: str = "q",
+        temperature_at_model_levels: str = "t",
+        AB: Union[str, dict] = "IFS_137",
+    ):
+
+        self.height = float(height)
+        self.specific_humidity_at_height_level = specific_humidity_at_height_level
+        self.dewpoint_temperature_at_height_level = dewpoint_temperature_at_height_level
+        self.surface_pressure = surface_pressure
+        self.specific_humidity_at_model_levels = specific_humidity_at_model_levels
+        self.temperature_at_model_levels = temperature_at_model_levels
+
+        if isinstance(AB, str):
+            AB = AB.upper()
+            if AB in PREDEFINED_AB.keys():
+                AB = PREDEFINED_AB[AB]
+            else:
+                KeyError(
+                    "%s is not in the list of predefined AB-coefficients. Possible options are %s."
+                    % (AB, ", ".join(PREDEFINED_AB.keys()))
+                )
+        if not isinstance(AB, dict):
+            TypeError("AB must be a string or a dictionary.")
+        self.A = np.array(AB["A"])
+        self.B = np.array(AB["B"])
+
+    def _get_pressure_at_heigh_level(
+        self,
+        temperature_at_model_levels: ekd.FieldList,
+        specific_humidity_at_model_levels: ekd.FieldList,
+        surface_pressure: ekd.Field
+    ):
+        return vertical.pressure_at_height_levels(
+            height = self.height,
+            t = temperature_at_model_levels,
+            q = specific_humidity_at_model_levels,
+            sp = surface_pressure,
+            A = self.A,
+            B = self.B,
+        )
+
+    def forward_transform(
+        self,
+        specific_humidity_at_height_level: ekd.Field,
+        #temperature_at_height_level: ekd.Field,
+        surface_pressure: ekd.Field,
+        specific_humidity_at_model_levels: ekd.FieldList,
+        temperature_at_model_levels: ekd.FieldList,
+    ) -> Iterator[ekd.Field]:
+        """This will return the relative humidity along with temperature from specific humidity and temperature"""
+
+        # Make sure model levels are ordered ascending (highest level first):
+        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
+        temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
+
+        pressure_at_height_level = self._get_pressure_at_heigh_level(
+            temperature_at_model_levels.to_numpy(),
+            specific_humidity_at_model_levels.to_numpy(),
+            surface_pressure.to_numpy()       
+        )
+
+        specific_humidity_at_height_level_values = specific_humidity_at_height_level.to_numpy()
+        specific_humidity_at_height_level_values[specific_humidity_at_height_level_values == 0] = EPS_SPECIFIC
+
+        dewpoint_temperature_at_height_level = thermo.dewpoint_from_specific_humidity(
+            q = specific_humidity_at_height_level_values, 
+            p = pressure_at_height_level
+        )
+
+        # Return the fields
+        yield self.new_field_from_numpy(
+            dewpoint_temperature_at_height_level,
+            template=specific_humidity_at_height_level,
+            param=self.dewpoint_temperature_at_height_level,
+        )
+        #yield temperature_at_height_level
+        #TODO Do we wan't to keep specific hum. when we have converted it?
+        yield specific_humidity_at_height_level  
+        yield surface_pressure
+
+    def backward_transform(
+        self,
+        dewpoint_temperature_at_height_level: ekd.Field,
+        #temperature_at_height_level: ekd.Field,
+        surface_pressure: ekd.Field,
+        specific_humidity_at_model_levels: ekd.FieldList,
+        temperature_at_model_levels: ekd.FieldList,
+    ) -> Iterator[ekd.Field]:
+        """This will return the specific humidity along with temperature from relative humidity and temperature"""
+
+        # Make sure model levels are ordered ascending (highest level first):
+        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
+        temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
+
+        pressure_at_height_level = self._get_pressure_at_heigh_level(
+            temperature_at_model_levels.to_numpy(),
+            specific_humidity_at_model_levels.to_numpy(),
+            surface_pressure.to_numpy(),
+        )
+
+        specific_humidity_at_height_level = thermo.specific_humidity_from_dewpoint(
+            td = dewpoint_temperature_at_height_level.to_numpy(),
+            p = pressure_at_height_level
+        )
+
+        yield self.new_field_from_numpy(
+            specific_humidity_at_height_level,
+            template=dewpoint_temperature_at_height_level,
+            param=self.specific_humidity_at_height_level,
+        )
+        #yield temperature_at_height_level
+        yield dewpoint_temperature_at_height_level
+        yield surface_pressure
+
+
+filter_registry.register("q_to_d_height", SpecificToDewpointAtHeightLevel)
+filter_registry.register("d_to_q_height", SpecificToDewpointAtHeightLevel.reversed)

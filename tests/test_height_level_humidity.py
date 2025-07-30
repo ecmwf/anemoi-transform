@@ -3,11 +3,10 @@ import pytest
 from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.fields import new_fieldlist_from_list
 
 import earthkit.data as ekd
 
-from .utils import SelectFieldSource, SelectAndAddFieldSource
+from .utils import SelectAndAddFieldSource
 from .utils import assert_fields_equal
 from .utils import collect_fields_by_param
 

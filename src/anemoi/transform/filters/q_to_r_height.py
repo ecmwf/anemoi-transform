@@ -358,12 +358,12 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             if AB in PREDEFINED_AB.keys():
                 AB = PREDEFINED_AB[AB]
             else:
-                KeyError(
+                raise KeyError(
                     "%s is not in the list of predefined AB-coefficients. Possible options are %s."
                     % (AB, ", ".join(PREDEFINED_AB.keys()))
                 )
         if not isinstance(AB, dict):
-            TypeError("AB must be a string or a dictionary.")
+            raise TypeError("AB must be a string or a dictionary.")
         self.A = np.array(AB["A"])
         self.B = np.array(AB["B"])
 
@@ -395,6 +395,10 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         temperature_at_model_levels: ekd.FieldList,
     ) -> Iterator[ekd.Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
+
+        # Assert that model levels are passed
+        assert all(item == "ml" for item in specific_humidity_at_model_levels.metadata("levtype"))
+        assert all(item == "ml" for item in temperature_at_model_levels.metadata("levtype"))
 
         # Make sure model levels are ordered ascending (highest level first):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
@@ -436,6 +440,10 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         temperature_at_model_levels: ekd.FieldList,
     ) -> Iterator[ekd.Field]:
         """This will return the specific humidity along with temperature from relative humidity and temperature"""
+
+        # Assert that model levels are passed
+        assert all(item == "ml" for item in specific_humidity_at_model_levels.metadata("levtype"))
+        assert all(item == "ml" for item in temperature_at_model_levels.metadata("levtype"))
 
         # Make sure model levels are ordered ascending (highest level first):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
@@ -511,12 +519,12 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             if AB in PREDEFINED_AB.keys():
                 AB = PREDEFINED_AB[AB]
             else:
-                KeyError(
+                raise KeyError(
                     "%s is not in the list of predefined AB-coefficients. Possible options are %s."
                     % (AB, ", ".join(PREDEFINED_AB.keys()))
                 )
         if not isinstance(AB, dict):
-            TypeError("AB must be a string or a dictionary.")
+            raise TypeError("AB must be a string or a dictionary.")
         self.A = np.array(AB["A"])
         self.B = np.array(AB["B"])
 
@@ -549,6 +557,10 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         temperature_at_model_levels: ekd.FieldList,
     ) -> Iterator[ekd.Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
+
+        # Assert that model levels are passed
+        assert all(item == "ml" for item in specific_humidity_at_model_levels.metadata("levtype")), "Specific humidity is not on model levels"
+        assert all(item == "ml" for item in temperature_at_model_levels.metadata("levtype")), "Temperature is not on model levels"
 
         # Make sure model levels are ordered ascending (highest level first):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
@@ -587,6 +599,10 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         temperature_at_model_levels: ekd.FieldList,
     ) -> Iterator[ekd.Field]:
         """This will return the specific humidity along with temperature from relative humidity and temperature"""
+
+        # Assert that model levels are passed
+        assert all(item == "ml" for item in specific_humidity_at_model_levels.metadata("levtype"))
+        assert all(item == "ml" for item in temperature_at_model_levels.metadata("levtype"))
 
         # Make sure model levels are ordered ascending (highest level first):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")

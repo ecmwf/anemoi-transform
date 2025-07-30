@@ -9,6 +9,6 @@ removed by the filter, and pressure vertical velocity is added. For
 details regarding the exact formula used please refer to `earthkit-meteo
 <https://github.com/ecmwf/earthkit-meteo/blob/develop/src/earthkit/meteo/thermo/array/thermo.py>`_
 ``dewpoint_from_relative_humidity`` formula.
-
+``dewpoint_from_relative_humidity`` function.
 .. literalinclude:: yaml/r_to_d.yaml
    :language: yaml

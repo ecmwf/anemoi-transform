@@ -14,7 +14,7 @@ from anemoi.transform.commands import Command
 
 
 class Filters(Command):
-    """Extract the grid from a GRIB or NetCDF file and save it as a NPZ file."""
+    """Command to inspect available filters"""
 
     def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
         """Add arguments to the command parser.
@@ -25,7 +25,7 @@ class Filters(Command):
             The argument parser to add arguments to.
         """
         subparsers = command_parser.add_subparsers(dest="subcommand", required=True)
-        _ = subparsers.add_parser(
+        subparsers.add_parser(
             "list",
             help="List avaialble filters",
             description="List available filters",

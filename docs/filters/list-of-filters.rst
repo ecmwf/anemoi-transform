@@ -11,7 +11,7 @@ command:
 
    anemoi-transform filters list
 
-   Available Filters: #example output
+   List of Filters: # example output
    ------------------
    - apply-mask
    - clear-step

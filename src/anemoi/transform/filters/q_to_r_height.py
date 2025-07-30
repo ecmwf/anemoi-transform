@@ -8,20 +8,21 @@
 # nor does it submit to any jurisdiction.
 from typing import Iterator
 from typing import Union
-from numpy.typing import NDArray
 
 import earthkit.data as ekd
 import numpy as np
 from earthkit.meteo import thermo
 from earthkit.meteo import vertical
+from numpy.typing import NDArray
 
+from ..constants import AB_coefficients
 from . import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
-from ..constants import AB_coefficients
 
 # Protection against zero relative or specific humidity when calculating dewpoint temperature
-EPS_SPECIFIC = 1.e-8
+EPS_SPECIFIC = 1.0e-8
+
 
 class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
     """A filter to convert specific humidity (kg/kg) to relative humidity (%)
@@ -44,7 +45,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             "specific_humidity_at_model_levels",
             "temperature_at_model_levels",
         ),
-        vertical = True,
+        vertical=True,
     )
     def __init__(
         self,
@@ -58,8 +59,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         temperature_at_model_levels: str = "t",
         AB: Union[str, dict],
     ):
-        """
-        Initializes the filter for converting specific humidity (kg/kg) to relative humidity (%) at a specified height.
+        """Initializes the filter for converting specific humidity (kg/kg) to relative humidity (%) at a specified height.
 
         Parameters:
             height (float, optional): Height level in meters where the conversion is performed. Default is 2.0.
@@ -99,20 +99,23 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         self,
         temperature_at_model_levels: NDArray,
         specific_humidity_at_model_levels: NDArray,
-        surface_pressure: NDArray
+        surface_pressure: NDArray,
     ) -> NDArray:
-        
-        
-        assert self.A.shape[-1] == temperature_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than temperature_at_model_levels"
-        assert self.A.shape[-1] == specific_humidity_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than specific_humidity_at_model_levels"
+
+        assert (
+            self.A.shape[-1] == temperature_at_model_levels.shape[0] + 1
+        ), "AB-coefficients should have one more vertical level than temperature_at_model_levels"
+        assert (
+            self.A.shape[-1] == specific_humidity_at_model_levels.shape[0] + 1
+        ), "AB-coefficients should have one more vertical level than specific_humidity_at_model_levels"
 
         return vertical.pressure_at_height_levels(
-            height = self.height,
-            t = temperature_at_model_levels,
-            q = specific_humidity_at_model_levels,
-            sp = surface_pressure,
-            A = self.A,
-            B = self.B,
+            height=self.height,
+            t=temperature_at_model_levels,
+            q=specific_humidity_at_model_levels,
+            sp=surface_pressure,
+            A=self.A,
+            B=self.B,
         )
 
     def forward_transform(
@@ -136,17 +139,17 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         pressure_at_height_level = self._get_pressure_at_heigh_level(
             temperature_at_model_levels.to_numpy(),
             specific_humidity_at_model_levels.to_numpy(),
-            surface_pressure.to_numpy()       
+            surface_pressure.to_numpy(),
         )
-        
+
         # If we want to take into account the mixed / ice phase when T ~ 0C / T < 0C
         # Then it is best to go through td: q --> td --> rh. (see https://github.com/ecmwf/earthkit-meteo/issues/15)
         # However, going straight to relative humidity seems to be a closer match to the RH values calculated by IFS
 
         relative_humidity_at_height_level = thermo.relative_humidity_from_specific_humidity(
-            t = temperature_at_height_level.to_numpy(),
-            q = specific_humidity_at_height_level.to_numpy(),
-            p = pressure_at_height_level
+            t=temperature_at_height_level.to_numpy(),
+            q=specific_humidity_at_height_level.to_numpy(),
+            p=pressure_at_height_level,
         )
 
         # Return the fields
@@ -156,8 +159,8 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             param=self.relative_humidity_at_height_level,
         )
         yield temperature_at_height_level
-        #TODO Do we wan't to keep specific hum. when we have converted it?
-        yield specific_humidity_at_height_level  
+        # TODO Do we wan't to keep specific hum. when we have converted it?
+        yield specific_humidity_at_height_level
         yield surface_pressure
 
     def backward_transform(
@@ -187,7 +190,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         specific_humidity_at_height_level = thermo.specific_humidity_from_relative_humidity(
             t=temperature_at_height_level.to_numpy(),
             r=relative_humidity_at_height_level.to_numpy(),
-            p=pressure_at_height_level
+            p=pressure_at_height_level,
         )
 
         yield self.new_field_from_numpy(
@@ -198,6 +201,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         yield temperature_at_height_level
         yield relative_humidity_at_height_level
         yield surface_pressure
+
 
 filter_registry.register("q_to_r_height", SpecificToRelativeAtHeightLevel)
 filter_registry.register("r_to_q_height", SpecificToRelativeAtHeightLevel.reversed)
@@ -222,7 +226,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             "specific_humidity_at_model_levels",
             "temperature_at_model_levels",
         ),
-        vertical = True,
+        vertical=True,
     )
     def __init__(
         self,
@@ -235,8 +239,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         temperature_at_model_levels: str = "t",
         AB: Union[str, dict],
     ):
-        """
-        Initializes the filter for transforming specific humidity at a given height to dewpoint temperature.
+        """Initializes the filter for transforming specific humidity at a given height to dewpoint temperature.
         Parameters:
             height (float, optional): The height level (in meters) at which to perform the transformation. Default is 2.0.
             specific_humidity_at_height_level (str, optional): Name of the variable representing specific humidity at the given height. Default is "2q".
@@ -247,7 +250,6 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             AB (Union[str, dict]): A string key for predefined A and B coefficients or a dictionary with "A" and "B" arrays for vertical interpolation.
                                    Possible predefined keys are: "IFS_137".
         """
-        
 
         self.height = float(height)
         self.specific_humidity_at_height_level = specific_humidity_at_height_level
@@ -276,19 +278,23 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         self,
         temperature_at_model_levels: NDArray,
         specific_humidity_at_model_levels: NDArray,
-        surface_pressure: NDArray
+        surface_pressure: NDArray,
     ) -> NDArray:
-        
-        assert self.A.shape[-1] == temperature_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than temperature_at_model_levels"
-        assert self.A.shape[-1] == specific_humidity_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than specific_humidity_at_model_levels"
+
+        assert (
+            self.A.shape[-1] == temperature_at_model_levels.shape[0] + 1
+        ), "AB-coefficients should have one more vertical level than temperature_at_model_levels"
+        assert (
+            self.A.shape[-1] == specific_humidity_at_model_levels.shape[0] + 1
+        ), "AB-coefficients should have one more vertical level than specific_humidity_at_model_levels"
 
         return vertical.pressure_at_height_levels(
-            height = self.height,
-            t = temperature_at_model_levels,
-            q = specific_humidity_at_model_levels,
-            sp = surface_pressure,
-            A = self.A,
-            B = self.B,
+            height=self.height,
+            t=temperature_at_model_levels,
+            q=specific_humidity_at_model_levels,
+            sp=surface_pressure,
+            A=self.A,
+            B=self.B,
         )
 
     def forward_transform(
@@ -301,8 +307,12 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
 
         # Assert that model levels are passed
-        assert all(item == "ml" for item in specific_humidity_at_model_levels.metadata("levtype")), "Specific humidity is not on model levels"
-        assert all(item == "ml" for item in temperature_at_model_levels.metadata("levtype")), "Temperature is not on model levels"
+        assert all(
+            item == "ml" for item in specific_humidity_at_model_levels.metadata("levtype")
+        ), "Specific humidity is not on model levels"
+        assert all(
+            item == "ml" for item in temperature_at_model_levels.metadata("levtype")
+        ), "Temperature is not on model levels"
 
         # Make sure model levels are ordered ascending (highest level first):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
@@ -311,15 +321,14 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         pressure_at_height_level = self._get_pressure_at_heigh_level(
             temperature_at_model_levels.to_numpy(),
             specific_humidity_at_model_levels.to_numpy(),
-            surface_pressure.to_numpy()       
+            surface_pressure.to_numpy(),
         )
 
         specific_humidity_at_height_level_values = specific_humidity_at_height_level.to_numpy()
         specific_humidity_at_height_level_values[specific_humidity_at_height_level_values == 0] = EPS_SPECIFIC
 
         dewpoint_temperature_at_height_level = thermo.dewpoint_from_specific_humidity(
-            q = specific_humidity_at_height_level_values, 
-            p = pressure_at_height_level
+            q=specific_humidity_at_height_level_values, p=pressure_at_height_level
         )
 
         # Return the fields
@@ -328,9 +337,9 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             template=specific_humidity_at_height_level,
             param=self.dewpoint_temperature_at_height_level,
         )
-        #yield temperature_at_height_level
-        #TODO Do we wan't to keep specific hum. when we have converted it?
-        yield specific_humidity_at_height_level  
+        # yield temperature_at_height_level
+        # TODO Do we wan't to keep specific hum. when we have converted it?
+        yield specific_humidity_at_height_level
         yield surface_pressure
 
     def backward_transform(
@@ -357,8 +366,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         )
 
         specific_humidity_at_height_level = thermo.specific_humidity_from_dewpoint(
-            td = dewpoint_temperature_at_height_level.to_numpy(),
-            p = pressure_at_height_level
+            td=dewpoint_temperature_at_height_level.to_numpy(), p=pressure_at_height_level
         )
 
         yield self.new_field_from_numpy(
@@ -366,7 +374,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             template=dewpoint_temperature_at_height_level,
             param=self.specific_humidity_at_height_level,
         )
-        #yield temperature_at_height_level
+        # yield temperature_at_height_level
         yield dewpoint_temperature_at_height_level
         yield surface_pressure
 

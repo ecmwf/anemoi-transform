@@ -63,7 +63,8 @@ class SelectFieldSource(Source):
             if self.params and f.metadata("param") in self.params:
                 fields.append(f)
         return new_fieldlist_from_list(fields)
-    
+
+
 class SelectAndAddFieldSource(Source):
     def __init__(self, fields, additional_fields, params=None, additional_params=None):
         self._fields = fields
@@ -73,7 +74,7 @@ class SelectAndAddFieldSource(Source):
             self.params += additional_params
         elif additional_params:
             self.params = additional_params
-        
+
     def forward(self, *args, **kwargs):
         fields = []
         params = []
@@ -85,4 +86,3 @@ class SelectAndAddFieldSource(Source):
             if self.params and f.metadata("param") in self.params and f.metadata("param") not in params:
                 fields.append(f)
         return new_fieldlist_from_list(fields)
-

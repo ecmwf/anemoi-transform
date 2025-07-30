@@ -10,14 +10,10 @@
 from earthkit.meteo.constants.constants import R as R_universal_gas_constant
 from earthkit.meteo.constants.constants import g as g_gravitational_acceleration
 
-__all__ = [
-    "g_gravitational_acceleration",
-    "R_universal_gas_constant",
-    "AB_coefficients"
-]
+__all__ = ["g_gravitational_acceleration", "R_universal_gas_constant", "AB_coefficients"]
 
 
-# A and B-coefficients defining the model levels for different models 
+# A and B-coefficients defining the model levels for different models
 # Only IFS with 137 vertical levels implemented for now
 AB_coefficients = {
     "IFS_137": {

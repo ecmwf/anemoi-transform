@@ -17,7 +17,8 @@ from typing import Iterator
 from typing import List
 from typing import Tuple
 
-from earthkit.data import SimpleFieldList, FieldList
+from earthkit.data import FieldList
+from earthkit.data import SimpleFieldList
 
 LOG = logging.getLogger(__name__)
 
@@ -119,6 +120,7 @@ class GroupByParam:
 
             yield tuple(group[p] for p in self.params)
 
+
 class GroupByParamVertical(GroupByParam):
     def _get_groups(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
@@ -135,7 +137,7 @@ class GroupByParamVertical(GroupByParam):
 
             param = key.pop("param", f.metadata("param"))
             _ = key.pop("levtype", None)
-            level = key.pop("levelist",None)
+            level = key.pop("levelist", None)
 
             if param not in self.params:
                 other(f)

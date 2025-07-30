@@ -17,7 +17,6 @@ from typing import Iterator
 from typing import List
 from typing import Tuple
 
-from earthkit.data import FieldList
 from earthkit.data import SimpleFieldList
 
 LOG = logging.getLogger(__name__)
@@ -145,7 +144,7 @@ class GroupByParamVertical(GroupByParam):
 
             key = tuple(sorted(tuple(key.items())))
 
-            if level == None:
+            if level is None:
                 if param in self.groups[key]:
                     raise ValueError(f"Duplicate component {param} for {key}")
                 self.groups[key][param] = f

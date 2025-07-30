@@ -559,7 +559,6 @@ def test_dewpoint_to_specific_humidity_from_file(test_source):
     input_dewpoint_temperature = test_source(
         "anemoi-transform/filters/single_level_dewpoint_temperature.npy"
     ).ds.to_numpy()
-    new_2d = source.ds.sel(param="2d")[0].clone(values=input_dewpoint_temperature, param="2td")
     md = source.ds.sel(param="2d")[0].metadata()
     ds = source.ds.sel(param=["2sh", "2t", "sp", "q", "t"])
     ds += ekd.FieldList.from_array(input_dewpoint_temperature, md)

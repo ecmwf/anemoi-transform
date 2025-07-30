@@ -66,11 +66,11 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Creating filters
+   :caption:  Filters
 
+   filters/list-of-filters
    filters/single-field-filters
    filters/matching-filters
-   filters/available-filters
 
 .. toctree::
    :maxdepth: 5

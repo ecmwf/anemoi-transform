@@ -37,7 +37,7 @@ command:
    :caption: Using datasets
 
    sum
-   wz_to_w
+   w_to_wz
    rename
    orog_to_z
    r_to_d

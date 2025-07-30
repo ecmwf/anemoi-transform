@@ -107,7 +107,6 @@ def test_group_by_param(sample_fields):
         assert field in sample_fields
 
 
-@pytest.mark.xfail(reason="vertical grouping not yet implemented")
 def test_group_by_param_vertical(sample_fields_vertical):
     from anemoi.transform.grouping import GroupByParamVertical
 

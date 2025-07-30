@@ -9,12 +9,13 @@
 
 
 import logging
+from abc import ABC
 from collections import defaultdict
 from collections.abc import Callable
 from collections.abc import Iterator
 from typing import Any
 
-from earthkit.data import SimpleFieldList
+import earthkit.data as ekd
 
 LOG = logging.getLogger(__name__)
 
@@ -52,8 +53,105 @@ def _flatten(params: list[Any] | tuple[Any, ...]) -> list[str]:
     return flat
 
 
-class GroupByParam:
+class FieldGrouper(ABC):
+    def groups(self, fields: list[ekd.Field]) -> dict:
+        return self._group_by(self._group_functions, fields)
+
+    @property
+    def _group_functions(self):
+        """Return a tuple of functions that generate a key (used for grouping) when given a field."""
+        raise NotImplementedError
+
+    @staticmethod
+    def _group_by(group_fns: tuple[Callable], fields: list[ekd.Field]) -> dict:
+        group_fn = group_fns[0]
+        groups = defaultdict(list)
+
+        # current group
+        for field in fields:
+            key = group_fn(field)
+            groups[key].append(field)
+
+        # recursively group on remaining group_fns
+        if len(group_fns) > 1:
+            return {key: FieldGrouper._group_by(group_fns[1:], group) for key, group in groups.items()}
+        return dict(groups)
+
+
+class GroupByParam(FieldGrouper):
     """Group matching fields by parameters name.
+
+    Parameters
+    ----------
+    params : str | list[str] | tuple[str]
+        Parameters to group by.
+    """
+
+    def __init__(self, params: str | list[str] | tuple[str]) -> None:
+        if not isinstance(params, (list, tuple)):
+            params = [params]
+        self.params = _flatten(params)
+
+    @property
+    def _group_functions(self) -> tuple[Callable, ...]:
+        def base_key(field: ekd.Field):
+            key = field.metadata(namespace="mars")
+            if not key:
+                keys = [k for k in field.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
+                key = {k: field.metadata(k) for k in keys}
+                if not keys:
+                    raise NotImplementedError(f"GroupByParam: {field} has no sufficient metadata")
+            return key
+
+        def everything_except_param(field: ekd.Field):
+            key = base_key(field)
+            key.pop("param", None)
+            return frozenset(key.items())
+
+        def param(field: ekd.Field):
+            key = base_key(field)
+            param = key.pop("param", field.metadata("param"))
+            return param
+
+        return (
+            everything_except_param,
+            param,
+        )
+
+    def iterate(self, fields: list[ekd.Field], *, other: Callable[[Any], None] = _lost) -> Iterator[tuple[Any, ...]]:
+        """Iterate over the data and group fields by parameters.
+
+        Parameters
+        ----------
+        fields : list of ekd.Field
+            List of data fields to group.
+        other : callable, optional
+            Function to call for fields that do not match the parameters, by default _lost.
+
+        Returns
+        -------
+        Iterator[tuple[Any, ...]]
+            Iterator yielding tuples of grouped fields.
+        """
+        for group in self.groups(fields).values():
+            missing_params = set(self.params) - set(group.keys())
+            if missing_params:
+                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(group.keys())}")
+
+            for param, fields in group.items():
+                # ensure only one field per param in this group
+                assert len(fields) == 1
+                # handle unwanted fields
+                if param not in self.params:
+                    for field in fields:
+                        other(field)
+                    continue
+
+            yield tuple(group[param][0] for param in self.params)
+
+
+class GroupByParamVertical(FieldGrouper):
+    """Group matching fields by parameter name and vertical level.
 
     Parameters
     ----------
@@ -61,100 +159,55 @@ class GroupByParam:
         List of parameters to group by.
     """
 
-    def __init__(self, params: list[str]) -> None:
+    def __init__(self, params: str | list[str] | tuple[str]) -> None:
         if not isinstance(params, (list, tuple)):
             params = [params]
         self.params = _flatten(params)
 
-    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
-        assert callable(other), type(other)
-        self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
-        self.groups_params = set()
-        for f in data:
-            key = f.metadata(namespace="mars")
+    @property
+    def _group_functions(self) -> tuple[Callable, ...]:
+        def everything_except_param_and_levels(field: ekd.Field):
+            key = field.metadata(namespace="mars")
             if not key:
-                keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
-                key = {k: f.metadata(k) for k in keys}
+                keys = [k for k in field.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
+                key = {k: field.metadata(k) for k in keys}
                 if not keys:
-                    raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
+                    raise NotImplementedError(f"GroupByParamVertical: {field} has no sufficient metadata")
+            key.pop("param", None)
+            key.pop("levtype", None)
+            key.pop("levelist", None)
+            return frozenset(key.items())
 
-            param = key.pop("param", f.metadata("param"))
+        return (
+            everything_except_param_and_levels,
+            lambda field: field.metadata("param"),
+        )
 
-            if param not in self.params:
-                other(f)
-                continue
-
-            key = tuple(key.items())
-
-            if param in self.groups[key]:
-                raise ValueError(f"Duplicate component {param} for {key}")
-            self.groups[key][param] = f
-            self.groups_params.add(param)
-        LOG.info(f"Params groups: {self.groups_params}")
-
-    def iterate(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[tuple[Any, ...]]:
-        """Iterate over the data and group fields by parameters.
+    def iterate(self, fields: list[ekd.Field], *, other: Callable[[Any], None] = _lost) -> Iterator[tuple[Any, ...]]:
+        """Iterate over the data and group fields by parameter and vertical level.
 
         Parameters
         ----------
-        data : list of Any
+        fields : list of ekd.Field
             List of data fields to group.
         other : callable, optional
             Function to call for fields that do not match the parameters, by default _lost.
 
         Returns
         -------
-        Iterator[Tuple[Any, ...]]
+        Iterator[tuple[Any, ...]]
             Iterator yielding tuples of grouped fields.
         """
-        self._get_groups(data, other=other)
-        for _, group in self.groups.items():
-            if len(group) != len(self.params):
-                for p in data:
-                    print(p)
-                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(self.groups.keys())}")
+        for group in self.groups(fields).values():
+            missing_params = set(self.params) - set(group.keys())
+            if missing_params:
+                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(group.keys())}")
 
-            yield tuple(group[p] for p in self.params)
+            for param, fields in group.items():
+                # handle unwanted fields
+                if param not in self.params:
+                    for field in fields:
+                        other(field)
+                    continue
 
-
-class GroupByParamVertical(GroupByParam):
-    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
-        assert callable(other), type(other)
-        self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
-        self.groups_params = set()
-        levels: dict[str, Any] = defaultdict(list)
-        for f in data:
-            key = f.metadata(namespace="mars")
-            if not key:
-                keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
-                key = {k: f.metadata(k) for k in keys}
-                if not keys:
-                    raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
-
-            param = key.pop("param", f.metadata("param"))
-            _ = key.pop("levtype", None)
-            level = key.pop("levelist", None)
-
-            if param not in self.params:
-                other(f)
-                continue
-
-            key = tuple(sorted(tuple(key.items())))
-
-            if level is None:
-                if param in self.groups[key]:
-                    raise ValueError(f"Duplicate component {param} for {key}")
-                self.groups[key][param] = f
-            else:
-                if param in self.groups[key]:
-                    if level in levels[param]:
-                        raise ValueError(f"Duplicate component {param} for {key} and level {level}")
-                    else:
-                        self.groups[key][param].append(f)
-                else:
-                    ds = SimpleFieldList()
-                    ds.append(f)
-                    self.groups[key][param] = ds
-                levels[param].append(level)
-            self.groups_params.add(param)
-        LOG.info(f"Params groups: {self.groups_params}")
+            yield tuple(group[param] for param in self.params)

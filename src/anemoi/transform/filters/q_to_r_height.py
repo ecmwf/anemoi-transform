@@ -342,8 +342,22 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         surface_pressure: str = "sp",
         specific_humidity_at_model_levels: str = "q",
         temperature_at_model_levels: str = "t",
-        AB: Union[str, dict] = "IFS_137",
+        AB: Union[str, dict],
     ):
+        """
+        Initializes the filter for converting specific humidity (kg/kg) to relative humidity (%) at a specified height.
+
+        Parameters:
+            height (float, optional): Height level in meters where the conversion is performed. Default is 2.0.
+            specific_humidity_at_height_level (str, optional): Name of the variable for specific humidity at the given height. Default is "2q".
+            relative_humidity_at_height_level (str, optional): Name of the variable for relative humidity at the given height. Default is "2r".
+            temperature_at_height_level (str, optional): Name of the variable for temperature at the given height. Default is "2t".
+            surface_pressure (str, optional): Name of the variable for surface pressure. Default is "sp".
+            specific_humidity_at_model_levels (str, optional): Name of the variable for specific humidity at model levels. Default is "q".
+            temperature_at_model_levels (str, optional): Name of the variable for temperature at model levels. Default is "t".
+            AB (Union[str, dict]): A string key for predefined A and B coefficients or a dictionary with "A" and "B" arrays for vertical interpolation.
+                                   Possible predefined keys are: "IFS_137".
+        """
 
         self.height = float(height)
         self.specific_humidity_at_height_level = specific_humidity_at_height_level
@@ -373,6 +387,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         specific_humidity_at_model_levels: NDArray,
         surface_pressure: NDArray
     ) -> NDArray:
+        
         
         assert self.A.shape[-1] == temperature_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than temperature_at_model_levels"
         assert self.A.shape[-1] == specific_humidity_at_model_levels.shape[0]+1, "AB-coefficients should have one more vertical level than specific_humidity_at_model_levels"
@@ -504,8 +519,21 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         surface_pressure: str = "sp",
         specific_humidity_at_model_levels: str = "q",
         temperature_at_model_levels: str = "t",
-        AB: Union[str, dict] = "IFS_137",
+        AB: Union[str, dict],
     ):
+        """
+        Initializes the filter for transforming specific humidity at a given height to dewpoint temperature.
+        Parameters:
+            height (float, optional): The height level (in meters) at which to perform the transformation. Default is 2.0.
+            specific_humidity_at_height_level (str, optional): Name of the variable representing specific humidity at the given height. Default is "2q".
+            dewpoint_temperature_at_height_level (str, optional): Name of the variable representing dewpoint temperature at the given height. Default is "2d".
+            surface_pressure (str, optional): Name of the variable representing surface pressure. Default is "sp".
+            specific_humidity_at_model_levels (str, optional): Name of the variable representing specific humidity at model levels. Default is "q".
+            temperature_at_model_levels (str, optional): Name of the variable representing temperature at model levels. Default is "t".
+            AB (Union[str, dict]): A string key for predefined A and B coefficients or a dictionary with "A" and "B" arrays for vertical interpolation.
+                                   Possible predefined keys are: "IFS_137".
+        """
+        
 
         self.height = float(height)
         self.specific_humidity_at_height_level = specific_humidity_at_height_level

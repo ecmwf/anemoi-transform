@@ -1,6 +1,6 @@
-########
- q_to_r
-########
+#####################
+ q_to_r (Reversible)
+#####################
 
 The ``q_to_r`` filter converts specific humidity to relative humidity.
 This filter must follow a source that provides both specific humidity

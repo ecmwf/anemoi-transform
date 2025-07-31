@@ -1,6 +1,6 @@
-########
- r_to_d
-########
+#####################
+ r_to_d (Reversible)
+#####################
 
 The ``r_to_d`` filter extracts dewpoint temperature from relative
 humidity and temperature. This filter must follow a source that provides

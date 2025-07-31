@@ -1,6 +1,6 @@
-############
- uv_to_ddff
-############
+#########################
+ uv_to_ddff (Reversible)
+#########################
 
 The ``uv_to_ddff`` filter converts wind speed and direction from U and V
 components, and back. This filter a source that provides the wind (U and

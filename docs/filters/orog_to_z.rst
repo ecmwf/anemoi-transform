@@ -1,6 +1,6 @@
-###########
- orog_to_z
-###########
+########################
+ orog_to_z (Reversible)
+########################
 
 The ``orog_to_z`` filter converts orography (in metres) to surface
 geopotential height (m\ :sup:`2`/s\ :sup:`2`) using the equation:

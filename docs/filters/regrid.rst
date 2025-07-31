@@ -1,6 +1,6 @@
-########
- regrid
-########
+#####################
+ regrid (Reversible)
+#####################
 
 When building a dataset for a specific model, it is possible that the
 source grid or resolution does not fit the needs. In that case, it is

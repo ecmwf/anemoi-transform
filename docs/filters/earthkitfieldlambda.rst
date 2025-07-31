@@ -1,6 +1,6 @@
-#####################
- earthkitfieldlambda
-#####################
+##################################
+ earthkitfieldlambda (Reversible)
+##################################
 
 The ``earthkitfieldlambda`` filter allows you to apply an arbitrary
 Python function (either provided inline as a lambda or imported from a

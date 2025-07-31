@@ -10,9 +10,8 @@
 
 import logging
 from abc import abstractmethod
+from collections.abc import Callable
 from typing import Any
-from typing import Callable
-from typing import Union
 
 import earthkit.data as ekd
 import numpy as np
@@ -60,7 +59,7 @@ class SingleFieldFilter(Filter):
         """
         pass
 
-    def forward_select(self) -> dict[str, Union[str, list[str], tuple[str]]]:
+    def forward_select(self) -> dict[str, str | list[str] | tuple[str]]:
         """Provide an opportunity for subclasses to select specific fields for processing.
         Only matching fields will be transformed (those not matching will be passed through unchanged).
 
@@ -73,7 +72,7 @@ class SingleFieldFilter(Filter):
         """
         return {}
 
-    def backward_select(self) -> dict[str, Union[str, list[str], tuple[str]]]:
+    def backward_select(self) -> dict[str, str | list[str] | tuple[str]]:
         """Provide an opportunity for subclasses to select specific fields for processing on the backward transform.
         Defaults to the same fields as the forward select. If metadata is changed on the forward transform (e.g. param renamed),
         then the backward select may need to be updated accordingly.

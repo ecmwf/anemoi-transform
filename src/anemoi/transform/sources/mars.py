@@ -9,7 +9,6 @@
 
 
 from typing import Any
-from typing import Dict
 
 import earthkit.data as ekd
 
@@ -31,7 +30,7 @@ class Mars(Source):
             Keyword arguments for the MARS request.
         """
 
-    def forward(self, data: Dict[str, Any]) -> ekd.Source:
+    def forward(self, data: dict[str, Any]) -> ekd.Source:
         """Fetch data from MARS.
 
         Parameters
@@ -46,7 +45,7 @@ class Mars(Source):
         """
         return ekd.from_source("mars", **data)
 
-    def __ror__(self, data: Dict[str, Any]) -> Source:
+    def __ror__(self, data: dict[str, Any]) -> Source:
         """Enable the use of the pipe operator with this source.
 
         Parameters
@@ -62,7 +61,7 @@ class Mars(Source):
         this = self
 
         class Input(Source):
-            def __init__(self, *, data: Dict[str, Any]) -> None:
+            def __init__(self, *, data: dict[str, Any]) -> None:
                 """Initialize the Input source.
 
                 Parameters
@@ -70,7 +69,7 @@ class Mars(Source):
                 data : Dict[str, Any]
                     The input data to be processed.
                 """
-                self.data: Dict[str, Any] = data
+                self.data: dict[str, Any] = data
 
             def forward(self, data: Any) -> ekd.Source:
                 """Fetch data from MARS using the stored request parameters.

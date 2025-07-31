@@ -11,7 +11,6 @@ import logging
 from collections.abc import Sized
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
 from typing import Union
 
 from anemoi.utils.dates import as_timedelta
@@ -27,7 +26,7 @@ LOG = logging.getLogger(__name__)
 class VariableFromMarsVocabulary(Variable):
     """A variable that is defined by the Mars vocabulary."""
 
-    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+    def __init__(self, name: str, data: dict[str, Any]) -> None:
         """Initialize the variable with a name and data.
 
         Parameters
@@ -57,7 +56,7 @@ class VariableFromMarsVocabulary(Variable):
         return self.mars.get("levtype", None) == "ml"
 
     @property
-    def level(self) -> Union[str, None]:
+    def level(self) -> str | None:
         """Get the level of the variable."""
         return self.mars.get("levelist", None)
 
@@ -108,7 +107,7 @@ class VariableFromMarsVocabulary(Variable):
         return as_timedelta(period[1]) - as_timedelta(period[0])
 
     @property
-    def grib_keys(self) -> Dict[str, Any]:
+    def grib_keys(self) -> dict[str, Any]:
         """Get the GRIB keys of the variable."""
         return self.data.get("mars", {}).copy()
 
@@ -148,7 +147,7 @@ class VariableFromMarsVocabulary(Variable):
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""
 
-    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+    def __init__(self, name: str, data: dict[str, Any]) -> None:
         """Initialize the variable with a name and data.
 
         Parameters
@@ -193,7 +192,7 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
 class PostProcessedVariable(VariableFromMarsVocabulary):
     """A variable that is defined by a post-processed dictionary."""
 
-    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+    def __init__(self, name: str, data: dict[str, Any]) -> None:
         """Initialize the variable with a name and data.
 
         Parameters

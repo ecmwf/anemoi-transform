@@ -9,10 +9,7 @@
 
 
 from collections import defaultdict
-from typing import Dict
-from typing import Hashable
-from typing import List
-from typing import Tuple
+from collections.abc import Hashable
 
 import earthkit.data as ekd
 
@@ -26,7 +23,7 @@ from anemoi.transform.filters import filter_registry
 class Sum(Filter):
     """Computes the sum over a set of variables."""
 
-    def __init__(self, *, params: List[str], output: str):
+    def __init__(self, *, params: list[str], output: str):
         """Initialize the Sum filter.
 
         Parameters:
@@ -50,7 +47,7 @@ class Sum(Filter):
         """
         result = []
 
-        needed_fields: Dict[Tuple[Hashable, ...], Dict[str, ekd.Field]] = defaultdict(dict)
+        needed_fields: dict[tuple[Hashable, ...], dict[str, ekd.Field]] = defaultdict(dict)
 
         for f in fields:
             key = f.metadata(namespace="mars")

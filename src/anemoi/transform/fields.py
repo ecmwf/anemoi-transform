@@ -11,10 +11,6 @@ import logging
 from abc import ABC
 from abc import abstractmethod
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
 
 import earthkit.data as ekd
 import numpy as np
@@ -36,7 +32,7 @@ class Flavour(ABC):
         pass
 
 
-def new_fieldlist_from_list(fields: List[Any]) -> SimpleFieldList:
+def new_fieldlist_from_list(fields: list[Any]) -> SimpleFieldList:
     """Create a new SimpleFieldList from a list of fields.
 
     Parameters
@@ -179,7 +175,7 @@ class NewDataField(WrappedField):
         """Get the values of the field."""
         return self.to_numpy(flatten=True)
 
-    def to_numpy(self, flatten: bool = False, dtype: Optional[type] = None, index: Optional[Any] = None) -> np.ndarray:
+    def to_numpy(self, flatten: bool = False, dtype: type | None = None, index: Any | None = None) -> np.ndarray:
         """Convert the field data to a numpy array.
 
         Parameters
@@ -221,7 +217,7 @@ class GeoMetadata(Geography):
     def __init__(self, owner: Any) -> None:
         self.owner = owner
 
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         """Get the shape of the geography data.
 
         Returns
@@ -241,7 +237,7 @@ class GeoMetadata(Geography):
         """
         return "unknown"
 
-    def mars_area(self) -> List[float]:
+    def mars_area(self) -> list[float]:
         """Get the MARS area of the geography data.
 
         Returns
@@ -260,7 +256,7 @@ class GeoMetadata(Geography):
         """Get the MARS grid of the geography data."""
         return None
 
-    def latitudes(self, dtype: Optional[type] = None) -> np.ndarray:
+    def latitudes(self, dtype: type | None = None) -> np.ndarray:
         """Get the latitudes of the geography data.
 
         Parameters
@@ -277,7 +273,7 @@ class GeoMetadata(Geography):
             return self.owner._latitudes
         return self.owner._latitudes.astype(dtype)
 
-    def longitudes(self, dtype: Optional[type] = None) -> np.ndarray:
+    def longitudes(self, dtype: type | None = None) -> np.ndarray:
         """Get the longitudes of the geography data.
 
         Parameters
@@ -294,11 +290,11 @@ class GeoMetadata(Geography):
             return self.owner._longitudes
         return self.owner._longitudes.astype(dtype)
 
-    def x(self, dtype: Optional[type] = None) -> None:
+    def x(self, dtype: type | None = None) -> None:
         """Get the x-coordinates of the geography data."""
         raise NotImplementedError()
 
-    def y(self, dtype: Optional[type] = None) -> None:
+    def y(self, dtype: type | None = None) -> None:
         """Get the y-coordinates of the geography data."""
         raise NotImplementedError()
 
@@ -337,7 +333,7 @@ class NewLatLonField(WrappedField):
         self._latitudes = latitudes
         self._longitudes = longitudes
 
-    def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
+    def grid_points(self) -> tuple[np.ndarray, np.ndarray]:
         """Get the grid points of the field.
 
         Returns
@@ -347,7 +343,7 @@ class NewLatLonField(WrappedField):
         """
         return self._latitudes, self._longitudes
 
-    def to_latlon(self, flatten: bool = True) -> Dict[str, np.ndarray]:
+    def to_latlon(self, flatten: bool = True) -> dict[str, np.ndarray]:
         """Convert the grid points to latitude and longitude.
 
         Parameters
@@ -400,7 +396,7 @@ class NewGridField(WrappedField):
         super().__init__(field)
         self._grid = grid
 
-    def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
+    def grid_points(self) -> tuple[np.ndarray, np.ndarray]:
         """Get the grid points of the field.
 
         Returns
@@ -410,7 +406,7 @@ class NewGridField(WrappedField):
         """
         return self._grid.latlon()
 
-    def to_latlon(self, flatten: bool = True) -> Dict[str, np.ndarray]:
+    def to_latlon(self, flatten: bool = True) -> dict[str, np.ndarray]:
         """Convert the grid points to latitude and longitude.
 
         Parameters

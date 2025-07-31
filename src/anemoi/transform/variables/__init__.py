@@ -11,7 +11,6 @@ from abc import ABC
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
 from typing import Union
 
 if TYPE_CHECKING:
@@ -32,7 +31,7 @@ class Variable(ABC):
         self.name: str = name
 
     @classmethod
-    def from_dict(cls, name: str, data: Dict[str, Any]) -> Any:
+    def from_dict(cls, name: str, data: dict[str, Any]) -> Any:
         """Create a Variable instance from a dictionary.
 
         Parameters
@@ -175,7 +174,7 @@ class Variable(ABC):
 
     # This may need to move to a different class
     @property
-    def grib_keys(self) -> Dict[str, Any]:
+    def grib_keys(self) -> dict[str, Any]:
         """Get the GRIB keys for the variable."""
         raise NotImplementedError(f"Method `grib_keys` not implemented for {self.__class__.__name__}")
 

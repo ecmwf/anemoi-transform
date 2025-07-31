@@ -8,7 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
-from typing import Iterator
+from collections.abc import Iterator
 
 import numpy as np
 import pytest

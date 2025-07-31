@@ -9,9 +9,6 @@
 
 from collections import defaultdict
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Union
 
 import earthkit.data as ekd
 from anemoi.utils.rules import Rule
@@ -26,7 +23,7 @@ from anemoi.transform.fields import new_flavoured_field
 class RuleBasedFlavour(Flavour):
     """Rule-based flavour for GRIB files."""
 
-    def __init__(self, rules: Union[RuleSet, List[Rule], Dict[str, Any]]):
+    def __init__(self, rules: RuleSet | list[Rule] | dict[str, Any]):
         """Initialize the RuleBasedFlavour with a set of rules.
 
         Parameters

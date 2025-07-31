@@ -10,7 +10,6 @@
 
 import logging
 from typing import Any
-from typing import List
 
 import earthkit.data as ekd
 
@@ -22,7 +21,7 @@ from anemoi.transform.filters import filter_registry
 LOG = logging.getLogger(__name__)
 
 
-def make_list_int(value: Any) -> List[int]:
+def make_list_int(value: Any) -> list[int]:
     """Convert a value to a list of integers.
 
     Parameters
@@ -68,8 +67,8 @@ class RepeatMembers(Filter):
     def __init__(
         self,
         *,
-        numbers: List[int] = None,
-        members: List[int] = None,
+        numbers: list[int] = None,
+        members: list[int] = None,
         count: int = None,
     ) -> None:
         """Parameters

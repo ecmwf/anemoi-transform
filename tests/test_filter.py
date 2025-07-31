@@ -38,7 +38,7 @@ def test_singlefieldfilter_extra_inputs():
         def forward_transform(self, field):
             pass
 
-    with pytest.raises(ValueError, match="Unknown input\(s\)"):
+    with pytest.raises(ValueError, match=r"Unknown input\(s\)"):
         TestFilter(foo="bar", baz="qux")
 
 

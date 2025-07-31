@@ -9,7 +9,6 @@
 
 import os
 from typing import Any
-from typing import Tuple
 
 import earthkit.data as ekd
 import numpy as np
@@ -20,7 +19,7 @@ from anemoi.transform.filters.repeat_members import RepeatMembers
 NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 
 
-def _get_template() -> Tuple[Any, np.ndarray, Any]:
+def _get_template() -> tuple[Any, np.ndarray, Any]:
     """Get a template fieldlist, values, and metadata for testing.
 
     Returns

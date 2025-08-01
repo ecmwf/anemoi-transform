@@ -6,82 +6,86 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-
+import pytest
 from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.sources import source_registry
+
+
+@pytest.fixture
+def grib_source(test_source):
+    return test_source("anemoi-datasets/create/grib-20100101.grib")
+
+
+@pytest.fixture
+def netcdf_source(test_source):
+    return test_source("anemoi-datasets/create/netcdf.nc")
 
 
 @skip_if_offline
-def test_rename_grib():
-
-    source = source_registry.create("testing", dataset="anemoi-datasets/create/grib-20100101.grib")
+def test_rename_grib_dict_rename(grib_source):
     rename = filter_registry.create(
         "rename",
-        rename={
-            "param": {"z": "geopotential", "t": "temperature"},
-        },
+        param={"z": "geopotential", "t": "temperature"},
     )
+    pipeline = grib_source | rename
 
-    for n in source | rename:
-        print(n.metadata("param"), n)
-        assert n.metadata("param") in ("geopotential", "temperature")
-
-    rename = filter_registry.create(
-        "rename",
-        rename={
-            "param": "{param}_{levelist}_{levtype}",
-        },
-    )
-    for n in source | rename:
-        print(n.metadata("param"), n)
-
-        param, level, levtype = n.metadata("param").split("_")
-        assert param in ("z", "t") and level in ("1000", "850", "700", "500", "400", "300") and levtype in ("pl",), (
-            param,
-            level,
-            levtype,
-        )
-
-    rename = filter_registry.create(
-        "rename",
-        rename={
-            "param": {"z": "geopotential", "t": "temperature"},
-            "levelist": {1000: "1000hPa", 850: "850hPa", 700: "700hPa", 500: "500hPa", 400: "400hPa", 300: "300hPa"},
-        },
-    )
-    for n in source | rename:
-        print(n.metadata("param", "levelist"), n)
-
-        param, level = n.metadata("param", "levelist")
-
-        assert param in ("geopotential", "temperature") and level in (
-            "1000hPa",
-            "850hPa",
-            "700hPa",
-            "500hPa",
-            "400hPa",
-            "300hPa",
-        ), (param, level)
+    for original, result in zip(grib_source, pipeline):
+        if original.metadata("param") == "z":
+            assert result.metadata("param") == "geopotential"
+        elif original.metadata("param") == "t":
+            assert result.metadata("param") == "temperature"
+        else:
+            raise RuntimeError(f"Unexpected param: {original.metadata('param')}")
 
 
 @skip_if_offline
-def test_rename_netcdf():
-    from anemoi.transform.filters import filter_registry
-    from anemoi.transform.sources import source_registry
-
-    source = source_registry.create("testing", dataset="anemoi-datasets/create/netcdf.nc")
+def test_rename_grib_format_rename(grib_source):
     rename = filter_registry.create(
         "rename",
-        rename={
-            "param": {"t2m": "2m temprature", "msl": "mean sea level pressure"},
-        },
+        param="{param}_{levelist}_{levtype}",
     )
+    pipeline = grib_source | rename
 
-    for n in source | rename:
-        print(n.metadata("param"), n)
-        assert n.metadata("param") in ("2m temprature", "mean sea level pressure")
+    for original, result in zip(grib_source, pipeline):
+        orig_param, orig_level, orig_levtype = original.metadata("param", "levelist", "levtype")
+        assert result.metadata("param") == f"{orig_param}_{orig_level}_{orig_levtype}"
+
+
+@skip_if_offline
+def test_rename_grib_dict_multiple(grib_source):
+    rename = filter_registry.create(
+        "rename",
+        param={"z": "geopotential", "t": "temperature"},
+        levelist={1000: "1000hPa", 850: "850hPa", 700: "700hPa", 500: "500hPa", 400: "400hPa", 300: "300hPa"},
+    )
+    pipeline = grib_source | rename
+
+    for original, result in zip(grib_source, pipeline):
+        assert result.metadata("levelist") == f"{original.metadata('levelist')}hPa"
+        if original.metadata("param") == "z":
+            assert result.metadata("param") == "geopotential"
+        elif original.metadata("param") == "t":
+            assert result.metadata("param") == "temperature"
+        else:
+            raise RuntimeError(f"Unexpected param: {original.metadata('param')}")
+
+
+@skip_if_offline
+def test_rename_netcdf(netcdf_source):
+    rename = filter_registry.create(
+        "rename",
+        param={"t2m": "2m temperature", "msl": "mean sea level pressure"},
+    )
+    pipeline = netcdf_source | rename
+
+    for original, result in zip(netcdf_source, pipeline):
+        if original.metadata("param") == "t2m":
+            assert result.metadata("param") == "2m temperature"
+        elif original.metadata("param") == "msl":
+            assert result.metadata("param") == "mean sea level pressure"
+        else:
+            raise RuntimeError(f"Unexpected param: {original.metadata('param')}")
 
 
 if __name__ == "__main__":

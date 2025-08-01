@@ -8,7 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
-from typing import Iterator
+from collections.abc import Iterator
 
 import earthkit.data as ekd
 
@@ -105,5 +105,5 @@ class VerticalVelocity(MatchingFieldsFilter):
         yield humidity
 
 
-filter_registry.register("w_2_wz", VerticalVelocity)
-filter_registry.register("wz_2_w", VerticalVelocity.reversed)
+filter_registry.register("w_to_wz", VerticalVelocity)
+filter_registry.register("wz_to_w", VerticalVelocity.reversed)

@@ -10,9 +10,6 @@
 
 import logging
 from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Union
 
 import earthkit.data as ekd
 import numpy as np
@@ -28,7 +25,7 @@ from anemoi.transform.filters import filter_registry
 LOG = logging.getLogger(__name__)
 
 
-def as_gridspec(grid: Optional[Union[str, Dict[str, Any]]]) -> Optional[Dict[str, Any]]:
+def as_gridspec(grid: str | dict[str, Any] | None) -> dict[str, Any] | None:
     """Convert grid specification to a dictionary format.
 
     Parameters
@@ -50,7 +47,7 @@ def as_gridspec(grid: Optional[Union[str, Dict[str, Any]]]) -> Optional[Dict[str
     return grid
 
 
-def as_griddata(grid: Optional[Union[str, Field, Dict[str, Any]]]) -> Optional[Dict[str, Any]]:
+def as_griddata(grid: str | Field | dict[str, Any] | None) -> dict[str, Any] | None:
     """Convert grid data to a dictionary format.
 
     Parameters
@@ -93,11 +90,11 @@ class RegridFilter(Filter):
     def __init__(
         self,
         *,
-        in_grid: Optional[Any] = None,
-        out_grid: Optional[Any] = None,
-        method: Optional[str] = None,
-        matrix: Optional[str] = None,
-        mask: Optional[str] = None,
+        in_grid: Any | None = None,
+        out_grid: Any | None = None,
+        method: str | None = None,
+        matrix: str | None = None,
+        mask: str | None = None,
         check: bool = False,
     ) -> None:
         """Parameters

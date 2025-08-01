@@ -13,9 +13,8 @@ import pytest
 from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.sources import source_registry
-from anemoi.transform.testing import SelectFieldSource
 
+from .utils import SelectFieldSource
 from .utils import assert_fields_equal
 from .utils import collect_fields_by_param
 
@@ -42,56 +41,25 @@ R_VALUES = {
 
 
 @pytest.fixture
-def relative_humidity_source():
+def relative_humidity_source(test_source):
     PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC = [
         {"param": "r", "levelist": 850, "values": R_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 850, "values": T_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "r", "levelist": 1000, "values": R_VALUES[1000], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 1000, "values": T_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
+    return test_source(PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
 
 
 @pytest.fixture
-def specific_humidity_source():
+def specific_humidity_source(test_source):
     PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC = [
         {"param": "q", "levelist": 850, "values": Q_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 850, "values": T_VALUES[850], **MOCK_FIELD_METADATA},
         {"param": "q", "levelist": 1000, "values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
         {"param": "t", "levelist": 1000, "values": T_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
-    return source_registry.create("testing", fields=PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC)
-
-
-@skip_if_offline
-def test_pressure_level_specific_humidity_to_relative_humidity_from_file():
-    source = source_registry.create(
-        "testing", dataset="anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib"
-    )
-    q_to_r = filter_registry.create("q_to_r")
-    pipeline = source | q_to_r
-
-    input_fields = collect_fields_by_param(source)
-    output_fields = collect_fields_by_param(pipeline)
-
-    # check for expected params
-    assert set(input_fields) == {"q", "t"}
-    assert set(output_fields) == {"q", "t", "r"}
-
-    # test unchanged fields agree
-    for param in ("q", "t"):
-        for input_field, output_field in zip(input_fields[param], output_fields[param]):
-            assert_fields_equal(input_field, output_field)
-
-    # test pipeline output matches known good output
-    fields = sorted(output_fields["r"], key=lambda f: f.metadata("levelist"))
-    fields = map(lambda f: f.to_numpy(), fields)
-    result = np.stack(list(fields)).flatten()
-
-    expected_relative_humidity = (
-        source_registry.create("testing", dataset="anemoi-transform/filters/era_r.npy").ds.to_numpy().flatten()
-    )
-    assert np.allclose(result, expected_relative_humidity)
+    return test_source(PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC)
 
 
 def test_pressure_level_specific_humidity_to_relative_humidity(specific_humidity_source):
@@ -119,7 +87,7 @@ def test_pressure_level_specific_humidity_to_relative_humidity(specific_humidity
         assert np.allclose(result, expected_relative_humidity)
 
 
-def test_round_trip_pressure_level_specific_humidity_to_relative_humidity(specific_humidity_source):
+def test_pressure_level_specific_humidity_to_relative_humidity_round_trip(specific_humidity_source):
     q_to_r = filter_registry.create("q_to_r")
     r_to_q = filter_registry.create("r_to_q")
 
@@ -147,32 +115,30 @@ def test_round_trip_pressure_level_specific_humidity_to_relative_humidity(specif
 
 
 @skip_if_offline
-def test_pressure_level_relative_humidity_to_specific_humidity_from_file():
-    source = source_registry.create("testing", dataset="anemoi-transform/filters/cerra_20240601_pressure_levels.grib")
-    r_to_q = filter_registry.create("r_to_q")
-    pipeline = source | r_to_q
+def test_pressure_level_specific_humidity_to_relative_humidity_from_file(test_source):
+    source = test_source("anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib")
+    q_to_r = filter_registry.create("q_to_r")
+    pipeline = source | q_to_r
 
     input_fields = collect_fields_by_param(source)
     output_fields = collect_fields_by_param(pipeline)
 
     # check for expected params
-    assert set(input_fields) == {"t", "r"}
+    assert set(input_fields) == {"q", "t"}
     assert set(output_fields) == {"q", "t", "r"}
 
     # test unchanged fields agree
-    for param in ("t", "r"):
+    for param in ("q", "t"):
         for input_field, output_field in zip(input_fields[param], output_fields[param]):
             assert_fields_equal(input_field, output_field)
 
     # test pipeline output matches known good output
-    fields = sorted(output_fields["q"], key=lambda f: f.metadata("levelist"))
+    fields = sorted(output_fields["r"], key=lambda f: f.metadata("levelist"))
     fields = map(lambda f: f.to_numpy(), fields)
     result = np.stack(list(fields)).flatten()
 
-    expected_specific_humidity = (
-        source_registry.create("testing", dataset="anemoi-transform/filters/cerra_q.npy").ds.to_numpy().flatten()
-    )
-    assert np.allclose(result, expected_specific_humidity)
+    expected_relative_humidity = test_source("anemoi-transform/filters/era_r.npy").ds.to_numpy().flatten()
+    assert np.allclose(result, expected_relative_humidity)
 
 
 def test_pressure_level_relative_humidity_to_specific_humidity(relative_humidity_source):
@@ -199,7 +165,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity(relative_humidity
         assert np.allclose(result, expected_specific_humidity)
 
 
-def test_round_trip_pressure_level_relative_humidity_to_specific_humidity(relative_humidity_source):
+def test_pressure_level_relative_humidity_to_specific_humidity_round_trip(relative_humidity_source):
     r_to_q = filter_registry.create("r_to_q")
     q_to_r = filter_registry.create("q_to_r")
     specific_humidity_source = SelectFieldSource(relative_humidity_source | r_to_q, params=["q", "t"])
@@ -223,6 +189,64 @@ def test_round_trip_pressure_level_relative_humidity_to_specific_humidity(relati
     for param in ("q", "t"):
         for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
             assert_fields_equal(intermediate_field, output_field)
+
+
+@skip_if_offline
+def test_pressure_level_relative_humidity_to_specific_humidity_from_file_arome(test_source):
+    source = test_source("anemoi-transform/filters/r_t_PAAROME_1S40_ECH0_ISOBARE.grib")
+    r_to_q = filter_registry.create("r_to_q")
+    pipeline = source | r_to_q
+
+    input_fields = collect_fields_by_param(source)
+    output_fields = collect_fields_by_param(pipeline)
+
+    # check for expected params
+    assert set(input_fields) == {"t", "r"}
+    assert set(output_fields) == {"q", "t", "r"}
+
+    # test unchanged fields agree
+    for param in ("t", "r"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
+
+    # test pipeline output matches known good output
+    fields = sorted(output_fields["q"], key=lambda f: f.metadata("levelist"))
+    fields = map(lambda f: f.to_numpy(), fields)
+    result = np.stack(list(fields))
+    result = result.flatten()
+
+    expected_specific_humidity = (
+        test_source("anemoi-transform/filters/arome_specific_humidity.npy").ds.to_numpy().flatten()
+    )
+
+    assert np.allclose(result, expected_specific_humidity, equal_nan=True)
+
+
+@skip_if_offline
+def test_pressure_level_relative_humidity_to_specific_humidity_from_file(test_source):
+    source = test_source("anemoi-transform/filters/cerra_20240601_pressure_levels.grib")
+    r_to_q = filter_registry.create("r_to_q")
+    pipeline = source | r_to_q
+
+    input_fields = collect_fields_by_param(source)
+    output_fields = collect_fields_by_param(pipeline)
+
+    # check for expected params
+    assert set(input_fields) == {"t", "r"}
+    assert set(output_fields) == {"q", "t", "r"}
+
+    # test unchanged fields agree
+    for param in ("t", "r"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
+
+    # test pipeline output matches known good output
+    fields = sorted(output_fields["q"], key=lambda f: f.metadata("levelist"))
+    fields = map(lambda f: f.to_numpy(), fields)
+    result = np.stack(list(fields)).flatten()
+
+    expected_specific_humidity = test_source("anemoi-transform/filters/cerra_q.npy").ds.to_numpy().flatten()
+    assert np.allclose(result, expected_specific_humidity)
 
 
 if __name__ == "__main__":

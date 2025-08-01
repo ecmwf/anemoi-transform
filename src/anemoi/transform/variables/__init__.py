@@ -9,8 +9,12 @@
 
 from abc import ABC
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
+from typing import Union
+
+if TYPE_CHECKING:
+    from datetime import timedelta
 
 
 class Variable(ABC):
@@ -27,7 +31,7 @@ class Variable(ABC):
         self.name: str = name
 
     @classmethod
-    def from_dict(cls, name: str, data: Dict[str, Any]) -> Any:
+    def from_dict(cls, name: str, data: dict[str, Any]) -> Any:
         """Create a Variable instance from a dictionary.
 
         Parameters
@@ -145,6 +149,20 @@ class Variable(ABC):
 
     @property
     @abstractmethod
+    def time_processing(self):
+        """Get the time processing type of the variable."""
+        pass
+
+    @property
+    @abstractmethod
+    def period(self) -> Union["timedelta", None]:
+        """Get the variable's period as a timedelta.
+        For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
+        """
+        pass
+
+    @property
+    @abstractmethod
     def is_accumulation(self) -> bool:
         """Check if the variable is an accumulation."""
         pass
@@ -156,7 +174,7 @@ class Variable(ABC):
 
     # This may need to move to a different class
     @property
-    def grib_keys(self) -> Dict[str, Any]:
+    def grib_keys(self) -> dict[str, Any]:
         """Get the GRIB keys for the variable."""
         raise NotImplementedError(f"Method `grib_keys` not implemented for {self.__class__.__name__}")
 

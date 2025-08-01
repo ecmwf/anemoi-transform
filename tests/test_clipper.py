@@ -7,19 +7,16 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Any
-from typing import Optional
-
+import earthkit.data as ekd
 import numpy as np
 import numpy.testing as npt
+from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters.clipper import Clipper
-from anemoi.transform.testing import fieldlist_fixture
 
 
-def test_clipper_1(fieldlist: Optional[Any] = None) -> None:
-    if fieldlist is None:
-        fieldlist = fieldlist_fixture()
+@skip_if_offline
+def test_clipper_1(fieldlist: ekd.FieldList) -> None:
     fieldlist = fieldlist.sel(param="2t")
 
     clipper = Clipper(minimum=1.0, param="2t")
@@ -31,9 +28,8 @@ def test_clipper_1(fieldlist: Optional[Any] = None) -> None:
     npt.assert_allclose(clipped[0].to_numpy(), ref)
 
 
-def test_clipper_2(fieldlist: Optional[Any] = None) -> None:
-    if fieldlist is None:
-        fieldlist = fieldlist_fixture()
+@skip_if_offline
+def test_clipper_2(fieldlist: ekd.FieldList) -> None:
     fieldlist = fieldlist.sel(param="2t")
 
     clipper = Clipper(maximum=200.0, param="2t")

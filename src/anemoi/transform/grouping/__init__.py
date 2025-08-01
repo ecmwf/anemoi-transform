@@ -10,12 +10,9 @@
 
 import logging
 from collections import defaultdict
+from collections.abc import Callable
+from collections.abc import Iterator
 from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Iterator
-from typing import List
-from typing import Tuple
 
 LOG = logging.getLogger(__name__)
 
@@ -31,7 +28,7 @@ def _lost(f: Any) -> None:
     raise ValueError(f"Lost field {f}")
 
 
-def _flatten(params: List[Any]) -> List[str]:
+def _flatten(params: list[Any]) -> list[str]:
     """Flatten a list of parameters.
 
     Parameters
@@ -62,14 +59,14 @@ class GroupByParam:
         List of parameters to group by.
     """
 
-    def __init__(self, params: List[str]) -> None:
+    def __init__(self, params: list[str]) -> None:
         if not isinstance(params, (list, tuple)):
             params = [params]
         self.params = _flatten(params)
 
-    def _get_groups(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> None:
+    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
-        self.groups: Dict[Tuple[Tuple[str, Any], ...], Dict[str, Any]] = defaultdict(dict)
+        self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
         for f in data:
             key = f.metadata(namespace="mars")
@@ -93,7 +90,7 @@ class GroupByParam:
             self.groups_params.add(param)
         LOG.info(f"Params groups: {self.groups_params}")
 
-    def iterate(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[Tuple[Any, ...]]:
+    def iterate(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[tuple[Any, ...]]:
         """Iterate over the data and group fields by parameters.
 
         Parameters
@@ -113,6 +110,6 @@ class GroupByParam:
             if len(group) != len(self.params):
                 for p in data:
                     print(p)
-                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(self.group.keys())}")
+                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(self.groups.keys())}")
 
             yield tuple(group[p] for p in self.params)

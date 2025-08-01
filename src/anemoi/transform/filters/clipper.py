@@ -7,8 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Iterator
-from typing import Optional
+from collections.abc import Iterator
 
 import earthkit.data as ekd
 import numpy as np
@@ -39,8 +38,8 @@ class Clipper(MatchingFieldsFilter):
         self,
         *,
         param: str,
-        minimum: Optional[float] = None,
-        maximum: Optional[float] = None,
+        minimum: float | None = None,
+        maximum: float | None = None,
     ):
         if minimum is None and maximum is None:
             raise ValueError("At least one value for minimum or maximum must be specified.")

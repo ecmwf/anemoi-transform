@@ -9,9 +9,7 @@
 
 
 import logging
-from typing import Dict
-from typing import Iterator
-from typing import Optional
+from collections.abc import Iterator
 
 import earthkit.data as ekd
 import numpy as np
@@ -42,7 +40,7 @@ class Timeseries(MatchingFieldsFilter):
     def __init__(
         self,
         *,
-        netcdf: Optional[Dict[str, str]] = None,
+        netcdf: dict[str, str] | None = None,
         template_param: str = "2t",
     ) -> None:
 

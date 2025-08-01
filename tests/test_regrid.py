@@ -17,15 +17,15 @@
 
 import logging
 
+import pytest
 from anemoi.utils.testing import cli_testing
-from anemoi.utils.testing import get_test_data
 from anemoi.utils.testing import skip_if_missing_command
 from anemoi.utils.testing import skip_if_offline
 from anemoi.utils.testing import skip_slow_tests
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.sources import source_registry
-from anemoi.transform.testing import compare_npz_files
+
+from .utils import compare_npz_files
 
 LOG = logging.getLogger(__name__)
 
@@ -33,8 +33,7 @@ LOG = logging.getLogger(__name__)
 @skip_if_offline
 @skip_if_missing_command("mir")
 @skip_slow_tests
-def test_make_regrid_matrix():
-
+def test_make_regrid_matrix(get_test_data):
     era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
     carra = get_test_data("anemoi-transform/filters/regrid/2t-rr.grib")
     mask = get_test_data("anemoi-transform/filters/regrid/ea-to-rr-matrix.npz")
@@ -55,14 +54,10 @@ def test_make_regrid_matrix():
 
 
 @skip_if_offline
-def test_regrid_matrix():
-
+def test_regrid_matrix(get_test_data, test_source):
     matrix = get_test_data("anemoi-transform/filters/regrid/ea-to-rr-matrix.npz")
 
-    era5 = source_registry.create(
-        "testing",
-        dataset="anemoi-transform/filters/regrid/2t-ea.grib",
-    )
+    era5 = test_source("anemoi-transform/filters/regrid/2t-ea.grib")
     regrid = filter_registry.create("regrid", matrix=matrix)
     for _ in era5 | regrid:
         pass
@@ -70,8 +65,8 @@ def test_regrid_matrix():
 
 @skip_if_offline
 @skip_slow_tests
-def test_make_regrid_mask():
-
+@pytest.mark.xfail(reason="test data has wrong shape")
+def test_make_regrid_mask(get_test_data):
     era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
     carra = get_test_data("anemoi-transform/filters/regrid/2t-rr.grib")
     mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")
@@ -92,38 +87,26 @@ def test_make_regrid_mask():
 
 
 @skip_if_offline
-def test_regrid_ekd():
-
-    era5 = source_registry.create(
-        "testing",
-        dataset="anemoi-transform/filters/regrid/2t-ea.grib",
-    )
+def test_regrid_ekd(test_source):
+    era5 = test_source("anemoi-transform/filters/regrid/2t-ea.grib")
     regrid = filter_registry.create("regrid", in_grid="N320", out_grid=[0.25, 0.25])
     for _ in era5 | regrid:
         pass
 
 
 @skip_if_offline
-def test_regrid_nearest():
-
-    era5 = source_registry.create(
-        "testing",
-        dataset="anemoi-transform/filters/regrid/2t-ea.grib",
-    )
+def test_regrid_nearest(test_source):
+    era5 = test_source("anemoi-transform/filters/regrid/2t-ea.grib")
     regrid = filter_registry.create("regrid", in_grid="N320", out_grid="O96", method="nearest")
     for _ in era5 | regrid:
         pass
 
 
 @skip_if_offline
-def test_regrid_mask():
-
+def test_regrid_mask(get_test_data, test_source):
     mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")
 
-    era5 = source_registry.create(
-        "testing",
-        dataset="anemoi-transform/filters/regrid/2t-ea.grib",
-    )
+    era5 = test_source("anemoi-transform/filters/regrid/2t-ea.grib")
     regrid = filter_registry.create("regrid", mask=mask)
     for _ in era5 | regrid:
         pass

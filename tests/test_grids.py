@@ -9,6 +9,7 @@
 
 
 import earthkit.data as ekd
+import pytest
 
 from anemoi.transform.grids import UnstructuredGridFieldList
 from anemoi.transform.grids.named import lookup
@@ -49,12 +50,12 @@ def do_not_test_unstructured_from_url() -> None:
 def test_o96() -> None:
     """Test the grids function for the 'o96' grid."""
     x = lookup("o96")
-    assert x["latitudes"].mean() == 0.0
-    assert x["longitudes"].mean() == 179.14285714285714
+    assert x["latitudes"].mean() == pytest.approx(0.0)
+    assert x["longitudes"].mean() == pytest.approx(179.14285714285714)
     assert x["latitudes"].shape == (40320,)
     assert x["longitudes"].shape == (40320,)
-    assert x["latitudes"][31415] == -31.324557701757268
-    assert x["longitudes"][31415] == 224.32835820895522
+    assert x["latitudes"][31415] == pytest.approx(-31.324557701757268)
+    assert x["longitudes"][31415] == pytest.approx(224.32835820895522)
 
 
 if __name__ == "__main__":

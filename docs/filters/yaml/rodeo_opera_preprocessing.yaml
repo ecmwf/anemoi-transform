@@ -1,0 +1,13 @@
+input:
+  pipe:
+  - source:
+      # mars, grib, netcdf, etc.
+      # source attributes here
+      # ...
+      # Must load precipitation, quality and masking variables
+
+  - rodeo_opera_preprocessing:
+      total_precipitation: tp
+      quality: qi
+      mask: dm
+      max_total_precipitation: 12.5

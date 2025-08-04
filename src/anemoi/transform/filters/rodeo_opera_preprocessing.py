@@ -116,6 +116,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         quality: str = "qi",
         mask: str = "dm",
         max_total_precipitation: int = MAX_TP,
+        return_mask: bool = False,
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
 
@@ -129,11 +130,14 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             The name of the mask field, by default "mask".
         max_total_precipitation : int, optional
             The maximum value for tp, by default MAX_TP.
+        return_mask: bool, optional
+            Whether or not to return the mask
         """
         self.total_precipitation = total_precipitation
         self.quality = quality
         self.mask = mask
         self.max_total_precipitation = max_total_precipitation
+        self.return_mask = return_mask
 
     def forward_transform(
         self,
@@ -174,4 +178,5 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         )
         yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
 
-        yield mask
+        if self.return_mask:
+            yield mask

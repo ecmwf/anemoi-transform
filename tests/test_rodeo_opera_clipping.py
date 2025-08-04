@@ -65,9 +65,6 @@ def test_rodeo_opera_clipping(rodeo_opera_source):
     tp = output_fields["tp"][0].to_numpy()
     qi = output_fields["qi"][0].to_numpy()
 
-    print(tp,expected_tp_values)
-    print(qi,expected_qi_values)
-
     assert np.allclose(tp, expected_tp_values,equal_nan=True)
     # Sanity check: NaNs in tp must match NaNs in qi
     assert np.allclose(qi, expected_qi_values,equal_nan=True)

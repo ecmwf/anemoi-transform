@@ -50,6 +50,7 @@ def clip_opera(
     tp[tp >= max_total_precipitation] = max_total_precipitation
     if quality is not None:
         quality[quality >= MAX_QI] = MAX_QI
+        quality[quality < 0] = 0
         return tp, quality
     return tp
 
@@ -82,7 +83,10 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
     tp[mask == _UNDETECTED] = 0
     tp[mask == _INF] = np.nan
 
-    return tp
+    quality[mask == _UNDETECTED] = 0
+    assert np.isnan(tp).sum() == np.isnan(quality).sum()
+
+    return tp,quality
 
 
 @filter_registry.register("rodeo_opera_preprocessing")
@@ -154,14 +158,14 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             Transformed fields.
         """
         # 1st - apply masking
-        total_precipitation_masked = mask_opera(
+        total_precipitation_masked,quality_masked = mask_opera(
             tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy()
         )
 
         # 2nd - apply clipping
         total_precipitation_cleaned, quality_clipped = clip_opera(
             tp=total_precipitation_masked,
-            quality=quality.to_numpy(),
+            quality=quality_masked,
             max_total_precipitation=self.max_total_precipitation,
         )
 
@@ -169,4 +173,5 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
         )
         yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
+        
         yield mask

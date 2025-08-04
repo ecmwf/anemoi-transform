@@ -44,6 +44,9 @@ command:
    r_to_d
    regrid
    rename
+   rodeo_opera_clipping
+   rodeo_opera_preprocessing
    sum
    uv_to_ddff
    w_to_wz
+

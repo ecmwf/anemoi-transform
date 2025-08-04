@@ -14,7 +14,10 @@ OPERA Pan-European composites. This preprocessing consists of:
 
 -  Clipping of the quality index to the range ``[0, 1]``
 
-By default the
+By default the ``mask`` variable is dropped as part of this filter (the
+output field just contains ``total_precipitation`` and ``quality``).
+This can be controlled by settings the ``return_mask`` flag from
+``False`` to ``True``.
 
 .. literalinclude:: yaml/rodeo_opera_preprocessing.yaml
    :language: yaml

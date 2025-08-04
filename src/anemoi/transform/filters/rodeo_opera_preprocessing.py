@@ -27,10 +27,11 @@ MAX_TP = 10000
 MAX_QI = 1
 
 
-def _clip_variable(variable:np.ndarray,max_value:float)->np.ndarray:
+def _clip_variable(variable: np.ndarray, max_value: float) -> np.ndarray:
     variable[variable < 0] = 0
     variable[variable >= max_value] = max_value
     return variable
+
 
 def clip_opera(
     tp: np.ndarray, quality: np.ndarray = None, max_total_precipitation: int = MAX_TP
@@ -51,8 +52,8 @@ def clip_opera(
     tuple
         A tuple containing the clipped tp and quality arrays.
     """
-    tp=_clip_variable(tp,max_total_precipitation)
-    quality=_clip_variable(quality,MAX_QI)
+    tp = _clip_variable(tp, max_total_precipitation)
+    quality = _clip_variable(quality, MAX_QI)
     return tp, quality
 
 

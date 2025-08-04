@@ -88,9 +88,9 @@ def test_rodeo_opera_preprocessing(rodeo_opera_source):
     qi = output_fields["qi"][0].to_numpy()
 
     assert np.allclose(tp, expected_tp_values, equal_nan=True)
-    # Sanity check: NaNs in tp must match NaNs in qi
     assert np.allclose(qi, expected_qi_values, equal_nan=True)
 
+    # Sanity check: NaNs in tp must match NaNs in qi
     assert np.isnan(tp).sum() == np.isnan(qi).sum()
     assert np.nanmax(tp) <= MAX_TP
     assert np.nanmin(tp) >= 0.0

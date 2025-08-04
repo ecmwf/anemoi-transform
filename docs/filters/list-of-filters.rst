@@ -49,4 +49,3 @@ command:
    sum
    uv_to_ddff
    w_to_wz
-

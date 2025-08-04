@@ -103,6 +103,8 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         The name of the mask field, by default "mask".
     max_total_precipitation : int, optional
         The maximum value for tp, by default MAX_TP.
+    return_mask: bool, optional
+        Whether or not to return the mask
     """
 
     @matching(

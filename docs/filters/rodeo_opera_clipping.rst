@@ -5,7 +5,8 @@
 The ``rodeo_opera_clipping`` applies a filter to the OPERA Pan-European
 composites to clip precipitation between ``[0,'MAX_TP']`` where
 ``MAX_TP`` is defined at config level and clipping of the quality index
-to be between ``[0,1]``. Additional this filter converts tp from `m` to `mm`.
+to be between ``[0,1]``. Additional this filter converts tp from `m` to
+`mm`.
 
 .. literalinclude:: yaml/rodeo_opera_clipping.yaml
    :language: yaml

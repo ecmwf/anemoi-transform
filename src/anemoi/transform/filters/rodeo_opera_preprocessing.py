@@ -28,8 +28,8 @@ MAX_QI = 1
 
 
 def clip_opera(
-    tp: np.ndarray, quality: np.ndarray = None, max_total_precipitation: int = MAX_TP
-) -> tuple[np.ndarray, np.ndarray]:
+    tp: np.ndarray, quality: np.ndarray | None = None, max_total_precipitation: int = MAX_TP
+) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
     """Clip the tp and quality arrays to specified maximum values.
 
     Parameters

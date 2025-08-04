@@ -174,16 +174,19 @@ class Variable(ABC):
 
     # This may need to move to a different class
     @property
+    @abstractmethod
     def grib_keys(self) -> dict[str, Any]:
         """Get the GRIB keys for the variable."""
-        raise NotImplementedError(f"Method `grib_keys` not implemented for {self.__class__.__name__}")
+        pass
 
     @property
+    @abstractmethod
     def is_computed_forcing(self) -> bool:
         """Check if the variable is a computed forcing."""
-        raise NotImplementedError(f"Method `is_computed_forcing` not implemented for {self.__class__.__name__}")
+        pass
 
     @property
+    @abstractmethod
     def is_from_input(self) -> bool:
         """Check if the variable is from input."""
         pass

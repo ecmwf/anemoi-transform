@@ -80,7 +80,13 @@ def _check_arguments(method: Callable) -> tuple[bool, bool, bool]:
 class matching:
     """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
 
-    def __init__(self, *, select: str, forward: list = [], backward: list = []) -> None:
+    def __init__(
+        self,
+        *,
+        select: str,
+        forward: str | list[str] | tuple[str, ...] = [],
+        backward: str | list[str] | tuple[str, ...] = [],
+    ) -> None:
         """Initialize the matching decorator.
 
         Parameters
@@ -195,7 +201,7 @@ class MatchingFieldsFilter(Filter):
 
         return self._backward_arguments
 
-    def _check_metadata_match(self, data: ekd.FieldList, args: list[str]) -> None:
+    def _check_metadata_match(self, data: ekd.FieldList, args: list[str] | tuple[str, ...]) -> None:
         """Checks the parameters names of the data and the groups match
 
         Parameters
@@ -297,7 +303,7 @@ class MatchingFieldsFilter(Filter):
         ekd.FieldList
             Transformed data.
         """
-        result = []
+        result: list[ekd.Field] = []
 
         grouping = GroupByParam(group_by)
         input_params = set(data.metadata("param"))

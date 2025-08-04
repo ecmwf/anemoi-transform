@@ -36,7 +36,7 @@ def make_list_int(value: Any) -> list[int]:
     """
     if isinstance(value, str):
         if "/" not in value:
-            return [value]
+            return [int(value)]
         bits = value.split("/")
         if len(bits) == 3 and bits[1].lower() == "to":
             value = list(range(int(bits[0]), int(bits[2]) + 1, 1))
@@ -47,7 +47,7 @@ def make_list_int(value: Any) -> list[int]:
     if isinstance(value, list):
         return value
     if isinstance(value, tuple):
-        return value
+        return list(value)
     if isinstance(value, int):
         return [value]
 
@@ -67,9 +67,9 @@ class RepeatMembers(Filter):
     def __init__(
         self,
         *,
-        numbers: list[int] = None,
-        members: list[int] = None,
-        count: int = None,
+        numbers: list[int] | None = None,
+        members: list[int] | None = None,
+        count: int | None = None,
     ) -> None:
         """Parameters
         -------------

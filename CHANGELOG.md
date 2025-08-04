@@ -9,6 +9,24 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.15](https://github.com/ecmwf/anemoi-transform/compare/0.1.14...0.1.15) (2025-07-31)
+
+
+### Features
+
+* Add tox config ([#131](https://github.com/ecmwf/anemoi-transform/issues/131)) ([11766a0](https://github.com/ecmwf/anemoi-transform/commit/11766a0f10d562577c869937b61ebf26e9ff1d19))
+* Remove python 3.9 from pyproject.toml. ([#142](https://github.com/ecmwf/anemoi-transform/issues/142)) ([fb476a2](https://github.com/ecmwf/anemoi-transform/commit/fb476a269bbcd69e01e47a7fdc2bda286c72bd82))
+
+
+### Bug Fixes
+
+* Apply_mask with non-boolean masks ([#91](https://github.com/ecmwf/anemoi-transform/issues/91)) ([b6f2222](https://github.com/ecmwf/anemoi-transform/commit/b6f22221428a77157a2f3e78c611b52a7a71358b))
+
+
+### Documentation
+
+* Filter migration ([#134](https://github.com/ecmwf/anemoi-transform/issues/134)) ([da0052c](https://github.com/ecmwf/anemoi-transform/commit/da0052cf07b949bc108c6480ecae7a918f0ded02))
+
 ## [0.1.14](https://github.com/ecmwf/anemoi-transform/compare/0.1.13...0.1.14) (2025-07-22)
 
 

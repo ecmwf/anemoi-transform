@@ -40,7 +40,7 @@ expected_qi_values = np.array(
 
 @pytest.fixture
 def rodeo_opera_source(test_source):
-    """Create mock Rodeo OPERA dataset with tp, qi, and dm fields."""
+    """Create mock Rodeo OPERA dataset with tp,and qi fields."""
     tp_values = np.array(
         [
             [-5.0, 0.0],

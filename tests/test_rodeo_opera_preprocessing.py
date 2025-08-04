@@ -81,6 +81,9 @@ def test_rodeo_opera_preprocessing(rodeo_opera_source):
     output_fields = collect_fields_by_param(pipeline)
 
     assert set(output_fields) == {"tp", "qi"}
+    assert len(output_fields["tp"]) == 1
+    assert len(output_fields["qi"]) == 1
+
     tp = output_fields["tp"][0].to_numpy()
     qi = output_fields["qi"][0].to_numpy()
 
@@ -95,13 +98,17 @@ def test_rodeo_opera_preprocessing(rodeo_opera_source):
     assert np.nanmin(qi) >= 0.0
 
 
-def test_rodeo_opera_preprocessing_drop_mask(rodeo_opera_source):
+def test_rodeo_opera_preprocessing_return_mask(rodeo_opera_source):
     preprocessing = filter_registry.create("rodeo_opera_preprocessing", return_mask=True)
     pipeline = rodeo_opera_source | preprocessing
 
     output_fields = collect_fields_by_param(pipeline)
+    input_fields = collect_fields_by_param(rodeo_opera_source)
+    dm = output_fields["dm"][0].to_numpy()
+    dm_original = input_fields["dm"][0].to_numpy()
 
     assert set(output_fields) == {"tp", "qi", "dm"}
+    assert np.allclose(dm, dm_original, equal_nan=True)
 
 
 if __name__ == "__main__":

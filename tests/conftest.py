@@ -12,10 +12,10 @@ from collections.abc import Callable
 
 import earthkit.data as ekd
 import pytest
+from anemoi.utils.testing import GetTestData
 
 from anemoi.transform.source import Source
 from anemoi.transform.sources import source_registry
-from anemoi.utils.testing import GetTestData
 
 pytest_plugins = ["anemoi.utils.testing"]
 

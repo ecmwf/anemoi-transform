@@ -11,12 +11,13 @@ import numpy as np
 import pytest
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.filters.rodeo_opera_preprocessing import _NODATA, _INF, _UNDETECTED
+from anemoi.transform.filters.rodeo_opera_preprocessing import _INF
+from anemoi.transform.filters.rodeo_opera_preprocessing import _NODATA
+from anemoi.transform.filters.rodeo_opera_preprocessing import _UNDETECTED
 
 from .utils import collect_fields_by_param
 
-
-MAX_TP=12.5
+MAX_TP = 12.5
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -24,35 +25,46 @@ MOCK_FIELD_METADATA = {
     "valid_datetime": "2018-08-01T09:00:00Z",
 }
 
-expected_tp_values = np.array([
-    [0.0, 0.0],      
-    [0, np.nan],    
-    [12.5, np.nan],
-])
-expected_qi_values = np.array([
-    [0, 0.5],       
-    [0, np.nan],         
-    [1.0, np.nan],
-])
+expected_tp_values = np.array(
+    [
+        [0.0, 0.0],
+        [0, np.nan],
+        [12.5, np.nan],
+    ]
+)
+expected_qi_values = np.array(
+    [
+        [0, 0.5],
+        [0, np.nan],
+        [1.0, np.nan],
+    ]
+)
+
 
 @pytest.fixture
 def rodeo_opera_source(test_source):
     """Create mock Rodeo OPERA dataset with tp, qi, and dm fields."""
-    tp_values = np.array([
-        [-5.0, 0.0],      
-        [1.0, 10001.0],   
-        [20.0, 10.0],
-    ])
-    qi_values = np.array([
-        [-1.0, 0.5],        
-        [0.2, np.nan],         
-        [1.2, np.nan],
-    ])
-    dm_values = np.array([
-        [0, 0],
-        [_UNDETECTED, _NODATA],
-        [0, _INF],
-    ])
+    tp_values = np.array(
+        [
+            [-5.0, 0.0],
+            [1.0, 10001.0],
+            [20.0, 10.0],
+        ]
+    )
+    qi_values = np.array(
+        [
+            [-1.0, 0.5],
+            [0.2, np.nan],
+            [1.2, np.nan],
+        ]
+    )
+    dm_values = np.array(
+        [
+            [0, 0],
+            [_UNDETECTED, _NODATA],
+            [0, _INF],
+        ]
+    )
 
     SPEC = [
         {"param": "tp", "values": tp_values, **MOCK_FIELD_METADATA},
@@ -63,7 +75,7 @@ def rodeo_opera_source(test_source):
 
 
 def test_rodeo_opera_preprocessing(rodeo_opera_source):
-    preprocessing = filter_registry.create("rodeo_opera_preprocessing",max_total_precipitation=MAX_TP)
+    preprocessing = filter_registry.create("rodeo_opera_preprocessing", max_total_precipitation=MAX_TP)
     pipeline = rodeo_opera_source | preprocessing
 
     output_fields = collect_fields_by_param(pipeline)
@@ -72,23 +84,24 @@ def test_rodeo_opera_preprocessing(rodeo_opera_source):
     tp = output_fields["tp"][0].to_numpy()
     qi = output_fields["qi"][0].to_numpy()
 
-    assert np.allclose(tp, expected_tp_values,equal_nan=True)
+    assert np.allclose(tp, expected_tp_values, equal_nan=True)
     # Sanity check: NaNs in tp must match NaNs in qi
-    assert np.allclose(qi, expected_qi_values,equal_nan=True)
+    assert np.allclose(qi, expected_qi_values, equal_nan=True)
 
     assert np.isnan(tp).sum() == np.isnan(qi).sum()
-    assert np.nanmax(tp)<=MAX_TP
-    assert np.nanmin(tp)>=0.0
-    assert np.nanmax(qi)<=1
-    assert np.nanmin(qi)>=0.0
+    assert np.nanmax(tp) <= MAX_TP
+    assert np.nanmin(tp) >= 0.0
+    assert np.nanmax(qi) <= 1
+    assert np.nanmin(qi) >= 0.0
+
 
 def test_rodeo_opera_preprocessing_drop_mask(rodeo_opera_source):
-    preprocessing = filter_registry.create("rodeo_opera_preprocessing",return_mask=True)
+    preprocessing = filter_registry.create("rodeo_opera_preprocessing", return_mask=True)
     pipeline = rodeo_opera_source | preprocessing
 
     output_fields = collect_fields_by_param(pipeline)
 
-    assert set(output_fields) == {"tp", "qi","dm"}
+    assert set(output_fields) == {"tp", "qi", "dm"}
 
 
 if __name__ == "__main__":

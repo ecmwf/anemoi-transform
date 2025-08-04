@@ -86,7 +86,7 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
     quality[mask == _UNDETECTED] = 0
     assert np.isnan(tp).sum() == np.isnan(quality).sum()
 
-    return tp,quality
+    return tp, quality
 
 
 @filter_registry.register("rodeo_opera_preprocessing")
@@ -158,7 +158,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             Transformed fields.
         """
         # 1st - apply masking
-        total_precipitation_masked,quality_masked = mask_opera(
+        total_precipitation_masked, quality_masked = mask_opera(
             tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy()
         )
 
@@ -173,5 +173,5 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
         )
         yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
-        
+
         yield mask

@@ -70,6 +70,9 @@ def test_rodeo_opera_clipping(rodeo_opera_source):
     output_fields = collect_fields_by_param(pipeline)
 
     assert set(output_fields) == {"tp", "qi"}
+    assert len(output_fields["tp"]) == 1
+    assert len(output_fields["qi"]) == 1
+
     tp = output_fields["tp"][0].to_numpy()
     qi = output_fields["qi"][0].to_numpy()
 

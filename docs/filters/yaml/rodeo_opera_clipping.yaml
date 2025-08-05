@@ -1,0 +1,12 @@
+input:
+  pipe:
+  - source:
+      # mars, grib, netcdf, etc.
+      # source attributes here
+      # ...
+      # Must load precipitation and quality variables
+
+  - rodeo_opera_clipping:
+      total_precipitation: tp
+      max_total_precipitation: 12.5
+      quality: qi

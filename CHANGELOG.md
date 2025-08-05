@@ -9,6 +9,14 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.16](https://github.com/ecmwf/anemoi-transform/compare/0.1.15...0.1.16) (2025-08-05)
+
+
+### Features
+
+* Improve conftest types ([#144](https://github.com/ecmwf/anemoi-transform/issues/144)) ([bc9c4cd](https://github.com/ecmwf/anemoi-transform/commit/bc9c4cd16b08399f74d8d3a8f0f874be82fda97d))
+* Rodeo filters add docs and fix masking of QI ([#145](https://github.com/ecmwf/anemoi-transform/issues/145)) ([0104c00](https://github.com/ecmwf/anemoi-transform/commit/0104c008cc3666a988fa8814447d490ec7ca59fd))
+
 ## [0.1.15](https://github.com/ecmwf/anemoi-transform/compare/0.1.14...0.1.15) (2025-07-31)
 
 

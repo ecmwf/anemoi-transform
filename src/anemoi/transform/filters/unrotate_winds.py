@@ -11,9 +11,10 @@ from collections import defaultdict
 from typing import Any
 
 import earthkit.data as ekd
+from earthkit.geo.rotate import unrotate_vector
+
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
-from earthkit.geo.rotate import unrotate_vector
 
 from .legacy import legacy_filter
 

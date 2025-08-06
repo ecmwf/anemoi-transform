@@ -8,19 +8,23 @@
 # nor does it submit to any jurisdiction.
 
 from collections.abc import Iterator
+
 import earthkit.data as ekd
-from pyproj import CRS
 from earthkit.geo.rotate import rotate_vector
+from pyproj import CRS
+
 from . import filter_registry
-from .matching import MatchingFieldsFilter, matching
+from .matching import MatchingFieldsFilter
+from .matching import matching
+
 
 class RotateWinds(MatchingFieldsFilter):
     """A filter to rotate wind components from one projection to another."""
 
     @matching(
         select="param",
-        forward=("x_wind", "y_wind")
-        #,backward=("x_wind", "y_wind"),
+        forward=("x_wind", "y_wind"),
+        # ,backward=("x_wind", "y_wind"),
     )
     def __init__(
         self,
@@ -75,10 +79,10 @@ class RotateWinds(MatchingFieldsFilter):
             self.target_projection,
         )
 
-        yield self.new_field_from_numpy(x_new, template=x_wind, param=x_wind.metadata('param'))
-        yield self.new_field_from_numpy(y_new, template=y_wind, param=y_wind.metadata('param'))
+        yield self.new_field_from_numpy(x_new, template=x_wind, param=x_wind.metadata("param"))
+        yield self.new_field_from_numpy(y_new, template=y_wind, param=y_wind.metadata("param"))
 
     # def backward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
 
-filter_registry.register("rotate_winds", RotateWinds)
 
+filter_registry.register("rotate_winds", RotateWinds)

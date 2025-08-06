@@ -7,23 +7,21 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-
-from collections import defaultdict
-from typing import Any
-
+from collections.abc import Iterator
 import earthkit.data as ekd
+from pyproj import CRS
 from earthkit.geo.rotate import rotate_vector
+from . import filter_registry
+from .matching import MatchingFieldsFilter, matching
 
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
-from anemoi.transform.filter import Filter
-from anemoi.transform.filters import filter_registry
+class RotateWinds(MatchingFieldsFilter):
+    """A filter to rotate wind components from one projection to another."""
 
-
-@filter_registry.register("rotate_winds")
-class RotateWinds(Filter):
-    """Rotate wind components from one projection to another."""
-
+    @matching(
+        select="param",
+        forward=("x_wind", "y_wind")
+        #,backward=("x_wind", "y_wind"),
+    )
     def __init__(
         self,
         *,
@@ -50,61 +48,37 @@ class RotateWinds(Filter):
         self.source_projection = source_projection
         self.target_projection = target_projection
 
-    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
-        """Rotate wind components from one projection to another.
+    def forward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
+        """Rotate wind components from source projection to target projection.
 
         Parameters
         ----------
-        fields : ekd.FieldList
-            List of input fields.
+        x_wind : ekd.Field
+            The x wind component field.
+        y_wind : ekd.Field
+            The y wind component field.
 
-        Returns
-        -------
-        ekd.FieldList
-            Array of fields with rotated wind components.
+        Yields
+        ------
+        Iterator[ekd.Field]
+            The rotated wind component fields.
         """
-        from pyproj import CRS
+        lats, lons = x_wind.grid_points()
+        proj_string = str(x_wind.projection())
 
-        result = []
+        x_new, y_new = rotate_vector(
+            lats,
+            lons,
+            x_wind.to_numpy(flatten=True),
+            y_wind.to_numpy(flatten=True),
+            (self.source_projection if self.source_projection is not None else CRS.from_string(proj_string)),
+            self.target_projection,
+        )
 
-        wind_params: tuple[str, str] = (self.x_wind, self.y_wind)
-        wind_pairs: dict[tuple, dict[str, Any]] = defaultdict(dict)
+        yield self.new_field_from_numpy(x_new, template=x_wind, param=x_wind.metadata('param'))
+        yield self.new_field_from_numpy(y_new, template=y_wind, param=y_wind.metadata('param'))
 
-        for f in fields:
-            key = f.metadata(namespace="mars")
-            param = key.pop("param")
+    # def backward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
 
-            if param not in wind_params:
-                result.append(f)
-                continue
+filter_registry.register("rotate_winds", RotateWinds)
 
-            key = tuple(key.items())
-
-            if param in wind_pairs[key]:
-                raise ValueError(f"Duplicate wind component {param} for {key}")
-
-            wind_pairs[key][param] = f
-
-        for pairs in wind_pairs.values():
-            if len(pairs) != 2:
-                raise ValueError("Missing wind component")
-
-            x = pairs[self.x_wind]
-            y = pairs[self.y_wind]
-
-            assert x.grid_mapping == y.grid_mapping
-
-            lats, lons = x.grid_points()
-            x_new, y_new = rotate_vector(
-                lats,
-                lons,
-                x.to_numpy(flatten=True),
-                y.to_numpy(flatten=True),
-                (self.source_projection if self.source_projection is not None else CRS.from_cf(x.grid_mapping)),
-                self.target_projection,
-            )
-
-            result.append(new_field_from_numpy(x, x_new))
-            result.append(new_field_from_numpy(y, y_new))
-
-        return new_fieldlist_from_list(result)

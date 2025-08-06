@@ -95,7 +95,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         self.A = np.array(AB["A"])
         self.B = np.array(AB["B"])
 
-    def _get_pressure_at_heigh_level(
+    def _get_pressure_at_height_level(
         self,
         temperature_at_model_levels: NDArray,
         specific_humidity_at_model_levels: NDArray,
@@ -136,7 +136,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
         temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
 
-        pressure_at_height_level = self._get_pressure_at_heigh_level(
+        pressure_at_height_level = self._get_pressure_at_height_level(
             temperature_at_model_levels.to_numpy(),
             specific_humidity_at_model_levels.to_numpy(),
             surface_pressure.to_numpy(),
@@ -181,7 +181,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
         temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
 
-        pressure_at_height_level = self._get_pressure_at_heigh_level(
+        pressure_at_height_level = self._get_pressure_at_height_level(
             temperature_at_model_levels.to_numpy(),
             specific_humidity_at_model_levels.to_numpy(),
             surface_pressure.to_numpy(),
@@ -274,7 +274,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
 
         assert self.A.shape == self.B.shape, "A and B coefficients must have same shape"
 
-    def _get_pressure_at_heigh_level(
+    def _get_pressure_at_height_level(
         self,
         temperature_at_model_levels: NDArray,
         specific_humidity_at_model_levels: NDArray,
@@ -318,7 +318,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
         temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
 
-        pressure_at_height_level = self._get_pressure_at_heigh_level(
+        pressure_at_height_level = self._get_pressure_at_height_level(
             temperature_at_model_levels.to_numpy(),
             specific_humidity_at_model_levels.to_numpy(),
             surface_pressure.to_numpy(),
@@ -359,7 +359,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
         temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
 
-        pressure_at_height_level = self._get_pressure_at_heigh_level(
+        pressure_at_height_level = self._get_pressure_at_height_level(
             temperature_at_model_levels.to_numpy(),
             specific_humidity_at_model_levels.to_numpy(),
             surface_pressure.to_numpy(),

@@ -106,6 +106,7 @@ class RotateWinds(MatchingFieldsFilter):
             x_wind.to_numpy(flatten=True),
             y_wind.to_numpy(flatten=True),
             *x_wind.rotation[:2],
+            south_pole_rotation_angle=0,
             lat_unrotated=raw_lats,
             lon_unrotated=raw_longs,
         )

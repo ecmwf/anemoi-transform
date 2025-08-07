@@ -11,12 +11,10 @@ from collections.abc import Iterator
 
 import earthkit.data as ekd
 from earthkit.geo.rotate import rotate_vector
-from pyproj import CRS
-
-from . import filter_registry
-from .matching import MatchingFieldsFilter
-from .matching import matching
-
+from earthkit.geo.rotate import unrotate_vector
+from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 class RotateWinds(MatchingFieldsFilter):
     """A filter to rotate wind components from one projection to another."""
@@ -24,7 +22,7 @@ class RotateWinds(MatchingFieldsFilter):
     @matching(
         select="param",
         forward=("x_wind", "y_wind"),
-        # ,backward=("x_wind", "y_wind"),
+        backward=("x_wind", "y_wind"),
     )
     def __init__(
         self,
@@ -82,7 +80,37 @@ class RotateWinds(MatchingFieldsFilter):
         yield self.new_field_from_numpy(x_new, template=x_wind, param=x_wind.metadata("param"))
         yield self.new_field_from_numpy(y_new, template=y_wind, param=y_wind.metadata("param"))
 
-    # def backward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
+    def backward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
+        """Rotate wind components from target projection back to source projection.
+
+        Parameters
+        ----------
+        x_wind : ekd.Field
+            The x wind component field.
+        y_wind : ekd.Field
+            The y wind component field.
+
+        Yields
+        ------
+        Iterator[ekd.Field]
+            The rotated wind component fields.
+        """
+        lats, lons = x_wind.grid_points()
+        raw_lats, raw_longs = x_wind.grid_points_unrotated()
+
+        x_unrotated, y_unrotated = unrotate_vector(
+            lats,
+            lons,
+            x_wind.to_numpy(flatten=True),
+            y_wind.to_numpy(flatten=True),
+            *x_wind.rotation[:2],
+            lat_unrotated=raw_lats,
+            lon_unrotated=raw_longs,
+        )
+        
+        yield self.new_field_from_numpy(x_unrotated, template=x_wind, param=x_wind.metadata('param'))
+        yield self.new_field_from_numpy(y_unrotated, template=y_wind, param=y_wind.metadata('param'))
 
 
 filter_registry.register("rotate_winds", RotateWinds)
+filter_registry.register("unrotate_winds", RotateWinds.reversed)

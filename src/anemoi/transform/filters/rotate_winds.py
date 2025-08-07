@@ -12,9 +12,11 @@ from collections.abc import Iterator
 import earthkit.data as ekd
 from earthkit.geo.rotate import rotate_vector
 from earthkit.geo.rotate import unrotate_vector
+
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
+
 
 class RotateWinds(MatchingFieldsFilter):
     """A filter to rotate wind components from one projection to another."""
@@ -107,9 +109,9 @@ class RotateWinds(MatchingFieldsFilter):
             lat_unrotated=raw_lats,
             lon_unrotated=raw_longs,
         )
-        
-        yield self.new_field_from_numpy(x_unrotated, template=x_wind, param=x_wind.metadata('param'))
-        yield self.new_field_from_numpy(y_unrotated, template=y_wind, param=y_wind.metadata('param'))
+
+        yield self.new_field_from_numpy(x_unrotated, template=x_wind, param=x_wind.metadata("param"))
+        yield self.new_field_from_numpy(y_unrotated, template=y_wind, param=y_wind.metadata("param"))
 
 
 filter_registry.register("rotate_winds", RotateWinds)

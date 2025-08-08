@@ -10,13 +10,11 @@
 
 import logging
 from abc import abstractmethod
+from collections.abc import Callable
+from collections.abc import Iterator
 from functools import wraps
 from inspect import signature
 from typing import Any
-from typing import Callable
-from typing import Iterator
-from typing import List
-from typing import Tuple
 
 import earthkit.data as ekd
 import numpy as np
@@ -47,7 +45,7 @@ def _get_params_and_defaults(method: Callable) -> dict:
     return {k: v.default for k, v in sig.parameters.items()}  # if v.default is not v.empty}
 
 
-def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
+def _check_arguments(method: Callable) -> tuple[bool, bool, bool]:
     """Check the types of arguments in the method signature.
 
     Parameters
@@ -199,7 +197,7 @@ class MatchingFieldsFilter(Filter):
 
         return self._backward_arguments
 
-    def _check_metadata_match(self, data: ekd.FieldList, args: List[str]) -> None:
+    def _check_metadata_match(self, data: ekd.FieldList, args: list[str]) -> None:
         """Checks the parameters names of the data and the groups match
 
         Parameters
@@ -333,7 +331,7 @@ class MatchingFieldsFilter(Filter):
         """
         return new_field_from_numpy(array, template=template, param=param)
 
-    def new_fieldlist_from_list(self, fields: List[ekd.Field]) -> ekd.FieldList:
+    def new_fieldlist_from_list(self, fields: list[ekd.Field]) -> ekd.FieldList:
         """Create a new field list from a list of fields.
 
         Parameters

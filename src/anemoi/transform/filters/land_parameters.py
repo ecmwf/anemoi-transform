@@ -7,10 +7,8 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from collections.abc import Iterator
 from typing import Any
-from typing import Dict
-from typing import Iterator
-from typing import List
 
 import earthkit.data as ekd
 import numpy as np
@@ -55,7 +53,7 @@ VEG_TYPE_DIC = {
 }
 
 
-def read_crosswalking_table(param: Any, param_dic: Dict[int, Dict[str, float]]) -> List[np.ndarray]:
+def read_crosswalking_table(param: Any, param_dic: dict[int, dict[str, float]]) -> list[np.ndarray]:
     """Read crosswalking table and return arrays for each key.
 
     Parameters

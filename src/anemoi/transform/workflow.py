@@ -8,8 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 
+from collections.abc import Iterator
 from typing import Any
-from typing import Iterator
 
 from anemoi.transform.transform import Transform
 

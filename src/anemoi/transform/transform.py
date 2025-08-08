@@ -11,7 +11,6 @@
 from abc import ABC
 from abc import abstractmethod
 from typing import Any
-from typing import Type
 from typing import TypeVar
 
 import earthkit.data as ekd
@@ -89,7 +88,7 @@ class Transform(ABC):
         return ReversedTransform(self)
 
     @classmethod
-    def reversed(cls: Type[T], *args: Any, **kwargs: Any) -> "ReversedTransform":
+    def reversed(cls: type[T], *args: Any, **kwargs: Any) -> "ReversedTransform":
         """Creates a reversed transform.
 
         Parameters

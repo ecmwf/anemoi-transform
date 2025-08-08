@@ -66,8 +66,9 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Creating filters
+   :caption: Filters
 
+   filters/list-of-filters
    filters/single-field-filters
    filters/matching-filters
 
@@ -78,6 +79,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 
    cli/get-grid
    cli/make-regrid-matrix
+   cli/filters
 
 .. toctree::
    :maxdepth: 2

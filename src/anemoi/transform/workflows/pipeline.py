@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 from typing import Any
-from typing import List
 
 import earthkit.data as ekd
 
@@ -27,9 +26,9 @@ class Pipeline(Workflow):
         A list of filter objects that have `forward` and `backward` methods.
     """
 
-    def __init__(self, *, filters: List[Any]) -> None:
+    def __init__(self, *, filters: list[Any]) -> None:
 
-        self.filters: List[Any] = filters
+        self.filters: list[Any] = filters
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the filters in sequence to the data.

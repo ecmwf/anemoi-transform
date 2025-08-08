@@ -8,12 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 import importlib
+from collections.abc import Callable
+from collections.abc import Iterator
 from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Iterator
-from typing import Optional
-from typing import Union
 
 from earthkit.data.core.fieldlist import Field
 
@@ -33,11 +30,11 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
     )
     def __init__(
         self,
-        fn: Union[str, Callable[[Field, Any], Field]],
-        param: Union[str, list[str]],
+        fn: str | Callable[[Field, Any], Field],
+        param: str | list[str],
         fn_args: list = [],
-        fn_kwargs: Dict[str, Any] = {},
-        backward_fn: Optional[Union[str, Callable[[Field, Any], Field]]] = None,
+        fn_kwargs: dict[str, Any] = {},
+        backward_fn: str | Callable[[Field, Any], Field] | None = None,
     ) -> None:
         """Initialize the EarthkitFieldLambdaFilter.
 

@@ -8,9 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 
+from collections.abc import Iterator
 from typing import Any
-from typing import Dict
-from typing import Iterator
 
 import earthkit.data as ekd
 import numpy as np
@@ -88,7 +87,7 @@ class CosSinWaveDirection(MatchingFieldsFilter):
 
         yield self.new_field_from_numpy(mwd, template=cos_mean_wave_direction, param=self.mean_wave_direction)
 
-    def patch_data_request(self, data_request: Dict[str, Any]) -> Dict[str, Any]:
+    def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
         """Modify the data request to include mean wave direction.
 
         Parameters

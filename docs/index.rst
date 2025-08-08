@@ -78,7 +78,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    :caption: CLI
 
    cli/get-grid
-   cli/make-regrid-matrix
+   cli/make-regrid-file
    cli/filters
 
 .. toctree::

@@ -14,6 +14,8 @@ from collections.abc import Callable
 from collections.abc import Iterator
 from typing import Any
 
+from earthkit.data import SimpleFieldList
+
 LOG = logging.getLogger(__name__)
 
 
@@ -113,3 +115,46 @@ class GroupByParam:
                 raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(self.groups.keys())}")
 
             yield tuple(group[p] for p in self.params)
+
+
+class GroupByParamVertical(GroupByParam):
+    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
+        assert callable(other), type(other)
+        self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
+        self.groups_params = set()
+        levels = defaultdict(list)
+        for f in data:
+            key = f.metadata(namespace="mars")
+            if not key:
+                keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
+                key = {k: f.metadata(k) for k in keys}
+                if not keys:
+                    raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
+
+            param = key.pop("param", f.metadata("param"))
+            _ = key.pop("levtype", None)
+            level = key.pop("levelist", None)
+
+            if param not in self.params:
+                other(f)
+                continue
+
+            key = tuple(sorted(tuple(key.items())))
+
+            if level is None:
+                if param in self.groups[key]:
+                    raise ValueError(f"Duplicate component {param} for {key}")
+                self.groups[key][param] = f
+            else:
+                if param in self.groups[key]:
+                    if level in levels[param]:
+                        raise ValueError(f"Duplicate component {param} for {key} and level {level}")
+                    else:
+                        self.groups[key][param].append(f)
+                else:
+                    ds = SimpleFieldList()
+                    ds.append(f)
+                    self.groups[key][param] = ds
+                levels[param].append(level)
+            self.groups_params.add(param)
+        LOG.info(f"Params groups: {self.groups_params}")

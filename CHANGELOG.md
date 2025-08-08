@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.17](https://github.com/ecmwf/anemoi-transform/compare/0.1.16...0.1.17) (2025-08-08)
+
+
+### Features
+
+* **filters:** Add filter for thermodynamic conversions at specific height levels ([#140](https://github.com/ecmwf/anemoi-transform/issues/140)) ([c28fd07](https://github.com/ecmwf/anemoi-transform/commit/c28fd07e0acbcc7453d6b02dfb17af585fc46ab5))
+
 ## [0.1.16](https://github.com/ecmwf/anemoi-transform/compare/0.1.15...0.1.16) (2025-08-05)
 
 

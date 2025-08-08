@@ -28,13 +28,13 @@ def _lost(f: Any) -> None:
     raise ValueError(f"Lost field {f}")
 
 
-def _flatten(params: list[Any]) -> list[str]:
+def _flatten(params: list[Any] | tuple[Any, ...]) -> list[str]:
     """Flatten a list of parameters.
 
     Parameters
     ----------
-    params : list of Any
-        List of parameters to flatten.
+    params : list or tuple of Any
+        List or tuple of parameters to flatten.
 
     Returns
     -------

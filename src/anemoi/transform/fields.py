@@ -691,7 +691,7 @@ def new_field_with_metadata(template: WrappedField, **metadata: Any) -> NewMetad
 
 def new_field_from_latitudes_longitudes(
     template: WrappedField, latitudes: np.ndarray, longitudes: np.ndarray
-) -> NewGridField:
+) -> NewLatLonField:
     """Create a new field from latitudes and longitudes.
 
     Parameters

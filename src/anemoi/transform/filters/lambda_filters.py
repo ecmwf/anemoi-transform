@@ -78,6 +78,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
 
         self.fn = self._import_fn(fn) if isinstance(fn, str) else fn
 
+        self.backward_fn: Callable[[Field, Any], Field] | None
         if isinstance(backward_fn, str):
             self.backward_fn = self._import_fn(backward_fn)
         else:
@@ -115,6 +116,8 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
         Iterator[Field]
             Transformed fields.
         """
+        if self.backward_fn is None:
+            raise ValueError("Backward function is undefined.")
         yield self.backward_fn(*fields, *self.fn_args, **self.fn_kwargs)
 
     def _import_fn(self, fn: str) -> Callable[..., Field]:
@@ -151,7 +154,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
             The string representation of the filter.
         """
         out = f"{self.__class__.__name__}(fn={self.fn},"
-        if self.backward_fn:
+        if self.backward_fn is not None:
             out += f"backward_fn={self.backward_fn},"
         out += f"param={self.param},"
         out += f"fn_args={self.fn_args},"

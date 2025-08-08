@@ -33,8 +33,8 @@ class Filter(Transform):
 class SingleFieldFilter(Filter):
     """A filter that transforms fields individually (one at a time)."""
 
-    required_inputs = None
-    optional_inputs = {}
+    required_inputs: tuple[str, ...] | list[str] | None = None
+    optional_inputs: dict[str, Any] = {}
 
     def __init__(self, **kwargs) -> None:
         """Initialize the SingleFieldFilter.

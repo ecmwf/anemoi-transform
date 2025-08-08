@@ -118,9 +118,9 @@ class GroupByParam:
 
 
 class GroupByParamVertical(GroupByParam):
-    def _get_groups(self, data: List[Any], *, other: Callable[[Any], None] = _lost) -> None:
+    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
-        self.groups: Dict[Tuple[Tuple[str, Any], ...], Dict[str, Any]] = defaultdict(dict)
+        self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
         levels = defaultdict(list)
         for f in data:

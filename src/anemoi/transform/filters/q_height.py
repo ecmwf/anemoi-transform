@@ -15,7 +15,7 @@ from earthkit.meteo import thermo
 from earthkit.meteo import vertical
 from numpy.typing import NDArray
 
-from ..constants import AB_coefficients
+from ..constants import model_level_AB
 from . import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
@@ -83,12 +83,12 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
 
         if isinstance(AB, str):
             AB = AB.upper()
-            if AB in AB_coefficients.keys():
-                AB = AB_coefficients[AB]
+            if AB in model_level_AB.keys():
+                AB = model_level_AB[AB]
             else:
                 raise KeyError(
                     "%s is not in the list of predefined AB-coefficients. Possible options are %s."
-                    % (AB, ", ".join(AB_coefficients.keys()))
+                    % (AB, ", ".join(model_level_AB.keys()))
                 )
         if not isinstance(AB, dict):
             raise TypeError("AB must be a string or a dictionary.")
@@ -260,12 +260,12 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
 
         if isinstance(AB, str):
             AB = AB.upper()
-            if AB in AB_coefficients.keys():
-                AB = AB_coefficients[AB]
+            if AB in model_level_AB.keys():
+                AB = model_level_AB[AB]
             else:
                 raise KeyError(
                     "%s is not in the list of predefined AB-coefficients. Possible options are %s."
-                    % (AB, ", ".join(AB_coefficients.keys()))
+                    % (AB, ", ".join(model_level_AB.keys()))
                 )
         if not isinstance(AB, dict):
             raise TypeError("AB must be a string or a dictionary.")

@@ -15,7 +15,7 @@ __all__ = ["g_gravitational_acceleration", "R_universal_gas_constant", "AB_coeff
 
 # A and B-coefficients defining the model levels for different models
 # Only IFS with 137 vertical levels implemented for now
-AB_coefficients = {
+model_level_AB = {
     "IFS_137": {
         "A": [
             0.00000000e00,

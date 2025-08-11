@@ -130,36 +130,15 @@ class RegridFilter(Filter):
         ekd.FieldList
             The transformed data.
         """
-        return self._interpolate(data, self.in_grid, self.out_grid, self.method)
+        return self._interpolate(data)
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        """Apply the backward regridding transformation.
-
-        Parameters
-        ----------
-        data : ekd.FieldList
-            The input data to be transformed.
-
-        Returns
-        -------
-        ekd.FieldList
-            The transformed data.
-        """
-        return self._interpolate(data, self.out_grid, self.in_grid, self.method)
-
-    def _interpolate(self, data: Any, in_grid: Any, out_grid: Any, method: str) -> Any:
+    def _interpolate(self, data: Any) -> Any:
         """Interpolate the data from one grid to another.
 
         Parameters
         ----------
         data : Any
             The input data to be interpolated.
-        in_grid : Any
-            The input grid specification.
-        out_grid : Any
-            The output grid specification.
-        method : str
-            The interpolation method.
 
         Returns
         -------
@@ -261,12 +240,14 @@ class MIRMatrix:
 
         loaded = dict(np.load(matrix))
 
-        self.matrix = csr_array(
+        self.matrix: csr_array = csr_array(
             (loaded["matrix_data"], loaded["matrix_indices"], loaded["matrix_indptr"]), shape=loaded["matrix_shape"]
         )
 
-        self.in_grid = dict(latitudes=loaded["in_latitudes"], longitudes=loaded["in_longitudes"])
-        self.out_grid = dict(latitudes=loaded["out_latitudes"], longitudes=loaded["out_longitudes"])
+        self.in_grid: dict[str, np.ndarray] = dict(latitudes=loaded["in_latitudes"], longitudes=loaded["in_longitudes"])
+        self.out_grid: dict[str, np.ndarray] = dict(
+            latitudes=loaded["out_latitudes"], longitudes=loaded["out_longitudes"]
+        )
 
     def __call__(self, field: Any) -> Any:
         """Interpolate the field data using the regrid matrix.
@@ -296,7 +277,9 @@ class ScipyKDTreeNearestNeighbours:
 
     nearest_grid_points = None
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, matrix: str = None, check: bool = False) -> None:
+    def __init__(
+        self, *, in_grid: Any, out_grid: Any, method: str, matrix: str | None = None, check: bool = False
+    ) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -342,6 +325,9 @@ class ScipyKDTreeNearestNeighbours:
         if self.nearest_grid_points is None:
             from anemoi.utils.grids import nearest_grid_points
 
+            if self.out_grid is None:
+                raise ValueError("out_grid is required, but not provided")
+
             self.nearest_grid_points = nearest_grid_points(
                 self.in_grid["latitudes"],
                 self.in_grid["longitudes"],
@@ -358,7 +344,12 @@ class ScipyKDTreeNearestNeighbours:
 
 
 def _interpolator(
-    in_grid: Any, out_grid: Any, method: str = None, matrix: str = None, check: bool = False, interpolator: Any = None
+    in_grid: Any,
+    out_grid: Any,
+    method: str | None = None,
+    matrix: str | None = None,
+    check: bool = False,
+    interpolator: Any | None = None,
 ) -> str:
     """Determine the interpolator to use.
 
@@ -395,7 +386,12 @@ def _interpolator(
 
 
 def make_interpolator(
-    in_grid: Any, out_grid: Any, method: str = None, matrix: str = None, check: bool = False, interpolator: Any = None
+    in_grid: Any,
+    out_grid: Any,
+    method: str | None = None,
+    matrix: str | None = None,
+    check: bool = False,
+    interpolator: Any | None = None,
 ) -> Any:
     """Create an interpolator.
 

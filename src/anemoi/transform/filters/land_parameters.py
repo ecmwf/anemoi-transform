@@ -18,7 +18,7 @@ from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
 
 SOIL_TYPE_DIC = {
-    0: {"theta_pwp": 0, "theta_cap": 0},
+    0: {"theta_pwp": 0.0, "theta_cap": 0.0},
     1: {"theta_pwp": 0.059, "theta_cap": 0.244},
     2: {"theta_pwp": 0.151, "theta_cap": 0.347},
     3: {"theta_pwp": 0.133, "theta_cap": 0.383},

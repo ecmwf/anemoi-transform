@@ -42,7 +42,7 @@ dependencies = [
   "anemoi-utils>=0.4.32",
   "cfunits",
   "earthkit-data>=0.12.4",
-  "earthkit-meteo>=0.3",
+  "earthkit-meteo>=0.4.1",
   "earthkit-regrid>=0.4",
 ]
 

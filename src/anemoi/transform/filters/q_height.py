@@ -34,14 +34,14 @@ def _set_AB(model_level_AB: str | Dict[str, list]) -> Tuple:
         except KeyError:
             raise KeyError(
                 "%s is not in the list of predefined AB-coefficients. Possible options are %s."
-                % (model_level_AB, ", ".join(model_level_AB.keys()))
+                % (model_level_AB, ", ".join(predefined_AB.keys()))
             )
     if not isinstance(model_level_AB, dict):
         raise TypeError("model_level_AB must be a string or a dictionary.")
     return (np.array(model_level_AB["A"]), np.array(model_level_AB["B"]))
 
 
-def _check_consistency(A: NDArray, B: NDArray, model_level_fields: Dict[str, NDArray]):
+def _check_consistency(A: NDArray, B: NDArray, model_level_fields: Dict[str, ekd.FieldList]):
     # Assert that A and B coefficient have the same shape.
     assert A.shape == B.shape, "A and B coefficients must have same shape"
     for name, field in model_level_fields.items():

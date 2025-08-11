@@ -122,7 +122,7 @@ class GroupByParamVertical(GroupByParam):
         assert callable(other), type(other)
         self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
-        levels = defaultdict(list)
+        levels: dict[str, Any] = defaultdict(list)
         for f in data:
             key = f.metadata(namespace="mars")
             if not key:

@@ -34,7 +34,7 @@ def _clip_variable(variable: np.ndarray, max_value: float) -> np.ndarray:
 
 
 def clip_opera(
-    tp: np.ndarray, quality: np.ndarray | None = None, max_total_precipitation: int = MAX_TP
+    tp: np.ndarray, quality: np.ndarray, max_total_precipitation: int = MAX_TP
 ) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
     """Clip the tp and quality arrays to specified maximum values.
 
@@ -57,7 +57,7 @@ def clip_opera(
     return tp, quality
 
 
-def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndarray:
+def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Apply masking to the tp array based on the mask array.
 
     Parameters

@@ -16,8 +16,6 @@ from functools import wraps
 from inspect import signature
 from itertools import chain
 from typing import Any
-from typing import Callable
-from typing import Iterator
 from typing import List
 from typing import Literal
 

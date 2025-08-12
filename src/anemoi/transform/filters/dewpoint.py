@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 from collections.abc import Iterator
-from typing import Iterator
 from typing import List
 from typing import Literal
 

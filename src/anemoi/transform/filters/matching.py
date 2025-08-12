@@ -194,7 +194,9 @@ class MatchingFieldsFilter(Filter):
 
     def _match_arguments(self, argument_type: Literal["forward", "backward"]) -> List[str]:
 
-        arguments = self.forward_arguments if argument_type == "forward" else self.backward_arguments
+        arguments = set(self.forward_arguments) | set(self.backward_arguments)
+        
+        directional = self.forward_arguments if argument_type=="forward" else self.backward_arguments
 
         if self.return_inputs == "all":
             returned_input_list = arguments
@@ -203,8 +205,11 @@ class MatchingFieldsFilter(Filter):
         else:
             if not isinstance(self.return_inputs, list):
                 raise ValueError(f"Return inputs must be 'all', 'none', or List[str], got {type(self.return_inputs)}")
-            if not set(self.return_inputs) <= set(arguments):
-                raise ValueError(f"Returned input names must subset {argument_type} arguments ({arguments})")
+            if not set(self.return_inputs) <= (arguments):
+                raise ValueError(f"Returned input names must subset {arguments} (either forward or backward arguments)")
+            if not set(self.return_inputs) <= set(directional):
+                diff = set(self.return_inputs) - set(directional)
+                LOG.warning(f"Some inputs will not be returned because filter direction is {argument_type}: {diff}")
             returned_input_list = self.return_inputs
         return returned_input_list
 

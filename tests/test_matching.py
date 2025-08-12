@@ -69,6 +69,7 @@ def test_forward_transform_adds_fields():
     assert isinstance(result[0], MockField)
     assert result[0]._param == "c"
 
+
 def test_return_inputs():
     a = MockField("a", step=0, level=850)
     b = MockField("b", step=0, level=850)

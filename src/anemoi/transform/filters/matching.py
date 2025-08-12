@@ -122,7 +122,6 @@ class matching:
 
         self.forward = forward
         self.backward = backward
-        self.return_inputs = return_inputs
 
     def __call__(self, method: Callable) -> Callable:
         """Wrap the method with forward and backward argument initialization.

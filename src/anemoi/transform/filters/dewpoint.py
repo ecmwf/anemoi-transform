@@ -53,7 +53,7 @@ class DewPoint(MatchingFieldsFilter):
         self.temperature = temperature
         self.dewpoint = dewpoint
 
-    def forward_transform(self, temperature: ekd.Field, relative_humidity: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """Return the dewpoint temperature (Td, in K) along with temperature (K) and relative humidity (in %)"""
 
         relative_humidity_values = relative_humidity.to_numpy()

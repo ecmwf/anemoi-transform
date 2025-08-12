@@ -83,7 +83,7 @@ def test_return_inputs():
     assert result[0]._param == "a"
     assert result[1]._param == "b"
     assert result[2]._param == "c"
-    
+
     f = AddFields(a="a", b="b", return_inputs=["a"])
     result = f.forward(data)
     assert len(result) == 2
@@ -91,6 +91,7 @@ def test_return_inputs():
         assert isinstance(result[i], MockField)
     assert result[0]._param == "a"
     assert result[1]._param == "c"
+
 
 def test_missing_component_raises():
     a = MockField("a", step=0, level=850)

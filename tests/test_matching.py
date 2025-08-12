@@ -80,9 +80,9 @@ def test_return_inputs():
     assert len(result) == 3
     for i in range(3):
         assert isinstance(result[i], MockField)
-    assert result[0]._param == "c"
-    assert result[1]._param == "a", result[1]._param
-    assert result[2]._param == "b", result[2]._param
+    assert result[0]._param == "a"
+    assert result[1]._param == "b", result[1]._param
+    assert result[2]._param == "c", result[2]._param
 
 
 def test_missing_component_raises():

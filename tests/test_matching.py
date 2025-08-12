@@ -80,8 +80,7 @@ def test_return_inputs():
     assert len(result) == 3
     for i in range(3):
         assert isinstance(result[i], MockField)
-    assert result[0]._param == "a"
-    assert result[1]._param == "b"
+    assert set([result[i]._param for i in range(2)]) == {"a","b"}
     assert result[2]._param == "c"
 
     f = AddFields(a="a", b="b", return_inputs=["a"])

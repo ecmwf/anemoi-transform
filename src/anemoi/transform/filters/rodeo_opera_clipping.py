@@ -7,7 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Iterator
+from collections.abc import Iterator
 
 import earthkit.data as ekd
 
@@ -34,13 +34,11 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         The maximum value for tp, by default MAX_TP.
     quality : ekd.Field
         The quality data.
-    mask : ekd.Field
-        The mask data.
     """
 
     @matching(
         select="param",
-        forward=("total_precipitation", "quality", "mask"),
+        forward=("total_precipitation", "quality"),
     )
     def __init__(
         self,
@@ -48,7 +46,6 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         total_precipitation: str = "tp",
         max_total_precipitation: int = MAX_TP,
         quality: str = "qi",
-        mask: str = "dm",
     ) -> None:
         """Initialize the RodeoOperaPreProcessing filter.
 
@@ -60,19 +57,15 @@ class RodeoOperaClipping(MatchingFieldsFilter):
             The maximum value for tp, by default MAX_TP.
         quality : ekd.Field
             The quality data.
-        mask : ekd.Field
-            The mask data.
         """
         self.total_precipitation = total_precipitation
         self.max_total_precipitation = max_total_precipitation
         self.quality = quality
-        self.mask = mask
 
     def forward_transform(
         self,
         total_precipitation: ekd.Field,
         quality,
-        mask,
     ) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 
@@ -82,8 +75,6 @@ class RodeoOperaClipping(MatchingFieldsFilter):
                     The tp data.
                 quality : ekd.Field
                     The quality data.
-                mask : ekd.Field
-                    The mask data.
                 Returns
                 -------
                 Iterator[ekd.Field]
@@ -102,4 +93,3 @@ class RodeoOperaClipping(MatchingFieldsFilter):
             total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
         )
         yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
-        yield mask

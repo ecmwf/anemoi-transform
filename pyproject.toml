@@ -21,7 +21,7 @@ authors = [
   { name = "European Centre for Medium-Range Weather Forecasts (ECMWF)", email = "software.support@ecmwf.int" },
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -29,7 +29,6 @@ classifiers = [
   "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -40,10 +39,10 @@ classifiers = [
 
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.4.20",
+  "anemoi-utils>=0.4.32",
   "cfunits",
   "earthkit-data>=0.12.4",
-  "earthkit-meteo>=0.3",
+  "earthkit-meteo>=0.4.1",
   "earthkit-regrid>=0.4",
 ]
 
@@ -54,7 +53,7 @@ optional-dependencies.docs = [
   "nbsphinx",
   "pandoc",
   "requests",
-  "sphinx>=8.2",
+  "sphinx>=8.2; python_version>='3.11'",
   "sphinx-argparse<0.5",
   "sphinx-rtd-theme",
   "termcolor",
@@ -74,11 +73,12 @@ version_file = "src/anemoi/transform/_version.py"
 
 [tool.mypy]
 strict = false
+disable_error_code = [ "import-untyped" ]
 exclude = [
-  "docs/**",
+  "docs/*",
 ]
 
 [tool.pydocstringformatter]
 write = true
-exclude = "docs/**"
+exclude = "docs/*"
 style = "numpydoc"

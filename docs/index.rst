@@ -64,12 +64,22 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    cli/overview
 
 .. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Filters
+
+   filters/list-of-filters
+   filters/single-field-filters
+   filters/matching-filters
+
+.. toctree::
    :maxdepth: 5
    :hidden:
    :caption: CLI
 
    cli/get-grid
    cli/make-regrid-matrix
+   cli/filters
 
 .. toctree::
    :maxdepth: 2

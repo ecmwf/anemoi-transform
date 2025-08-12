@@ -14,4 +14,6 @@ from anemoi.transform.transform import Transform
 class Source(Transform):
     """A source transform that provides data."""
 
-    pass
+    def __iter__(self):
+        """Iterate over the source."""
+        return iter(self.forward())

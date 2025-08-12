@@ -7,18 +7,26 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-
+import logging
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Dict
 from typing import Union
 
+from anemoi.utils.dates import as_timedelta
+
 from anemoi.transform.variables import Variable
+
+if TYPE_CHECKING:
+    from datetime import timedelta
+
+LOG = logging.getLogger(__name__)
 
 
 class VariableFromMarsVocabulary(Variable):
     """A variable that is defined by the Mars vocabulary."""
 
-    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+    def __init__(self, name: str, data: dict[str, Any]) -> None:
         """Initialize the variable with a name and data.
 
         Parameters
@@ -48,7 +56,7 @@ class VariableFromMarsVocabulary(Variable):
         return self.mars.get("levtype", None) == "ml"
 
     @property
-    def level(self) -> Union[str, None]:
+    def level(self) -> str | None:
         """Get the level of the variable."""
         return self.mars.get("levelist", None)
 
@@ -83,7 +91,23 @@ class VariableFromMarsVocabulary(Variable):
         return self.data.get("process")
 
     @property
-    def grib_keys(self) -> Dict[str, Any]:
+    def period(self) -> Union["timedelta", None]:
+        """Get the variable's period as a timedelta.
+        For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
+        """
+        if self.is_instantanous:
+            return as_timedelta(0)
+
+        if not (period := self.data.get("period")):
+            return None
+
+        if not isinstance(period, Sequence) or len(period) != 2:
+            return None
+
+        return as_timedelta(period[1]) - as_timedelta(period[0])
+
+    @property
+    def grib_keys(self) -> dict[str, Any]:
         """Get the GRIB keys of the variable."""
         return self.data.get("mars", {}).copy()
 
@@ -123,7 +147,7 @@ class VariableFromMarsVocabulary(Variable):
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""
 
-    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+    def __init__(self, name: str, data: dict[str, Any]) -> None:
         """Initialize the variable with a name and data.
 
         Parameters
@@ -168,7 +192,7 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
 class PostProcessedVariable(VariableFromMarsVocabulary):
     """A variable that is defined by a post-processed dictionary."""
 
-    def __init__(self, name: str, data: Dict[str, Any]) -> None:
+    def __init__(self, name: str, data: dict[str, Any]) -> None:
         """Initialize the variable with a name and data.
 
         Parameters

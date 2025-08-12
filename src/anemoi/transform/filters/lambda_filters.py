@@ -8,12 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 import importlib
+from collections.abc import Callable
+from collections.abc import Iterator
 from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Iterator
-from typing import Optional
-from typing import Union
 
 from earthkit.data.core.fieldlist import Field
 
@@ -33,11 +30,11 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
     )
     def __init__(
         self,
-        fn: Union[str, Callable[[Field, Any], Field]],
-        param: Union[str, list[str]],
+        fn: str | Callable[[Field, Any], Field],
+        param: str | list[str],
         fn_args: list = [],
-        fn_kwargs: Dict[str, Any] = {},
-        backward_fn: Optional[Union[str, Callable[[Field, Any], Field]]] = None,
+        fn_kwargs: dict[str, Any] = {},
+        backward_fn: str | Callable[[Field, Any], Field] | None = None,
     ) -> None:
         """Initialize the EarthkitFieldLambdaFilter.
 
@@ -81,12 +78,13 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
 
         self.fn = self._import_fn(fn) if isinstance(fn, str) else fn
 
+        self.backward_fn: Callable[[Field, Any], Field] | None
         if isinstance(backward_fn, str):
             self.backward_fn = self._import_fn(backward_fn)
         else:
             self.backward_fn = backward_fn
 
-        self.param = param if isinstance(param, list) else [param]
+        self.param = param
         self.fn_args = fn_args
         self.fn_kwargs = fn_kwargs
 
@@ -118,6 +116,8 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
         Iterator[Field]
             Transformed fields.
         """
+        if self.backward_fn is None:
+            raise ValueError("Backward function is undefined.")
         yield self.backward_fn(*fields, *self.fn_args, **self.fn_kwargs)
 
     def _import_fn(self, fn: str) -> Callable[..., Field]:
@@ -154,7 +154,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
             The string representation of the filter.
         """
         out = f"{self.__class__.__name__}(fn={self.fn},"
-        if self.backward_fn:
+        if self.backward_fn is not None:
             out += f"backward_fn={self.backward_fn},"
         out += f"param={self.param},"
         out += f"fn_args={self.fn_args},"

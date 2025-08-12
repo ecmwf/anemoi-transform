@@ -10,6 +10,8 @@
 
 import logging
 from abc import abstractmethod
+from collections.abc import Callable
+from collections.abc import Iterator
 from functools import wraps
 from inspect import signature
 from itertools import chain
@@ -27,6 +29,7 @@ from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.grouping import GroupByParam
+from anemoi.transform.grouping import GroupByParamVertical
 
 LOG = logging.getLogger(__name__)
 
@@ -48,7 +51,7 @@ def _get_params_and_defaults(method: Callable) -> dict:
     return {k: v.default for k, v in sig.parameters.items()}  # if v.default is not v.empty}
 
 
-def _check_arguments(method: Callable) -> Tuple[bool, bool, bool]:
+def _check_arguments(method: Callable) -> tuple[bool, bool, bool]:
     """Check the types of arguments in the method signature.
 
     Parameters
@@ -94,9 +97,10 @@ class matching:
         self,
         *,
         select: str,
-        forward: list = [],
-        backward: list = [],
-        return_inputs: Literal["all", "none"] | List[str] = "none",
+        forward: str | list[str] | tuple[str, ...] = [],,
+        backward: str | list[str] | tuple[str, ...] = [],,
+        return_inputs: Literal["all", "none"] | List[str] = "all",
+        vertical: bool = False,
     ) -> None:
         """Initialize the matching decorator.
 
@@ -113,7 +117,7 @@ class matching:
             "all" will return all inputs, while a List[str] will select the inputs as defined by the user.
         """
         self.select = select
-
+        self.vertical = vertical
         if select != "param":
             raise NotImplementedError("Only 'select=param' is supported for now.")
 
@@ -174,6 +178,7 @@ class matching:
             obj._forward_arguments = forward
             obj._backward_arguments = backward
             obj.return_inputs = self.return_inputs
+            obj._vertical = self.vertical
             obj._initialised = True
             return method(obj, *args, **kwargs)
 
@@ -235,6 +240,24 @@ class MatchingFieldsFilter(Filter):
             raise ValueError("Filter not initialised.")
 
         return self._backward_arguments
+
+    def _check_metadata_match(self, data: ekd.FieldList, args: list[str] | tuple[str, ...]) -> None:
+        """Checks the parameters names of the data and the groups match
+
+        Parameters
+        ----------
+        data : str
+            List with grouped input param names
+        args : str
+            List with fields to group by.
+        """
+
+        msg = (
+            f"Please ensure your filter is configured to match the input variables metadata "
+            f"current mismatch between inputs {data} and filter metadata {args}"
+        )
+        if not set(args).issubset(data):
+            LOG.warning(msg)
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Transform the data using the forward transformation function.
@@ -322,10 +345,13 @@ class MatchingFieldsFilter(Filter):
         ekd.FieldList
             Transformed data.
         """
-        result = []
-
-        grouping = GroupByParam(group_by)
-
+        result: list[ekd.Field] = []
+        if self._vertical:
+            grouping = GroupByParamVertical(group_by)
+        else:
+            grouping = GroupByParam(group_by)
+        input_params = set(data.metadata("param"))
+        self._check_metadata_match(input_params, group_by)
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)
@@ -350,7 +376,7 @@ class MatchingFieldsFilter(Filter):
         """
         return new_field_from_numpy(array, template=template, param=param)
 
-    def new_fieldlist_from_list(self, fields: List[ekd.Field]) -> ekd.FieldList:
+    def new_fieldlist_from_list(self, fields: list[ekd.Field]) -> ekd.FieldList:
         """Create a new field list from a list of fields.
 
         Parameters

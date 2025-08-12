@@ -8,7 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
-from typing import Iterator
+from collections.abc import Iterator
 
 import earthkit.data as ekd
 from earthkit.meteo.wind.array import polar_to_xy
@@ -119,5 +119,5 @@ class WindComponents(MatchingFieldsFilter):
         yield self.new_field_from_numpy(v, template=wind_direction, param=self.v_component)
 
 
-filter_registry.register("uv_2_ddff", WindComponents)
-filter_registry.register("ddff_2_uv", WindComponents.reversed)
+filter_registry.register("uv_to_ddff", WindComponents)
+filter_registry.register("ddff_to_uv", WindComponents.reversed)

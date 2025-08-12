@@ -7,7 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from typing import Iterator
+from collections.abc import Iterator
 from typing import List
 from typing import Literal
 
@@ -25,7 +25,7 @@ class HumidityConversion(MatchingFieldsFilter):
 
     @matching(
         select="param",
-        forward=("temperature", "humidity"),
+        forward=("humidity", "temperature"),
         backward=("relative_humidity", "temperature"),
     )
     def __init__(
@@ -56,21 +56,18 @@ class HumidityConversion(MatchingFieldsFilter):
 
     def forward_transform(self, humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
-        pressure = 100 * float(humidity._metadata.get("levelist", None))  # levels are measured in hectopascals
+        pressure = 100 * float(humidity.metadata("levelist"))
         rh = thermo.relative_humidity_from_specific_humidity(temperature.to_numpy(), humidity.to_numpy(), pressure)
-
         yield self.new_field_from_numpy(rh, template=humidity, param=self.relative_humidity)
 
     def backward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """This will return specific humidity along with temperature from relative humidity and temperature"""
-        pressure = 100 * float(temperature._metadata.get("levelist", None))  # levels are measured in hectopascals
-
+        pressure = 100 * float(temperature.metadata("levelist"))  # levels are measured in hectopascals
         q = thermo.specific_humidity_from_relative_humidity(
             temperature.to_numpy(), relative_humidity.to_numpy(), pressure
         )
-
         yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
 
 
-filter_registry.register("q_2_r", HumidityConversion)
-filter_registry.register("r_2_q", HumidityConversion.reversed)
+filter_registry.register("q_to_r", HumidityConversion)
+filter_registry.register("r_to_q", HumidityConversion.reversed)

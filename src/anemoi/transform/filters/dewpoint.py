@@ -11,6 +11,8 @@ from typing import Iterator
 from typing import List
 from typing import Literal
 
+from collections.abc import Iterator
+
 import earthkit.data as ekd
 from earthkit.meteo import thermo
 
@@ -19,13 +21,16 @@ from anemoi.transform.filters import filter_registry
 from .matching import MatchingFieldsFilter
 from .matching import matching
 
+EPS = 1.0e-4
+
 
 class DewPoint(MatchingFieldsFilter):
     """A filter to extract dewpoint temperature from relative humidity and temperature"""
 
     @matching(
         select="param",
-        forward=("temperature", "relative_humidity"),
+        forward=("relative_humidity", "temperature"),
+        backward=("dewpoint", "temperature"),
     )
     def __init__(
         self,
@@ -54,18 +59,18 @@ class DewPoint(MatchingFieldsFilter):
     def forward_transform(self, temperature: ekd.Field, relative_humidity: ekd.Field) -> Iterator[ekd.Field]:
         """Return the dewpoint temperature (Td, in K) along with temperature (K) and relative humidity (in %)"""
 
-        td = thermo.dewpoint_from_relative_humidity(temperature.to_numpy(), relative_humidity.to_numpy())
-
-        yield self.new_field_from_numpy(td, template=temperature, param=self.dewpoint)
+        relative_humidity_values = relative_humidity.to_numpy()
+        relative_humidity_values[relative_humidity_values == 0] = EPS
+        td = thermo.dewpoint_from_relative_humidity(t=temperature.to_numpy(), r=relative_humidity_values)
+        yield self.new_field_from_numpy(td, template=relative_humidity, param=self.dewpoint)
 
     def backward_transform(self, dewpoint: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """This will return the relative humidity (in %) from temperature (in K) and dewpoint (Td, in K),
         along with temperature and dewpoint
         """
-        rh = thermo.relative_humidity_from_dewpoint(temperature.to_numpy(), dewpoint.to_numpy())
-
+        rh = thermo.relative_humidity_from_dewpoint(t=temperature.to_numpy(), td=dewpoint.to_numpy())
         yield self.new_field_from_numpy(rh, template=temperature, param=self.relative_humidity)
 
 
-filter_registry.register("r_2_d", DewPoint)
-filter_registry.register("d_2_r", DewPoint.reversed)
+filter_registry.register("r_to_d", DewPoint)
+filter_registry.register("d_to_r", DewPoint.reversed)

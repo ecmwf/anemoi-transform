@@ -10,9 +10,6 @@
 
 import logging
 from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Tuple
 from urllib.parse import urlparse
 
 import numpy as np
@@ -36,7 +33,7 @@ class Geography:
         UUID of the horizontal grid.
     """
 
-    def __init__(self, latitudes: np.ndarray, longitudes: np.ndarray, uuidOfHGrid: Optional[str] = None) -> None:
+    def __init__(self, latitudes: np.ndarray, longitudes: np.ndarray, uuidOfHGrid: str | None = None) -> None:
         assert isinstance(latitudes, np.ndarray), type(latitudes)
         assert isinstance(longitudes, np.ndarray), type(longitudes)
         assert len(latitudes) == len(longitudes)
@@ -45,7 +42,7 @@ class Geography:
         self.latitudes = latitudes
         self.longitudes = longitudes
 
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         """Returns the shape of the latitude array.
 
         Returns
@@ -56,7 +53,7 @@ class Geography:
         return self.latitudes.shape
 
 
-def _load(url_or_path: str, param: str) -> Tuple[np.ndarray, str]:
+def _load(url_or_path: str, param: str) -> tuple[np.ndarray, str]:
     """Loads data from a given URL or file path.
 
     Parameters
@@ -120,7 +117,7 @@ class UnstructuredGridField:
 
         return default
 
-    def grid_points(self) -> Tuple[np.ndarray, np.ndarray]:
+    def grid_points(self) -> tuple[np.ndarray, np.ndarray]:
         """Returns the grid points (latitudes and longitudes).
 
         Returns
@@ -136,11 +133,11 @@ class UnstructuredGridField:
         return "unknown"
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         """Shape of the grid."""
         return self.geography.shape()
 
-    def to_latlon(self, flatten: bool = False) -> Dict[str, np.ndarray]:
+    def to_latlon(self, flatten: bool = False) -> dict[str, np.ndarray]:
         """Converts the grid to latitude and longitude.
 
         Parameters

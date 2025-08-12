@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
+from collections.abc import Iterator
 from typing import Iterator
 from typing import List
 from typing import Literal
@@ -120,5 +121,5 @@ class VerticalVelocity(MatchingFieldsFilter):
         yield self.new_field_from_numpy(w, template=wz_component, param=self.w_component)
 
 
-filter_registry.register("w_2_wz", VerticalVelocity)
-filter_registry.register("wz_2_w", VerticalVelocity.reversed)
+filter_registry.register("w_to_wz", VerticalVelocity)
+filter_registry.register("wz_to_w", VerticalVelocity.reversed)

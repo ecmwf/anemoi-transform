@@ -96,7 +96,6 @@ class matching:
         select: str,
         forward: str | list[str] | tuple[str, ...] = [],
         backward: str | list[str] | tuple[str, ...] = [],
-        return_inputs: Literal["all", "none"] | List[str] = "none",
         vertical: bool = False,
     ) -> None:
         """Initialize the matching decorator.
@@ -109,9 +108,6 @@ class matching:
             List of forward arguments, by default [].
         backward : list, optional
             List of backward arguments, by default [].
-        return_inputs: Literal["all", "none"] | List[str], optional
-            Indicate which one of the input values for the filter should be kept, by default "none"
-            "all" will return all inputs, while a List[str] will select the inputs as defined by the user.
         """
         self.select = select
         self.vertical = vertical

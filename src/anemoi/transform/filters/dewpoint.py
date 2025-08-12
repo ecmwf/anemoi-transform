@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 from collections.abc import Iterator
-from typing import List
 from typing import Literal
 
 import earthkit.data as ekd
@@ -36,7 +35,7 @@ class DewPoint(MatchingFieldsFilter):
         relative_humidity: str = "r",
         temperature: str = "t",
         dewpoint: str = "d",
-        return_inputs: Literal["all", "none"] | List[str] = "all",
+        return_inputs: Literal["all", "none"] | list[str] = "all",
     ):
         """Initialize the DewPoint filter.
 
@@ -46,8 +45,8 @@ class DewPoint(MatchingFieldsFilter):
             Name of the humidity parameter, by default "r".
         temperature : str, optional
             Name of the temperature parameter, by default "t".
-        return_inputs : Literal["all", "none"] | List[str], optional
-            List of which filter inputs should be returned, by default ["temperature"
+        return_inputs : Literal["all", "none"] | list[str], optional
+            List of which filter inputs should be returned, by default "all"
         """
         self.return_inputs = return_inputs
         self.relative_humidity = relative_humidity

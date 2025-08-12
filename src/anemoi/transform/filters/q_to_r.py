@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 from collections.abc import Iterator
-from typing import List
 from typing import Literal
 
 import earthkit.data as ekd
@@ -34,7 +33,7 @@ class HumidityConversion(MatchingFieldsFilter):
         relative_humidity: str = "r",
         temperature: str = "t",
         humidity: str = "q",
-        return_inputs: Literal["all", "none"] | List[str] = "all",
+        return_inputs: Literal["all", "none"] | list[str] = "all",
     ):
         """Initialize the VerticalVelocity filter.
 
@@ -46,8 +45,8 @@ class HumidityConversion(MatchingFieldsFilter):
             Name of the temperature parameter, by default "t".
         humidity : str, optional
             Name of the humidity parameter, by default "q".
-        return_inputs : Literal["all", "none"] | List[str], optional
-            List of which filter inputs should be returned, by default ["temperature"]
+        return_inputs : Literal["all", "none"] | list[str], optional
+            List of which filter inputs should be returned, by default "all"
         """
         self.return_inputs = return_inputs
         self.relative_humidity = relative_humidity

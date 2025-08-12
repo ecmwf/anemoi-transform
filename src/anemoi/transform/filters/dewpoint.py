@@ -37,7 +37,7 @@ class DewPoint(MatchingFieldsFilter):
         relative_humidity: str = "r",
         temperature: str = "t",
         dewpoint: str = "d",
-        return_inputs: Literal["all", "none"] | List[str] = ["temperature"],
+        return_inputs: Literal["all", "none"] | List[str] = "all",
     ):
         """Initialize the DewPoint filter.
 

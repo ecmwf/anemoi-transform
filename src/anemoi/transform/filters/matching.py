@@ -97,9 +97,9 @@ class matching:
         self,
         *,
         select: str,
-        forward: str | list[str] | tuple[str, ...] = [],,
-        backward: str | list[str] | tuple[str, ...] = [],,
-        return_inputs: Literal["all", "none"] | List[str] = "all",
+        forward: str | list[str] | tuple[str, ...] = [],
+        backward: str | list[str] | tuple[str, ...] = [],
+        return_inputs: Literal["all", "none"] | List[str] = "none",
         vertical: bool = False,
     ) -> None:
         """Initialize the matching decorator.

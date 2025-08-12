@@ -38,7 +38,7 @@ class VerticalVelocity(MatchingFieldsFilter):
         wz_component: str = "wz",
         temperature: str = "t",
         humidity: str = "q",
-        return_inputs: Literal["all", "none"] | List[str] = ["temperature", "humidity"],
+        return_inputs: Literal["all", "none"] | List[str] = "all",
     ):
         """Initialize the VerticalVelocity filter.
 

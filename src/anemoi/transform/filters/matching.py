@@ -20,7 +20,6 @@ from typing import Callable
 from typing import Iterator
 from typing import List
 from typing import Literal
-from typing import Tuple
 
 import earthkit.data as ekd
 import numpy as np

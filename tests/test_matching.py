@@ -36,9 +36,10 @@ class MockFieldList(list):
 
 class AddFields(MatchingFieldsFilter):
     @matching(select="param", forward=["a", "b"])
-    def __init__(self, a, b):
+    def __init__(self, a, b, return_inputs="none"):
         self.a = a
         self.b = b
+        self.return_inputs = return_inputs
 
     def forward_transform(self, a: MockField, b: MockField) -> Iterator[MockField]:
         result = a.values + b.values
@@ -67,6 +68,20 @@ def test_forward_transform_adds_fields():
     assert len(result) == 1
     assert isinstance(result[0], MockField)
     assert result[0]._param == "c"
+
+def test_return_inputs():
+    a = MockField("a", step=0, level=850)
+    b = MockField("b", step=0, level=850)
+    data = MockFieldList([a, b])
+
+    f = AddFields(a="a", b="b", return_inputs="all")
+    result = f.forward(data)
+    assert len(result) == 3
+    for i in range(3):
+        assert isinstance(result[i], MockField)
+    assert result[0]._param == "c"
+    assert result[1]._param == "a", result[1]._param
+    assert result[2]._param == "b", result[2]._param
 
 
 def test_missing_component_raises():

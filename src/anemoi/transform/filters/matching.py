@@ -195,8 +195,8 @@ class MatchingFieldsFilter(Filter):
     def _match_arguments(self, argument_type: Literal["forward", "backward"]) -> List[str]:
 
         arguments = set(self.forward_arguments) | set(self.backward_arguments)
-        
-        directional = self.forward_arguments if argument_type=="forward" else self.backward_arguments
+
+        directional = self.forward_arguments if argument_type == "forward" else self.backward_arguments
 
         if self.return_inputs == "all":
             returned_input_list = arguments

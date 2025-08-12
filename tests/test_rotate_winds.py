@@ -7,30 +7,29 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import earthkit.data as ekd
 import numpy as np
 import pytest
 from anemoi.utils.testing import skip_if_offline
-from anemoi.transform.filters import filter_registry
-from tests.utils import SelectFieldSource
-from tests.utils import assert_fields_equal
-from tests.utils import collect_fields_by_param
 
-import earthkit.data as ekd
+from anemoi.transform.filters import filter_registry
 from anemoi.transform.sources import source_registry
+from tests.utils import collect_fields_by_param
 
 # Mock data for testing
 MOCK_FIELD_METADATA = {
-    "latitudes": [39.639006],#, 39.64331737],
-    "longitudes": [334.553253],#  , 334.57510742],
+    "latitudes": [39.639006],  # , 39.64331737],
+    "longitudes": [334.553253],  #  , 334.57510742],
     "valid_datetime": "2018-08-01T09:00:00Z",
 }
 
-U_VALUES = np.array([[1.6866188]])#, 1.6768532], [2.6513138, 2.6454544]]).flatten()
-V_VALUES = np.array([[-3.9099693]])#, -3.9724693], [-4.6877003, -4.69063]]).flatten()
+U_VALUES = np.array([[1.6866188]])  # , 1.6768532], [2.6513138, 2.6454544]]).flatten()
+V_VALUES = np.array([[-3.9099693]])  # , -3.9724693], [-4.6877003, -4.69063]]).flatten()
 
 # Expected values after rotation and unrotation
-U_ROTATED_VALUES = np.array([[2.604725]])#, 2.6097064], [3.732331, 3.7261608]]).flatten()
-V_ROTATED_VALUES = np.array([[-3.3686721]])#, -3.4324598], [-3.8824868, -3.8879511]]).flatten()
+U_ROTATED_VALUES = np.array([[2.604725]])  # , 2.6097064], [3.732331, 3.7261608]]).flatten()
+V_ROTATED_VALUES = np.array([[-3.3686721]])  # , -3.4324598], [-3.8824868, -3.8879511]]).flatten()
+
 
 @pytest.fixture
 def wind_source(test_source):
@@ -39,6 +38,7 @@ def wind_source(test_source):
         {"param": "v", "values": V_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(WIND_SPEC)
+
 
 @pytest.fixture
 def rotated_wind_source(test_source):
@@ -51,9 +51,11 @@ def rotated_wind_source(test_source):
 
 @skip_if_offline
 def test_rotate_winds_from_file(test_source):
-    source = source_registry.create('testing', dataset=ekd.from_source('file', 'mylocalfile/fc2020100106+000POSTP_CONTROL_grib2'))
+    source = source_registry.create(
+        "testing", dataset=ekd.from_source("file", "mylocalfile/fc2020100106+000POSTP_CONTROL_grib2")
+    )
     rotate_winds = filter_registry.create("rotate_winds", x_wind="10u", y_wind="10u")
- 
+
     pipeline = source | rotate_winds
 
     input_fields = collect_fields_by_param(source)
@@ -68,8 +70,16 @@ def test_rotate_winds_from_file(test_source):
     assert set(output_fields) == {"10u"}
 
     # Test pipeline output matches known good output
-    expected_u_rotated = source_registry.create('testing', dataset=ekd.from_source('file', "uwcwest_20201001_10u_10v_rotated.zarr")).ds.to_numpy().reshape(shape)# test_source("uwcwest_20201001_10u_10v_rotated.zarr").ds.to_numpy().reshape(shape)
-    expected_v_rotated = source_registry.create('testing', dataset=ekd.from_source('file', "uwcwest_20201001_10u_10v_rotated.zarr")).ds.to_numpy().reshape(shape)# test_source("uwcwest_20201001_10u_10v_rotated.zarr").ds.to_numpy().reshape(shape)
+    expected_u_rotated = (
+        source_registry.create("testing", dataset=ekd.from_source("file", "uwcwest_20201001_10u_10v_rotated.zarr"))
+        .ds.to_numpy()
+        .reshape(shape)
+    )  # test_source("uwcwest_20201001_10u_10v_rotated.zarr").ds.to_numpy().reshape(shape)
+    expected_v_rotated = (
+        source_registry.create("testing", dataset=ekd.from_source("file", "uwcwest_20201001_10u_10v_rotated.zarr"))
+        .ds.to_numpy()
+        .reshape(shape)
+    )  # test_source("uwcwest_20201001_10u_10v_rotated.zarr").ds.to_numpy().reshape(shape)
 
     assert len(output_fields["u"]) == 1
     assert len(output_fields["v"]) == 1
@@ -107,7 +117,7 @@ def test_rotate_winds_from_file(test_source):
 
 #     assert np.allclose(result_u.to_numpy(), U_ROTATED_VALUES)
 #     assert np.allclose(result_v.to_numpy(), V_ROTATED_VALUES)
-    
+
 #     # Capture and print output
 #     captured = capsys.readouterr()
 #     print("Captured output:", captured.out)

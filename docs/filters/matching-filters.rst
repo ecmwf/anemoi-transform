@@ -25,16 +25,13 @@ reversible filters).
 
 -  **Components**
 
-   -  ``forward_arguments`` / ``backward_arguments``
-      Properties that return dictionaries of arguments used for
-      transformations.
+   -  ``forward_arguments`` / ``backward_arguments`` Properties that
+      return dictionaries of arguments used for transformations.
 
-   -  ``forward`` / ``backward``
-      Group input fields using GroupByParam, then apply the
-      transformation function group-wise.
+   -  ``forward`` / ``backward`` Group input fields using GroupByParam,
+      then apply the transformation function group-wise.
 
-   -  ``_transform()``
-      Shared logic for applying any transformation:
+   -  ``_transform()`` Shared logic for applying any transformation:
 
       -  Group the input fields.
       -  For each group, apply the transformation function.
@@ -80,7 +77,8 @@ reversible filters).
    -  select: The parameter to group by.
    -  forward: The fields to forward.
    -  backward: The fields to backward.
-   -  return_inputs: The control on filter inputs that are returned ("all","none", list of inputs)
+   -  return_inputs: The control on filter inputs that are returned
+      ("all","none", list of inputs)
 
    What it does: When you decorate a subclass’s __init__() method with
    @matching(...), it:
@@ -140,13 +138,15 @@ from the ``forward`` or ``backward`` methods.
  Controlling returned input fields
 ***********************************
 
-The return of inputs is a generator concatenated to the one produced by ``forward`` or ``backward`` method.
-This generator can be empty (``none`` option), gather all inputs (``all`` option) or return selected ones.
-The behaviour is defined in the ``MatchingFieldsFilter``'s ``forward`` or ``backward`` method.
-It is controlled in a given filter in the  ``__init__`` method.
+The return of inputs is a generator concatenated to the one produced by
+``forward`` or ``backward`` method. This generator can be empty
+(``none`` option), gather all inputs (``all`` option) or return selected
+ones. The behaviour is defined in the ``MatchingFieldsFilter``'s
+``forward`` or ``backward`` method. It is controlled in a given filter
+in the ``__init__`` method.
 
 .. code:: python
-      
+
    class MyFilter(MatchingFieldsFilter):
        @matching(select="param", forward=["a", "b"], backward=["c"], return_inputs=["a"])
        def __init__(self, a, b, c):

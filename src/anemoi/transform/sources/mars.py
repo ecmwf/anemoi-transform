@@ -86,4 +86,4 @@ class Mars(Source):
                 """
                 return this.forward(self.data)
 
-        return Input(data)
+        return Input(data=data)

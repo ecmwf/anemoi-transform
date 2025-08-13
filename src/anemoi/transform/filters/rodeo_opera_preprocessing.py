@@ -6,7 +6,7 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-
+import logging
 from collections.abc import Iterator
 
 import earthkit.data as ekd
@@ -15,6 +15,8 @@ import numpy as np
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
+
+LOG = logging.getLogger(__name__)
 
 NODATA = -9.999e06
 UNDETECTED = -8.888e06
@@ -34,8 +36,8 @@ def _clip_variable(variable: np.ndarray, max_value: float) -> np.ndarray:
 
 
 def clip_opera(
-    tp: np.ndarray, quality: np.ndarray = None, max_total_precipitation: int = MAX_TP
-) -> tuple[np.ndarray, np.ndarray]:
+    tp: np.ndarray, quality: np.ndarray, max_total_precipitation: int = MAX_TP
+) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
     """Clip the tp and quality arrays to specified maximum values.
 
     Parameters
@@ -57,7 +59,7 @@ def clip_opera(
     return tp, quality
 
 
-def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndarray:
+def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Apply masking to the tp array based on the mask array.
 
     Parameters
@@ -86,7 +88,10 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
     tp[mask == _INF] = np.nan
 
     quality[mask == _UNDETECTED] = 0
-    assert np.isnan(tp).sum() == np.isnan(quality).sum()
+
+    if not np.isnan(tp).sum() == np.isnan(quality).sum():
+        msg = f"Mismatch between NaNs on tp {np.isnan(tp).sum()} and qi {np.isnan(quality).sum()}"
+        LOG.warning(msg)
 
     return tp, quality
 

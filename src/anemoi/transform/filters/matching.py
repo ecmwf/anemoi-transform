@@ -23,6 +23,7 @@ from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.grouping import GroupByParam
+from anemoi.transform.grouping import GroupByParamVertical
 
 LOG = logging.getLogger(__name__)
 
@@ -80,7 +81,14 @@ def _check_arguments(method: Callable) -> tuple[bool, bool, bool]:
 class matching:
     """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
 
-    def __init__(self, *, select: str, forward: list = [], backward: list = []) -> None:
+    def __init__(
+        self,
+        *,
+        select: str,
+        forward: str | list[str] | tuple[str, ...] = [],
+        backward: str | list[str] | tuple[str, ...] = [],
+        vertical: bool = False,
+    ) -> None:
         """Initialize the matching decorator.
 
         Parameters
@@ -93,7 +101,7 @@ class matching:
             List of backward arguments, by default [].
         """
         self.select = select
-
+        self.vertical = vertical
         if select != "param":
             raise NotImplementedError("Only 'select=param' is supported for now.")
 
@@ -152,6 +160,7 @@ class matching:
             obj._select = self.select
             obj._forward_arguments = forward
             obj._backward_arguments = backward
+            obj._vertical = self.vertical
             obj._initialised = True
             return method(obj, *args, **kwargs)
 
@@ -195,7 +204,7 @@ class MatchingFieldsFilter(Filter):
 
         return self._backward_arguments
 
-    def _check_metadata_match(self, data: ekd.FieldList, args: list[str]) -> None:
+    def _check_metadata_match(self, data: ekd.FieldList, args: list[str] | tuple[str, ...]) -> None:
         """Checks the parameters names of the data and the groups match
 
         Parameters
@@ -297,9 +306,11 @@ class MatchingFieldsFilter(Filter):
         ekd.FieldList
             Transformed data.
         """
-        result = []
-
-        grouping = GroupByParam(group_by)
+        result: list[ekd.Field] = []
+        if self._vertical:
+            grouping = GroupByParamVertical(group_by)
+        else:
+            grouping = GroupByParam(group_by)
         input_params = set(data.metadata("param"))
         self._check_metadata_match(input_params, group_by)
         for matching in grouping.iterate(data, other=result.append):

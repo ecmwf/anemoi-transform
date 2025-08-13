@@ -25,15 +25,15 @@ reversible filters).
 
 -  **Components**
 
--  ``forward_arguments`` / ``backward_arguments``
+   -  ``forward_arguments`` / ``backward_arguments``
       Properties that return dictionaries of arguments used for
       transformations.
 
--  ``forward`` / ``backward``
+   -  ``forward`` / ``backward``
       Group input fields using GroupByParam, then apply the
       transformation function group-wise.
 
--  ``_transform()``
+   -  ``_transform()``
       Shared logic for applying any transformation:
 
       -  Group the input fields.
@@ -136,28 +136,30 @@ from the ``forward`` or ``backward`` methods.
        yield field_input1
        yield field_input2
 
-******************************************
- Controlling which input fields are returned
-******************************************
+***********************************
+ Controlling returned input fields
+***********************************
 
 The return of inputs is a generator concatenated to the one produced by ``forward`` or ``backward`` method.
 This generator can be empty (``none`` option), gather all inputs (``all`` option) or return selected ones.
 The behaviour is defined in the ``MatchingFieldsFilter``'s ``forward`` or ``backward`` method.
-It is controlled in a given filter in the `__init__` method.
+It is controlled in a given filter in the  ``__init__`` method.
+
 .. code:: python
-      class MyFilter(MatchingFieldsFilter):
-            @matching(select="param", forward=["a", "b"], backward=["c"], return_inputs=["a"])
-            def __init__(self, a, b, c):
-               self.a = a
-               self.b = b
-               self.c = c
-               self.return_inputs = return_inputs
+      
+   class MyFilter(MatchingFieldsFilter):
+       @matching(select="param", forward=["a", "b"], backward=["c"], return_inputs=["a"])
+       def __init__(self, a, b, c):
+           self.a = a
+           self.b = b
+           self.c = c
+           self.return_inputs = return_inputs
 
-            def forward_transform(self, a: ekd.Field, b: ekd.Field):
-               ...
+       def forward_transform(self, a: ekd.Field, b: ekd.Field):
+           ...
 
-            def backward_transform(self, c: ekd.Field):
-               ...
+       def backward_transform(self, c: ekd.Field):
+           ...
 
 The associated recipe can be set as:
 

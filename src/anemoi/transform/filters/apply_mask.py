@@ -43,10 +43,10 @@ class MaskVariable(Filter):
         self,
         *,
         path: str,
-        mask_value: float = None,
-        threshold: float = None,
+        mask_value: float | None = None,
+        threshold: float | None = None,
         threshold_operator: str = ">",
-        rename: str = None,
+        rename: str | None = None,
     ):
         """Initialize the MaskVariable filter.
 

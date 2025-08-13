@@ -35,9 +35,15 @@ def _clip_variable(variable: np.ndarray, max_value: float) -> np.ndarray:
     return variable
 
 
+def _clip_variable(variable: np.ndarray, max_value: float) -> np.ndarray:
+    variable[variable < 0] = 0
+    variable[variable >= max_value] = max_value
+    return variable
+
+
 def clip_opera(
-    tp: np.ndarray, quality: np.ndarray = None, max_total_precipitation: int = MAX_TP
-) -> tuple[np.ndarray, np.ndarray]:
+    tp: np.ndarray, quality: np.ndarray, max_total_precipitation: int = MAX_TP
+) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
     """Clip the tp and quality arrays to specified maximum values.
 
     Parameters
@@ -59,7 +65,7 @@ def clip_opera(
     return tp, quality
 
 
-def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndarray:
+def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Apply masking to the tp array based on the mask array.
 
     Parameters
@@ -92,6 +98,8 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
     if not np.isnan(tp).sum() == np.isnan(quality).sum():
         msg = (f"Mismatch between NaNs on tp {np.isnan(tp).sum()} and qi {np.isnan(quality).sum()}")
         LOG.warning(msg)
+
+
 
     return tp, quality
 
@@ -171,8 +179,11 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             Transformed fields.
         """
         # 1st - apply masking
+<<<<<<< HEAD
 
         print('date',total_precipitation.metadata('date'),'time',total_precipitation.metadata('time'))
+=======
+>>>>>>> main
         total_precipitation_masked, quality_masked = mask_opera(
             tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy()
         )

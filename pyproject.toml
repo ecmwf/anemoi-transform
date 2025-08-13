@@ -39,10 +39,10 @@ classifiers = [
 
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.4.26",
+  "anemoi-utils>=0.4.32",
   "cfunits",
   "earthkit-data>=0.12.4",
-  "earthkit-meteo>=0.3",
+  "earthkit-meteo>=0.4.1",
   "earthkit-regrid>=0.4",
 ]
 
@@ -73,11 +73,12 @@ version_file = "src/anemoi/transform/_version.py"
 
 [tool.mypy]
 strict = false
+disable_error_code = [ "import-untyped" ]
 exclude = [
-  "docs/**",
+  "docs/*",
 ]
 
 [tool.pydocstringformatter]
 write = true
-exclude = "docs/**"
+exclude = "docs/*"
 style = "numpydoc"

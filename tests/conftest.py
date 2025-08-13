@@ -8,8 +8,11 @@
 # nor does it submit to any jurisdiction.
 
 
+from collections.abc import Callable
+
 import earthkit.data as ekd
 import pytest
+from anemoi.utils.testing import GetTestData
 
 from anemoi.transform.source import Source
 from anemoi.transform.sources import source_registry
@@ -28,13 +31,13 @@ class TestingSource(Source):
 
 
 @pytest.fixture
-def fieldlist(get_test_data: callable) -> ekd.FieldList:
+def fieldlist(get_test_data: GetTestData) -> ekd.FieldList:
     """Fixture to create a fieldlist for testing."""
     return ekd.from_source("file", get_test_data("anemoi-filters/2t-sp.grib"))
 
 
 @pytest.fixture
-def test_source(get_test_data: callable) -> callable:
+def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Source]:
     def _source(dataset: str | list[dict]) -> Source:
         """Create a source from a known file or a list of dicts for testing."""
         if isinstance(dataset, str):

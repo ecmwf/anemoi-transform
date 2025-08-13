@@ -8,7 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 import logging
-from collections.abc import Sized
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Union
@@ -101,7 +101,7 @@ class VariableFromMarsVocabulary(Variable):
         if not (period := self.data.get("period")):
             return None
 
-        if not isinstance(period, Sized) or len(period) != 2:
+        if not isinstance(period, Sequence) or len(period) != 2:
             return None
 
         return as_timedelta(period[1]) - as_timedelta(period[0])

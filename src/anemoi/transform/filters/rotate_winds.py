@@ -12,6 +12,7 @@ from collections.abc import Iterator
 import earthkit.data as ekd
 from earthkit.geo.rotate import rotate_vector
 from earthkit.geo.rotate import unrotate_vector
+from pyproj import CRS
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter

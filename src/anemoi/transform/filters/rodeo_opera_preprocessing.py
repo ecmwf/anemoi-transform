@@ -7,8 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from collections.abc import Iterator
 import logging
+from collections.abc import Iterator
+
 import earthkit.data as ekd
 import numpy as np
 
@@ -96,10 +97,8 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[n
     quality[mask == _UNDETECTED] = 0
 
     if not np.isnan(tp).sum() == np.isnan(quality).sum():
-        msg = (f"Mismatch between NaNs on tp {np.isnan(tp).sum()} and qi {np.isnan(quality).sum()}")
+        msg = f"Mismatch between NaNs on tp {np.isnan(tp).sum()} and qi {np.isnan(quality).sum()}"
         LOG.warning(msg)
-
-
 
     return tp, quality
 
@@ -179,11 +178,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             Transformed fields.
         """
         # 1st - apply masking
-<<<<<<< HEAD
 
-        print('date',total_precipitation.metadata('date'),'time',total_precipitation.metadata('time'))
-=======
->>>>>>> main
         total_precipitation_masked, quality_masked = mask_opera(
             tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy()
         )

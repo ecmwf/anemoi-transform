@@ -9,6 +9,19 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.17](https://github.com/ecmwf/anemoi-transform/compare/0.1.16...0.1.17) (2025-08-13)
+
+
+### Features
+
+* Control returned inputs in filters ([#100](https://github.com/ecmwf/anemoi-transform/issues/100)) ([32cb937](https://github.com/ecmwf/anemoi-transform/commit/32cb937bc64d89140523d8797e62650d2256db75))
+* **filters:** Add filter for thermodynamic conversions at specific height levels ([#140](https://github.com/ecmwf/anemoi-transform/issues/140)) ([c28fd07](https://github.com/ecmwf/anemoi-transform/commit/c28fd07e0acbcc7453d6b02dfb17af585fc46ab5))
+
+
+### Bug Fixes
+
+* Replace assert with warning ([#157](https://github.com/ecmwf/anemoi-transform/issues/157)) ([ca55a62](https://github.com/ecmwf/anemoi-transform/commit/ca55a62b5511471dc3d9df14c2ec6c0b56cf55d6))
+
 ## [0.1.16](https://github.com/ecmwf/anemoi-transform/compare/0.1.15...0.1.16) (2025-08-05)
 
 

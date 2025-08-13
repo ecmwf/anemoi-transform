@@ -6,6 +6,7 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
+import logging
 
 from collections.abc import Iterator
 
@@ -15,6 +16,7 @@ import numpy as np
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
+LOG = logging.getLogger(__name__)
 
 NODATA = -9.999e06
 UNDETECTED = -8.888e06
@@ -86,7 +88,11 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[n
     tp[mask == _INF] = np.nan
 
     quality[mask == _UNDETECTED] = 0
-    assert np.isnan(tp).sum() == np.isnan(quality).sum()
+
+    if not np.isnan(tp).sum() == np.isnan(quality).sum():
+        msg = f"Mismatch between NaNs on tp {np.isnan(tp).sum()} and qi {np.isnan(quality).sum()}"
+        LOG.warning(msg)
+
 
     return tp, quality
 

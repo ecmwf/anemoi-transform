@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 from collections.abc import Iterator
+from typing import Literal
 
 import earthkit.data as ekd
 import numpy as np
@@ -85,22 +86,40 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         surface_pressure: str = "sp",
         specific_humidity_at_model_levels: str = "q",
         temperature_at_model_levels: str = "t",
-        model_level_AB: str | dict,
+        model_level_AB: str | dict[str, NDArray],
+        return_inputs: Literal["all", "none"] | list[str] = [
+            "specific_humidity_at_height_level",
+            "relative_humidity_at_height_level",
+            "temperature_at_height_level",
+            "surface_pressure",
+        ],
     ):
         """Initializes the filter for converting specific humidity (kg/kg) to relative humidity (%) at a specified height.
 
         Parameters:
-            height (float, optional): Height level in meters where the conversion is performed. Default is 2.0.
-            specific_humidity_at_height_level (str, optional): Name of the variable for specific humidity at the given height. Default is "2q".
-            relative_humidity_at_height_level (str, optional): Name of the variable for relative humidity at the given height. Default is "2r".
-            temperature_at_height_level (str, optional): Name of the variable for temperature at the given height. Default is "2t".
-            surface_pressure (str, optional): Name of the variable for surface pressure. Default is "sp".
-            specific_humidity_at_model_levels (str, optional): Name of the variable for specific humidity at model levels. Default is "q".
-            temperature_at_model_levels (str, optional): Name of the variable for temperature at model levels. Default is "t".
-            AB (Union[str, dict]): A string key for predefined A and B coefficients or a dictionary with "A" and "B" arrays for vertical interpolation.
-                                   Possible predefined keys are: "IFS_137".
+        -----------
+        height : float, optional
+            Height level in meters where the conversion is performed, by default is 2.0.
+        specific_humidity_at_height_level : str, optional
+            Name of the variable for specific humidity at the given height, by default "2q".
+        relative_humidity_at_height_level : str, optional
+            Name of the variable for relative humidity at the given height, by default "2r".
+        temperature_at_height_level : str, optional
+            Name of the variable for temperature at the given height, by default "2t".
+        surface_pressure : str, optional
+            Name of the variable for surface pressure, by default "sp".
+        specific_humidity_at_model_levels : str, optional
+            Name of the variable for specific humidity at model levels, by default "q".
+        temperature_at_model_levels : str, optional
+            Name of the variable for temperature at model levels, by default "t".
+        AB : str | dict[str, NDArray]
+            A string key for predefined A and B coefficients or a dictionary with "A" and "B" arrays for vertical interpolation.
+            Possible predefined keys are: "IFS_137".
+        return_inputs : Literal["all", "none"] | list[str], optional
+            List of which filter inputs should be returned, by default ["specific_humidity_at_height_level", "relative_humidity_at_height_level", "temperature_at_height_level", "surface_pressure"]
         """
 
+        self.return_inputs = return_inputs
         self.height = float(height)
         self.specific_humidity_at_height_level = specific_humidity_at_height_level
         self.relative_humidity_at_height_level = relative_humidity_at_height_level
@@ -173,10 +192,6 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             template=specific_humidity_at_height_level,
             param=self.relative_humidity_at_height_level,
         )
-        yield temperature_at_height_level
-        # TODO Do we wan't to keep specific hum. when we have converted it?
-        yield specific_humidity_at_height_level
-        yield surface_pressure
 
     def backward_transform(
         self,
@@ -219,9 +234,6 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             template=relative_humidity_at_height_level,
             param=self.specific_humidity_at_height_level,
         )
-        yield temperature_at_height_level
-        yield relative_humidity_at_height_level
-        yield surface_pressure
 
 
 filter_registry.register("q_to_r_height", SpecificToRelativeAtHeightLevel)
@@ -259,19 +271,38 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         specific_humidity_at_model_levels: str = "q",
         temperature_at_model_levels: str = "t",
         model_level_AB: str | dict,
+        return_inputs: Literal["all", "none"] | list[str] = [
+            "specific_humidity_at_height_level",
+            "dewpoint_temperature_at_height_level",
+            "surface_pressure",
+        ],
     ):
         """Initializes the filter for transforming specific humidity at a given height to dewpoint temperature.
-        Parameters:
-            height (float, optional): The height level (in meters) at which to perform the transformation. Default is 2.0.
-            specific_humidity_at_height_level (str, optional): Name of the variable representing specific humidity at the given height. Default is "2q".
-            dewpoint_temperature_at_height_level (str, optional): Name of the variable representing dewpoint temperature at the given height. Default is "2d".
-            surface_pressure (str, optional): Name of the variable representing surface pressure. Default is "sp".
-            specific_humidity_at_model_levels (str, optional): Name of the variable representing specific humidity at model levels. Default is "q".
-            temperature_at_model_levels (str, optional): Name of the variable representing temperature at model levels. Default is "t".
-            AB (Union[str, dict]): A string key for predefined A and B coefficients or a dictionary with "A" and "B" arrays for vertical interpolation.
-                                   Possible predefined keys are: "IFS_137".
+
+        Parameters
+        ----------
+        height : float, optional
+            Height level in meters where the conversion is performed, by default is 2.0.
+        specific_humidity_at_height_level : str, optional
+            Name of the variable for specific humidity at the given height, by default "2q".
+        dewpoint_temperature_at_height_level : str, optional
+            Name of the variable representing dewpoint temperature at the given height, by default "2d".
+        temperature_at_height_level : str, optional
+            Name of the variable for temperature at the given height, by default "2t".
+        surface_pressure : str, optional
+            Name of the variable for surface pressure, by default "sp".
+        specific_humidity_at_model_levels : str, optional
+            Name of the variable for specific humidity at model levels, by default "q".
+        temperature_at_model_levels : str, optional
+            Name of the variable for temperature at model levels, by default "t".
+        AB : str | dict[str, NDArray]
+            A string key for predefined A and B coefficients or a dictionary with "A" and "B" arrays for vertical interpolation.
+            Possible predefined keys are: "IFS_137".
+        return_inputs : Literal["all", "none"] | list[str], optional
+            List of which filter inputs should be returned, by default ["specific_humidity_at_height_level", "relative_humidity_at_height_level", "temperature_at_height_level", "surface_pressure"]
         """
 
+        self.return_inputs = return_inputs
         self.height = float(height)
         self.specific_humidity_at_height_level = specific_humidity_at_height_level
         self.dewpoint_temperature_at_height_level = dewpoint_temperature_at_height_level
@@ -339,10 +370,6 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             template=specific_humidity_at_height_level,
             param=self.dewpoint_temperature_at_height_level,
         )
-        # yield temperature_at_height_level
-        # TODO Do we wan't to keep specific hum. when we have converted it?
-        yield specific_humidity_at_height_level
-        yield surface_pressure
 
     def backward_transform(
         self,
@@ -382,9 +409,6 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             template=dewpoint_temperature_at_height_level,
             param=self.specific_humidity_at_height_level,
         )
-        # yield temperature_at_height_level
-        yield dewpoint_temperature_at_height_level
-        yield surface_pressure
 
 
 filter_registry.register("q_to_d_height", SpecificToDewpointAtHeightLevel)

@@ -9,10 +9,12 @@
 
 
 from collections.abc import Iterator
+from typing import Literal
 
 import earthkit.data as ekd
 
-from . import filter_registry
+from anemoi.transform.filters import filter_registry
+
 from .matching import MatchingFieldsFilter
 from .matching import matching
 
@@ -30,12 +32,28 @@ class VerticalVelocity(MatchingFieldsFilter):
     def __init__(
         self,
         *,
-        w_component="w",
-        wz_component="wz",
-        temperature="t",
-        humidity="q",
+        w_component: str = "w",
+        wz_component: str = "wz",
+        temperature: str = "t",
+        humidity: str = "q",
+        return_inputs: Literal["all", "none"] | list[str] = "all",
     ):
+        """Initialize the VerticalVelocity filter.
 
+        Parameters
+        ----------
+        w_component : str, optional
+            Name of the W component, by default "w".
+        wz_component : str, optional
+            Name of the Wz (in m/s) component, by default "wz".
+        temperature : str, optional
+            Name of the temperature parameter, by default "t".
+        humidity : str, optional
+            Name of the humidity parameter, by default "q".
+        return_inputs : Literal["all", "none"] | list[str], optional
+            list of which filter inputs should be returned, by default "all"
+        """
+        self.return_inputs = return_inputs
         # wind speed in Pa/s
         self.w_component = w_component
         # wind speed in m/s
@@ -72,8 +90,6 @@ class VerticalVelocity(MatchingFieldsFilter):
         wz = (-1.0 / (rho * 9.80665 + 1e-8)) * w_component.to_numpy()
 
         yield self.new_field_from_numpy(wz, template=w_component, param=self.wz_component)
-        yield temperature
-        yield humidity
 
     def backward_transform(
         self, wz_component: ekd.Field, temperature: ekd.Field, humidity: ekd.Field
@@ -101,8 +117,6 @@ class VerticalVelocity(MatchingFieldsFilter):
         w = -1.0 * rho * 9.80665 * wz_component.to_numpy()
 
         yield self.new_field_from_numpy(w, template=wz_component, param=self.w_component)
-        yield temperature
-        yield humidity
 
 
 filter_registry.register("w_to_wz", VerticalVelocity)

@@ -10,8 +10,8 @@
 import earthkit.data as ekd
 import pytest
 
+from anemoi.transform.fields import FieldSelection
 from anemoi.transform.fields import new_field_with_metadata
-from src.anemoi.transform.fields import FieldSelection
 
 
 class MockField:
@@ -139,3 +139,7 @@ def test_fieldselection_match_fail_different_param_same_level():
     field = MockField(param="t", levelist=850)
     selection = FieldSelection(param="q", levelist=[850, 950])
     assert not selection.match(field)
+
+
+if __name__ == "__main__":
+    test_field_new_metadata(ekd.from_source("sample", "test.grib")[0])

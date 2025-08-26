@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import copy
 import logging
 from abc import ABC
 from abc import abstractmethod
@@ -59,102 +60,18 @@ def new_empty_fieldlist() -> SimpleFieldList:
     return SimpleFieldList([])
 
 
-class WrappedField:
-    """A wrapper around an earthkit-data field object.
+class Wrapper:
 
-    Parameters
-    ----------
-    field : Any
-        The field object to wrap.
-    """
+    def clone(self, *args, **kwargs):
+        """Create a copy of the wrapped field."""
+        raise NotImplementedError()
 
-    def __init__(self, field: Any) -> None:
-        self._field = field
-
-    def __getattr__(self, name: str) -> Any:
-        """Custom attribute access method for the WrappedField class.
-
-        Parameters
-        ----------
-        name : str
-            The name of the attribute being accessed.
-
-        Returns
-        -------
-        Any
-            The value of the attribute from the underlying _field object.
-
-        Raises
-        ------
-        AttributeError
-            If the attribute name is "clone" or "copy".
-        """
-        if name in (
-            "clone",
-            "copy",
-        ):
-            raise AttributeError(f"{self}: forwarding of `{name}` is not supported")
-
-        if name not in (
-            "mars_area",
-            "mars_grid",
-            "to_numpy",
-            "metadata",
-            "shape",
-            "grid_points",
-            "handle",
-        ):
-            LOG.warning(f"{self}: forwarding `{name}`")
-
-        return getattr(self._field, name)
-
-    def __repr__(self) -> str:
-        """Return the string representation of the field.
-
-        Returns
-        -------
-        str
-            The string representation of the `_field` attribute.
-        """
-        return f"{self.__class__.__name__ }({repr(self._field)}, {self._repr_specific()})"
-
-    def _repr_specific(self) -> str:
-        """Return a string representation of the specific field type.
-
-        Returns
-        -------
-        str
-            The string representation of the specific field type.
-        """
-        return f"(No specific representation for {self.__class__.__name__})"
-
-    def clone(self, **kwargs: Any) -> "NewClonedField":
-        """Clone the field with new metadata.
-
-        Parameters
-        ----------
-        **kwargs : Any
-            The new metadata for the cloned field.
-
-        Returns
-        -------
-        NewClonedField
-            The cloned field with the provided metadata.
-        """
-        return NewClonedField(self, **kwargs)
-
-    def __iter__(self) -> Any:
-        """Return an iterator over the field.
-
-        Returns
-        -------
-        Any
-            An iterator over the `_field` attribute.
-        """
-        raise NotImplementedError(f"{self}: iterating is not supported")
+    def copy(self):
+        """Create a copy of the wrapped field."""
+        raise NotImplementedError()
 
 
-class NewDataField(WrappedField):
+class NewDataField(Wrapper):
     """Change the data of a field.
 
     Parameters
@@ -164,11 +81,6 @@ class NewDataField(WrappedField):
     data : np.ndarray
         The new data for the field.
     """
-
-    def __init__(self, field: Any, data: np.ndarray) -> None:
-        super().__init__(field)
-        self._data = data
-        self.shape = data.shape
 
     @property
     def values(self) -> np.ndarray:
@@ -192,7 +104,7 @@ class NewDataField(WrappedField):
         np.ndarray
             The field data as a numpy array.
         """
-        data = self._data
+        data = self._wrapped_array
         if dtype is not None:
             data = data.astype(dtype)
         if flatten:
@@ -201,8 +113,14 @@ class NewDataField(WrappedField):
             data = data[index]
         return data
 
-    def _repr_specific(self) -> str:
-        return f"(shape={self._data.shape})"
+    def __getstate__(self):
+        state = super().__getstate__()
+        state["_wrapped_array"] = self._wrapped_array
+        return state
+
+    def __setstate__(self, state):
+        super().__setstate__(state)
+        self._wrapped_array = state["_wrapped_array"]
 
 
 class GeoMetadata(Geography):
@@ -213,9 +131,6 @@ class GeoMetadata(Geography):
     owner : Any
         The owner of the geography data.
     """
-
-    def __init__(self, owner: Any) -> None:
-        self.owner = owner
 
     def shape(self) -> tuple[int, ...]:
         """Get the shape of the geography data.
@@ -315,7 +230,7 @@ class GeoMetadata(Geography):
         raise NotImplementedError()
 
 
-class NewLatLonField(WrappedField):
+class NewLatLonField(Wrapper):
     """Change the latitudes and longitudes of a field.
 
     Parameters
@@ -328,11 +243,6 @@ class NewLatLonField(WrappedField):
         The new longitudes for the field.
     """
 
-    def __init__(self, field: Any, latitudes: np.ndarray, longitudes: np.ndarray) -> None:
-        super().__init__(field)
-        self._latitudes = latitudes
-        self._longitudes = longitudes
-
     def grid_points(self) -> tuple[np.ndarray, np.ndarray]:
         """Get the grid points of the field.
 
@@ -341,7 +251,7 @@ class NewLatLonField(WrappedField):
         tuple
             The latitudes and longitudes of the field.
         """
-        return self._latitudes, self._longitudes
+        return self._wrapped_latitudes, self._wrapped_longitudes
 
     def to_latlon(self, flatten: bool = True) -> dict[str, np.ndarray]:
         """Convert the grid points to latitude and longitude.
@@ -357,7 +267,7 @@ class NewLatLonField(WrappedField):
             A dictionary containing the latitudes and longitudes.
         """
         assert flatten
-        return dict(lat=self._latitudes, lon=self._longitudes)
+        return dict(lat=self._wrapped_latitudes, lon=self._wrapped_longitudes)
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
         """Get the metadata of the field.
@@ -374,14 +284,35 @@ class NewLatLonField(WrappedField):
         Any
             The metadata of the field.
         """
-        metadata = self._field.metadata(*args, **kwargs)
+        metadata = super().metadata(*args, **kwargs)
         if hasattr(metadata, "geography"):
             metadata.geography = GeoMetadata(self)
 
         return metadata
 
+    @property
+    def _latitudes(self) -> np.ndarray:
+        """Get the latitudes of the field."""
+        return self._wrapped_latitudes
 
-class NewGridField(WrappedField):
+    @property
+    def _longitudes(self) -> np.ndarray:
+        """Get the longitudes of the field."""
+        return self._wrapped_longitudes
+
+    def __getstate__(self):
+        state = super().__getstate__()
+        state["_wrapped_latitudes"] = self._wrapped_latitudes
+        state["_wrapped_longitudes"] = self._wrapped_longitudes
+        return state
+
+    def __setstate__(self, state):
+        super().__setstate__(state)
+        self._wrapped_latitudes = state["_wrapped_latitudes"]
+        self._wrapped_longitudes = state["_wrapped_longitudes"]
+
+
+class NewGridField(Wrapper):
     """Change the grid of a field.
 
     Parameters
@@ -392,10 +323,6 @@ class NewGridField(WrappedField):
         The new grid for the field.
     """
 
-    def __init__(self, field: Any, grid: Grid) -> None:
-        super().__init__(field)
-        self._grid = grid
-
     def grid_points(self) -> tuple[np.ndarray, np.ndarray]:
         """Get the grid points of the field.
 
@@ -404,7 +331,7 @@ class NewGridField(WrappedField):
         tuple
             The latitudes and longitudes of the field.
         """
-        return self._grid.latlon()
+        return self._wrapped_grid.latlon()
 
     def to_latlon(self, flatten: bool = True) -> dict[str, np.ndarray]:
         """Convert the grid points to latitude and longitude.
@@ -420,18 +347,8 @@ class NewGridField(WrappedField):
             A dictionary containing the latitudes and longitudes.
         """
         assert flatten
-        coords = self._grid.latlon()
+        coords = self._wrapped_grid.latlon()
         return dict(lat=coords[0], lon=coords[1])
-
-    def __repr__(self) -> str:
-        """Get the string representation of the field.
-
-        Returns
-        -------
-        str
-            The string representation of the field.
-        """
-        return f"NewGridField({self._field}, {self._grid})"
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
         """Get the metadata of the field.
@@ -448,7 +365,7 @@ class NewGridField(WrappedField):
         Any
             The metadata of the field.
         """
-        metadata = self._field.metadata(*args, **kwargs)
+        metadata = super().metadata(*args, **kwargs)
         if hasattr(metadata, "geography"):
             metadata.geography = GeoMetadata(self)
 
@@ -457,22 +374,29 @@ class NewGridField(WrappedField):
     @property
     def _latitudes(self) -> np.ndarray:
         """Get the latitudes of the field."""
-        return self._grid.latlon()[0]
+        return self._wrapped_grid.latlon()[0]
 
     @property
     def _longitudes(self) -> np.ndarray:
         """Get the longitudes of the field."""
-        return self._grid.latlon()[1]
+        return self._wrapped_grid.latlon()[1]
+
+    def __getstate__(self):
+        state = super().__getstate__()
+        state["_wrapped_grid"] = self._wrapped_grid
+        return state
+
+    def __setstate__(self, state):
+        super().__setstate__(state)
+        self._wrapped_grid = state["_wrapped_grid"]
 
 
-class _NewMetadataField(WrappedField, ABC):
+class _NewMetadataField(Wrapper):
     """Change the metadata of a field."""
 
-    def __init__(self, field: Any) -> None:
-        super().__init__(field)
-
-    @abstractmethod
-    def mapping(self, key: str, field: ekd.Field) -> Any: ...
+    def mapping(self, key: str, field: ekd.Field) -> Any:
+        # We cannot use a ABC with dynamic class creation
+        raise NotImplementedError()
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
         """Get the metadata of the field.
@@ -490,42 +414,43 @@ class _NewMetadataField(WrappedField, ABC):
             The metadata of the field.
         """
         this = self
+        super_metadata = super().metadata
 
         if len(args) == 0 and len(kwargs) == 0:
 
             class MD:
 
-                geography = this._field.metadata().geography
+                geography = super_metadata().geography
 
                 def get(self, key, default=None):
 
-                    value = this.mapping(key, this._field)
+                    value = this.mapping(key)
                     if value is not MISSING_METADATA:
                         return value
 
-                    return this._field.metadata().get(key, default)
+                    return super_metadata().get(key, default)
 
                 def keys(self):
-                    return this._field.metadata().keys()
+                    return super_metadata().keys()
 
             return MD()
 
         if kwargs.get("namespace"):
             assert len(args) == 0, (args, kwargs)
-            mars = self._field.metadata(**kwargs).copy()
+            mars = super_metadata(**kwargs).copy()
             for k in list(mars.keys()):
-                m = self.mapping(k, self._field)
+                m = self.mapping(k)
                 if m is not MISSING_METADATA:
                     mars[k] = m
             return mars
 
         def _val(a):
-            value = self.mapping(a, self._field)
+            value = self.mapping(a)
             if value is MISSING_METADATA:
-                return self._field.metadata(a, **kwargs)
+                return super_metadata(a, **kwargs)
 
             if callable(value):
-                return value(self, a, self._field.metadata())
+                return value(self, a, super_metadata(a))
 
             return value
 
@@ -547,100 +472,42 @@ class NewMetadataField(_NewMetadataField):
         The new metadata for the field.
     """
 
-    def __init__(self, field: Any, **kwargs: Any) -> None:
-        super().__init__(field)
-        self.kwargs = kwargs
+    def mapping(self, key: str) -> Any:
+        return self._wrapped_metadata.get(key, MISSING_METADATA)
 
-    def mapping(self, key: str, field: ekd.Field) -> Any:
-        return self.kwargs.get(key, MISSING_METADATA)
+    def __getstate__(self):
+        state = super().__getstate__()
+        state["_wrapped_metadata"] = self._wrapped_metadata
+        return state
 
-    def _repr_specific(self):
-        return f"(metadata={self.kwargs})"
+    def __setstate__(self, state):
+        super().__setstate__(state)
+        self._wrapped_metadata = state["_wrapped_metadata"]
 
 
 class NewFlavouredField(_NewMetadataField):
-    def __init__(self, field: Any, flavour: Flavour) -> None:
-        super().__init__(field)
-        self.flavour = flavour
 
     def mapping(self, key: str, field: ekd.Field) -> Any:
-        return self.flavour(key, field)
+        return self._wrapped_flavour(key, field)
+
+    def __getstate__(self):
+        state = super().__getstate__()
+        state["_wrapped_flavour"] = self._wrapped_flavour
+        return state
+
+    def __setstate__(self, state):
+        super().__setstate__(state)
+        self._wrapped_flavour = state["_wrapped_flavour"]
 
 
-class NewValidDateTimeField(NewMetadataField):
-    """Change the valid_datetime of a field.
-
-    Parameters
-    ----------
-    field : Any
-        The field object to wrap.
-    valid_datetime : Any
-        The new valid_datetime for the field.
-    """
-
-    def __init__(self, field: Any, valid_datetime: Any) -> None:
-        date = int(valid_datetime.date().strftime("%Y%m%d"))
-        assert valid_datetime.time().minute == 0, valid_datetime
-        time = valid_datetime.time().hour
-
-        self.valid_datetime = valid_datetime
-
-        super().__init__(field, date=date, time=time, step=0, valid_datetime=valid_datetime.isoformat())
-
-
-class NewClonedField(WrappedField):
-    """Wrapper around a field object that clones the field.
-
-    Parameters
-    ----------
-    field : Any
-        The field object to wrap.
-    **metadata : Any
-        The new metadata for the cloned field.
-    """
-
-    def __init__(self, field: Any, **metadata: Any) -> None:
-        super().__init__(field)
-        self._metadata = metadata
-
-    def metadata(self, *args: Any, **kwargs: Any) -> Any:
-        """Get the metadata of the cloned field.
-
-        Parameters
-        ----------
-        *args : Any
-            Additional arguments.
-        **kwargs : Any
-            Additional keyword arguments.
-
-        Returns
-        -------
-        Any
-            The metadata of the cloned field.
-        """
-        if len(args) == 1:
-            if args[0] in self._metadata:
-                if callable(self._metadata[args[0]]):
-                    proc = self._metadata[args[0]]
-                    self._metadata[args[0]] = proc(self._field, args[0], self._field.metadata())
-
-            if args[0] in self._metadata:
-                return self._metadata[args[0]]
-
-        return self._field.metadata(*args, **kwargs)
-
-    def _repr_specific(self):
-        return f"(metadata={self._metadata})"
-
-
-def new_field_from_numpy(array: np.ndarray, *, template: WrappedField, **metadata: Any) -> NewMetadataField:
+def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: Any) -> ekd.Field:
     """Create a new field from a numpy array.
 
     Parameters
     ----------
     array : np.ndarray
         The data for the new field.
-    template : WrappedField
+    template : ekd.Field
         The template field to use.
     **metadata : Any
         Additional metadata for the new field.
@@ -650,17 +517,65 @@ def new_field_from_numpy(array: np.ndarray, *, template: WrappedField, **metadat
     NewMetadataField
         The new field with the provided data and metadata.
     """
-    return NewMetadataField(NewDataField(template, array), **metadata)
+    f = copy.copy(template)  # Shallow copy
+
+    if isinstance(f, NewDataField):
+        f._wrapped_array = array
+    else:
+        f.__class__ = type(
+            f"{template.__class__.__name__}NewDataField",
+            (
+                NewDataField,
+                template.__class__,
+            ),
+            {"_wrapped_array": array},
+        )
+
+    if metadata:
+        f = new_field_with_metadata(f, **metadata)
+
+    return f
 
 
-def new_field_with_valid_datetime(template: WrappedField, date: Any) -> NewValidDateTimeField:
+def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
+    """Create a new field with metadata.
+
+    Parameters
+    ----------
+    template : ekd.Field
+        The template field to use.
+    **metadata : Any
+        The metadata for the new field.
+
+    Returns
+    -------
+    ekd.Field
+        The new field with the provided metadata.
+    """
+
+    f = copy.copy(template)  # Shallow copy
+
+    if isinstance(f, NewMetadataField):
+        f._wrapped_metadata = f._wrapped_metadata.copy()
+        f._wrapped_metadata.update(metadata)
+    else:
+        f.__class__ = type(
+            f"{template.__class__.__name__}NewMetadataField",
+            (NewMetadataField, template.__class__),
+            {"_wrapped_metadata": metadata},
+        )
+
+    return f
+
+
+def new_field_with_valid_datetime(template: ekd.Field, valid_datetime: Any) -> ekd.Field:
     """Create a new field with a valid datetime.
 
     Parameters
     ----------
-    template : WrappedField
+    template : ekd.Field
         The template field to use.
-    date : Any
+    valid_datetime : Any
         The valid datetime for the new field.
 
     Returns
@@ -668,35 +583,23 @@ def new_field_with_valid_datetime(template: WrappedField, date: Any) -> NewValid
     NewValidDateTimeField
         The new field with the provided valid datetime.
     """
-    return NewValidDateTimeField(template, date)
+    date = int(valid_datetime.date().strftime("%Y%m%d"))
+    assert valid_datetime.time().minute == 0, valid_datetime
+    time = valid_datetime.time().hour
 
-
-def new_field_with_metadata(template: WrappedField, **metadata: Any) -> NewMetadataField:
-    """Create a new field with metadata.
-
-    Parameters
-    ----------
-    template : WrappedField
-        The template field to use.
-    **metadata : Any
-        The metadata for the new field.
-
-    Returns
-    -------
-    NewMetadataField
-        The new field with the provided metadata.
-    """
-    return NewMetadataField(template, **metadata)
+    return new_field_with_metadata(template, date=date, time=time, step=0, valid_datetime=valid_datetime.isoformat())
 
 
 def new_field_from_latitudes_longitudes(
-    template: WrappedField, latitudes: np.ndarray, longitudes: np.ndarray
-) -> NewLatLonField:
+    template: ekd.Field,
+    latitudes: np.ndarray,
+    longitudes: np.ndarray,
+) -> ekd.Field:
     """Create a new field from latitudes and longitudes.
 
     Parameters
     ----------
-    template : WrappedField
+    template : ekd.Field
         The template field to use.
     latitudes : np.ndarray
         The latitudes for the new field.
@@ -708,18 +611,27 @@ def new_field_from_latitudes_longitudes(
     NewGridField
         The new field with the provided latitudes and longitudes.
     """
-    return NewLatLonField(template, latitudes, longitudes)
+    f = copy.copy(template)  # Shallow copy
+
+    if isinstance(f, NewLatLonField):
+        f._wrapped_latitudes = latitudes
+        f._wrapped_longitudes = longitudes
+    else:
+        f.__class__ = type(
+            f"{template.__class__.__name__}NewLatLonField",
+            (NewLatLonField, template.__class__),
+            {"_wrapped_latitudes": latitudes, "_wrapped_longitudes": longitudes},
+        )
+
+    return f
 
 
-def new_field_from_grid(
-    template: WrappedField,
-    grid: Grid,
-) -> NewGridField:
+def new_field_from_grid(template: ekd.Field, grid: Grid) -> ekd.Field:
     """Create a new field from a grid.
 
     Parameters
     ----------
-    template : WrappedField
+    template : ekd.Field
         The template field to use.
     grid : Grid
         The grid for the new field.
@@ -729,12 +641,36 @@ def new_field_from_grid(
     NewGridField
         The new field with the provided grid.
     """
-    return NewGridField(template, grid)
+
+    f = copy.copy(template)  # Shallow copy
+
+    if isinstance(f, NewGridField):
+        f._wrapped_grid = grid
+    else:
+        f.__class__ = type(
+            f"{template.__class__.__name__}NewGridField",
+            (NewGridField, template.__class__),
+            {"_wrapped_grid": grid},
+        )
+
+    return f
 
 
-def new_flavoured_field(field: Any, flavour: Flavour) -> NewFlavouredField:
+def new_flavoured_field(field: ekd.Field, flavour: Flavour) -> ekd.Field:
     """Create a new field with a flavour."""
-    return NewFlavouredField(field, flavour)
+
+    f = copy.copy(field)  # Shallow copy
+
+    if isinstance(f, NewFlavouredField):
+        f._wrapped_flavour = flavour
+    else:
+        f.__class__ = type(
+            f"{field.__class__.__name__}NewFlavouredField",
+            (NewFlavouredField, field.__class__),
+            {"_wrapped_flavour": flavour},
+        )
+
+    return f
 
 
 class FieldSelection:

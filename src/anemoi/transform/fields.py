@@ -60,18 +60,18 @@ def new_empty_fieldlist() -> SimpleFieldList:
     return SimpleFieldList([])
 
 
-class Wrapper:
+class _Wrapper:
 
     def clone(self, *args, **kwargs):
-        """Create a copy of the wrapped field."""
-        raise NotImplementedError()
+        assert not args
+        return new_field_with_metadata(self, **kwargs)
 
     def copy(self):
         """Create a copy of the wrapped field."""
-        raise NotImplementedError()
+        assert False, f"Not implemented {type(self)}"
 
 
-class NewDataField(Wrapper):
+class NewDataField(_Wrapper):
     """Change the data of a field.
 
     Parameters
@@ -119,8 +119,16 @@ class NewDataField(Wrapper):
         return state
 
     def __setstate__(self, state):
-        super().__setstate__(state)
+        try:
+            super().__setstate__(state)
+        except AttributeError:
+            pass
+
         self._wrapped_array = state["_wrapped_array"]
+
+    @classmethod
+    def adjust_clone(cls, original, clone):
+        return new_field_from_numpy(original._wrapped_array, template=clone)
 
 
 class GeoMetadata(Geography):
@@ -230,7 +238,7 @@ class GeoMetadata(Geography):
         raise NotImplementedError()
 
 
-class NewLatLonField(Wrapper):
+class NewLatLonField(_Wrapper):
     """Change the latitudes and longitudes of a field.
 
     Parameters
@@ -312,7 +320,7 @@ class NewLatLonField(Wrapper):
         self._wrapped_longitudes = state["_wrapped_longitudes"]
 
 
-class NewGridField(Wrapper):
+class NewGridField(_Wrapper):
     """Change the grid of a field.
 
     Parameters
@@ -391,7 +399,7 @@ class NewGridField(Wrapper):
         self._wrapped_grid = state["_wrapped_grid"]
 
 
-class _NewMetadataField(Wrapper):
+class _NewMetadataField(_Wrapper):
     """Change the metadata of a field."""
 
     def mapping(self, key: str, field: ekd.Field) -> Any:
@@ -450,7 +458,7 @@ class _NewMetadataField(Wrapper):
                 return super_metadata(a, **kwargs)
 
             if callable(value):
-                return value(self, a, super_metadata(a))
+                return value(self, a, super_metadata())
 
             return value
 

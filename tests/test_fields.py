@@ -57,11 +57,20 @@ def test_metadata_in_new_field(sample_field):
     assert "foo" in new_field.metadata()
 
 
-def test_field_with_updated_metadata_has_same_keys(sample_field):
-    """Test that updating existing metadata leaves the keys unchanged."""
+def test_field_with_updated_metadata_has_expect_keys1(sample_field):
+    """Test that updating existing metadata with a new key leave the other keys unchanged."""
     assert "param" in sample_field.metadata()
-    new_field = new_field_with_metadata(sample_field, param="foo")
-    assert tuple(new_field.metadata().keys()) == tuple(sample_field.metadata().keys())
+    new_field = new_field_with_metadata(sample_field, some_key="foo")
+    expect = set(sample_field.metadata().keys()) | {"some_key"}
+    assert set(new_field.metadata().keys()) == expect
+
+
+def test_field_with_updated_metadata_has_expect_keys2(sample_field):
+    """Test that updating existing metadata with an existing key leaves the keys unchanged."""
+    assert "param" in sample_field.metadata()
+    new_field = new_field_with_metadata(sample_field, shortName="foo")
+    expect = set(sample_field.metadata().keys())
+    assert set(new_field.metadata().keys()) == expect
 
 
 @pytest.mark.xfail(reason="updating metadata keys not yet implemented")

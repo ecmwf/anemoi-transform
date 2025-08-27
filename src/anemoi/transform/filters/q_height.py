@@ -357,7 +357,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             surface_pressure.to_numpy(),
         )
 
-        specific_humidity_at_height_level_values = specific_humidity_at_height_level.to_numpy()
+        specific_humidity_at_height_level_values = specific_humidity_at_height_level.to_numpy().copy()
         specific_humidity_at_height_level_values[specific_humidity_at_height_level_values == 0] = EPS_SPECIFIC
 
         dewpoint_temperature_at_height_level = thermo.dewpoint_from_specific_humidity(

@@ -96,7 +96,7 @@ class MaskVariable(Filter):
         extra = {}
         for field in data:
 
-            values = field.to_numpy(flatten=True)
+            values = field.to_numpy(flatten=True).copy()
             values[self._mask] = np.nan
 
             if self._rename is not None:

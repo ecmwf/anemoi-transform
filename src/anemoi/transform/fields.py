@@ -104,6 +104,7 @@ class NewDataField(_Wrapper):
         np.ndarray
             The field data as a numpy array.
         """
+
         data = self._wrapped_array
         if dtype is not None:
             data = data.astype(dtype)
@@ -111,6 +112,8 @@ class NewDataField(_Wrapper):
             data = data.flatten()
         if index is not None:
             data = data[index]
+
+        data.flags.writeable = False
         return data
 
     def __getstate__(self) -> dict[str, Any]:

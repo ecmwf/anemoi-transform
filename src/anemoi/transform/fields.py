@@ -430,15 +430,10 @@ class _NewMetadataField(_Wrapper):
                 geography = super_metadata().geography
 
                 def get(self, key, default=None):
-
-                    value = this.mapping(key)
-                    if value is not MISSING_METADATA:
-                        return value
-
-                    return super_metadata().get(key, default)
+                    return this.get(key, default)
 
                 def keys(self):
-                    return set(super_metadata().keys()) | set(this.keys())
+                    return this.keys()
 
             return MD()
 
@@ -482,6 +477,9 @@ class NewMetadataField(_NewMetadataField):
     def mapping(self, key: str) -> Any:
         return self._wrapped_metadata.get(key, MISSING_METADATA)
 
+    def keys(self):
+        return set(super().metadata().keys()) | set(self._wrapped_metadata.keys())
+
     def __getstate__(self):
         state = super().__getstate__() if hasattr(super(), "__getstate__") else {}
         state["_wrapped_metadata"] = self._wrapped_metadata
@@ -507,6 +505,9 @@ class NewFlavouredField(_NewMetadataField):
         if hasattr(super(), "__setstate__"):
             super().__setstate__(state)
         self._wrapped_flavour = state["_wrapped_flavour"]
+
+    def keys(self):
+        raise NotImplementedError()
 
 
 def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: Any) -> ekd.Field:

@@ -86,3 +86,20 @@ class SelectAndAddFieldSource(Source):
             if self.params and f.metadata("param") in self.params and f.metadata("param") not in params:
                 fields.append(f)
         return new_fieldlist_from_list(fields)
+
+
+def make_read_only(x):
+
+    from types import MappingProxyType as frozendict
+
+    if isinstance(x, dict):
+        return frozendict({make_read_only(ki): make_read_only(vi) for ki, vi in x.items()})
+
+    if isinstance(x, (list, tuple)):
+        return tuple(make_read_only(xi) for xi in x)
+
+    if isinstance(x, np.ndarray):
+        x.flags.writeable = False
+        return x
+
+    return x

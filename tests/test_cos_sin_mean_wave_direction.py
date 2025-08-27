@@ -29,7 +29,7 @@ SIN_MWD_VALUES = np.array([[0.44817262, 0.52311930], [0.96465370, 0.98718704], [
 @pytest.fixture
 def mwd_source(test_source):
     MWD_SPEC = [
-        {"param": "mwd", "values": MWD_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "mwd", "values": MWD_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(MWD_SPEC)
 
@@ -37,8 +37,8 @@ def mwd_source(test_source):
 @pytest.fixture
 def cos_sin_mwd_source(test_source):
     COS_SIN_MWD = [
-        {"param": "cos_mwd", "values": COS_MWD_VALUES.copy(), **MOCK_FIELD_METADATA},
-        {"param": "sin_mwd", "values": SIN_MWD_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "cos_mwd", "values": COS_MWD_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "sin_mwd", "values": SIN_MWD_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(COS_SIN_MWD)
 

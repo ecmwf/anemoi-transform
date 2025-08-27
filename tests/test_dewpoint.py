@@ -32,8 +32,8 @@ D_VALUES = np.array([[294.34245300, 292.02214050], [278.56315613, 281.47135925],
 @pytest.fixture
 def relative_humidity_source(test_source):
     RELATIVE_HUMIDITY_SPEC = [
-        {"param": "r", "values": R_VALUES.copy(), **MOCK_FIELD_METADATA},
-        {"param": "t", "values": T_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "r", "values": R_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "t", "values": T_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(RELATIVE_HUMIDITY_SPEC)
 
@@ -41,8 +41,8 @@ def relative_humidity_source(test_source):
 @pytest.fixture
 def dewpoint_source(test_source):
     DEWPOINT_SPEC = [
-        {"param": "d", "values": D_VALUES.copy(), **MOCK_FIELD_METADATA},
-        {"param": "t", "values": T_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "d", "values": D_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "t", "values": T_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(DEWPOINT_SPEC)
 

@@ -67,9 +67,9 @@ def rodeo_opera_source(test_source):
     )
 
     SPEC = [
-        {"param": "tp", "values": tp_values.copy(), **MOCK_FIELD_METADATA},
-        {"param": "qi", "values": qi_values.copy(), **MOCK_FIELD_METADATA},
-        {"param": "dm", "values": dm_values.copy(), **MOCK_FIELD_METADATA},
+        {"param": "tp", "values": tp_values, **MOCK_FIELD_METADATA},
+        {"param": "qi", "values": qi_values, **MOCK_FIELD_METADATA},
+        {"param": "dm", "values": dm_values, **MOCK_FIELD_METADATA},
     ]
     return test_source(SPEC)
 

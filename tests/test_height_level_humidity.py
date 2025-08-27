@@ -75,17 +75,17 @@ AB_coefficients = {
 @pytest.fixture
 def relative_humidity_source(test_source):
     HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC = [
-        {"param": "2r", "values": R2M_VALUES.copy(), **MOCK_FIELD_METADATA},
-        {"param": "sp", "values": SP_VALUES.copy(), **MOCK_FIELD_METADATA},
-        {"param": "2t", "values": T2M_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "2r", "values": R2M_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "sp", "values": SP_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "2t", "values": T2M_VALUES, **MOCK_FIELD_METADATA},
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC.append(
-            {"param": "t", "levtype": "ml", "levelist": level, "values": values.copy(), **MOCK_FIELD_METADATA}
+            {"param": "t", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
         )
     for level, values in Q_VALUES.items():
         HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC.append(
-            {"param": "q", "levtype": "ml", "levelist": level, "values": values.copy(), **MOCK_FIELD_METADATA}
+            {"param": "q", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
         )
     return test_source(HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC)
 
@@ -93,17 +93,17 @@ def relative_humidity_source(test_source):
 @pytest.fixture
 def specific_humidity_source(test_source):
     HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC = [
-        {"param": "2sh", "values": Q2M_VALUES.copy(), **MOCK_FIELD_METADATA},
-        {"param": "sp", "values": SP_VALUES.copy(), **MOCK_FIELD_METADATA},
-        {"param": "2t", "values": T2M_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "2sh", "values": Q2M_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "sp", "values": SP_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "2t", "values": T2M_VALUES, **MOCK_FIELD_METADATA},
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC.append(
-            {"param": "t", "levtype": "ml", "levelist": level, "values": values.copy(), **MOCK_FIELD_METADATA}
+            {"param": "t", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
         )
     for level, values in Q_VALUES.items():
         HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC.append(
-            {"param": "q", "levtype": "ml", "levelist": level, "values": values.copy(), **MOCK_FIELD_METADATA}
+            {"param": "q", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
         )
     return test_source(HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC)
 
@@ -111,16 +111,16 @@ def specific_humidity_source(test_source):
 @pytest.fixture
 def dewpoint_temperature_source(test_source):
     HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC = [
-        {"param": "2d", "values": D2M_VALUES.copy(), **MOCK_FIELD_METADATA},
-        {"param": "sp", "values": SP_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "2d", "values": D2M_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "sp", "values": SP_VALUES, **MOCK_FIELD_METADATA},
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC.append(
-            {"param": "t", "levtype": "ml", "levelist": level, "values": values.copy(), **MOCK_FIELD_METADATA}
+            {"param": "t", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
         )
     for level, values in Q_VALUES.items():
         HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC.append(
-            {"param": "q", "levtype": "ml", "levelist": level, "values": values.copy(), **MOCK_FIELD_METADATA}
+            {"param": "q", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
         )
     return test_source(HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC)
 

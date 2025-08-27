@@ -45,10 +45,10 @@ FF_VALUES = {
 @pytest.fixture
 def uv_source(test_source):
     UV_SPEC = [
-        {"param": "u", "levelist": 500, "values": U_VALUES[500].copy(), **MOCK_FIELD_METADATA},
-        {"param": "v", "levelist": 500, "values": V_VALUES[500].copy(), **MOCK_FIELD_METADATA},
-        {"param": "u", "levelist": 850, "values": U_VALUES[850].copy(), **MOCK_FIELD_METADATA},
-        {"param": "v", "levelist": 850, "values": V_VALUES[850].copy(), **MOCK_FIELD_METADATA},
+        {"param": "u", "levelist": 500, "values": U_VALUES[500], **MOCK_FIELD_METADATA},
+        {"param": "v", "levelist": 500, "values": V_VALUES[500], **MOCK_FIELD_METADATA},
+        {"param": "u", "levelist": 850, "values": U_VALUES[850], **MOCK_FIELD_METADATA},
+        {"param": "v", "levelist": 850, "values": V_VALUES[850], **MOCK_FIELD_METADATA},
     ]
     return test_source(UV_SPEC)
 
@@ -56,10 +56,10 @@ def uv_source(test_source):
 @pytest.fixture
 def ddff_source(test_source):
     DDFF_SPEC = [
-        {"param": "ws", "levelist": 500, "values": DD_VALUES[500].copy(), **MOCK_FIELD_METADATA},
-        {"param": "wdir", "levelist": 500, "values": FF_VALUES[500].copy(), **MOCK_FIELD_METADATA},
-        {"param": "ws", "levelist": 850, "values": DD_VALUES[850].copy(), **MOCK_FIELD_METADATA},
-        {"param": "wdir", "levelist": 850, "values": FF_VALUES[850].copy(), **MOCK_FIELD_METADATA},
+        {"param": "ws", "levelist": 500, "values": DD_VALUES[500], **MOCK_FIELD_METADATA},
+        {"param": "wdir", "levelist": 500, "values": FF_VALUES[500], **MOCK_FIELD_METADATA},
+        {"param": "ws", "levelist": 850, "values": DD_VALUES[850], **MOCK_FIELD_METADATA},
+        {"param": "wdir", "levelist": 850, "values": FF_VALUES[850], **MOCK_FIELD_METADATA},
     ]
     return test_source(DDFF_SPEC)
 

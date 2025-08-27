@@ -38,12 +38,15 @@ def fieldlist(get_test_data: GetTestData) -> ekd.FieldList:
 
 @pytest.fixture
 def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Source]:
+
+    from .utils import make_read_only
+
     def _source(dataset: str | list[dict]) -> Source:
         """Create a source from a known file or a list of dicts for testing."""
         if isinstance(dataset, str):
             ds = ekd.from_source("file", get_test_data(dataset))
-        elif isinstance(dataset, list):
-            ds = ekd.from_source("list-of-dicts", dataset)
+        elif isinstance(dataset, (list, tuple)):
+            ds = ekd.from_source("list-of-dicts", make_read_only(dataset))
         else:
             raise ValueError("dataset must be a string or a list of dicts")
         return source_registry.create("testing", dataset=ds)

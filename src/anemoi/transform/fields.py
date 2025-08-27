@@ -114,13 +114,19 @@ class NewDataField(_Wrapper):
         return data
 
     def __getstate__(self):
-        state = super().__getstate__() if hasattr(super(), "__getstate__") else {}
+        state = []
+        try:
+            state = super().__getstate__()
+        except AttributeError:
+            pass
         state["_wrapped_array"] = self._wrapped_array
         return state
 
     def __setstate__(self, state):
-        if hasattr(super(), "__setstate__"):
+        try:
             super().__setstate__(state)
+        except AttributeError:
+            pass
         self._wrapped_array = state["_wrapped_array"]
 
     @classmethod
@@ -306,14 +312,20 @@ class NewLatLonField(_Wrapper):
         return self._wrapped_longitudes
 
     def __getstate__(self):
-        state = super().__getstate__() if hasattr(super(), "__getstate__") else {}
+        state = []
+        try:
+            state = super().__getstate__()
+        except AttributeError:
+            pass
         state["_wrapped_latitudes"] = self._wrapped_latitudes
         state["_wrapped_longitudes"] = self._wrapped_longitudes
         return state
 
     def __setstate__(self, state):
-        if hasattr(super(), "__setstate__"):
+        try:
             super().__setstate__(state)
+        except AttributeError:
+            pass
         self._wrapped_latitudes = state["_wrapped_latitudes"]
         self._wrapped_longitudes = state["_wrapped_longitudes"]
 
@@ -388,13 +400,19 @@ class NewGridField(_Wrapper):
         return self._wrapped_grid.latlon()[1]
 
     def __getstate__(self):
-        state = super().__getstate__() if hasattr(super(), "__getstate__") else {}
+        state = []
+        try:
+            state = super().__getstate__()
+        except AttributeError:
+            pass
         state["_wrapped_grid"] = self._wrapped_grid
         return state
 
     def __setstate__(self, state):
-        if hasattr(super(), "__setstate__"):
+        try:
             super().__setstate__(state)
+        except AttributeError:
+            pass
         self._wrapped_grid = state["_wrapped_grid"]
 
 
@@ -481,13 +499,19 @@ class NewMetadataField(_NewMetadataField):
         return set(super().metadata().keys()) | set(self._wrapped_metadata.keys())
 
     def __getstate__(self):
-        state = super().__getstate__() if hasattr(super(), "__getstate__") else {}
+        state = []
+        try:
+            state = super().__getstate__()
+        except AttributeError:
+            pass
         state["_wrapped_metadata"] = self._wrapped_metadata
         return state
 
     def __setstate__(self, state):
-        if hasattr(super(), "__setstate__"):
+        try:
             super().__setstate__(state)
+        except AttributeError:
+            pass
         self._wrapped_metadata = state["_wrapped_metadata"]
 
 
@@ -497,13 +521,19 @@ class NewFlavouredField(_NewMetadataField):
         return self._wrapped_flavour(key, field)
 
     def __getstate__(self):
-        state = super().__getstate__() if hasattr(super(), "__getstate__") else {}
+        state = []
+        try:
+            state = super().__getstate__()
+        except AttributeError:
+            pass
         state["_wrapped_flavour"] = self._wrapped_flavour
         return state
 
     def __setstate__(self, state):
-        if hasattr(super(), "__setstate__"):
+        try:
             super().__setstate__(state)
+        except AttributeError:
+            pass
         self._wrapped_flavour = state["_wrapped_flavour"]
 
     def keys(self):

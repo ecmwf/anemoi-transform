@@ -254,11 +254,12 @@ class MatchingFieldsFilter(Filter):
             List with fields to group by.
         """
 
-        msg = (
-            f"Please ensure your filter is configured to match the input variables metadata "
-            f"current mismatch between inputs {data} and filter metadata {args}"
-        )
         if not set(args).issubset(data):
+            msg = (
+                f"Please ensure your filter is configured to match the input variables metadata "
+                f"current mismatch between inputs {data} and filter metadata {args}"
+            )
+
             LOG.warning(msg)
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:

@@ -33,9 +33,9 @@ EXPECTED_SUM = (R_VALUES + T_VALUES).flatten()
 @pytest.fixture
 def sum_input_source(test_source):
     PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC = [
-        {"param": "r", "levelist": 850, "values": R_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t", "levelist": 850, "values": T_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "q", "levelist": 850, "values": Q_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "r", "levelist": 850, "values": R_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "t", "levelist": 850, "values": T_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "q", "levelist": 850, "values": Q_VALUES.copy(), **MOCK_FIELD_METADATA},
     ]
     return test_source(PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
 

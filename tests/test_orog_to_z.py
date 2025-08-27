@@ -29,13 +29,13 @@ Z_VALUES = OROG_VALUES * g_gravitational_acceleration
 
 @pytest.fixture
 def orog_source(test_source):
-    OROG_SPEC = [{"param": "orog", "values": OROG_VALUES, **MOCK_FIELD_METADATA}]
+    OROG_SPEC = [{"param": "orog", "values": OROG_VALUES.copy(), **MOCK_FIELD_METADATA}]
     return test_source(OROG_SPEC)
 
 
 @pytest.fixture
 def z_source(test_source):
-    Z_SPEC = [{"param": "z", "values": Z_VALUES, **MOCK_FIELD_METADATA}]
+    Z_SPEC = [{"param": "z", "values": Z_VALUES.copy(), **MOCK_FIELD_METADATA}]
     return test_source(Z_SPEC)
 
 

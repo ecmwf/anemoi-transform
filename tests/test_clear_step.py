@@ -29,9 +29,9 @@ MOCK_VALUES = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
 @pytest.fixture
 def source(test_source):
     FIELD_SPECS = [
-        {"param": "t", "step": 0, "values": MOCK_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t", "step": 6, "values": MOCK_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t", "step": 12, "values": MOCK_VALUES, **MOCK_FIELD_METADATA},
+        {"param": "t", "step": 0, "values": MOCK_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "t", "step": 6, "values": MOCK_VALUES.copy(), **MOCK_FIELD_METADATA},
+        {"param": "t", "step": 12, "values": MOCK_VALUES.copy(), **MOCK_FIELD_METADATA},
     ]
     return test_source(FIELD_SPECS)
 

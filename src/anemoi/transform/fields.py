@@ -62,11 +62,11 @@ def new_empty_fieldlist() -> SimpleFieldList:
 
 class _Wrapper:
 
-    def clone(self, *args, **kwargs):
+    def clone(self, *args: Any, **kwargs: Any) -> Any:
         assert not args
         return new_field_with_metadata(self, **kwargs)
 
-    def copy(self):
+    def copy(self) -> Any:
         """Create a copy of the wrapped field."""
         assert False, f"Not implemented {type(self)}"
 
@@ -113,7 +113,7 @@ class NewDataField(_Wrapper):
             data = data[index]
         return data
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, Any]:
         state = []
         try:
             state = super().__getstate__()
@@ -122,7 +122,7 @@ class NewDataField(_Wrapper):
         state["_wrapped_array"] = self._wrapped_array
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict[str, Any]) -> None:
         try:
             super().__setstate__(state)
         except AttributeError:
@@ -130,8 +130,8 @@ class NewDataField(_Wrapper):
         self._wrapped_array = state["_wrapped_array"]
 
     @classmethod
-    def adjust_clone(cls, original, clone):
-        return new_field_from_numpy(original._wrapped_array, template=clone)
+    def adjust_clone(cls, original: Any, clone: Any) -> Any:
+        return new_field_from_numpy(original._wrapped_array, field=clone)
 
 
 class GeoMetadata(Geography):
@@ -311,7 +311,7 @@ class NewLatLonField(_Wrapper):
         """Get the longitudes of the field."""
         return self._wrapped_longitudes
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, Any]:
         state = []
         try:
             state = super().__getstate__()
@@ -321,7 +321,7 @@ class NewLatLonField(_Wrapper):
         state["_wrapped_longitudes"] = self._wrapped_longitudes
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict[str, Any]) -> None:
         try:
             super().__setstate__(state)
         except AttributeError:
@@ -399,7 +399,7 @@ class NewGridField(_Wrapper):
         """Get the longitudes of the field."""
         return self._wrapped_grid.latlon()[1]
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, Any]:
         state = []
         try:
             state = super().__getstate__()
@@ -408,7 +408,7 @@ class NewGridField(_Wrapper):
         state["_wrapped_grid"] = self._wrapped_grid
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict[str, Any]) -> None:
         try:
             super().__setstate__(state)
         except AttributeError:
@@ -495,10 +495,10 @@ class NewMetadataField(_NewMetadataField):
     def mapping(self, key: str) -> Any:
         return self._wrapped_metadata.get(key, MISSING_METADATA)
 
-    def keys(self):
+    def keys(self) -> set[str]:
         return self._wrapped_keys | set(self._wrapped_metadata.keys())
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, Any]:
         state = []
         try:
             state = super().__getstate__()
@@ -508,7 +508,7 @@ class NewMetadataField(_NewMetadataField):
         state["_wrapped_keys"] = self._wrapped_keys
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict[str, Any]) -> None:
         try:
             super().__setstate__(state)
         except AttributeError:
@@ -522,7 +522,7 @@ class NewFlavouredField(_NewMetadataField):
     def mapping(self, key: str, field: ekd.Field) -> Any:
         return self._wrapped_flavour(key, field)
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, Any]:
         state = []
         try:
             state = super().__getstate__()
@@ -531,14 +531,14 @@ class NewFlavouredField(_NewMetadataField):
         state["_wrapped_flavour"] = self._wrapped_flavour
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict[str, Any]) -> None:
         try:
             super().__setstate__(state)
         except AttributeError:
             pass
         self._wrapped_flavour = state["_wrapped_flavour"]
 
-    def keys(self):
+    def keys(self) -> set[str]:
         raise NotImplementedError()
 
 
@@ -701,17 +701,16 @@ def new_field_from_grid(template: ekd.Field, grid: Grid) -> ekd.Field:
     return f
 
 
-def new_flavoured_field(field: ekd.Field, flavour: Flavour) -> ekd.Field:
-    """Create a new field with a flavour."""
+def new_flavoured_field(template: ekd.Field, flavour: Flavour) -> ekd.Field:
 
-    f = copy.copy(field)  # Shallow copy
+    f = copy.copy(template)  # Shallow copy
 
     if isinstance(f, NewFlavouredField):
         f._wrapped_flavour = flavour
     else:
         f.__class__ = type(
-            f"{field.__class__.__name__}NewFlavouredField",
-            (NewFlavouredField, field.__class__),
+            f"{template.__class__.__name__}NewFlavouredField",
+            (NewFlavouredField, template.__class__),
             {"_wrapped_flavour": flavour},
         )
 
@@ -723,17 +722,17 @@ class FieldSelection:
 
     ALLOWED_KEYS = {"param", "levelist"}
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self._spec = kwargs
         self._validate_spec()
         self._sanitise_spec()
         self._all = len(self._spec) == 0
 
-    def _validate_spec(self):
+    def _validate_spec(self) -> None:
         if not set(self._spec).issubset(self.ALLOWED_KEYS):
             raise ValueError(f"Invalid keys in spec: {tuple(self._spec)} - only {self.ALLOWED_KEYS} are allowed.")
 
-    def _sanitise_spec(self):
+    def _sanitise_spec(self) -> None:
         for key, value in list(self._spec.items()):
             if isinstance(value, (str, int, float, bool)):
                 self._spec[key] = (value,)
@@ -742,7 +741,7 @@ class FieldSelection:
             elif not isinstance(value, (list, tuple)):
                 raise ValueError(f"Invalid value for key {key}: {value}")
 
-    def match(self, field):
+    def match(self, field: Any) -> bool:
         if self._all:
             return True
         try:

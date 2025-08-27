@@ -496,7 +496,7 @@ class NewMetadataField(_NewMetadataField):
         return self._wrapped_metadata.get(key, MISSING_METADATA)
 
     def keys(self):
-        return set(super().metadata().keys()) | set(self._wrapped_metadata.keys())
+        return self._wrapped_keys | set(self._wrapped_metadata.keys())
 
     def __getstate__(self):
         state = []
@@ -505,6 +505,7 @@ class NewMetadataField(_NewMetadataField):
         except AttributeError:
             pass
         state["_wrapped_metadata"] = self._wrapped_metadata
+        state["_wrapped_keys"] = self._wrapped_keys
         return state
 
     def __setstate__(self, state):
@@ -513,6 +514,7 @@ class NewMetadataField(_NewMetadataField):
         except AttributeError:
             pass
         self._wrapped_metadata = state["_wrapped_metadata"]
+        self._wrapped_keys = state["_wrapped_keys"]
 
 
 class NewFlavouredField(_NewMetadataField):
@@ -602,7 +604,10 @@ def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
         f.__class__ = type(
             f"{template.__class__.__name__}NewMetadataField",
             (NewMetadataField, template.__class__),
-            {"_wrapped_metadata": metadata},
+            {
+                "_wrapped_metadata": metadata,
+                "_wrapped_keys": set(template.metadata().keys()),
+            },
         )
 
     return f

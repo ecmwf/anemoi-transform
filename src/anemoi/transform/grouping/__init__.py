@@ -16,7 +16,6 @@ from collections.abc import Callable
 from collections.abc import Iterator
 from typing import Any
 
-import rich
 from earthkit.data import SimpleFieldList
 
 LOG = logging.getLogger(__name__)
@@ -89,8 +88,6 @@ class Grouper(ABC):
 
         for _, group in groups.items():
             if len(group) != len(self.params):
-                rich.print(f"[red]Missing component. Want {sorted(self.params)}, got {sorted(groups.keys())}[/red]")
-
                 raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(groups.keys())}")
 
             yield tuple(group[p] for p in self.params)

@@ -501,6 +501,16 @@ class NewMetadataField(_NewMetadataField):
     def keys(self) -> set[str]:
         return self._wrapped_keys | set(self._wrapped_metadata.keys())
 
+    def get(self, key: str, default: Any = MISSING_METADATA) -> Any:
+        value = self._wrapped_metadata.get(key, MISSING_METADATA)
+        if value is not MISSING_METADATA:
+            return value
+
+        if default is not MISSING_METADATA:
+            return self._wrapped_get(key, default=default)
+
+        return self._wrapped_get(key)
+
     def __getstate__(self) -> dict[str, Any]:
         state = []
         try:
@@ -509,6 +519,7 @@ class NewMetadataField(_NewMetadataField):
             pass
         state["_wrapped_metadata"] = self._wrapped_metadata
         state["_wrapped_keys"] = self._wrapped_keys
+        state["_wrapped_get"] = self._wrapped_get
         return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:
@@ -518,6 +529,7 @@ class NewMetadataField(_NewMetadataField):
             pass
         self._wrapped_metadata = state["_wrapped_metadata"]
         self._wrapped_keys = state["_wrapped_keys"]
+        self._wrapped_get = state["_wrapped_get"]
 
 
 class NewFlavouredField(_NewMetadataField):
@@ -610,6 +622,7 @@ def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
             {
                 "_wrapped_metadata": metadata,
                 "_wrapped_keys": set(template.metadata().keys()),
+                "_wrapped_get": template.metadata().get,
             },
         )
 

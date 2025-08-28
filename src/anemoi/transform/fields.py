@@ -25,6 +25,16 @@ LOG = logging.getLogger(__name__)
 MISSING_METADATA = object()
 
 
+def _copy(template):
+    # Because ekd uses __getstate__ and __setstate__
+    # this confuses the copy mechanism. We want to copy all members/methods/properties
+    # not just the ones in __getstate__
+
+    f = copy.copy(template)
+    f.__dict__.update(template.__dict__)
+    return f
+
+
 class Flavour(ABC):
 
     @abstractmethod
@@ -116,22 +126,6 @@ class NewDataField(_Wrapper):
         data.flags.writeable = False
         return data
 
-    def __getstate__(self) -> dict[str, Any]:
-        state = []
-        try:
-            state = super().__getstate__()
-        except AttributeError:
-            pass
-        state["_wrapped_array"] = self._wrapped_array
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        try:
-            super().__setstate__(state)
-        except AttributeError:
-            pass
-        self._wrapped_array = state["_wrapped_array"]
-
     @classmethod
     def adjust_clone(cls, original: Any, clone: Any) -> Any:
         return new_field_from_numpy(original._wrapped_array, field=clone)
@@ -145,6 +139,9 @@ class GeoMetadata(Geography):
     owner : Any
         The owner of the geography data.
     """
+
+    def __init__(self, owner):
+        self.owner = owner
 
     def shape(self) -> tuple[int, ...]:
         """Get the shape of the geography data.
@@ -314,24 +311,6 @@ class NewLatLonField(_Wrapper):
         """Get the longitudes of the field."""
         return self._wrapped_longitudes
 
-    def __getstate__(self) -> dict[str, Any]:
-        state = []
-        try:
-            state = super().__getstate__()
-        except AttributeError:
-            pass
-        state["_wrapped_latitudes"] = self._wrapped_latitudes
-        state["_wrapped_longitudes"] = self._wrapped_longitudes
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        try:
-            super().__setstate__(state)
-        except AttributeError:
-            pass
-        self._wrapped_latitudes = state["_wrapped_latitudes"]
-        self._wrapped_longitudes = state["_wrapped_longitudes"]
-
 
 class NewGridField(_Wrapper):
     """Change the grid of a field.
@@ -401,22 +380,6 @@ class NewGridField(_Wrapper):
     def _longitudes(self) -> np.ndarray:
         """Get the longitudes of the field."""
         return self._wrapped_grid.latlon()[1]
-
-    def __getstate__(self) -> dict[str, Any]:
-        state = []
-        try:
-            state = super().__getstate__()
-        except AttributeError:
-            pass
-        state["_wrapped_grid"] = self._wrapped_grid
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        try:
-            super().__setstate__(state)
-        except AttributeError:
-            pass
-        self._wrapped_grid = state["_wrapped_grid"]
 
 
 class _NewMetadataField(_Wrapper):
@@ -511,47 +474,11 @@ class NewMetadataField(_NewMetadataField):
 
         return self._wrapped_get(key)
 
-    def __getstate__(self) -> dict[str, Any]:
-        state = []
-        try:
-            state = super().__getstate__()
-        except AttributeError:
-            pass
-        state["_wrapped_metadata"] = self._wrapped_metadata
-        state["_wrapped_keys"] = self._wrapped_keys
-        state["_wrapped_get"] = self._wrapped_get
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        try:
-            super().__setstate__(state)
-        except AttributeError:
-            pass
-        self._wrapped_metadata = state["_wrapped_metadata"]
-        self._wrapped_keys = state["_wrapped_keys"]
-        self._wrapped_get = state["_wrapped_get"]
-
 
 class NewFlavouredField(_NewMetadataField):
 
-    def mapping(self, key: str, field: ekd.Field) -> Any:
-        return self._wrapped_flavour(key, field)
-
-    def __getstate__(self) -> dict[str, Any]:
-        state = []
-        try:
-            state = super().__getstate__()
-        except AttributeError:
-            pass
-        state["_wrapped_flavour"] = self._wrapped_flavour
-        return state
-
-    def __setstate__(self, state: dict[str, Any]) -> None:
-        try:
-            super().__setstate__(state)
-        except AttributeError:
-            pass
-        self._wrapped_flavour = state["_wrapped_flavour"]
+    def mapping(self, key: str) -> Any:
+        return self._wrapped_flavour(key, self)
 
     def keys(self) -> set[str]:
         raise NotImplementedError()
@@ -574,7 +501,7 @@ def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: 
     NewMetadataField
         The new field with the provided data and metadata.
     """
-    f = copy.copy(template)  # Shallow copy
+    f = _copy(template)
 
     if isinstance(f, NewDataField):
         f._wrapped_array = array
@@ -610,7 +537,7 @@ def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
         The new field with the provided metadata.
     """
 
-    f = copy.copy(template)  # Shallow copy
+    f = _copy(template)
 
     if isinstance(f, NewMetadataField):
         f._wrapped_metadata = f._wrapped_metadata.copy()
@@ -672,7 +599,7 @@ def new_field_from_latitudes_longitudes(
     NewGridField
         The new field with the provided latitudes and longitudes.
     """
-    f = copy.copy(template)  # Shallow copy
+    f = _copy(template)
 
     if isinstance(f, NewLatLonField):
         f._wrapped_latitudes = latitudes
@@ -703,7 +630,7 @@ def new_field_from_grid(template: ekd.Field, grid: Grid) -> ekd.Field:
         The new field with the provided grid.
     """
 
-    f = copy.copy(template)  # Shallow copy
+    f = _copy(template)
 
     if isinstance(f, NewGridField):
         f._wrapped_grid = grid
@@ -719,7 +646,7 @@ def new_field_from_grid(template: ekd.Field, grid: Grid) -> ekd.Field:
 
 def new_flavoured_field(template: ekd.Field, flavour: Flavour) -> ekd.Field:
 
-    f = copy.copy(template)  # Shallow copy
+    f = _copy(template)
 
     if isinstance(f, NewFlavouredField):
         f._wrapped_flavour = flavour

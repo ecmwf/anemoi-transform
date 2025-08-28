@@ -9,11 +9,14 @@
 
 
 import logging
+from abc import ABC
+from abc import abstractmethod
 from collections import defaultdict
 from collections.abc import Callable
 from collections.abc import Iterator
 from typing import Any
 
+import rich
 from earthkit.data import SimpleFieldList
 
 LOG = logging.getLogger(__name__)
@@ -52,8 +55,8 @@ def _flatten(params: list[Any] | tuple[Any, ...]) -> list[str]:
     return flat
 
 
-class GroupByParam:
-    """Group matching fields by parameters name.
+class Grouper(ABC):
+    """Group matching fields by some criteria.
 
     Parameters
     ----------
@@ -65,32 +68,6 @@ class GroupByParam:
         if not isinstance(params, (list, tuple)):
             params = [params]
         self.params = _flatten(params)
-
-    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
-        assert callable(other), type(other)
-        self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
-        self.groups_params = set()
-        for f in data:
-            key = f.metadata(namespace="mars")
-            if not key:
-                keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
-                key = {k: f.metadata(k) for k in keys}
-                if not keys:
-                    raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
-
-            param = key.pop("param", f.metadata("param"))
-
-            if param not in self.params:
-                other(f)
-                continue
-
-            key = tuple(key.items())
-
-            if param in self.groups[key]:
-                raise ValueError(f"Duplicate component {param} for {key}")
-            self.groups[key][param] = f
-            self.groups_params.add(param)
-        LOG.info(f"Params groups: {self.groups_params}")
 
     def iterate(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[tuple[Any, ...]]:
         """Iterate over the data and group fields by parameters.
@@ -107,54 +84,95 @@ class GroupByParam:
         Iterator[Tuple[Any, ...]]
             Iterator yielding tuples of grouped fields.
         """
-        self._get_groups(data, other=other)
-        for _, group in self.groups.items():
+
+        groups = self._get_groups(data, other=other)
+
+        for _, group in groups.items():
             if len(group) != len(self.params):
-                for p in data:
-                    print(p)
-                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(self.groups.keys())}")
+                rich.print(f"[red]Missing component. Want {sorted(self.params)}, got {sorted(groups.keys())}[/red]")
+
+                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(groups.keys())}")
 
             yield tuple(group[p] for p in self.params)
 
+    @abstractmethod
+    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None: ...
 
-class GroupByParamVertical(GroupByParam):
+    def _get_param_and_key(self, f):
+        key = f.metadata(namespace="mars")
+        if not key:
+            keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
+            key = {k: f.metadata(k) for k in keys}
+            if not keys:
+                raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
+
+        param = key.pop("param", f.metadata("param"))
+
+        return param, key
+
+
+class GroupByParam(Grouper):
+    """Group matching fields by parameters name.
+
+    Parameters
+    ----------
+    params : list of str
+        List of parameters to group by.
+    """
+
     def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
-        self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
-        self.groups_params = set()
-        levels: dict[str, Any] = defaultdict(list)
-        for f in data:
-            key = f.metadata(namespace="mars")
-            if not key:
-                keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
-                key = {k: f.metadata(k) for k in keys}
-                if not keys:
-                    raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
 
-            param = key.pop("param", f.metadata("param"))
-            _ = key.pop("levtype", None)
-            level = key.pop("levelist", None)
+        groups = defaultdict(dict)
+        seen = set()
+
+        for f in data:
+            param, key = self._get_param_and_key(f)
 
             if param not in self.params:
                 other(f)
                 continue
 
-            key = tuple(sorted(tuple(key.items())))
+            key = tuple(sorted(key.items()))
+
+            if (param, key) in seen:
+                raise ValueError(f"Duplicate component {param} for {key}")
+            seen.add((param, key))
+
+            groups[key][param] = f
+
+        return groups
+
+
+class GroupByParamVertical(Grouper):
+    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
+        assert callable(other), type(other)
+
+        groups = defaultdict(lambda: defaultdict(SimpleFieldList))
+
+        seen = set()
+
+        for f in data:
+
+            param, key = self._get_param_and_key(f)
+
+            if param not in self.params:
+                other(f)
+                continue
+
+            key.pop("levtype", None)
+            level = key.pop("levelist", None)
+
+            key = tuple(sorted(key.items()))
+
+            if (param, level, key) in seen:
+                raise ValueError(f"Duplicate component {param} for {key} and level {level}")
+
+            seen.add((param, level, key))
 
             if level is None:
-                if param in self.groups[key]:
-                    raise ValueError(f"Duplicate component {param} for {key}")
-                self.groups[key][param] = f
+                groups[key][param] = f
             else:
-                if param in self.groups[key]:
-                    if level in levels[param]:
-                        raise ValueError(f"Duplicate component {param} for {key} and level {level}")
-                    else:
-                        self.groups[key][param].append(f)
-                else:
-                    ds = SimpleFieldList()
-                    ds.append(f)
-                    self.groups[key][param] = ds
-                levels[param].append(level)
-            self.groups_params.add(param)
-        LOG.info(f"Params groups: {self.groups_params}")
+                groups[key][param].append(f)
+
+        return groups

@@ -311,6 +311,14 @@ class NewLatLonField(_Wrapper):
         """Get the longitudes of the field."""
         return self._wrapped_longitudes
 
+    @property
+    def resolution(self):
+        return self._wrapped_resolution
+
+    @resolution.setter
+    def resolution(self, value):
+        self._wrapped_resolution = value
+
 
 class NewGridField(_Wrapper):
     """Change the grid of a field.
@@ -481,7 +489,7 @@ class NewFlavouredField(_NewMetadataField):
         return self._wrapped_flavour(key, self)
 
     def keys(self) -> set[str]:
-        raise NotImplementedError()
+        return self._wrapped_keys
 
 
 def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: Any) -> ekd.Field:
@@ -608,7 +616,11 @@ def new_field_from_latitudes_longitudes(
         f.__class__ = type(
             f"{template.__class__.__name__}NewLatLonField",
             (NewLatLonField, template.__class__),
-            {"_wrapped_latitudes": latitudes, "_wrapped_longitudes": longitudes},
+            {
+                "_wrapped_latitudes": latitudes,
+                "_wrapped_longitudes": longitudes,
+                "_wrapped_resolution": "unknown",
+            },
         )
 
     return f
@@ -654,7 +666,11 @@ def new_flavoured_field(template: ekd.Field, flavour: Flavour) -> ekd.Field:
         f.__class__ = type(
             f"{template.__class__.__name__}NewFlavouredField",
             (NewFlavouredField, template.__class__),
-            {"_wrapped_flavour": flavour},
+            {
+                "_wrapped_flavour": flavour,
+                "_wrapped_keys": set(template.metadata().keys()),
+                "_wrapped_get": template.metadata().get,
+            },
         )
 
     return f

@@ -78,7 +78,10 @@ class _Wrapper:
 
     def copy(self) -> Any:
         """Create a copy of the wrapped field."""
-        assert False, f"Not implemented {type(self)}"
+        raise NotImplementedError(f"Not yet implemented {type(self)}")
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({super().__repr__()})"
 
 
 class NewDataField(_Wrapper):
@@ -125,10 +128,6 @@ class NewDataField(_Wrapper):
 
         data.flags.writeable = False
         return data
-
-    @classmethod
-    def adjust_clone(cls, original: Any, clone: Any) -> Any:
-        return new_field_from_numpy(original._wrapped_array, field=clone)
 
 
 class GeoMetadata(Geography):
@@ -295,11 +294,15 @@ class NewLatLonField(_Wrapper):
         Any
             The metadata of the field.
         """
-        metadata = super().metadata(*args, **kwargs)
-        if hasattr(metadata, "geography"):
-            metadata.geography = GeoMetadata(self)
 
-        return metadata
+        if args or kwargs:
+            return super().metadata(*args, **kwargs)
+
+        return WrappedMetadata(self)
+
+    @property
+    def shape(self):
+        return (len(self._wrapped_latitudes),)
 
     @property
     def _latitudes(self) -> np.ndarray:
@@ -319,75 +322,30 @@ class NewLatLonField(_Wrapper):
     def resolution(self, value):
         self._wrapped_resolution = value
 
+    @property
+    def geography(self):
+        return GeoMetadata(self)
 
-class NewGridField(_Wrapper):
-    """Change the grid of a field.
 
-    Parameters
-    ----------
-    field : Any
-        The field object to wrap.
-    grid: Grid
-        The new grid for the field.
-    """
+class WrappedMetadata:
+    def __init__(self, owner):
+        self.owner = owner
 
-    def grid_points(self) -> tuple[np.ndarray, np.ndarray]:
-        """Get the grid points of the field.
+    def __contains__(self, key):
+        return key in self.keys()
 
-        Returns
-        -------
-        tuple
-            The latitudes and longitudes of the field.
-        """
-        return self._wrapped_grid.latlon()
+    def __getitem__(self, key):
+        return self.owner.get(key)
 
-    def to_latlon(self, flatten: bool = True) -> dict[str, np.ndarray]:
-        """Convert the grid points to latitude and longitude.
+    def get(self, *args, **kwargs):
+        return self.owner.get(*args, **kwargs)
 
-        Parameters
-        ----------
-        flatten : bool, optional
-            Whether to flatten the arrays, by default True.
-
-        Returns
-        -------
-        dict
-            A dictionary containing the latitudes and longitudes.
-        """
-        assert flatten
-        coords = self._wrapped_grid.latlon()
-        return dict(lat=coords[0], lon=coords[1])
-
-    def metadata(self, *args: Any, **kwargs: Any) -> Any:
-        """Get the metadata of the field.
-
-        Parameters
-        ----------
-        *args : Any
-            Additional arguments.
-        **kwargs : Any
-            Additional keyword arguments.
-
-        Returns
-        -------
-        Any
-            The metadata of the field.
-        """
-        metadata = super().metadata(*args, **kwargs)
-        if hasattr(metadata, "geography"):
-            metadata.geography = GeoMetadata(self)
-
-        return metadata
+    def keys(self):
+        return self.owner.keys()
 
     @property
-    def _latitudes(self) -> np.ndarray:
-        """Get the latitudes of the field."""
-        return self._wrapped_grid.latlon()[0]
-
-    @property
-    def _longitudes(self) -> np.ndarray:
-        """Get the longitudes of the field."""
-        return self._wrapped_grid.latlon()[1]
+    def geography(self):
+        return self.owner.geography
 
 
 class _NewMetadataField(_Wrapper):
@@ -412,26 +370,13 @@ class _NewMetadataField(_Wrapper):
         Any
             The metadata of the field.
         """
-        this = self
-        super_metadata = super().metadata
 
         if len(args) == 0 and len(kwargs) == 0:
-
-            class MD:
-
-                geography = super_metadata().geography
-
-                def get(self, key, default=None):
-                    return this.get(key, default)
-
-                def keys(self):
-                    return this.keys()
-
-            return MD()
+            return WrappedMetadata(self)
 
         if kwargs.get("namespace"):
             assert len(args) == 0, (args, kwargs)
-            mars = super_metadata(**kwargs).copy()
+            mars = self._wrapped_field.metadata(**kwargs).copy()
             for k in list(mars.keys()):
                 m = self.mapping(k)
                 if m is not MISSING_METADATA:
@@ -441,10 +386,10 @@ class _NewMetadataField(_Wrapper):
         def _val(a):
             value = self.mapping(a)
             if value is MISSING_METADATA:
-                return super_metadata(a, **kwargs)
+                return self._wrapped_field.metadata(a, **kwargs)
 
             if callable(value):
-                return value(self, a, super_metadata())
+                return value(self, a, self._wrapped_field.metadata())
 
             return value
 
@@ -470,7 +415,7 @@ class NewMetadataField(_NewMetadataField):
         return self._wrapped_metadata.get(key, MISSING_METADATA)
 
     def keys(self) -> set[str]:
-        return self._wrapped_keys | set(self._wrapped_metadata.keys())
+        return set(self._wrapped_field.metadata().keys()) | set(self._wrapped_metadata.keys())
 
     def get(self, key: str, default: Any = MISSING_METADATA) -> Any:
         value = self._wrapped_metadata.get(key, MISSING_METADATA)
@@ -478,9 +423,13 @@ class NewMetadataField(_NewMetadataField):
             return value
 
         if default is not MISSING_METADATA:
-            return self._wrapped_get(key, default=default)
+            return self._wrapped_field.metadata().get(key, default=default)
 
-        return self._wrapped_get(key)
+        return self._wrapped_field.metadata().get(key)
+
+    @property
+    def geography(self):
+        return self._wrapped_field.metadata().geography
 
 
 class NewFlavouredField(_NewMetadataField):
@@ -489,7 +438,11 @@ class NewFlavouredField(_NewMetadataField):
         return self._wrapped_flavour(key, self)
 
     def keys(self) -> set[str]:
-        return self._wrapped_keys
+        # TODO: Get falvoured keys
+        return self._wrapped_field.metadata().keys()
+
+    def get(self, key):
+        return self.metadata(key)
 
 
 def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: Any) -> ekd.Field:
@@ -511,6 +464,8 @@ def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: 
     """
     f = _copy(template)
 
+    array.flags.writeable = False
+
     if isinstance(f, NewDataField):
         f._wrapped_array = array
     else:
@@ -520,8 +475,10 @@ def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: 
                 NewDataField,
                 template.__class__,
             ),
-            {"_wrapped_array": array},
+            {},
         )
+        f._wrapped_array = array
+        f._wrapped_field = template
 
     if metadata:
         f = new_field_with_metadata(f, **metadata)
@@ -554,12 +511,11 @@ def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
         f.__class__ = type(
             f"{template.__class__.__name__}NewMetadataField",
             (NewMetadataField, template.__class__),
-            {
-                "_wrapped_metadata": metadata,
-                "_wrapped_keys": set(template.metadata().keys()),
-                "_wrapped_get": template.metadata().get,
-            },
+            {},
         )
+
+        f._wrapped_metadata = metadata
+        f._wrapped_field = template
 
     return f
 
@@ -616,12 +572,12 @@ def new_field_from_latitudes_longitudes(
         f.__class__ = type(
             f"{template.__class__.__name__}NewLatLonField",
             (NewLatLonField, template.__class__),
-            {
-                "_wrapped_latitudes": latitudes,
-                "_wrapped_longitudes": longitudes,
-                "_wrapped_resolution": "unknown",
-            },
+            {},
         )
+        f._wrapped_latitudes = latitudes
+        f._wrapped_longitudes = longitudes
+        f._wrapped_resolution = "unknown"
+        f._wrapped_field = template
 
     return f
 
@@ -638,22 +594,11 @@ def new_field_from_grid(template: ekd.Field, grid: Grid) -> ekd.Field:
 
     Returns
     -------
-    NewGridField
-        The new field with the provided grid.
+    Field
+        The wrapped field
     """
 
-    f = _copy(template)
-
-    if isinstance(f, NewGridField):
-        f._wrapped_grid = grid
-    else:
-        f.__class__ = type(
-            f"{template.__class__.__name__}NewGridField",
-            (NewGridField, template.__class__),
-            {"_wrapped_grid": grid},
-        )
-
-    return f
+    return new_field_from_latitudes_longitudes(template, *grid.latlon())
 
 
 def new_flavoured_field(template: ekd.Field, flavour: Flavour) -> ekd.Field:
@@ -666,12 +611,10 @@ def new_flavoured_field(template: ekd.Field, flavour: Flavour) -> ekd.Field:
         f.__class__ = type(
             f"{template.__class__.__name__}NewFlavouredField",
             (NewFlavouredField, template.__class__),
-            {
-                "_wrapped_flavour": flavour,
-                "_wrapped_keys": set(template.metadata().keys()),
-                "_wrapped_get": template.metadata().get,
-            },
+            {},
         )
+        f._wrapped_flavour = flavour
+        f._wrapped_field = template
 
     return f
 

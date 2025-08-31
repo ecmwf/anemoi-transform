@@ -18,6 +18,8 @@ from typing import Any
 
 from earthkit.data import SimpleFieldList
 
+from ..fields import new_field_with_metadata
+
 LOG = logging.getLogger(__name__)
 
 
@@ -30,6 +32,10 @@ def _lost(f: Any) -> None:
         The lost field.
     """
     raise ValueError(f"Lost field {f}")
+
+
+def _mark_fall_through(f: Any) -> None:
+    return new_field_with_metadata(f, anemoi_fall_through=True)
 
 
 def _flatten(params: list[Any] | tuple[Any, ...]) -> list[str]:
@@ -127,6 +133,7 @@ class GroupByParam(Grouper):
             param, key = self._get_param_and_key(f)
 
             if param not in self.params:
+                f = _mark_fall_through(f)
                 other(f)
                 continue
 
@@ -154,6 +161,7 @@ class GroupByParamVertical(Grouper):
             param, key = self._get_param_and_key(f)
 
             if param not in self.params:
+                f = _mark_fall_through(f)
                 other(f)
                 continue
 

@@ -49,7 +49,6 @@ def test_update_multiple_metadata(sample_field):
     assert new_field.metadata("param", "centre") == ("foo", "bar")
 
 
-@pytest.mark.xfail(reason="__contains__ not yet implemented for metadata")
 def test_metadata_in_new_field(sample_field):
     """Test that we can check if a key is in the metadata."""
     assert "foo" not in sample_field.metadata()
@@ -150,5 +149,32 @@ def test_fieldselection_match_fail_different_param_same_level():
     assert not selection.match(field)
 
 
-if __name__ == "__main__":
-    test_field_new_metadata(ekd.from_source("sample", "test.grib")[0])
+def test_field_new_metadata_remapping(sample_field):
+
+    param_level = sample_field.metadata(
+        "param_levelist", remapping={"param_levelist": "{param}_{levelist}"}, patches={"number": {None: 0}}
+    )
+    assert param_level == "2t"
+
+    param_level = sample_field.metadata(
+        "param_type", remapping={"param_type": "{param}_{type}"}, patches={"number": {None: 0}}
+    )
+    assert param_level == "2t_an"
+
+    number = sample_field.metadata("number", remapping={"param_level": "{param}_{type}"}, patches={"number": {None: 0}})
+    assert number == 0
+
+    new_field = new_field_with_metadata(sample_field, number=42, param="foo")
+
+    param_level = new_field.metadata(
+        "param_levelist", remapping={"param_levelist": "{param}_{levelist}"}, patches={"number": {None: 0}}
+    )
+    assert param_level == "foo"
+
+    param_level = new_field.metadata(
+        "param_type", remapping={"param_type": "{param}_{type}"}, patches={"number": {None: 0}}
+    )
+    assert param_level == "foo_an"
+
+    number = new_field.metadata("number", remapping={"param_level": "{param}_{type}"}, patches={"number": {None: 0}})
+    assert number == 42

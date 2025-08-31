@@ -25,7 +25,20 @@ LOG = logging.getLogger(__name__)
 MISSING_METADATA = object()
 
 
-def _copy(template):
+def _copy(template: ekd.Field) -> ekd.Field:
+    """Create a copy of an earthkit-data Field, including all members, methods, and properties.
+
+    Parameters
+    ----------
+    template : ekd.Field
+        The field to copy.
+
+    Returns
+    -------
+    ekd.Field
+        A copy of the input field.
+    """
+
     # Because ekd uses __getstate__ and __setstate__
     # this confuses the copy mechanism. We want to copy all members/methods/properties
     # not just the ones in __getstate__
@@ -39,7 +52,20 @@ class Flavour(ABC):
 
     @abstractmethod
     def __call__(self, key: str, field: ekd.Field) -> Any:
-        """Called during field metadata lookup, so it can be modified"""
+        """Called during field metadata lookup, so it can be modified.
+
+        Parameters
+        ----------
+        key : str
+            Metadata key to look up.
+        field : ekd.Field
+            The field being queried.
+
+        Returns
+        -------
+        Any
+            The modified value for the metadata key.
+        """
         pass
 
 
@@ -48,8 +74,8 @@ def new_fieldlist_from_list(fields: list[Any]) -> SimpleFieldList:
 
     Parameters
     ----------
-    fields : list
-        List of fields to include in the FieldArray.
+    fields : list of Any
+        List of fields to include.
 
     Returns
     -------
@@ -73,11 +99,32 @@ def new_empty_fieldlist() -> SimpleFieldList:
 class _Wrapper:
 
     def clone(self, *args: Any, **kwargs: Any) -> Any:
+        """Clone the wrapped field, applying any metadata updates.
+
+        Parameters
+        ----------
+        *args : Any
+            Additional arguments (should be empty).
+
+        **kwargs : Any
+            Metadata to update in the clone.
+
+        Returns
+        -------
+        Any
+            The cloned field with updated metadata.
+        """
         assert not args
         return new_field_with_metadata(self, **kwargs)
 
     def copy(self) -> Any:
-        """Create a copy of the wrapped field."""
+        """Not implemented. Intended to create a copy of the wrapped field.
+
+        Returns
+        -------
+        Any
+            The copied field (not implemented).
+        """
         raise NotImplementedError(f"Not yet implemented {type(self)}")
 
     def __repr__(self):
@@ -85,7 +132,7 @@ class _Wrapper:
 
 
 class NewDataField(_Wrapper):
-    """Change the data of a field.
+    """Wrapper to change the data of a field.
 
     Parameters
     ----------
@@ -97,7 +144,7 @@ class NewDataField(_Wrapper):
 
     @property
     def values(self) -> np.ndarray:
-        """Get the values of the field."""
+        """The values of the field as a numpy array."""
         return self.to_numpy(flatten=True)
 
     def to_numpy(self, flatten: bool = False, dtype: type | None = None, index: Any | None = None) -> np.ndarray:
@@ -106,11 +153,11 @@ class NewDataField(_Wrapper):
         Parameters
         ----------
         flatten : bool, optional
-            Whether to flatten the array, by default False.
+            If True, flatten the array. Default is False.
         dtype : type, optional
-            The desired data type of the array, by default None.
+            Desired data type. Default is None.
         index : Any, optional
-            The index to apply to the array, by default None.
+            Index to apply. Default is None.
 
         Returns
         -------
@@ -131,7 +178,7 @@ class NewDataField(_Wrapper):
 
 
 class GeoMetadata(Geography):
-    """A wrapper around an earthkit-data Geography object.
+    """Wrapper around an earthkit-data Geography object.
 
     Parameters
     ----------
@@ -139,36 +186,36 @@ class GeoMetadata(Geography):
         The owner of the geography data.
     """
 
-    def __init__(self, owner):
+    def __init__(self, owner: Any) -> None:
         self.owner = owner
 
     def shape(self) -> tuple[int, ...]:
-        """Get the shape of the geography data.
+        """The shape of the geography data.
 
         Returns
         -------
-        tuple
-            The shape of the geography data.
+        tuple of int
+            Shape of the geography data.
         """
         return tuple([len(self.owner._latitudes)])
 
     def resolution(self) -> str:
-        """Get the resolution of the geography data.
+        """The resolution of the geography data.
 
         Returns
         -------
         str
-            The resolution of the geography data.
+            Resolution of the geography data.
         """
         return "unknown"
 
     def mars_area(self) -> list[float]:
-        """Get the MARS area of the geography data.
+        """The MARS area of the geography data.
 
         Returns
         -------
-        list
-            The MARS area of the geography data.
+        list of float
+            MARS area of the geography data.
         """
         return [
             np.amax(self.owner._latitudes),
@@ -178,70 +225,105 @@ class GeoMetadata(Geography):
         ]
 
     def mars_grid(self) -> None:
-        """Get the MARS grid of the geography data."""
+        """The MARS grid of the geography data.
+
+        Returns
+        -------
+        None
+        """
         return None
 
     def latitudes(self, dtype: type | None = None) -> np.ndarray:
-        """Get the latitudes of the geography data.
+        """The latitudes of the geography data.
 
         Parameters
         ----------
         dtype : type, optional
-            The desired data type of the array, by default None.
+            Desired data type. Default is None.
 
         Returns
         -------
         np.ndarray
-            The latitudes of the geography data.
+            Latitudes of the geography data.
         """
         if dtype is None:
             return self.owner._latitudes
         return self.owner._latitudes.astype(dtype)
 
     def longitudes(self, dtype: type | None = None) -> np.ndarray:
-        """Get the longitudes of the geography data.
+        """The longitudes of the geography data.
 
         Parameters
         ----------
         dtype : type, optional
-            The desired data type of the array, by default None.
+            Desired data type. Default is None.
 
         Returns
         -------
         np.ndarray
-            The longitudes of the geography data.
+            Longitudes of the geography data.
         """
         if dtype is None:
             return self.owner._longitudes
         return self.owner._longitudes.astype(dtype)
 
     def x(self, dtype: type | None = None) -> None:
-        """Get the x-coordinates of the geography data."""
+        """Not implemented. Intended to get x-coordinates of the geography data.
+
+        Returns
+        -------
+        None
+        """
         raise NotImplementedError()
 
     def y(self, dtype: type | None = None) -> None:
-        """Get the y-coordinates of the geography data."""
+        """Not implemented. Intended to get y-coordinates of the geography data.
+
+        Returns
+        -------
+        None
+        """
         raise NotImplementedError()
 
     def _unique_grid_id(self) -> None:
-        """Get the unique grid ID of the geography data."""
+        """Not implemented. Intended to get unique grid ID of the geography data.
+
+        Returns
+        -------
+        None
+        """
         raise NotImplementedError()
 
     def projection(self) -> None:
-        """Get the projection of the geography data."""
+        """The projection of the geography data.
+
+        Returns
+        -------
+        None
+        """
         return None
 
     def bounding_box(self) -> None:
-        """Get the bounding box of the geography data."""
+        """Not implemented. Intended to get bounding box of the geography data.
+
+        Returns
+        -------
+        None
+        """
         raise NotImplementedError()
 
     def gridspec(self) -> None:
-        """Get the grid specification of the geography data."""
+        """Not implemented. Intended to get grid specification of the geography data.
+
+        Returns
+        -------
+        None
+        """
         raise NotImplementedError()
 
 
 class NewLatLonField(_Wrapper):
-    """Change the latitudes and longitudes of a field.
+    """Wrapper to change the latitudes and longitudes of a field.
 
     Parameters
     ----------
@@ -254,27 +336,27 @@ class NewLatLonField(_Wrapper):
     """
 
     def grid_points(self) -> tuple[np.ndarray, np.ndarray]:
-        """Get the grid points of the field.
+        """The grid points (latitudes and longitudes) of the field.
 
         Returns
         -------
-        tuple
-            The latitudes and longitudes of the field.
+        tuple of np.ndarray
+            Latitudes and longitudes of the field.
         """
         return self._wrapped_latitudes, self._wrapped_longitudes
 
     def to_latlon(self, flatten: bool = True) -> dict[str, np.ndarray]:
-        """Convert the grid points to latitude and longitude.
+        """Convert the grid points to latitude and longitude arrays.
 
         Parameters
         ----------
         flatten : bool, optional
-            Whether to flatten the arrays, by default True.
+            If True, flatten the arrays. Default is True.
 
         Returns
         -------
-        dict
-            A dictionary containing the latitudes and longitudes.
+        dict of str to np.ndarray
+            Dictionary with latitudes and longitudes.
         """
         assert flatten
         return dict(lat=self._wrapped_latitudes, lon=self._wrapped_longitudes)
@@ -329,39 +411,45 @@ class NewLatLonField(_Wrapper):
 
 class WrappedMetadata:
     def __init__(self, owner):
-        self.owner = owner
+        self.owner: Any = owner
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return key in self.keys()
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         return self.owner.get(key)
 
-    def get(self, *args, **kwargs):
+    def get(self, *args: Any, **kwargs: Any) -> Any:
         return self.owner.get(*args, **kwargs)
 
-    def keys(self):
+    def keys(self) -> list[str]:
         return self.owner.keys()
 
     @property
-    def geography(self):
+    def geography(self) -> GeoMetadata:
         return self.owner.geography
 
 
 class _NewMetadataField(_Wrapper):
-    """Change the metadata of a field."""
+    """Wrapper to change the metadata of a field."""
 
     def mapping(self, key: str, field: ekd.Field) -> Any:
         # We cannot use a ABC with dynamic class creation
         raise NotImplementedError()
 
-    def metadata(self, *args: Any, **kwargs: Any) -> Any:
-        """Get the metadata of the field.
+    def metadata(self, *args: Any, astype=None, remapping=None, patches=None, **kwargs: Any) -> Any:
+        """Get the metadata of the field, optionally remapping or patching.
 
         Parameters
         ----------
         *args : Any
             Additional arguments.
+        astype : type, optional
+            Desired type for metadata values.
+        remapping : Any, optional
+            Remapping function or specification.
+        patches : Any, optional
+            Patches to apply to metadata.
         **kwargs : Any
             Additional keyword arguments.
 
@@ -383,6 +471,12 @@ class _NewMetadataField(_Wrapper):
                     mars[k] = m
             return mars
 
+        if remapping is not None or patches is not None:
+            from earthkit.data.core.order import build_remapping
+
+            remapping = build_remapping(remapping, patches)
+            return remapping(self.metadata)(*args, astype=astype, **kwargs)
+
         def _val(a):
             value = self.mapping(a)
             if value is MISSING_METADATA:
@@ -401,7 +495,7 @@ class _NewMetadataField(_Wrapper):
 
 
 class NewMetadataField(_NewMetadataField):
-    """Change the metadata of a field.
+    """Wrapper to change the metadata of a field.
 
     Parameters
     ----------
@@ -441,25 +535,25 @@ class NewFlavouredField(_NewMetadataField):
         # TODO: Get falvoured keys
         return self._wrapped_field.metadata().keys()
 
-    def get(self, key):
+    def get(self, key: str) -> Any:
         return self.metadata(key)
 
 
 def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: Any) -> ekd.Field:
-    """Create a new field from a numpy array.
+    """Create a new field from a numpy array and template field, with optional metadata.
 
     Parameters
     ----------
     array : np.ndarray
-        The data for the new field.
+        Data for the new field.
     template : ekd.Field
-        The template field to use.
+        Template field to use.
     **metadata : Any
         Additional metadata for the new field.
 
     Returns
     -------
-    NewMetadataField
+    ekd.Field
         The new field with the provided data and metadata.
     """
     f = _copy(template)
@@ -487,14 +581,14 @@ def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: 
 
 
 def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
-    """Create a new field with metadata.
+    """Create a new field with updated metadata.
 
     Parameters
     ----------
     template : ekd.Field
-        The template field to use.
+        Template field to use.
     **metadata : Any
-        The metadata for the new field.
+        Metadata for the new field.
 
     Returns
     -------
@@ -526,13 +620,13 @@ def new_field_with_valid_datetime(template: ekd.Field, valid_datetime: Any) -> e
     Parameters
     ----------
     template : ekd.Field
-        The template field to use.
+        Template field to use.
     valid_datetime : Any
-        The valid datetime for the new field.
+        Valid datetime for the new field.
 
     Returns
     -------
-    NewValidDateTimeField
+    ekd.Field
         The new field with the provided valid datetime.
     """
     date = int(valid_datetime.date().strftime("%Y%m%d"))
@@ -552,15 +646,15 @@ def new_field_from_latitudes_longitudes(
     Parameters
     ----------
     template : ekd.Field
-        The template field to use.
+        Template field to use.
     latitudes : np.ndarray
-        The latitudes for the new field.
+        Latitudes for the new field.
     longitudes : np.ndarray
-        The longitudes for the new field.
+        Longitudes for the new field.
 
     Returns
     -------
-    NewGridField
+    ekd.Field
         The new field with the provided latitudes and longitudes.
     """
     f = _copy(template)
@@ -588,14 +682,14 @@ def new_field_from_grid(template: ekd.Field, grid: Grid) -> ekd.Field:
     Parameters
     ----------
     template : ekd.Field
-        The template field to use.
+        Template field to use.
     grid : Grid
-        The grid for the new field.
+        Grid for the new field.
 
     Returns
     -------
-    Field
-        The wrapped field
+    ekd.Field
+        The new field with the provided grid.
     """
 
     return new_field_from_latitudes_longitudes(template, *grid.latlon())
@@ -620,7 +714,7 @@ def new_flavoured_field(template: ekd.Field, flavour: Flavour) -> ekd.Field:
 
 
 class FieldSelection:
-    """A class for specifying which fields to process."""
+    """Specify which fields to process by key/value pairs."""
 
     ALLOWED_KEYS = {"param", "levelist"}
 

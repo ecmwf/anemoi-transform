@@ -258,7 +258,7 @@ class MatchingFieldsFilter(Filter):
             f"Please ensure your filter is configured to match the input variables metadata "
             f"current mismatch between inputs {data} and filter metadata {args}"
         )
-        if not set(args).issubset(data):
+        if not set(data).issubset(args):
             LOG.warning(msg)
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:

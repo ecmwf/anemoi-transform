@@ -28,7 +28,7 @@ class FormatRename:
         if md is None:
             return field
 
-        values = field.metadata(self.bits)
+        values = field.metadata(*self.bits)
         kwargs = {k: v for k, v in zip(self.bits, values)}
         kwargs = {self.what: self.format.format(**kwargs)}
         return new_field_with_metadata(template=field, **kwargs)

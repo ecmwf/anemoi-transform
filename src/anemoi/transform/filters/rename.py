@@ -29,6 +29,14 @@ class FormatRename:
             return field
 
         values = field.metadata(*self.bits)
+        values = (
+            [
+                values,
+            ]
+            if isinstance(values, str)
+            else values
+        )
+
         kwargs = {k: v for k, v in zip(self.bits, values)}
         kwargs = {self.what: self.format.format(**kwargs)}
         return new_field_with_metadata(template=field, **kwargs)

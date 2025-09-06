@@ -104,10 +104,9 @@ def test_group_by_param(sample_fields):
     assert num_matching + len(other) == len(sample_fields)
     for field in other:
         assert field.metadata("param") not in match_params
-        assert field in sample_fields
+        assert field._wrapped_field in sample_fields
 
 
-@pytest.mark.xfail(reason="vertical grouping not yet implemented")
 def test_group_by_param_vertical(sample_fields_vertical):
     from anemoi.transform.grouping import GroupByParamVertical
 
@@ -150,4 +149,4 @@ def test_group_by_param_vertical(sample_fields_vertical):
     assert num_matching + len(other) == len(sample_fields_vertical)
     for field in other:
         assert field.metadata("param") not in match_params
-        assert field in sample_fields_vertical
+        assert field._wrapped_field in sample_fields_vertical

@@ -73,7 +73,7 @@ class Sum(Filter):
             for k, v in values.items():
                 c = v.to_numpy(flatten=True)
                 if s is None:
-                    s = c
+                    s = c.copy()
                 else:
                     s += c
             result.append(new_field_from_numpy(s, template=values[list(values.keys())[0]], param=self.output))

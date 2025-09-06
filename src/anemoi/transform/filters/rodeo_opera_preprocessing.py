@@ -30,6 +30,7 @@ MAX_QI = 1
 
 
 def _clip_variable(variable: np.ndarray, max_value: float) -> np.ndarray:
+    variable = variable.copy()
     variable[variable < 0] = 0
     variable[variable >= max_value] = max_value
     return variable
@@ -83,9 +84,13 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[n
     # tp[quality == NODATA] = np.nan
     # tp[quality == UNDETECTED] = 0
 
+    tp = tp.copy()
+
     tp[mask == _NODATA] = np.nan
     tp[mask == _UNDETECTED] = 0
     tp[mask == _INF] = np.nan
+
+    quality = quality.copy()
 
     quality[mask == _UNDETECTED] = 0
 

@@ -10,8 +10,8 @@
 import earthkit.data as ekd
 import pytest
 
+from anemoi.transform.fields import FieldSelection
 from anemoi.transform.fields import new_field_with_metadata
-from src.anemoi.transform.fields import FieldSelection
 
 
 class MockField:
@@ -49,7 +49,6 @@ def test_update_multiple_metadata(sample_field):
     assert new_field.metadata("param", "centre") == ("foo", "bar")
 
 
-@pytest.mark.xfail(reason="__contains__ not yet implemented for metadata")
 def test_metadata_in_new_field(sample_field):
     """Test that we can check if a key is in the metadata."""
     assert "foo" not in sample_field.metadata()
@@ -57,11 +56,20 @@ def test_metadata_in_new_field(sample_field):
     assert "foo" in new_field.metadata()
 
 
-def test_field_with_updated_metadata_has_same_keys(sample_field):
-    """Test that updating existing metadata leaves the keys unchanged."""
+def test_field_with_updated_metadata_has_expect_keys1(sample_field):
+    """Test that updating existing metadata with a new key leave the other keys unchanged."""
     assert "param" in sample_field.metadata()
-    new_field = new_field_with_metadata(sample_field, param="foo")
-    assert tuple(new_field.metadata().keys()) == tuple(sample_field.metadata().keys())
+    new_field = new_field_with_metadata(sample_field, some_key="foo")
+    expect = set(sample_field.metadata().keys()) | {"some_key"}
+    assert set(new_field.metadata().keys()) == expect
+
+
+def test_field_with_updated_metadata_has_expect_keys2(sample_field):
+    """Test that updating existing metadata with an existing key leaves the keys unchanged."""
+    assert "param" in sample_field.metadata()
+    new_field = new_field_with_metadata(sample_field, shortName="foo")
+    expect = set(sample_field.metadata().keys())
+    assert set(new_field.metadata().keys()) == expect
 
 
 @pytest.mark.xfail(reason="updating metadata keys not yet implemented")
@@ -139,3 +147,34 @@ def test_fieldselection_match_fail_different_param_same_level():
     field = MockField(param="t", levelist=850)
     selection = FieldSelection(param="q", levelist=[850, 950])
     assert not selection.match(field)
+
+
+def test_field_new_metadata_remapping(sample_field):
+
+    param_level = sample_field.metadata(
+        "param_levelist", remapping={"param_levelist": "{param}_{levelist}"}, patches={"number": {None: 0}}
+    )
+    assert param_level == "2t"
+
+    param_level = sample_field.metadata(
+        "param_type", remapping={"param_type": "{param}_{type}"}, patches={"number": {None: 0}}
+    )
+    assert param_level == "2t_an"
+
+    number = sample_field.metadata("number", remapping={"param_level": "{param}_{type}"}, patches={"number": {None: 0}})
+    assert number == 0
+
+    new_field = new_field_with_metadata(sample_field, number=42, param="foo")
+
+    param_level = new_field.metadata(
+        "param_levelist", remapping={"param_levelist": "{param}_{levelist}"}, patches={"number": {None: 0}}
+    )
+    assert param_level == "foo"
+
+    param_level = new_field.metadata(
+        "param_type", remapping={"param_type": "{param}_{type}"}, patches={"number": {None: 0}}
+    )
+    assert param_level == "foo_an"
+
+    number = new_field.metadata("number", remapping={"param_level": "{param}_{type}"}, patches={"number": {None: 0}})
+    assert number == 42

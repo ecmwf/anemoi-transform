@@ -49,7 +49,7 @@ def assert_fields_equal(field_a, field_b):
             # not all keys will be in all fields
             continue
 
-    assert np.allclose(field_a.to_numpy(), field_b.to_numpy(), equal_nan=True)
+    assert np.allclose(field_a.to_numpy(), field_b.to_numpy(), equal_nan=True), (field_a.to_numpy(), field_b.to_numpy())
 
 
 class SelectFieldSource(Source):
@@ -86,3 +86,20 @@ class SelectAndAddFieldSource(Source):
             if self.params and f.metadata("param") in self.params and f.metadata("param") not in params:
                 fields.append(f)
         return new_fieldlist_from_list(fields)
+
+
+def make_read_only(x):
+
+    from types import MappingProxyType as frozendict
+
+    if isinstance(x, dict):
+        return frozendict({make_read_only(ki): make_read_only(vi) for ki, vi in x.items()})
+
+    if isinstance(x, (list, tuple)):
+        return tuple(make_read_only(xi) for xi in x)
+
+    if isinstance(x, np.ndarray):
+        x.flags.writeable = False
+        return x
+
+    return x

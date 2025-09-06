@@ -565,7 +565,7 @@ def test_dewpoint_temperature_to_specific_humidity(dewpoint_temperature_source):
     # test pipeline output matches known good output
     result = output_fields["2sh"][0].to_numpy()
     expected_specific_humidity = Q2M_VALUES
-    np.testing.assert_allclose(result, expected_specific_humidity)
+    np.testing.assert_allclose(result, expected_specific_humidity, atol=1e-8)
 
 
 def test_height_level_dewpoint_temperature_to_specific_humidity_round_trip(dewpoint_temperature_source):

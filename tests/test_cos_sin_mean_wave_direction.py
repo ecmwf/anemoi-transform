@@ -102,13 +102,3 @@ def test_cos_sin_mean_wave_direction_round_trip(mwd_source):
 
     for input_field, output_field in zip(input_fields["mwd"], output_fields["mwd"]):
         assert_fields_equal(input_field, output_field)
-
-
-if __name__ == "__main__":
-    """
-    Run all test functions that start with 'test_'.
-    """
-    for name, obj in list(globals().items()):
-        if name.startswith("test_") and callable(obj):
-            print(f"Running {name}...")
-            obj()

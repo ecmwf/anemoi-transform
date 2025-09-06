@@ -23,8 +23,12 @@ def collect_fields_by_param(pipeline):
     return fields
 
 
-def assert_fields_equal(field_a, field_b):
+def assert_fields_equal(field_a, field_b, exclude_keys=None):
     METADATA_KEYS = ["param", "valid_datetime", "latitudes", "longitudes", "levelist"]
+
+    if exclude_keys is None:
+        exclude_keys = []
+    exclude_keys = set(exclude_keys)
 
     # workaround for unreliable __contains__ in potentially wrapped objects
     def metadata_contains(field, key):
@@ -34,7 +38,7 @@ def assert_fields_equal(field_a, field_b):
         except KeyError:
             return False
 
-    for key in METADATA_KEYS:
+    for key in set(METADATA_KEYS) - exclude_keys:
         try:
             assert field_a.metadata(key) == field_b.metadata(key)
         except ValueError:

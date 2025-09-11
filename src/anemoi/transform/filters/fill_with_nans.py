@@ -11,6 +11,10 @@ import logging
 
 import earthkit.data as ekd
 
+import numpy as np
+from itertools import groupby
+import tqdm
+
 from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
@@ -23,150 +27,98 @@ LOG = logging.getLogger(__name__)
 @filter_registry.register("fill_with_nans")
 class FillWithNaNs(Filter):
 
-    def __init__(self):
-        self._mask = None
+    def __init__(
+            self, 
+            fill_value=9999, 
+            max_lon_output = 16.0, 
+            min_lon_output = -12.0,  
+            max_lat_output = 55.4, 
+            min_lat_output = 37.5
+            ):
+        self.fill_value = fill_value
+        self.max_lon_output = max_lon_output
+        self.min_lon_output = min_lon_output
+        self.max_lat_output = max_lat_output
+        self.min_lat_output = min_lat_output
 
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
 
         return fields
 
-    def find_idxs(self, vec, new_vec):
-        import numpy as np
-
-        idx = 0
-        idx_table = []
-        print(f"shape of vec {vec.shape} and new_vec {new_vec.shape}")
-        for new_idx in range(len(new_vec)):
-
-            err = 0
-            new_value = new_vec[new_idx]
-
-            try:
-                value = vec[idx]
-            except IndexError:
-                idx -= 1
-                value = vec[idx]
-                err = 1
-
-            if np.isclose(new_value, value):
-                # print("\nnew_idx", new_idx)
-                # if err:
-                #     print("idx ceiled")
-                # print("idx", idx)
-                idx_table.append(idx)
-                idx += 1
-            else:
-                idx_table.append(-1)
-
-        print(f"final idx = {idx}")
-        print(f"final nex_idx = {new_idx}")
-        return idx_table
-
     def backward(self, fields: ekd.FieldList) -> ekd.FieldList:
-        """Parameters
-                ----------
-                fields : ekd.FieldList
-           List of fields to be processed.
+        """
+        Fill missing grid points with a default value in the fields.
+        The step is supposed to be the same
+         Parameters
+        ----------
+        fields : ekd.FieldList
+            List of fields to be processed.
 
-                Returns
-                -------
-                ekd.FieldList
+        Returns
+        -------
+        ekd.FieldList
 
         """
-        from itertools import groupby
 
-        import numpy as np
-        import tqdm
+        first = fields[0]
+        input_lon, input_lat = first.state['longitudes'], first.state['latitudes']
+        print("input_lat", input_lat)
+        unique_lons = np.unique(input_lon)
+        unique_lats = np.unique(input_lat)
+        nb_lats_input = len(unique_lats)
 
-        fill_value = 9999
+        step_lon = unique_lons[1] - unique_lons[0]
+        step_lat = unique_lats[1] - unique_lats[0]
 
-        if self._mask is None:
+        nb_lats_output = round((self.max_lat_output - self.min_lat_output) / step_lat)
+        nb_lons_output = round((self.max_lon_output - self.min_lon_output) / step_lon)
+        print("nb_lats_desired", nb_lats_output)
+        print("nb_lons_desired", nb_lons_output)
+        output_lon = np.tile(np.arange(self.min_lon_output, self.max_lon_output + step_lon, step_lon), nb_lats_output)
+        output_lat = np.repeat(np.arange(self.min_lat_output, self.max_lat_output + step_lat, nb_lats_output), nb_lons_output)[::-1]
+        print("new_lon", output_lon)
+        print("new_lat", output_lat)
 
-            first = fields[0]
-            lon, lat = first.state["longitudes"], first.state["latitudes"]
-            data = first.to_numpy(flatten=True)
+        list_nb_lon_by_lat_in_input = [len(list(g)) for v, g in groupby(input_lat)]
+        print("nb_lon_by_lat", list_nb_lon_by_lat_in_input)
+        cumsum = np.cumsum(list_nb_lon_by_lat_in_input)
+        sum_nb_lon_before_lat_in_input = np.insert(cumsum[:-1], 0, 0)
 
-            max_lon, min_lon = max(lon), min(lon)
-            max_lat, min_lat = max(lat), min(lat)
+        list_idx_output_lon = np.rint((input_lon - self.min_lon_output)/step_lon).astype(int)
+        list_idx_output_lat = np.rint((self.max_lat_output - input_lat)/step_lat).astype(int)
+        print("aaa",np.unique(list_idx_output_lat) )
+        output_data = np.ones((nb_lats_output * nb_lons_output)) * self.fill_value
+        result = []
+        # for field in tqdm.tqdm(fields, desc=f"Fill with {self.fill_value}"):
+            # _lon, _lat = len(np.unique(field.state['longitudes'])), len(np.unique(field.state['latitudes']))
+            # print(f"size fields lon lat {_lon} and {_lat}")
+        field = fields[0]
+        input_data = field.to_numpy(flatten=True)
+        for idx_input_lat in range(nb_lats_input):
+            print("\nlatitude idx dans l'ancien tableau", idx_input_lat)
+            nb_lon_before_lat_in_input = sum_nb_lon_before_lat_in_input[idx_input_lat]
+            print(f"Il y avait {nb_lon_before_lat_in_input} points avant cette ligne")
+            nb_lon_by_lat_in_input = list_nb_lon_by_lat_in_input[idx_input_lat]
+            print(f"Il y a {nb_lon_by_lat_in_input} lon à cette latitude")
+            idx_output_lat = list_idx_output_lat[nb_lon_before_lat_in_input : nb_lon_before_lat_in_input + nb_lon_by_lat_in_input][0]
+            print("idx latitude dnas le nouveau tableau : ", idx_output_lat)
+            list_idx = idx_output_lat*nb_lats_output + list_idx_output_lon[nb_lon_before_lat_in_input : nb_lon_before_lat_in_input + nb_lon_by_lat_in_input]
+            print("idx lat dans output_data qu'on va écrire", idx_output_lat)
+            print("idx lon dans output_data qu'on va écrire", list_idx_output_lon[nb_lon_before_lat_in_input : nb_lon_before_lat_in_input + nb_lon_by_lat_in_input])
+            print("idx dans input data qu'on préleve", nb_lon_before_lat_in_input,  nb_lon_before_lat_in_input + nb_lon_by_lat_in_input)
+            output_data[list_idx] = input_data[nb_lon_before_lat_in_input: nb_lon_before_lat_in_input + nb_lon_by_lat_in_input]
+            print("output_data[list_idx]", output_data[list_idx])
 
-            list_nb_lon_by_lat = [len(list(g)) for v, g in groupby(lat)]
-            print("nb_lon_by_lat", list_nb_lon_by_lat)
-            cumsum = np.cumsum(list_nb_lon_by_lat)
-            sum_nb_lon_before_lat = np.insert(cumsum[:-1], 0, 0)
+        result.append(
+        new_field_from_latitudes_longitudes(
+            new_field_from_numpy(output_data, template=field),
+            latitudes=output_lat,
+            longitudes=output_lon,
+        )
+    )
+            
+        print("len results : ", len(result))
+        print("end ",  new_fieldlist_from_list(result))
 
-            unique_lons = np.unique(lon)
-            unique_lats = np.unique(lat)
-            nb_lats = len(unique_lats)
-            nb_lons = len(unique_lons)
-
-            step_lon = unique_lons[1] - unique_lons[0]
-            step_lat = unique_lats[1] - unique_lats[0]
-
-            new_lon = np.tile(np.arange(min_lon, max_lon + step_lon, step_lon), nb_lats)
-            new_lat = np.repeat(np.arange(min_lat, max_lat + step_lat, step_lat), nb_lons)[::-1]
-
-            idx_lons = ((lon - min_lon) / step_lon).astype(int)
-
-            new_data = np.ones((nb_lats * nb_lons)) * fill_value
-            print("shape", new_data.shape)
-            result = []
-            for field in tqdm.tqdm(fields, desc=f"Fill with {fill_value}"):
-                _lon, _lat = field.state["longitudes"], field.state["latitudes"]
-                for idx_lat in range(nb_lats):
-                    nb_lon_before_lat = sum_nb_lon_before_lat[idx_lat]
-                    nb_lon_by_lat = list_nb_lon_by_lat[idx_lat]
-                    list_idx = idx_lat * nb_lats + idx_lons[nb_lon_before_lat : nb_lon_before_lat + nb_lon_by_lat]
-                    new_data[list_idx] = data[nb_lon_before_lat : nb_lon_before_lat + nb_lon_by_lat]
-                result.append(
-                    new_field_from_latitudes_longitudes(
-                        new_field_from_numpy(new_data, template=field),
-                        latitudes=new_lat,
-                        longitudes=new_lon,
-                    )
-                )
-
-            print("len results : ", len(result))
-            print("end ", new_fieldlist_from_list(result))
-
-            return new_fieldlist_from_list(result)
-            # print("new_data : ", new_data.shape)
-            # print("new_data : ", new_data)
-
-            # print("\n", dir(first))
-            # print(type(fields))
-            # print(type(first))
-            # print(first.metadata())
-            # print(first.state)
-
-            # print("lon:\n", lon)
-            # print("lon:\n", lon.shape)
-            # print("lat:\n", lat)
-            # print("lat:\n", lat.shape)
-
-            # print("new_lon:\n", new_lon.shape)
-            # print("new_lat:\n", new_lat.shape)
-            # print("new_lon:\n", new_lon)
-            # print("new_lat:\n", new_lat)
-
-            # print("Finding lon idx")
-            # idx_lon_table = self.find_idxs(lon, new_lon)
-            # print("Finding lat idx")
-            # print("lat : ", lat[0:10])
-            # print("lat : ", new_lat[0:10])
-            # idx_lat_table = self.find_idxs(lat, new_lat)
-
-            # print("idx lon shape : ", len(idx_lon_table))
-            # print("idx lat shape : ", len(idx_lat_table))
-
-            # print("sum", len(np.where((idx_lon_table == -1) & (idx_lat_table == -1))[0]))
-
-            # print("idx lon : ", idx_lon_table)
-            # print("idx lat : ", idx_lat_table)
-
-        # for field in fields:
-        #     data = field.to_numpy(flatten=True)
-
-        #     print("\nfield : ", field)
-        #     print(data.shape)
-
-        # return fields
+        return new_fieldlist_from_list(result)
+        

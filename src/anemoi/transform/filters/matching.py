@@ -199,7 +199,7 @@ class MatchingFieldsFilter(Filter):
         directional = self.forward_arguments if argument_type == "forward" else self.backward_arguments
 
         if self.return_inputs == "all":
-            returned_input_list = arguments
+            returned_input_list = list(arguments)
         elif self.return_inputs == "none":
             returned_input_list = []
         else:

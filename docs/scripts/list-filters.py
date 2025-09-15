@@ -19,7 +19,7 @@ for f in filter_registry.registered:
     print()
 
     module = getattr(filter, "__module__", "")
-    if not module.startswith("anemoi.transform.filters."):
+    if not module.startswith("anemoi.transform."):
         # Only the filters in src/anemoi/transform/filters should be listed
         # This can happen when plugin filters are registered
         # This is also something we may want to support in the future

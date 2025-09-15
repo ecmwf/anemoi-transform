@@ -10,6 +10,7 @@ LOG = logging.getLogger("list-filters")
 
 for f in filter_registry.registered:
     filter = filter_registry.lookup(f, return_none=True)
+    filter = filter()
     if filter is None:
         LOG.error(f"Cannot find '{f}' in {filter_registry.package}")
         continue

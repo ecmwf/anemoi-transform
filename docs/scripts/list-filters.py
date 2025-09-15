@@ -1,13 +1,27 @@
 #!/usr/bin/env python3
 
+import logging
+
 from anemoi.transform.filters import filter_registry
+
+LOG = logging.getLogger("list-filters")
 
 for f in filter_registry.registered:
     filter = filter_registry.lookup(f, return_none=True)
+    if filter is None:
+        LOG.error(f"Cannot find '{f}' in {filter_registry.package}")
+        continue
+
     print(f)
     print("-" * len(f))
     print()
-    if filter is None:
-        print(f"- {f} (error)")
-    else:
-        print(f"- {f}: {filter.__doc__}")
+
+    module = getattr(filter, "__module__", "")
+    if not module.startswith("anemoi.transform.filters."):
+        # Only the filters in src/anemoi/transform/filters should be listed
+        # This can happen when plugin filters are registered
+        # This is also something we may want to support in the future
+        LOG.warning(f"Filter {f} is in unexpected module {module}")
+        continue
+
+    print(filter.__doc__ or "No documentation available.")

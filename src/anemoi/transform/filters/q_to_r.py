@@ -35,9 +35,11 @@ class HumidityConversion(MatchingFieldsFilter):
 
       input:
         pipe:
+          # Retrieve specific humidity and temperature from a source (e.g. MARS)
           - mars:
               param: [q, t]
               ...
+          # Convert specific humidity to relative humidity and name it 'r'
           - q-to-r:
               humidity: q
               temperature: t

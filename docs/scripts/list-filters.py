@@ -2,6 +2,8 @@
 
 import logging
 
+from numpydoc.docscrape_sphinx import SphinxDocString
+
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger("list-filters")
@@ -26,5 +28,4 @@ for f in filter_registry.registered:
         LOG.warning(f"Filter {f} is in unexpected module {module}")
         continue
 
-    print(filter.__doc__ or "No documentation available.")
-    print()
+    print(SphinxDocString(filter.__doc__ or "No documentation available"))

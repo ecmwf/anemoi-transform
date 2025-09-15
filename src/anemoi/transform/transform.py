@@ -220,7 +220,7 @@ class ReversedTransform(Transform):
         return self.filter.patch_data_request(data_request)
 
     @classmethod
-    def repr_rst(cls) -> str:
+    def repr_rst(cls, reversed: bool = False) -> str:
         return cls.filter.repr_rst()
 
 

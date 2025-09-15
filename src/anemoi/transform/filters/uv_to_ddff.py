@@ -55,6 +55,10 @@ class WindComponents(MatchingFieldsFilter):
             Convention to use for conversion, by default "meteo".
         radians : bool, optional
             Whether to use radians, by default False.
+
+        Methods
+        -------
+
         """
 
         self.u_component = u_component

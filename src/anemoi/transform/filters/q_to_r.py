@@ -20,7 +20,20 @@ from .matching import matching
 
 
 class HumidityConversion(MatchingFieldsFilter):
-    """A filter to convert specific humidity to relative humidity with standard thermodynamical formulas."""
+    """A filter to convert specific humidity to relative humidity with standard thermodynamical formulas.
+
+    Examples
+    --------
+    Convert specific humidity to relative humidity:
+
+    >>> specific_humidity = ekd.Field.from_numpy(np.array([0.01, 0.02, 0.03]), name="q")
+    >>> temperature = ekd.Field.from_numpy(np.array([273.15, 280.15, 290.15]), name="t")
+    >>> filter = HumidityConversion()
+    >>> relative_humidity = filter(specific_humidity, temperature)
+    >>> relative_humidity
+    <ekd.Field: r>
+
+    """
 
     @matching(
         select="param",
@@ -35,7 +48,7 @@ class HumidityConversion(MatchingFieldsFilter):
         humidity: str = "q",
         return_inputs: Literal["all", "none"] | list[str] = "all",
     ):
-        """Initialize the VerticalVelocity filter.
+        """Initialize the HumidityConversion filter.
 
         Parameters
         ----------

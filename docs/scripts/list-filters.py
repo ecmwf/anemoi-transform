@@ -14,7 +14,7 @@ for f in filter_registry.registered:
 
     print()
     print("-" * len(f))
-    print(f)
+    print(f, filter)
     print("-" * len(f))
     print()
 

@@ -9,8 +9,10 @@
 
 
 from abc import ABC
+from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
+from typing import Callable
 from typing import TypeVar
 
 import earthkit.data as ekd
@@ -18,8 +20,33 @@ import earthkit.data as ekd
 T = TypeVar("T", bound="Transform")
 
 
-class Transform(ABC):
+class _TransformMetaClass(ABCMeta):
+
+    # This metaclass adds a `reversed` property to all Transform subclasses.
+    # And forwards the docstring of the original class to the reversed property.
+    # This allows to document the reversed transform in the same way as the original one.
+
+    @property
+    def reversed(cls: type[T]) -> Callable[..., "ReversedTransform"]:
+
+        def wrap_reversed(*args: Any, **kwargs: Any) -> "ReversedTransform":
+            return ReversedTransform(cls(*args, **kwargs))
+
+        def wrap_reversed_str() -> str:
+            return cls.repr_rst(reversed=True)
+
+        wrap_reversed.repr_rst = wrap_reversed_str
+
+        return wrap_reversed
+
+
+class Transform(ABC, metaclass=_TransformMetaClass):
     """Abstract base class for all transformations."""
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> "Transform":
+        print(f"Creating instance of {cls.__name__} with args={args}, kwargs={kwargs}")
+        instance = super().__new__(cls)
+        return instance
 
     def __repr__(self) -> str:
         """Returns a string representation of the transform.
@@ -87,24 +114,6 @@ class Transform(ABC):
         """
         return ReversedTransform(self)
 
-    @classmethod
-    def reversed(cls: type[T], *args: Any, **kwargs: Any) -> "ReversedTransform":
-        """Creates a reversed transform.
-
-        Parameters
-        ----------
-        args : Any
-            Positional arguments for the transform.
-        kwargs : Any
-            Keyword arguments for the transform.
-
-        Returns
-        -------
-        ReversedTransform
-            A reversed transform.
-        """
-        return ReversedTransform(cls(*args, **kwargs))
-
     def __or__(self, other: "Transform") -> "Transform":
         """Combines two transforms into a pipeline.
 
@@ -136,6 +145,10 @@ class Transform(ABC):
             The patched data request.
         """
         return data_request
+
+    @classmethod
+    def repr_rst(cls, reversed: bool = False) -> str:
+        return cls.__doc__
 
 
 class ReversedTransform(Transform):
@@ -205,3 +218,14 @@ class ReversedTransform(Transform):
             The patched data request.
         """
         return self.filter.patch_data_request(data_request)
+
+    @classmethod
+    def repr_rst(cls) -> str:
+        return cls.filter.repr_rst()
+
+
+def _reversed_repr_rst() -> str:
+    assert False, "ReversedTransform.repr_rst() should not be called directly."
+
+
+setattr(Transform.reversed, "repr_rst", classmethod(_reversed_repr_rst))

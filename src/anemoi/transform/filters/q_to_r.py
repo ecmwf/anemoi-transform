@@ -22,17 +22,30 @@ from .matching import matching
 class HumidityConversion(MatchingFieldsFilter):
     """A filter to convert specific humidity to relative humidity with standard thermodynamical formulas.
 
+    Notes
+    -----
+    For more information, see the
+    `EarthKit-Meteo documentation <https://earthkit-meteo.readthedocs.io/en/latest/_api/meteo/thermo/array/relative_humidity_from_specific_humidity.html>`_.
+
+    References
+    ----------
+    .. [1] meteo.thermo.array.relative_humidity_from_specific_humidity
+        https://earthkit-meteo.readthedocs.io/en/latest/_api/meteo/thermo/array/relative_humidity_from_specific_humidity.html
+
     Examples
     --------
     Convert specific humidity to relative humidity:
 
     .. code-block:: yaml
 
-        filters:
-            - q_to_r:
-                humidity: q
-                temperature: t
-                relative_humidity: r
+      pipe:
+        - mars:
+           param: [q, t]
+           ...
+        - q_to_r:
+            humidity: q
+            temperature: t
+            relative_humidity: r
 
     """
 

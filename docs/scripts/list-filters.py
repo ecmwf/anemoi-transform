@@ -28,4 +28,11 @@ for f in filter_registry.registered:
         LOG.warning(f"Filter {f} is in unexpected module {module}")
         continue
 
-    print(SphinxDocString(filter.__doc__ or "No documentation available"))
+    txt = str(SphinxDocString(filter.__doc__ or ""))
+    while "\n\n\n" in txt:
+        txt = txt.replace("\n\n\n", "\n\n")
+
+    while txt.strip() != txt:
+        txt = txt.strip()
+
+    print(txt)

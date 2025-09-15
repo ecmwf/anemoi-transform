@@ -26,12 +26,13 @@ class HumidityConversion(MatchingFieldsFilter):
     --------
     Convert specific humidity to relative humidity:
 
-    >>> specific_humidity = ekd.Field.from_numpy(np.array([0.01, 0.02, 0.03]), name="q")
-    >>> temperature = ekd.Field.from_numpy(np.array([273.15, 280.15, 290.15]), name="t")
-    >>> filter = HumidityConversion()
-    >>> relative_humidity = filter(specific_humidity, temperature)
-    >>> relative_humidity
-    <ekd.Field: r>
+    .. code-block:: yaml
+
+        filters:
+            - q_to_r:
+                humidity: q
+                temperature: t
+                relative_humidity: r
 
     """
 

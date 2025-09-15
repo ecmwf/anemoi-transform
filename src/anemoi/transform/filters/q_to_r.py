@@ -38,7 +38,7 @@ class HumidityConversion(MatchingFieldsFilter):
           - mars:
               param: [q, t]
               ...
-          - q_to_r:
+          - q-to-r:
               humidity: q
               temperature: t
               relative_humidity: r

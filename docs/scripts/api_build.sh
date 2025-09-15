@@ -1,3 +1,4 @@
+#!/bin/bash
 
 script_dir=$(dirname "${BASH_SOURCE[0]}")
 docs_dir="$script_dir/.."

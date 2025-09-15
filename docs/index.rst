@@ -61,16 +61,22 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 
    overview
    installing
-   cli/overview
 
 .. toctree::
    :maxdepth: 1
    :hidden:
    :caption: Filters
 
+   filters/introduction
    filters/list-of-filters
-   filters/single-field-filters
-   filters/matching-filters
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Extending
+
+   extending/single-field-filters
+   extending/matching-filters
 
 .. toctree::
    :maxdepth: 5

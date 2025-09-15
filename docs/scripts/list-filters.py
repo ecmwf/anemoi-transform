@@ -12,6 +12,8 @@ for f in filter_registry.registered:
         LOG.error(f"Cannot find '{f}' in {filter_registry.package}")
         continue
 
+    print()
+    print("-" * len(f))
     print(f)
     print("-" * len(f))
     print()
@@ -25,3 +27,4 @@ for f in filter_registry.registered:
         continue
 
     print(filter.__doc__ or "No documentation available.")
+    print()

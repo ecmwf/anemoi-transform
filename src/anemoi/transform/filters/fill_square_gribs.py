@@ -11,6 +11,7 @@ import logging
 from itertools import groupby
 
 import earthkit.data as ekd
+import tqdm
 import numpy as np
 
 from anemoi.transform.fields import new_field_from_latitudes_longitudes

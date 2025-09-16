@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 import os
+import shutil
 from typing import Any
 
 import earthkit.data as ekd
@@ -16,7 +17,7 @@ import pytest
 
 from anemoi.transform.filters.repeat_members import RepeatMembers
 
-NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
+NO_MARS = not (shutil.which("mars") is not None or os.path.exists(os.path.expanduser("~/.ecmwfapirc")))
 
 
 def _get_template() -> tuple[Any, np.ndarray, Any]:

@@ -38,9 +38,7 @@ DATA_VALUES = {
 
 @pytest.fixture()
 def source(test_source):
-    FIELD_SPECS = [
-        {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA} for param, values in DATA_VALUES.items()
-    ]
+    FIELD_SPECS = [{"param": param, "values": values, **MOCK_FIELD_METADATA} for param, values in DATA_VALUES.items()]
     return test_source(FIELD_SPECS)
 
 

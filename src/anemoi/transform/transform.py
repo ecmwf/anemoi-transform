@@ -18,7 +18,6 @@ from typing import Callable
 from typing import TypeVar
 
 import earthkit.data as ekd
-import yaml
 
 T = TypeVar("T", bound="Transform")
 
@@ -151,8 +150,16 @@ class Transform(ABC, metaclass=_TransformMetaClass):
 
     @classmethod
     def documentation(cls, filter_name) -> str:
-        result = (cls.__doc__ or "").splitlines()
-        # Extract __init__ parameters and add them to the documentation
+
+        from io import StringIO
+
+        from ruamel.yaml import YAML
+        from ruamel.yaml.comments import CommentedMap
+
+        yaml = YAML()
+        yaml.indent(sequence=4, offset=2)
+
+        result = textwrap.dedent(cls.__doc__ or "").splitlines()
 
         examples = []
         examples.append("")
@@ -162,27 +169,48 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         examples.append(
             """
 To use this filter in a dataset recipe, include it as show below, adjusting parameters as needed.
-The `source` could be `mars`, `grib`, `netcdf`, etc. See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/l>`_ for more details.
+See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/l>`_ for more details.
 """
         )
 
+        def _(annotation: Any) -> str:  # simple string representation of type annotations
+            if hasattr(annotation, "__name__"):
+                return annotation.__name__
+            return str(annotation).replace("typing.", "")
+
         sig = inspect.signature(cls.__init__)
-        params = {}
+        params = CommentedMap({})
         for name, param in sig.parameters.items():
             if name == "self":
                 continue
             if param.default is inspect.Parameter.empty:
-                params[name] = f"...{name}..."
+                params[name] = "..."
+                params.yaml_add_eol_comment(f"Required, type: {_(param.annotation)}", name)
             else:
                 params[name] = param.default
+                params.yaml_add_eol_comment(f"{_(param.annotation)}", name)
 
-        dataset_example = {
-            "input": {
-                "pipe": [{"source": {"param1": "value1", "param2": "value2", "param3": "..."}}, {filter_name: params}]
+        dataset_example = CommentedMap(
+            {
+                "input": CommentedMap(
+                    {
+                        "pipe": [
+                            s := CommentedMap({"source": {"param1": "value1", "param2": "value2", "param3": "..."}}),
+                            CommentedMap({filter_name: params}),
+                        ]
+                    }
+                )
             }
-        }
+        )
 
-        dataset_example = yaml.dump(dataset_example, width=70, sort_keys=False)
+        s.yaml_add_eol_comment("Replace `source` with actual data source, e.g., 'mars', 'file', etc.", "source")
+
+        buf = StringIO()
+        yaml.dump(dataset_example, buf)
+        dataset_example = buf.getvalue()
+
+        # assert False, dataset_example
+
         dataset_example = textwrap.indent(dataset_example, "  ")
 
         examples.append(".. code-block:: yaml")

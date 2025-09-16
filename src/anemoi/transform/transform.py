@@ -185,7 +185,7 @@ See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/l>`_ for m
                 continue
             if param.default is inspect.Parameter.empty:
                 params[name] = "..."
-                params.yaml_add_eol_comment(f"Required, type: {_(param.annotation)}", name)
+                params.yaml_add_eol_comment(f"{_(param.annotation)} (REQUIRED)", name)
             else:
                 params[name] = param.default
                 params.yaml_add_eol_comment(f"{_(param.annotation)}", name)
@@ -195,7 +195,15 @@ See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/l>`_ for m
                 "input": CommentedMap(
                     {
                         "pipe": [
-                            s := CommentedMap({"source": {"param1": "value1", "param2": "value2", "param3": "..."}}),
+                            s := CommentedMap(
+                                {
+                                    "source": {
+                                        "param1": "value1",
+                                        "param2": "value2",
+                                        "param3": "...",
+                                    }
+                                }
+                            ),
                             CommentedMap({filter_name: params}),
                         ]
                     }

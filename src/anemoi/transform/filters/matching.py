@@ -16,7 +16,6 @@ from functools import wraps
 from inspect import signature
 from itertools import chain
 from typing import Any
-from typing import List
 from typing import Literal
 
 import earthkit.data as ekd
@@ -81,7 +80,7 @@ def _check_arguments(method: Callable) -> tuple[bool, bool, bool]:
     return has_params, has_args, has_kwargs
 
 
-def inputs_generator(input_list: List[str], **kwargs) -> Iterator[ekd.Field]:
+def inputs_generator(input_list: list[str], **kwargs) -> Iterator[ekd.Field]:
     for name in input_list:
         if name in kwargs:
             yield kwargs[name]
@@ -96,7 +95,7 @@ class matching:
         select: str,
         forward: str | list[str] | tuple[str, ...] = [],
         backward: str | list[str] | tuple[str, ...] = [],
-        return_inputs: Literal["all", "none"] | List[str] = "none",
+        return_inputs: Literal["all", "none"] | list[str] = "none",
         vertical: bool = False,
     ) -> None:
         """Initialize the matching decorator.
@@ -190,16 +189,16 @@ class MatchingFieldsFilter(Filter):
     _initialised = False
     # to return filter inputs if needed.
     # strings in the list must be in forward or backward args, otherwise this will fail
-    return_inputs: Literal["all", "none"] | List[str] = "none"
+    return_inputs: Literal["all", "none"] | list[str] = "none"
 
-    def _match_arguments(self, argument_type: Literal["forward", "backward"]) -> List[str]:
+    def _match_arguments(self, argument_type: Literal["forward", "backward"]) -> list[str]:
 
         arguments = set(self.forward_arguments) | set(self.backward_arguments)
 
         directional = self.forward_arguments if argument_type == "forward" else self.backward_arguments
 
         if self.return_inputs == "all":
-            returned_input_list = arguments
+            returned_input_list = list(arguments)
         elif self.return_inputs == "none":
             returned_input_list = []
         else:

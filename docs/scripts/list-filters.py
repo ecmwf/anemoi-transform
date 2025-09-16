@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import sys
 
 from numpydoc.docscrape_sphinx import SphinxDocString
 
@@ -9,6 +10,7 @@ from anemoi.transform.filters import filter_registry
 LOG = logging.getLogger("list-filters")
 
 for f in filter_registry.registered:
+
     filter = filter_registry.lookup(f, return_none=True)
 
     if filter is None:
@@ -28,6 +30,8 @@ for f in filter_registry.registered:
         # This is also something we may want to support in the future
         LOG.warning(f"Filter {f} is in unexpected module {module}")
         continue
+    print(filter, file=sys.stderr)
+    print(filter.__doc__, file=sys.stderr)
 
     txt = str(SphinxDocString(filter.__doc__ or ""))
     while "\n\n\n" in txt:

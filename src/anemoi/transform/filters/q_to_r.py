@@ -20,12 +20,15 @@ from .matching import matching
 
 
 class HumidityConversion(MatchingFieldsFilter):
-    """A filter to convert specific humidity to relative humidity with standard thermodynamical formulas.
+    """A filter to convert specific humidity to relative humidity using standard thermodynamical formulas.
+    This filter provides forward and backward transformations between specific humidity and relative humidity,
+    given temperature and pressure information. It is designed to be used in data processing pipelines where
+    conversion between these humidity representations is required.
 
     Notes
     -----
-    For more information, see the
-    `earthkit-meteo documentation <https://earthkit-meteo.readthedocs.io/en/latest/_api/meteo/thermo/array/relative_humidity_from_specific_humidity.html>`_.
+    For more information, see the :func:`earthkit.meteo.thermo.array.relative_humidity_from_specific_humidity <meteo.thermo.array.relative_humidity_from_specific_humidity>`
+    function in the earthkit-meteo documentation.
 
     Examples
     --------

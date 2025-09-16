@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 import logging
+from typing import Literal
 
 import earthkit.data as ekd
 import numpy as np
@@ -45,7 +46,7 @@ class MaskVariable(Filter):
         path: str,
         mask_value: float | None = None,
         threshold: float | None = None,
-        threshold_operator: str = ">",
+        threshold_operator: Literal["<", "<=", ">", ">=", "==", "!="] = ">",
         rename: str | None = None,
     ):
         """Initialize the MaskVariable filter.

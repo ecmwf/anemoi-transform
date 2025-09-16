@@ -159,7 +159,17 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         yaml = YAML()
         yaml.indent(sequence=4, offset=2)
 
-        result = textwrap.dedent(cls.__doc__ or "").splitlines()
+        def _lines(s: str) -> str:
+            lines = s.splitlines()
+            if len(lines) <= 1:
+                return lines
+            indent0 = len(lines[0]) - len(lines[0].lstrip())
+            indent1 = len(lines[1]) - len(lines[1].lstrip())
+            if indent0 == indent1:
+                return lines
+            return [lines[0]] + [line[indent1:] for line in lines[1:]]
+
+        result = _lines(cls.__doc__ or "")
 
         examples = []
         examples.append("")
@@ -169,7 +179,7 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         examples.append(
             """
 To use this filter in a dataset recipe, include it as show below, adjusting parameters as needed.
-See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/l>`_ for more details.
+See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/>`_ for more details.
 """
         )
 

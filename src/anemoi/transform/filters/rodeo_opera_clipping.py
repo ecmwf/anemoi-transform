@@ -24,17 +24,7 @@ MAX_TP = 10000  # clip TP
 
 @filter_registry.register("rodeo_opera_clipping")
 class RodeoOperaClipping(MatchingFieldsFilter):
-    """A filter to clip reprojected data in Rodeo Opera data.
-
-    Parameters
-    ----------
-    total_precipitation : str, optional
-        The name of the total_precipitation field, by default "tp".
-    max_total_precipitation : int, optional
-        The maximum value for tp, by default MAX_TP.
-    quality : ekd.Field
-        The quality data.
-    """
+    """A filter to clip reprojected data in Rodeo Opera data."""
 
     @matching(
         select="param",

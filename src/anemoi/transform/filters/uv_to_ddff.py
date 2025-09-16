@@ -20,9 +20,7 @@ from anemoi.transform.filters.matching import matching
 
 
 class WindComponents(MatchingFieldsFilter):
-    """A filter to convert wind speed and direction to U and V components,
-    and back.
-    """
+    """A filter to convert wind speed and direction to U and V components, and back."""
 
     @matching(
         select="param",

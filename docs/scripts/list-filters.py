@@ -8,7 +8,13 @@ from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger("list-filters")
 
+
+class FilterDocString(SphinxDocString):
+    pass
+
+
 for f in filter_registry.registered:
+
     filter = filter_registry.lookup(f, return_none=True)
 
     if filter is None:
@@ -29,9 +35,11 @@ for f in filter_registry.registered:
         LOG.warning(f"Filter {f} is in unexpected module {module}")
         continue
 
-    txt = str(SphinxDocString(filter.__doc__ or ""))
+    txt = str(FilterDocString(filter.documentation(filter_name=f)))
     while "\n\n\n" in txt:
         txt = txt.replace("\n\n\n", "\n\n")
+
+    # filter.yaml_example_datasets()
 
     while txt.strip() != txt:
         txt = txt.strip()

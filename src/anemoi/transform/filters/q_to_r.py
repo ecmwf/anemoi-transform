@@ -27,23 +27,6 @@ class HumidityConversion(MatchingFieldsFilter):
     For more information, see the
     `earthkit-meteo documentation <https://earthkit-meteo.readthedocs.io/en/latest/_api/meteo/thermo/array/relative_humidity_from_specific_humidity.html>`_.
 
-    Examples
-    --------
-    Convert specific humidity to relative humidity when creating an anemoi-dataset from MARS data:
-
-    .. code-block:: yaml
-
-      input:
-        pipe:
-          # Retrieve specific humidity and temperature from a source (e.g. MARS)
-          - mars:
-              param: [q, t]
-              ...
-          # Convert specific humidity to relative humidity and name it 'r'
-          - q-to-r:
-              humidity: q
-              temperature: t
-              relative_humidity: r
     """
 
     @matching(

@@ -8,6 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 
+import inspect
+import textwrap
 from abc import ABC
 from abc import ABCMeta
 from abc import abstractmethod
@@ -16,6 +18,7 @@ from typing import Callable
 from typing import TypeVar
 
 import earthkit.data as ekd
+import yaml
 
 T = TypeVar("T", bound="Transform")
 
@@ -32,10 +35,10 @@ class _TransformMetaClass(ABCMeta):
         def wrap_reversed(*args: Any, **kwargs: Any) -> "ReversedTransform":
             return ReversedTransform(cls(*args, **kwargs))
 
-        def wrap_reversed_str() -> str:
-            return cls.repr_rst(reversed=True)
+        def wrap_reversed_str(*args, **kwargs) -> str:
+            return cls.documentation(*args, **kwargs)
 
-        wrap_reversed.repr_rst = wrap_reversed_str
+        wrap_reversed.documentation = wrap_reversed_str
 
         return wrap_reversed
 
@@ -147,8 +150,50 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         return data_request
 
     @classmethod
-    def repr_rst(cls, reversed: bool = False) -> str:
-        return cls.__doc__
+    def documentation(cls, filter_name) -> str:
+        result = (cls.__doc__ or "").splitlines()
+        # Extract __init__ parameters and add them to the documentation
+
+        examples = []
+        examples.append("")
+        examples.append("Examples")
+        examples.append("--------")
+        examples.append("")
+        examples.append(
+            """
+To use this filter in a dataset recipe, include it as show below, adjusting parameters as needed.
+The `source` could be `mars`, `grib`, `netcdf`, etc. See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/l>`_ for more details.
+"""
+        )
+
+        sig = inspect.signature(cls.__init__)
+        params = {}
+        for name, param in sig.parameters.items():
+            if name == "self":
+                continue
+            if param.default is inspect.Parameter.empty:
+                params[name] = f"...{name}..."
+            else:
+                params[name] = param.default
+
+        dataset_example = {
+            "input": {
+                "pipe": [{"source": {"param1": "value1", "param2": "value2", "param3": "..."}}, {filter_name: params}]
+            }
+        }
+
+        dataset_example = yaml.dump(dataset_example, width=70, sort_keys=False)
+        dataset_example = textwrap.indent(dataset_example, "  ")
+
+        examples.append(".. code-block:: yaml")
+        examples.append("")
+        examples.append(dataset_example)
+
+        examples.append("")
+
+        result.extend(examples)
+
+        return "\n".join(result)
 
 
 class ReversedTransform(Transform):
@@ -222,10 +267,3 @@ class ReversedTransform(Transform):
     @classmethod
     def repr_rst(cls, reversed: bool = False) -> str:
         return cls.filter.repr_rst()
-
-
-def _reversed_repr_rst() -> str:
-    assert False, "ReversedTransform.repr_rst() should not be called directly."
-
-
-setattr(Transform.reversed, "repr_rst", classmethod(_reversed_repr_rst))

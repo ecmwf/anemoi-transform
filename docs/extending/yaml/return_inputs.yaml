@@ -1,0 +1,13 @@
+input:
+  pipe:
+  - source:
+      # mars, grib, netcdf, etc.
+      # source attributes here
+      # ...
+      # Must load both humidity and temperature variables
+
+  - q-to-r:
+      humidity: q # Name of humidity (input) variable
+      temperature: t # Name of temperature (input) variable
+      relative_humidity: r # Name of relative humidity (output) variable
+      return_inputs: [ "temperature" ] # list of names to be kept among the inputs (or "all"/"none")

@@ -21,7 +21,27 @@ from anemoi.transform.filters.matching import matching
 
 @filter_registry.register("earthkitfieldlambda")
 class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
-    """A filter to apply an arbitrary function to individual fields."""
+    """A filter to apply an arbitrary function to individual fields.
+
+    Examples
+    --------
+
+    .. code-block:: yaml
+
+      input:
+        pipe:
+            - source:
+            # mars, grib, netcdf, etc.
+            # source attributes here
+            # ...
+            # Must load the input variable
+
+            - earthkitfieldlambda:
+                param: "2t" # Name of variable (input) to be transformed
+                fn: "lambda x, s: x.clone(values=x.values - s)"
+                fn_args: [273.15]
+
+    """
 
     @matching(
         select="param",

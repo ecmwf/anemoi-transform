@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import textwrap
 
 from numpydoc.docscrape_sphinx import SphinxDocString
 from ruamel.yaml.comments import CommentedMap
@@ -43,15 +44,20 @@ class ScriptDocumenter(Documenter):
 
         s.yaml_add_eol_comment("Replace `source` with actual data source, e.g., 'mars', 'file', etc.", "source")
 
-        prefix = """
+        prefix = textwrap.dedent(
+            """
             To use this filter in a dataset recipe, include it as show below, adjusting parameters as needed.
             See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/>`_ for more details.
             """
+        ).strip()
 
         return YAMLExample(dataset_example, prefix=prefix)
 
 
 for f in filter_registry.registered:
+
+    if "mask" not in f:
+        continue
 
     filter = filter_registry.lookup(f, return_none=True)
 

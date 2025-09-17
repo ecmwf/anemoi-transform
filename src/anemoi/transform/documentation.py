@@ -8,11 +8,33 @@
 # nor does it submit to any jurisdiction.
 
 import inspect
+import sys
 import textwrap
 from io import StringIO
 
+import rich
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
+
+numpydoc_class_order = [
+    "Signature",
+    "Summary",
+    "Extended Summary",
+    "Parameters",
+    "Attributes",
+    "Methods",
+    "Returns",
+    "Yields",
+    "Receives",
+    "Other Parameters",
+    "Raises",
+    "Warns",
+    "Warnings",
+    "See Also",
+    "Notes",
+    "References",
+    "Examples",
+]
 
 
 def _annotations_name(annotation):
@@ -62,7 +84,32 @@ def _deindent_and_split(s: str) -> str:
     indent1 = len(lines[1]) - len(lines[1].lstrip())
     if indent0 == indent1:
         return lines
-    return [lines[0]] + [line[indent1:] for line in lines[1:]]
+    return [lines[0].rstrip()] + [line[indent1:].rstrip() for line in lines[1:]]
+
+
+def _find_rubrics(lines: list[str]) -> dict[str, tuple[int, int]]:
+    """Find the start and end lines of each rubric in the docstring."""
+    rubrics = {None: []}
+    current_rubric = rubrics[None]
+    for i, line in enumerate(lines):
+
+        if i > 0 and line and all(c == "-" for c in line):
+            title = lines[i - 1].strip()
+            if len(line) == len(title):
+                if title in rubrics:
+                    # Extend existing rubric
+
+                    current_rubric = rubrics[title]
+                    current_rubric.append("")  # Separate multiple sections
+                else:
+                    current_rubric.pop()  # Remove previous title line
+                    rubrics[title] = []
+                    current_rubric = rubrics[title]
+                continue
+
+        current_rubric.append(line)
+
+    return rubrics
 
 
 class Documenter:
@@ -111,18 +158,6 @@ def documentation(cls: type, documenter) -> str:
 
     result = _deindent_and_split(documenter.docstring(cls))
 
-    #     examples = []
-    #     examples.append("")
-    #     examples.append("Examples")
-    #     examples.append("--------")
-    #     examples.append("")
-    #     examples.append(
-    #         """
-    # To use this filter in a dataset recipe, include it as show below, adjusting parameters as needed.
-    # See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/>`_ for more details.
-    # """
-    #     )
-
     params = _construct_signature(cls)
 
     examples = []
@@ -132,20 +167,25 @@ def documentation(cls: type, documenter) -> str:
     examples.append("")
 
     for example in documenter.make_examples(params):
-        examples.append(str(example))
-
-    # buf = StringIO()
-    # yaml.dump(dataset_example, buf)
-    # dataset_example = buf.getvalue()
-
-    # dataset_example = textwrap.indent(dataset_example, "  ")
-
-    # examples.append(".. code-block:: yaml")
-    # examples.append("")
-    # examples.append(dataset_example)
+        examples.extend(str(example).splitlines())
 
     examples.append("")
 
     result.extend(examples)
+
+    rubrics = _find_rubrics(result)
+    rich.print(rubrics, file=sys.stderr)
+
+    result = []
+    for rubric, lines in rubrics.items():
+        result.append("")
+        if rubric is not None:
+            result.append(rubric)
+            result.append("-" * len(rubric))
+            result.append("")
+        result.extend(lines)
+        result.append("")
+
+    rich.print(result, file=sys.stderr)
 
     return "\n".join(result)

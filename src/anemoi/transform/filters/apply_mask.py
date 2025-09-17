@@ -38,7 +38,14 @@ OPERATORS = {
 
 @filter_registry.register("apply_mask")
 class MaskVariable(Filter):
-    """A filter to mask variables using external file."""
+    """A filter to mask variables using external file.
+
+    Warnings
+    --------
+
+    The mask file should contain a variable with the same grid as the input data.
+
+    """
 
     def __init__(
         self,

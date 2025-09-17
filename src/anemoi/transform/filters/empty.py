@@ -17,7 +17,11 @@ from anemoi.transform.filters import filter_registry
 
 @filter_registry.register("empty")
 class Empty(Filter):
-    """A filter consumes all input data and returns an empty output."""
+    """A filter consumes all input data and returns an empty output.
+
+    The ``empty`` filter is for debugging purposes.
+
+    """
 
     def __init__(self):
         super().__init__()

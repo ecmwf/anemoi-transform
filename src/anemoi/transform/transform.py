@@ -17,7 +17,7 @@ from typing import TypeVar
 
 import earthkit.data as ekd
 
-from anemoi.transform.documentation import documentation_for_filter
+from anemoi.transform.documentation import documentation
 
 T = TypeVar("T", bound="Transform")
 
@@ -149,12 +149,12 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         return data_request
 
     @classmethod
-    def documentation(cls, filter_name) -> str:
+    def documentation(cls, documenter) -> str:
         """Returns the documentation for the transform.
 
         Parameters
         ----------
-        filter_name : str
+        documenter : str
             The name of the filter.
 
         Returns
@@ -162,7 +162,7 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         str
             The documentation for the transform.
         """
-        return documentation_for_filter(cls, filter_name)
+        return documentation(cls, documenter)
 
 
 class ReversedTransform(Transform):

@@ -15,6 +15,27 @@ from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 
 
+def annotation_str(annotation) -> str:
+    if hasattr(annotation, "__name__"):
+        return annotation.__name__
+    return str(annotation).replace("typing.", "")
+
+
+def construct_signature(cls: type) -> str:
+    sig = inspect.signature(cls.__init__)
+    params = CommentedMap({})
+    for name, param in sig.parameters.items():
+        if name == "self":
+            continue
+        if param.default is inspect.Parameter.empty:
+            params[name] = "..."
+            params.yaml_add_eol_comment(f"{annotation_str(param.annotation)} (REQUIRED)", name)
+        else:
+            params[name] = param.default
+            params.yaml_add_eol_comment(f"{annotation_str(param.annotation)}", name)
+    return params
+
+
 def documentation_for_filter(cls: type, filter_name: str) -> str:
 
     yaml = YAML()
@@ -44,22 +65,7 @@ See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/>`_ for mo
 """
     )
 
-    def _(annotation) -> str:  # simple string representation of type annotations
-        if hasattr(annotation, "__name__"):
-            return annotation.__name__
-        return str(annotation).replace("typing.", "")
-
-    sig = inspect.signature(cls.__init__)
-    params = CommentedMap({})
-    for name, param in sig.parameters.items():
-        if name == "self":
-            continue
-        if param.default is inspect.Parameter.empty:
-            params[name] = "..."
-            params.yaml_add_eol_comment(f"{_(param.annotation)} (REQUIRED)", name)
-        else:
-            params[name] = param.default
-            params.yaml_add_eol_comment(f"{_(param.annotation)}", name)
+    params = construct_signature(cls)
 
     dataset_example = CommentedMap(
         {
@@ -87,8 +93,6 @@ See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/>`_ for mo
     buf = StringIO()
     yaml.dump(dataset_example, buf)
     dataset_example = buf.getvalue()
-
-    # assert False, dataset_example
 
     dataset_example = textwrap.indent(dataset_example, "  ")
 

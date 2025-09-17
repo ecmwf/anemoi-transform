@@ -17,7 +17,7 @@ from typing import TypeVar
 
 import earthkit.data as ekd
 
-from ..documentation import documentation_for_filter
+from anemoi.transform.documentation import documentation_for_filter
 
 T = TypeVar("T", bound="Transform")
 

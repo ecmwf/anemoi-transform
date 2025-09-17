@@ -29,7 +29,7 @@ class Orography(SingleFieldFilter):
         return {"param": self.z}
 
     def forward_transform(self, orog: ekd.Field) -> ekd.Field:
-        """Convert orography in m to surface geopotential in m²/s².
+        """Convert orography in m to surface geopotential in m²s⁻².
 
         Parameters
         ----------
@@ -39,7 +39,7 @@ class Orography(SingleFieldFilter):
         Returns
         -------
         ekd.Field
-            The surface geopotential in m²/s².
+            The surface geopotential in m²s⁻².
         """
         new_metadata = {"param": self.z}
         return self.new_field_from_numpy(orog.to_numpy() * g_gravitational_acceleration, template=orog, **new_metadata)

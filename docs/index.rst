@@ -86,10 +86,3 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    cli/get-grid
    cli/make-regrid-matrix
    cli/filters
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: Modules
-
-   _api/transform.grids

@@ -4,4 +4,4 @@
  List of filters
 #################
 
-.. include:: ../_filters/list-of-filters.rst
+.. include:: ../_build/list-of-filters.rst

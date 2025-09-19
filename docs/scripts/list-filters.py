@@ -79,6 +79,9 @@ for f in filter_registry.registered:
         continue
 
     print()
+    print(f".. _{f}-filter:")
+    print()
+    print()
     print("-" * len(f))
     print(f)
     print("-" * len(f))

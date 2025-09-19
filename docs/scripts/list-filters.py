@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import inspect
 import logging
 import textwrap
 
@@ -19,6 +20,17 @@ class ScriptDocumenter(Documenter):
         super().__init__()
         self.name = name
 
+    def get_signature(self, cls) -> CommentedMap:
+        if hasattr(cls, "optional_inputs"):
+            return inspect.Signature(
+                inspect.Parameter(
+                    name=name, default=value, annotation=type(value), kind=inspect.Parameter.POSITIONAL_OR_KEYWORD
+                )
+                for name, value in cls.optional_inputs.items()
+            )
+
+        return super().get_signature(cls)
+
     def make_examples(self, params):
 
         dataset_example = CommentedMap(
@@ -35,7 +47,7 @@ class ScriptDocumenter(Documenter):
                                     }
                                 }
                             ),
-                            CommentedMap({"filter": params}),
+                            CommentedMap({self.name: params}),
                         ]
                     }
                 )

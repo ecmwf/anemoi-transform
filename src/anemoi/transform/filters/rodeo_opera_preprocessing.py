@@ -6,6 +6,7 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
+
 import logging
 from collections.abc import Iterator
 
@@ -106,16 +107,16 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
     -  Masking of undetected pixels using the ``mask`` variable
 
     -  Clipping of precipitation values to the range ``[0,
-    max_total_precipitation]``, where ``max_total_precipitation`` is
-    defined at the configuration level. If no value is passed a default
-    value (``MAX_TP``) of 10000 is used.
+       max_total_precipitation]``, where ``max_total_precipitation`` is
+       defined at the configuration level. If no value is passed a default
+       value (``MAX_TP``) of 10000 is used.
 
     -  Clipping of the quality index to the range ``[0, 1]``
 
-    By default the ``mask`` variable is dropped as part of this filter (the
-    output field just contains ``total_precipitation`` and ``quality``).
-    This can be controlled by settings the ``return_mask`` flag from
-    ``False`` to ``True``.
+       By default the ``mask`` variable is dropped as part of this filter (the
+       output field just contains ``total_precipitation`` and ``quality``).
+       This can be controlled by settings the ``return_mask`` flag from
+       ``False`` to ``True``.
 
     Notes
     -----

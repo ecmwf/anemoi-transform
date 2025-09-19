@@ -75,17 +75,17 @@ class RodeoOperaClipping(MatchingFieldsFilter):
     ) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 
-                Parameters
-                ----------
-                total_precipitation : ekd.Field
-                    The tp data.
-                quality : ekd.Field
-                    The quality data.
-                Returns
-                -------
-                Iterator[ekd.Field]
-                    Transformed fields.
-        |
+        Parameters
+        ----------
+        total_precipitation : ekd.Field
+            The tp data.
+        quality : ekd.Field
+            The quality data.
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Transformed fields.
+
         """
         total_precipitation_cleaned, quality_clipped = clip_opera(
             tp=total_precipitation.to_numpy(),

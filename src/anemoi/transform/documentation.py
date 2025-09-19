@@ -12,7 +12,6 @@ import textwrap
 from io import StringIO
 from typing import Any
 from typing import Iterator
-from typing import Optional
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
@@ -39,27 +38,7 @@ numpydoc_class_order = [
 
 
 class Documenter:
-    """Provides utilities for extracting and formatting docstrings and signatures.
-
-    Methods
-    -------
-    docstring(obj)
-        Returns the docstring of the given object.
-    annotations_name(annotation)
-        Returns the name of the annotation.
-    annotation_literal(annotation)
-        Returns the string representation of a Literal annotation.
-    annotation_union(annotation)
-        Returns the string representation of a Union annotation.
-    annotation_str(annotation)
-        Returns the string representation of an annotation.
-    construct_signature(cls)
-        Constructs a YAML-compatible signature for the class.
-    deindent_and_split(s)
-        Deindents and splits a string into lines.
-    find_rubrics(lines)
-        Finds the start and end lines of each rubric in the docstring.
-    """
+    """Provides utilities for extracting and formatting docstrings and signatures."""
 
     def docstring(self, obj: Any) -> str:
         """Returns the docstring of the given object.
@@ -139,10 +118,57 @@ class Documenter:
             "Union": self.annotation_union,
         }
 
+        # Replace Optional with Union[..., None]
+        if getattr(annotation, "__origin__", None) is getattr(__import__("typing"), "Optional", None):
+            args = getattr(annotation, "__args__", ())
+            if args:
+                return self.annotation_union(type("Union", (), {"__args__": (args[0], type(None))}))
+        if getattr(annotation, "__origin__", None) is getattr(__import__("typing"), "Union", None):
+            # If Union, check for NoneType and use pipe notation
+            args = getattr(annotation, "__args__", ())
+            if args and type(None) in args:
+                non_none = [a for a in args if a is not type(None)]
+                if len(non_none) == 1:
+                    return f"{self.annotation_str(non_none[0])} | None"
+                else:
+                    return " | ".join(self.annotation_str(a) if a is not type(None) else "None" for a in args)
+            else:
+                return " or ".join(self.annotation_str(a) for a in args)
+
         if hasattr(annotation, "__name__"):
             return dispatcher.get(annotation.__name__, self.annotations_name)(annotation)
 
+        # Handle typing.Optional[...] as string
+        if str(annotation).startswith("typing.Optional["):
+            inner = str(annotation)[len("typing.Optional[") : -1]
+            return f"{inner} | None"
+
+        # Handle typing.Union[...] as string
+        if str(annotation).startswith("typing.Union["):
+            inner = str(annotation)[len("typing.Union[") : -1]
+            parts = [p.strip() for p in inner.split(",")]
+            if "NoneType" in parts:
+                parts = [p if p != "NoneType" else "None" for p in parts]
+                return " | ".join(parts)
+            else:
+                return " or ".join(parts)
+
         return str(annotation).replace("typing.", "")
+
+    def get_signature(self, cls: type) -> inspect.Signature:
+        """Returns the signature of the class's __init__ method.
+
+        Parameters
+        ----------
+        cls : type
+            The class whose signature is to be retrieved.
+
+        Returns
+        -------
+        inspect.Signature
+            The signature of the __init__ method.
+        """
+        return inspect.signature(cls.__init__)
 
     def construct_signature(self, cls: type) -> CommentedMap:
         """Constructs a YAML-compatible signature for the class.
@@ -157,7 +183,7 @@ class Documenter:
         CommentedMap
             The signature as a YAML-compatible CommentedMap.
         """
-        sig = inspect.signature(cls.__init__)
+        sig = self.get_signature(cls)
         params = CommentedMap({})
         for name, param in sig.parameters.items():
             if name == "self":
@@ -214,7 +240,7 @@ class Documenter:
                 if len(line) == len(title):
                     if title in rubrics:
                         # Extend existing rubric
-
+                        current_rubric.pop()  # Remove previous title line
                         current_rubric = rubrics[title]
                         current_rubric.append("")  # Separate multiple sections
                     else:
@@ -249,13 +275,13 @@ class YAMLExample(Example):
     ----------
     example : Any
         The example data to be formatted as YAML.
-    prefix : Optional[str], optional
+    prefix : str | None, optional
         Text to prepend before the YAML block.
-    suffix : Optional[str], optional
+    suffix : str | None, optional
         Text to append after the YAML block.
     """
 
-    def __init__(self, example: Any, *, prefix: Optional[str] = None, suffix: Optional[str] = None) -> None:
+    def __init__(self, example: Any, *, prefix: str | None = None, suffix: str | None = None) -> None:
         self.example = example
         self.prefix = prefix
         self.suffix = suffix
@@ -307,23 +333,25 @@ def documentation(cls: type, documenter: Documenter) -> str:
     yaml.indent(sequence=4, offset=2)
 
     result = documenter.deindent_and_split(documenter.docstring(cls))
-
-    params = documenter.construct_signature(cls)
-
-    examples = []
-    examples.append("")
-    examples.append("Examples")
-    examples.append("--------")
-    examples.append("")
-
-    for example in documenter.make_examples(params):
-        examples.extend(str(example).splitlines())
-
-    examples.append("")
-
-    result.extend(examples)
-
     rubrics = documenter.find_rubrics(result)
+
+    if "Examples" not in rubrics:
+        params = documenter.construct_signature(cls)
+
+        examples = []
+        examples.append("")
+        examples.append("Examples")
+        examples.append("--------")
+        examples.append("")
+
+        for example in documenter.make_examples(params):
+            examples.extend(str(example).splitlines())
+
+        examples.append("")
+
+        result.extend(examples)
+
+        rubrics = documenter.find_rubrics(result)
 
     result = []
     for rubric, lines in rubrics.items():

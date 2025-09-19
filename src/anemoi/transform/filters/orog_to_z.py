@@ -18,19 +18,12 @@ from anemoi.transform.filters import filter_registry
 class Orography(SingleFieldFilter):
     """A filter to convert orography in m to surface geopotential in m²/s², and back.
 
-       The ``orog_to_z`` filter converts orography (in metres) to surface
-       geopotential height (m\ :sup:`2`/s\ :sup:`2`) using the equation:
+    This filter converts orography (in metres) to surface
+    geopotential height (m\ :sup:`2`/s\ :sup:`2`) using the equation :math:`geopotential = g
+    \cdot orography`, where `g` refers to the :data:`gravitational acceleration constant <meteo.constants.g>`.
 
-       .. math::
-
-       z &= g \cdot \textrm{orog}\\
-
-       Where `g` refers to the `g_gravitational_acceleration` constant. For details please refer to
-       `earthkit-meteo
-        <https://earthkit-meteo.readthedocs.io/en/latest/_api/meteo/constants/index.html#meteo.constants.g>`_.
-
-       This filter must follow a source that provides orography, which is
-       replaced by surface geopotential height.
+    This filter must follow a source that provides orography, which is
+    replaced by surface geopotential height.
 
     """
 

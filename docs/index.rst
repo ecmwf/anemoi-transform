@@ -92,7 +92,4 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    :hidden:
    :caption: Modules
 
-   _api/transform.filters
    _api/transform.grids
-   _api/transform.variables
-   _api/transform.grouping

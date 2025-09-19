@@ -80,10 +80,10 @@ class FillSquareGribs(Filter):
         nb_lats_input = len(unique_lats)
 
         step_lon = unique_lons[1] - unique_lons[0]
-        step_lat = unique_lats[1] - unique_lats[0]
+        step_lat = unique_lats[1] - unique_lats[0]  
 
-        nb_lats_output = round((self.max_lat_output - self.min_lat_output) / step_lat)
-        nb_lons_output = round((self.max_lon_output - self.min_lon_output) / step_lon)
+        nb_lats_output = round((self.max_lat_output - self.min_lat_output) / step_lat) + 1
+        nb_lons_output = round((self.max_lon_output - self.min_lon_output) / step_lon) + 1
 
         output_lon = np.tile(np.arange(self.min_lon_output, self.max_lon_output + step_lon, step_lon), nb_lats_output)
         output_lat = np.repeat(
@@ -106,9 +106,9 @@ class FillSquareGribs(Filter):
         # latitude are reversed so the index is computed from the max
         list_idx_output_lat = np.rint((self.max_lat_output - input_lat) / step_lat).astype(int)
 
-        output_data = np.ones((nb_lats_output * nb_lons_output)) * self.fill_value
         result = []
         for field in tqdm.tqdm(fields, desc=f"Fill with {self.fill_value}"):
+            output_data = np.ones((nb_lats_output * nb_lons_output)) * self.fill_value
             input_data = field.to_numpy(flatten=True)
             for idx_input_lat in range(nb_lats_input):
                 nb_lon_before_lat_in_input = sum_nb_lon_before_lat_in_input[idx_input_lat]

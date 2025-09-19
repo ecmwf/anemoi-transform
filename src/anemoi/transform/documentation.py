@@ -198,29 +198,6 @@ class Documenter:
                 params.yaml_add_eol_comment(f"{self.annotation_str(param.annotation)}", name)
         return params
 
-    def deindent_and_split(self, s: str) -> list[str]:
-        """Deindents and splits a string into lines.
-
-        Parameters
-        ----------
-        s : str
-            The string to deindent and split.
-
-        Returns
-        -------
-        list of str
-            The deindented and split lines.
-        """
-        lines = s.splitlines()
-        return lines
-        if len(lines) <= 1:
-            return lines
-        indent0 = len(lines[0]) - len(lines[0].lstrip())
-        indent1 = len(lines[1]) - len(lines[1].lstrip())
-        if indent0 == indent1:
-            return lines
-        return [lines[0].rstrip()] + [line[indent1:].rstrip() for line in lines[1:]]
-
     def find_rubrics(self, lines: list[str]) -> dict[str, list[str]]:
         """Finds the start and end lines of each rubric in the docstring.
 
@@ -335,7 +312,7 @@ def documentation(cls: type, documenter: Documenter) -> str:
     yaml = YAML()
     yaml.indent(sequence=4, offset=2)
 
-    result = documenter.deindent_and_split(documenter.docstring(cls))
+    result = documenter.docstring(cls).splitlines()
     rubrics = documenter.find_rubrics(result)
 
     rich.print(f"Docstring lines: {result}", file=sys.stderr)

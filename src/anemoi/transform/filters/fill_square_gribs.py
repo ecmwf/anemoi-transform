@@ -80,7 +80,7 @@ class FillSquareGribs(Filter):
         nb_lats_input = len(unique_lats)
 
         step_lon = unique_lons[1] - unique_lons[0]
-        step_lat = unique_lats[1] - unique_lats[0]  
+        step_lat = unique_lats[1] - unique_lats[0]
 
         nb_lats_output = round((self.max_lat_output - self.min_lat_output) / step_lat) + 1
         nb_lons_output = round((self.max_lon_output - self.min_lon_output) / step_lon) + 1

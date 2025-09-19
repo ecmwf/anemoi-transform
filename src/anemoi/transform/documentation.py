@@ -55,7 +55,7 @@ class Documenter:
         str
             The docstring, or an empty string if not present.
         """
-        return obj.__doc__ or ""
+        return inspect.getdoc(obj) or ""
 
     def annotations_name(self, annotation: Any) -> str:
         """Returns the name of the annotation.
@@ -212,6 +212,7 @@ class Documenter:
             The deindented and split lines.
         """
         lines = s.splitlines()
+        return lines
         if len(lines) <= 1:
             return lines
         indent0 = len(lines[0]) - len(lines[0].lstrip())

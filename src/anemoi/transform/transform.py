@@ -164,6 +164,10 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         """
         return documentation(cls, documenter)
 
+    def reversed(self, *args, **kwargs) -> "Transform":
+        """Returns a transform that applies the backward transformation."""
+        return self.__class__.reversed(*args, **kwargs)
+
 
 class ReversedTransform(Transform):
     """Swap the forward and backward methods of a filter."""

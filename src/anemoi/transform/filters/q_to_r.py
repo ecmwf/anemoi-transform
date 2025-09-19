@@ -11,7 +11,7 @@ from collections.abc import Iterator
 from typing import Literal
 
 import earthkit.data as ekd
-from earthkit.meteo import thermo
+import earthkit.meteo.thermo.array as thermo
 
 from anemoi.transform.filters import filter_registry
 
@@ -21,6 +21,7 @@ from .matching import matching
 
 class HumidityConversion(MatchingFieldsFilter):
     """A filter to convert specific humidity to relative humidity using standard thermodynamical formulas.
+
     This filter provides forward and backward transformations between specific humidity and relative humidity,
     given temperature and pressure information. It is designed to be used in data processing pipelines where
     conversion between these humidity representations is required.

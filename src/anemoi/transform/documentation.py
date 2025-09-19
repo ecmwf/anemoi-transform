@@ -8,11 +8,13 @@
 # nor does it submit to any jurisdiction.
 
 import inspect
+import sys
 import textwrap
 from io import StringIO
 from typing import Any
 from typing import Iterator
 
+import rich
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 
@@ -335,6 +337,9 @@ def documentation(cls: type, documenter: Documenter) -> str:
     result = documenter.deindent_and_split(documenter.docstring(cls))
     rubrics = documenter.find_rubrics(result)
 
+    rich.print(f"Docstring lines: {result}", file=sys.stderr)
+    rich.print(f"Rubrics found: {list(rubrics.keys())}", file=sys.stderr)
+
     if "Examples" not in rubrics:
         params = documenter.construct_signature(cls)
 
@@ -362,5 +367,6 @@ def documentation(cls: type, documenter: Documenter) -> str:
             result.append("")
         result.extend(lines)
         result.append("")
-
+    rich.print(f"Docstring lines: {result}", file=sys.stderr)
+    rich.print(f"Rubrics found: {list(rubrics.keys())}", file=sys.stderr)
     return "\n".join(result)

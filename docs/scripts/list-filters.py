@@ -2,8 +2,10 @@
 
 import inspect
 import logging
+import sys
 import textwrap
 
+import rich
 from numpydoc.docscrape_sphinx import SphinxDocString
 from ruamel.yaml.comments import CommentedMap
 
@@ -67,6 +69,8 @@ class ScriptDocumenter(Documenter):
 
 
 for f in filter_registry.registered:
+
+    rich.print(f"Processing filter '{f}'", file=sys.stderr)
 
     if "lambda" not in f:  # Skip lambda filters
         continue

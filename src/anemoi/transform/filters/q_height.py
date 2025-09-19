@@ -24,7 +24,7 @@ from .matching import matching
 EPS_SPECIFIC = 1.0e-8
 
 
-def _set_AB(model_level_AB: str | dict[str, list]) -> tuple:
+def _set_AB(model_level_AB: str | dict[str, NDArray]) -> tuple:
     if isinstance(model_level_AB, str):
         model_level_AB = model_level_AB.upper()
         try:

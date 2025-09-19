@@ -68,6 +68,9 @@ class ScriptDocumenter(Documenter):
 
 for f in filter_registry.registered:
 
+    if "lambda" not in f:  # Skip lambda filters
+        continue
+
     filter = filter_registry.lookup(f, return_none=True)
 
     if filter is None:

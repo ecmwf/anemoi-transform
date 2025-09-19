@@ -10,6 +10,9 @@
 import inspect
 import textwrap
 from io import StringIO
+from typing import Any
+from typing import Iterator
+from typing import Optional
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
@@ -36,20 +39,101 @@ numpydoc_class_order = [
 
 
 class Documenter:
+    """Provides utilities for extracting and formatting docstrings and signatures.
 
-    def docstring(self, obj):
+    Methods
+    -------
+    docstring(obj)
+        Returns the docstring of the given object.
+    annotations_name(annotation)
+        Returns the name of the annotation.
+    annotation_literal(annotation)
+        Returns the string representation of a Literal annotation.
+    annotation_union(annotation)
+        Returns the string representation of a Union annotation.
+    annotation_str(annotation)
+        Returns the string representation of an annotation.
+    construct_signature(cls)
+        Constructs a YAML-compatible signature for the class.
+    deindent_and_split(s)
+        Deindents and splits a string into lines.
+    find_rubrics(lines)
+        Finds the start and end lines of each rubric in the docstring.
+    """
+
+    def docstring(self, obj: Any) -> str:
+        """Returns the docstring of the given object.
+
+        Parameters
+        ----------
+        obj : Any
+            The object whose docstring is to be retrieved.
+
+        Returns
+        -------
+        str
+            The docstring, or an empty string if not present.
+        """
         return obj.__doc__ or ""
 
-    def annotations_name(self, annotation):
+    def annotations_name(self, annotation: Any) -> str:
+        """Returns the name of the annotation.
+
+        Parameters
+        ----------
+        annotation : Any
+            The annotation object.
+
+        Returns
+        -------
+        str
+            The name of the annotation.
+        """
         return annotation.__name__
 
-    def annotation_literal(self, annotation):
+    def annotation_literal(self, annotation: Any) -> str:
+        """Returns the string representation of a Literal annotation.
+
+        Parameters
+        ----------
+        annotation : Any
+            The Literal annotation.
+
+        Returns
+        -------
+        str
+            The string representation of the Literal annotation.
+        """
         return str(annotation.__args__)
 
-    def annotation_union(self, annotation):
+    def annotation_union(self, annotation: Any) -> str:
+        """Returns the string representation of a Union annotation.
+
+        Parameters
+        ----------
+        annotation : Any
+            The Union annotation.
+
+        Returns
+        -------
+        str
+            The string representation of the Union annotation.
+        """
         return " or ".join(self.annotation_str(a) for a in annotation.__args__)
 
-    def annotation_str(self, annotation) -> str:
+    def annotation_str(self, annotation: Any) -> str:
+        """Returns the string representation of an annotation.
+
+        Parameters
+        ----------
+        annotation : Any
+            The annotation object.
+
+        Returns
+        -------
+        str
+            The string representation of the annotation.
+        """
         dispatcher = {
             "Literal": self.annotation_literal,
             "Union": self.annotation_union,
@@ -60,7 +144,19 @@ class Documenter:
 
         return str(annotation).replace("typing.", "")
 
-    def construct_signature(self, cls: type) -> str:
+    def construct_signature(self, cls: type) -> CommentedMap:
+        """Constructs a YAML-compatible signature for the class.
+
+        Parameters
+        ----------
+        cls : type
+            The class whose signature is to be constructed.
+
+        Returns
+        -------
+        CommentedMap
+            The signature as a YAML-compatible CommentedMap.
+        """
         sig = inspect.signature(cls.__init__)
         params = CommentedMap({})
         for name, param in sig.parameters.items():
@@ -74,7 +170,19 @@ class Documenter:
                 params.yaml_add_eol_comment(f"{self.annotation_str(param.annotation)}", name)
         return params
 
-    def deindent_and_split(self, s: str) -> str:
+    def deindent_and_split(self, s: str) -> list[str]:
+        """Deindents and splits a string into lines.
+
+        Parameters
+        ----------
+        s : str
+            The string to deindent and split.
+
+        Returns
+        -------
+        list of str
+            The deindented and split lines.
+        """
         lines = s.splitlines()
         if len(lines) <= 1:
             return lines
@@ -84,8 +192,19 @@ class Documenter:
             return lines
         return [lines[0].rstrip()] + [line[indent1:].rstrip() for line in lines[1:]]
 
-    def find_rubrics(self, lines: list[str]) -> dict[str, tuple[int, int]]:
-        """Find the start and end lines of each rubric in the docstring."""
+    def find_rubrics(self, lines: list[str]) -> dict[str, list[str]]:
+        """Finds the start and end lines of each rubric in the docstring.
+
+        Parameters
+        ----------
+        lines : list of str
+            The lines of the docstring.
+
+        Returns
+        -------
+        dict of str to list of str
+            A mapping from rubric titles to their corresponding lines.
+        """
         rubrics = {None: []}
         current_rubric = rubrics[None]
         for i, line in enumerate(lines):
@@ -110,18 +229,45 @@ class Documenter:
 
 
 class Example:
+    """Base class for examples."""
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator["Example"]:
+        """Returns an iterator over the example.
+
+        Returns
+        -------
+        Iterator[Example]
+            An iterator yielding self.
+        """
         return iter([self])
 
 
 class YAMLExample(Example):
-    def __init__(self, example, *, prefix=None, suffix=None):
+    """YAML-formatted example for documentation.
+
+    Parameters
+    ----------
+    example : Any
+        The example data to be formatted as YAML.
+    prefix : Optional[str], optional
+        Text to prepend before the YAML block.
+    suffix : Optional[str], optional
+        Text to append after the YAML block.
+    """
+
+    def __init__(self, example: Any, *, prefix: Optional[str] = None, suffix: Optional[str] = None) -> None:
         self.example = example
         self.prefix = prefix
         self.suffix = suffix
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Returns the YAML-formatted example as a string.
+
+        Returns
+        -------
+        str
+            The formatted YAML example.
+        """
         yaml = YAML()
         yaml.indent(sequence=4, offset=2)
         buf = StringIO()
@@ -142,8 +288,21 @@ class YAMLExample(Example):
         return "".join([prefix, f".. code-block:: yaml\n\n{example}\n\n", suffix])
 
 
-def documentation(cls: type, documenter) -> str:
+def documentation(cls: type, documenter: Documenter) -> str:
+    """Generates documentation for a class using the provided documenter.
 
+    Parameters
+    ----------
+    cls : type
+        The class to document.
+    documenter : Documenter
+        The documenter instance to use.
+
+    Returns
+    -------
+    str
+        The generated documentation string.
+    """
     yaml = YAML()
     yaml.indent(sequence=4, offset=2)
 

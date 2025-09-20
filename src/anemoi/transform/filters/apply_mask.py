@@ -36,7 +36,7 @@ OPERATORS = {
 }
 
 
-@filter_registry.register("apply_mask")
+@filter_registry.register("apply_mask", aliases=["mask_variable"])
 class MaskVariable(Filter):
     """A filter to mask variables using external file.
 

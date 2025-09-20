@@ -38,7 +38,7 @@ class RodeoOperaClipping(MatchingFieldsFilter):
     -----
 
     The ``rodeo_opera_clipping`` filter was primarily designed to work
-    with the 'OPERA Pan-Europeaan' Composites. It's likely these filters
+    with the 'OPERA Pan-European' Composites. It's likely these filters
     will be moved into a plugin in the near-future.
     """
 

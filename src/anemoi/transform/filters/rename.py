@@ -77,6 +77,39 @@ class Rename(Filter):
     attribute, but any key can be renamed. The ``rename`` filter can take
     several renaming keys.
 
+    Examples
+    --------
+
+    You can rename using a dictionary:
+
+    .. code-block:: yaml
+
+        input:
+          pipe:
+            - source:
+                ...
+            - rename:
+                param:
+                    z: geopotential
+                    t: temperature
+                levelist:
+                    1000: 1000hPa
+                    850: 850hPa
+
+    or using a format string:
+
+    .. code-block:: yaml
+
+        input:
+            pipe:
+                - source:
+                    ...
+                - rename:
+                    param: "{param}_{levelist}_{levtype}"
+
+    In the latter case, the keys between curly braces are replaced by their
+    corresponding metadata values in the field.
+
     """
 
     def __init__(self, **kwargs):

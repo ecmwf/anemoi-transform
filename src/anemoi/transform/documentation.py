@@ -43,78 +43,24 @@ class Documenter:
     """Provides utilities for extracting and formatting docstrings and signatures."""
 
     def docstring(self, obj: Any) -> str:
-        """Returns the docstring of the given object.
-
-        Parameters
-        ----------
-        obj : Any
-            The object whose docstring is to be retrieved.
-
-        Returns
-        -------
-        str
-            The docstring, or an empty string if not present.
-        """
+        """Returns the docstring of the given object."""
         return inspect.getdoc(obj) or ""
 
     def annotations_name(self, annotation: Any) -> str:
-        """Returns the name of the annotation.
-
-        Parameters
-        ----------
-        annotation : Any
-            The annotation object.
-
-        Returns
-        -------
-        str
-            The name of the annotation.
-        """
+        """Returns the name of the annotation."""
         return annotation.__name__
 
     def annotation_literal(self, annotation: Any) -> str:
-        """Returns the string representation of a Literal annotation.
-
-        Parameters
-        ----------
-        annotation : Any
-            The Literal annotation.
-
-        Returns
-        -------
-        str
-            The string representation of the Literal annotation.
-        """
+        """Returns the string representation of a Literal annotation."""
         return str(annotation.__args__)
 
     def annotation_union(self, annotation: Any) -> str:
-        """Returns the string representation of a Union annotation.
-
-        Parameters
-        ----------
-        annotation : Any
-            The Union annotation.
-
-        Returns
-        -------
-        str
-            The string representation of the Union annotation.
-        """
+        """Returns the string representation of a Union annotation."""
         return " or ".join(self.annotation_str(a) for a in annotation.__args__)
 
     def annotation_str(self, annotation: Any) -> str:
-        """Returns the string representation of an annotation.
+        """Returns the string representation of an annotation."""
 
-        Parameters
-        ----------
-        annotation : Any
-            The annotation object.
-
-        Returns
-        -------
-        str
-            The string representation of the annotation.
-        """
         dispatcher = {
             "Literal": self.annotation_literal,
             "Union": self.annotation_union,
@@ -158,33 +104,12 @@ class Documenter:
         return str(annotation).replace("typing.", "")
 
     def get_signature(self, cls: type) -> inspect.Signature:
-        """Returns the signature of the class's __init__ method.
-
-        Parameters
-        ----------
-        cls : type
-            The class whose signature is to be retrieved.
-
-        Returns
-        -------
-        inspect.Signature
-            The signature of the __init__ method.
-        """
+        """Returns the signature of the class's __init__ method."""
         return inspect.signature(cls.__init__)
 
     def construct_signature(self, cls: type) -> CommentedMap:
-        """Constructs a YAML-compatible signature for the class.
+        """Constructs a YAML-compatible signature for the class."""
 
-        Parameters
-        ----------
-        cls : type
-            The class whose signature is to be constructed.
-
-        Returns
-        -------
-        CommentedMap
-            The signature as a YAML-compatible CommentedMap.
-        """
         sig = self.get_signature(cls)
         params = CommentedMap({})
         for name, param in sig.parameters.items():

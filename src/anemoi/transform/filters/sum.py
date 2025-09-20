@@ -21,7 +21,37 @@ from anemoi.transform.filters import filter_registry
 
 @filter_registry.register("sum")
 class Sum(Filter):
-    """Computes the sum over a set of variables."""
+    """Computes the sum over a set of variables.
+
+    The ``sum`` filter computes the sum over multiple variables. This can be
+    useful for computing total precipitation from its components (snow,
+    rain) or summing the components of total column-integrated water. This
+    filter must follow a source that provides the list of variables to be
+    summed up. These variables are removed by the filter and replaced by a
+    single summed variable.
+
+    Example
+    -------
+
+    .. code-block:: yaml
+
+        input:
+        pipe:
+        - source:
+            # mars, grib, netcdf, etc.
+            # source attributes here
+            # ...
+            # Must load the variables to be summed
+
+        - sum:
+            params:
+            # List of input variables
+            - variable1
+            - variable2
+            - variable3
+            output: variable_total # Name of output variable
+
+    """
 
     def __init__(self, *, params: list[str], output: str):
         """Initialize the Sum filter.

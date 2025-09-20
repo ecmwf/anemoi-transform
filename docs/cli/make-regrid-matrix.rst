@@ -1,3 +1,5 @@
+.. _make-regrid-matrix:
+
 make-regrid-matrix
 ------------------
 

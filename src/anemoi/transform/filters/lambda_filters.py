@@ -21,7 +21,38 @@ from anemoi.transform.filters.matching import matching
 
 @filter_registry.register("earthkitfieldlambda")
 class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
-    """A filter to apply an arbitrary function to individual fields."""
+    """A filter to apply an arbitrary function to individual fields.
+
+    This filter allows you to apply an arbitrary
+    Python function (either provided inline as a lambda or imported from a
+    module) to fields selected by parameter name. This enables advanced and
+    flexible transformations that aren't covered by built-in filters. This
+    filter must follow a source or filter that provides the necessary
+    parameter(s) as input. No assumptions are made about physical
+    quantities, it is entirely user-defined.
+
+    For example, you can use it to convert temperatures from Kelvin to
+    Celsius by subtracting a constant.
+
+    Examples
+    --------
+
+    .. code-block:: yaml
+
+      input:
+        pipe:
+            - source:
+            # mars, grib, netcdf, etc.
+            # source attributes here
+            # ...
+            # Must load the input variable
+
+            - earthkitfieldlambda:
+                param: "2t" # Name of variable (input) to be transformed
+                fn: "lambda x, s: x.clone(values=x.values - s)"
+                fn_args: [273.15]
+
+    """
 
     @matching(
         select="param",

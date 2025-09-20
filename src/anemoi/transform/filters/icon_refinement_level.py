@@ -9,7 +9,6 @@
 
 
 import logging
-from typing import Any
 
 import earthkit.data as ekd
 import tqdm
@@ -26,15 +25,17 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("icon_refinement_level")
 class IconRefinement(Filter):
-    """A filter interpolate its input to an ICON grid."""
+    """A filter interpolate its input to an
+    `ICON grid <https://www.dwd.de/EN/research/weatherforecasting/num_modelling/01_num_weather_prediction_modells/icon_description.html>`_.
+    """
 
-    def __init__(self, *, grid: Any, refinement_level_c: Any) -> None:
+    def __init__(self, *, grid: str, refinement_level_c: int | None) -> None:
         """Initialize the IconRefinement filter.
 
         Parameters
         ----------
-        grid : Any
-            The grid to use for interpolation.
+        grid : str
+            A path to the grid to use for interpolation.
         refinement_level_c : Any
             The refinement level for the grid.
         """

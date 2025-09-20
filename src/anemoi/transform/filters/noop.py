@@ -16,6 +16,10 @@ from anemoi.transform.filters import filter_registry
 
 @filter_registry.register("noop")
 class NoOp(Filter):
+    """A filter that performs no operation, passing data through unchanged."""
+
+    def __init__(self):
+        super().__init__()
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         return data

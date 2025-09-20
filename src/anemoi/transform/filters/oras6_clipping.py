@@ -23,39 +23,7 @@ TF = 273.15
 
 @filter_registry.register("oras6_clipping")
 class Oras6Clipping(MatchingFieldsFilter):
-    """A filter to mask ocean and sea ice-related variables when sea ice concentration is low.
-
-    Parameters
-    ----------
-    siue : str, optional
-        The name of the eastward sea ice velocity field, by default "avg_siue".
-    sivn : str, optional
-        The name of the northward sea ice velocity field, by default "avg_sivn".
-    siconc : str, optional
-        The name of the sea ice concentration field, by default "avg_siconc".
-    icesalt : str, optional
-        The name of the sea ice salinity field, by default "avg_icesalt".
-    sihc : str, optional
-        The name of the sea ice heat content field, by default "avg_sihc".
-    snhc : str, optional
-        The name of the snow heat content field, by default "avg_snhc".
-    sipf : str, optional
-        The name of the sea ice pressure field, by default "avg_sipf".
-    sitemptop : str, optional
-        The name of the sea ice top temperature field, by default "avg_sitemptop".
-    sntemp : str, optional
-        The name of the snow temperature field, by default "avg_sntemp".
-    snvol : str, optional
-        The name of the snow volume field, by default "avg_snvol".
-    sivol : str, optional
-        The name of the sea ice volume field, by default "avg_sivol".
-    sialb : str, optional
-        The name of the sea ice albedo field, by default "avg_sialb".
-    vasit : str, optional
-        The name of the vertically averaged sea ice temperature, by default "avg_vasit".
-    tos : str, optional
-        The name of the temperature of the surface field, by default "avg_tos".
-    """
+    """A filter to mask ocean and sea ice-related variables when sea ice concentration is low."""
 
     @matching(
         select="param",
@@ -94,6 +62,41 @@ class Oras6Clipping(MatchingFieldsFilter):
         vasit: str = "avg_vasit",
         tos: str = "avg_tos",
     ) -> None:
+        """Initialize the Oras6Clipping filter.
+
+        Parameters
+        ----------
+        siue : str, optional
+            The name of the eastward sea ice velocity field, by default "avg_siue".
+        sivn : str, optional
+            The name of the northward sea ice velocity field, by default "avg_sivn".
+        siconc : str, optional
+            The name of the sea ice concentration field, by default "avg_siconc".
+        icesalt : str, optional
+            The name of the sea ice salinity field, by default "avg_icesalt".
+        sihc : str, optional
+            The name of the sea ice heat content field, by default "avg_sihc".
+        snhc : str, optional
+            The name of the snow heat content field, by default "avg_snhc".
+        sipf : str, optional
+            The name of the sea ice pressure field, by default "avg_sipf".
+        sitemptop : str, optional
+            The name of the sea ice top temperature field, by default "avg_sitemptop".
+        sntemp : str, optional
+            The name of the snow temperature field, by default "avg_sntemp".
+        snvol : str, optional
+            The name of the snow volume field, by default "avg_snvol".
+        sivol : str, optional
+            The name of the sea ice volume field, by default "avg_sivol".
+        sialb : str, optional
+            The name of the sea ice albedo field, by default "avg_sialb".
+        vasit : str, optional
+            The name of the vertically averaged sea ice temperature, by default "avg_vasit".
+        tos : str, optional
+            The name of the temperature of the surface field, by default "avg_tos".
+
+        """
+
         self.siue = siue
         self.sivn = sivn
         self.siconc = siconc

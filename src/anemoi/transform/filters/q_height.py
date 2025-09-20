@@ -243,6 +243,13 @@ filter_registry.register("r_to_q_height", SpecificToRelativeAtHeightLevel.revers
 class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
     """A filter to convert specific humidity (kg/kg) to dewpoint temperature (K)
     at a specified height level (in meters) with standard thermodynamical formulas
+
+    Notes
+    -----
+    For more information, see the :func:`dewpoint_from_specific_humidity <meteo.thermo.array.dewpoint_from_specific_humidity>`
+    and the :func:`specific_humidity_from_dewpoint <meteo.thermo.array.specific_humidity_from_dewpoint>`
+    functions in the earthkit-meteo documentation.
+
     """
 
     @matching(

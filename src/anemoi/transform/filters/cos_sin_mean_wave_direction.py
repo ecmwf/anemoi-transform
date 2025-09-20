@@ -30,11 +30,21 @@ class CosSinWaveDirection(MatchingFieldsFilter):
     )
     def __init__(
         self,
-        mean_wave_direction="mwd",
-        cos_mean_wave_direction="cos_mwd",
-        sin_mean_wave_direction="sin_mwd",
+        mean_wave_direction: str = "mwd",
+        cos_mean_wave_direction: str = "cos_mwd",
+        sin_mean_wave_direction: str = "sin_mwd",
     ) -> None:
-        """Initialize the CosSinWaveDirection filter."""
+        """Initialize the CosSinWaveDirection filter.
+
+        Parameters
+        ----------
+        mean_wave_direction : str, optional
+            The name of the mean wave direction variable. Default is "mwd".
+        cos_mean_wave_direction : str, optional
+            The name of the cosine of the mean wave direction variable. Default is "cos_mwd".
+        sin_mean_wave_direction : str, optional
+            The name of the sine of the mean wave direction variable. Default is "sin_mwd".
+        """
 
         self.mean_wave_direction = mean_wave_direction
         self.cos_mean_wave_direction = cos_mean_wave_direction

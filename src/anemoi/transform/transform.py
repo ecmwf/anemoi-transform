@@ -9,8 +9,10 @@
 
 
 from abc import ABC
+from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
+from typing import Callable
 from typing import TypeVar
 
 import earthkit.data as ekd
@@ -18,7 +20,27 @@ import earthkit.data as ekd
 T = TypeVar("T", bound="Transform")
 
 
-class Transform(ABC):
+class _TransformMetaClass(ABCMeta):
+
+    # This metaclass adds a `reversed` property to all Transform subclasses.
+    # And forwards the docstring of the original class to the reversed property.
+    # This allows to document the reversed transform in the same way as the original one.
+
+    @property
+    def reversed(cls: type[T]) -> Callable[..., "ReversedTransform"]:
+
+        def wrap_reversed(*args: Any, **kwargs: Any) -> "ReversedTransform":
+            return ReversedTransform(cls(*args, **kwargs))
+
+        def wrap_reversed_str(*args, **kwargs) -> str:
+            return cls.documentation(*args, **kwargs)
+
+        wrap_reversed.documentation = wrap_reversed_str
+
+        return wrap_reversed
+
+
+class Transform(ABC, metaclass=_TransformMetaClass):
     """Abstract base class for all transformations."""
 
     def __repr__(self) -> str:
@@ -87,24 +109,6 @@ class Transform(ABC):
         """
         return ReversedTransform(self)
 
-    @classmethod
-    def reversed(cls: type[T], *args: Any, **kwargs: Any) -> "ReversedTransform":
-        """Creates a reversed transform.
-
-        Parameters
-        ----------
-        args : Any
-            Positional arguments for the transform.
-        kwargs : Any
-            Keyword arguments for the transform.
-
-        Returns
-        -------
-        ReversedTransform
-            A reversed transform.
-        """
-        return ReversedTransform(cls(*args, **kwargs))
-
     def __or__(self, other: "Transform") -> "Transform":
         """Combines two transforms into a pipeline.
 
@@ -136,6 +140,28 @@ class Transform(ABC):
             The patched data request.
         """
         return data_request
+
+    @classmethod
+    def documentation(cls, documenter) -> str:
+        """Returns the documentation for the transform.
+
+        Parameters
+        ----------
+        documenter : str
+            The name of the filter.
+
+        Returns
+        -------
+        str
+            The documentation for the transform.
+        """
+        from anemoi.transform.documentation import documentation
+
+        return documentation(cls, documenter)
+
+    def reversed(self, *args, **kwargs) -> "Transform":
+        """Returns a transform that applies the backward transformation."""
+        return self.__class__.reversed(*args, **kwargs)
 
 
 class ReversedTransform(Transform):
@@ -205,3 +231,7 @@ class ReversedTransform(Transform):
             The patched data request.
         """
         return self.filter.patch_data_request(data_request)
+
+    @classmethod
+    def repr_rst(cls, reversed: bool = False) -> str:
+        return cls.filter.repr_rst()

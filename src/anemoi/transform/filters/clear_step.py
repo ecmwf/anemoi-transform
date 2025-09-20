@@ -26,6 +26,9 @@ LOG = logging.getLogger(__name__)
 class ClearStepFilter(Filter):
     """Set the step of the field to 0."""
 
+    def __init__(self):
+        super().__init__()
+
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Adjusts the valid_datetime of each field by subtracting the step in hours.
 

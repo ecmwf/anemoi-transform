@@ -26,7 +26,7 @@ LOG = logging.getLogger(__name__)
 class RemoveNaNs(Filter):
     """A filter to mask out NaNs."""
 
-    def __init__(self, *, method="mask", check=False):
+    def __init__(self, *, method: str = "mask", check: bool = False):
         """Initialize the RemoveNaNs filter.
 
         Parameters

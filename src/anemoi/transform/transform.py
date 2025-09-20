@@ -17,8 +17,6 @@ from typing import TypeVar
 
 import earthkit.data as ekd
 
-from anemoi.transform.documentation import documentation
-
 T = TypeVar("T", bound="Transform")
 
 
@@ -157,6 +155,8 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         str
             The documentation for the transform.
         """
+        from anemoi.transform.documentation import documentation
+
         return documentation(cls, documenter)
 
     def reversed(self, *args, **kwargs) -> "Transform":

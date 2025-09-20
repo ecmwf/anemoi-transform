@@ -45,11 +45,6 @@ class _TransformMetaClass(ABCMeta):
 class Transform(ABC, metaclass=_TransformMetaClass):
     """Abstract base class for all transformations."""
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> "Transform":
-        print(f"Creating instance of {cls.__name__} with args={args}, kwargs={kwargs}")
-        instance = super().__new__(cls)
-        return instance
-
     def __repr__(self) -> str:
         """Returns a string representation of the transform.
 

@@ -25,9 +25,7 @@ class WindComponents(MatchingFieldsFilter):
     The ``uv_to_ddff`` filter converts wind speed and direction from U and V
     components, and back. This filter a source that provides the wind (U and
     V) components. For details regarding the exact formula used please refer
-    to `earthkit-meteo
-    <https://github.com/ecmwf/earthkit-meteo/blob/develop/src/earthkit/meteo/wind/array/wind.py>`_
-    ``xy_to_polar`` formula.
+    to :func:`xy_to_polar <meteo.wind.array.xy_to_polar>` and  :func:`polar_to_xy <meteo.wind.array.polar_to_xy>`.
 
     """
 
@@ -62,10 +60,6 @@ class WindComponents(MatchingFieldsFilter):
             Convention to use for conversion, by default "meteo".
         radians : bool, optional
             Whether to use radians, by default False.
-
-        Methods
-        -------
-
         """
 
         self.u_component = u_component

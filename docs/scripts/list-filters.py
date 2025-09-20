@@ -56,7 +56,7 @@ class ScriptDocumenter(Documenter):
             }
         )
 
-        s.yaml_add_eol_comment("Replace `source` with actual data source, e.g., 'mars', 'file', etc.", "source")
+        s.yaml_add_eol_comment("Replace `source` with actual data source, e.g., 'mars', 'netcdf', etc.", "source")
 
         prefix = textwrap.dedent(
             """

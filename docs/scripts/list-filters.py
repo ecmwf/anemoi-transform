@@ -61,7 +61,7 @@ class ScriptDocumenter(Documenter):
         prefix = textwrap.dedent(
             """
             To use this filter in a dataset recipe, include it as shown below, adjusting parameters as needed.
-            See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/>`_ for more details.
+            See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/projects/datasets/>`_ for more details.
             """
         ).strip()
 

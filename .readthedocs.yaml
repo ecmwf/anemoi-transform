@@ -6,7 +6,7 @@ build:
     python: "3.11"
   jobs:
     pre_build:
-    - (cd docs/scripts && make html)
+    - (cd docs/scripts && make rst)
 
 sphinx:
   configuration: docs/conf.py

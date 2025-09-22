@@ -23,15 +23,7 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("timeseries")
 class Timeseries(MatchingFieldsFilter):
-    """A source to add a timeseries depending on time but not on location.
-
-    Parameters
-    ----------
-    netcdf : dict, optional
-        Dictionary containing the path to the netCDF file, by default None.
-    template_param : str, optional
-        Template parameter name, by default "2t".
-    """
+    """A source to add a timeseries depending on time but not on location."""
 
     @matching(
         select="param",
@@ -43,6 +35,15 @@ class Timeseries(MatchingFieldsFilter):
         netcdf: dict[str, str] | None = None,
         template_param: str = "2t",
     ) -> None:
+        """Initialize the Timeseries filter.
+
+        Parameters
+        ----------
+        netcdf : dict, optional
+            Dictionary containing the path to the netCDF file, by default None.
+        template_param : str, optional
+            Template parameter name, by default "2t".
+        """
 
         if netcdf:
             import xarray as xr

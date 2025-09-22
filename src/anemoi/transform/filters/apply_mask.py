@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 import logging
+from typing import Literal
 
 import earthkit.data as ekd
 import numpy as np
@@ -37,7 +38,14 @@ OPERATORS = {
 
 @filter_registry.register("apply_mask")
 class MaskVariable(Filter):
-    """A filter to mask variables using external file."""
+    """A filter to mask variables using external file.
+
+    Warnings
+    --------
+
+    The mask file should contain a variable with the same grid as the input data.
+
+    """
 
     def __init__(
         self,
@@ -45,7 +53,7 @@ class MaskVariable(Filter):
         path: str,
         mask_value: float | None = None,
         threshold: float | None = None,
-        threshold_operator: str = ">",
+        threshold_operator: Literal["<", "<=", ">", ">=", "==", "!="] = ">",
         rename: str | None = None,
     ):
         """Initialize the MaskVariable filter.

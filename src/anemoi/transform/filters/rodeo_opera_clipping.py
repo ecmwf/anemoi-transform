@@ -26,14 +26,20 @@ MAX_TP = 10000  # clip TP
 class RodeoOperaClipping(MatchingFieldsFilter):
     """A filter to clip reprojected data in Rodeo Opera data.
 
-    Parameters
-    ----------
-    total_precipitation : str, optional
-        The name of the total_precipitation field, by default "tp".
-    max_total_precipitation : int, optional
-        The maximum value for tp, by default MAX_TP.
-    quality : ekd.Field
-        The quality data.
+    The ``rodeo_opera_clipping`` applies a filter to the OPERA Pan-European
+    composites to clip precipitation between ``[0,
+    max_total_precipitation]``, where ``max_total_precipitation`` is defined
+    at the configuration level. If no value is passed a default value
+    (``MAX_TP``) of 10000 is used. The quality index is also clipped to be
+    between ``[0,1]``. Additionally this filter converts the
+    ``total_precipitation`` field from `m` to `mm`.
+
+    Notes
+    -----
+
+    The ``rodeo_opera_clipping`` filter was primarily designed to work
+    with the 'OPERA Pan-European' Composites. It's likely these filters
+    will be moved into a plugin in the near-future.
     """
 
     @matching(
@@ -69,17 +75,17 @@ class RodeoOperaClipping(MatchingFieldsFilter):
     ) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 
-                Parameters
-                ----------
-                total_precipitation : ekd.Field
-                    The tp data.
-                quality : ekd.Field
-                    The quality data.
-                Returns
-                -------
-                Iterator[ekd.Field]
-                    Transformed fields.
-        |
+        Parameters
+        ----------
+        total_precipitation : ekd.Field
+            The tp data.
+        quality : ekd.Field
+            The quality data.
+        Returns
+        -------
+        Iterator[ekd.Field]
+            Transformed fields.
+
         """
         total_precipitation_cleaned, quality_clipped = clip_opera(
             tp=total_precipitation.to_numpy(),

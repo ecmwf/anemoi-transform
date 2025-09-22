@@ -28,7 +28,7 @@ class HumidityConversion(MatchingFieldsFilter):
 
     Notes
     -----
-    For more information, see the :func:`relative_humidity_from_specific_humidity <meteo.thermo.array.relative_humidity_from_specific_humidity>`
+    For more information, see the :func:`relative_humidity_from_specific_humidity <earthkit.meteo.thermo.array.relative_humidity_from_specific_humidity>`
     function in the earthkit-meteo documentation.
 
     """

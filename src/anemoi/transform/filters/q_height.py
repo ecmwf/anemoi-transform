@@ -246,8 +246,8 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
 
     Notes
     -----
-    For more information, see the :func:`dewpoint_from_specific_humidity <meteo.thermo.array.dewpoint_from_specific_humidity>`
-    and the :func:`specific_humidity_from_dewpoint <meteo.thermo.array.specific_humidity_from_dewpoint>`
+    For more information, see the :func:`dewpoint_from_specific_humidity <earthkit.meteo.thermo.array.dewpoint_from_specific_humidity>`
+    and the :func:`specific_humidity_from_dewpoint <earthkit.meteo.thermo.array.specific_humidity_from_dewpoint>`
     functions in the earthkit-meteo documentation.
 
     """

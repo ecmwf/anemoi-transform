@@ -104,5 +104,5 @@ class Convert(Rescale):
         super().__init__(scale=a, offset=b, param=param)
 
 
-filter_registry.register("rescale", Rescale, aliases=["scale_offset"])
+filter_registry.register("rescale", Rescale)
 filter_registry.register("convert", Convert)

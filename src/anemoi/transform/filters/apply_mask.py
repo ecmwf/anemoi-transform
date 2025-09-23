@@ -38,10 +38,42 @@ OPERATORS = {
 
 @filter_registry.register("apply_mask")
 class MaskVariable(Filter):
-    """A filter to mask variables using external file.
+    """A filter to mask variables using an external file.
 
-    Warnings
+    The values of every filtered fields are set to NaN when they are either:
+
+    - equal to `mask_value` if provided, or
+    - meeting a `threshold` condition if provided.
+
+    The variable can then be renamed by appending `_{rename}` to the original name.
+
+    Examples
     --------
+
+    .. code-block:: yaml
+
+      input:
+        - source: # Can be `mars`, `netcdf`, etc.
+            param: ...
+        - apply_mask:
+            path: /path/to/mask_file.grib # E.g. a land-sea mask
+            mask_value: 0 # Will set to NaN all values where mask == 0 (i.e. sea points)
+            rename: masked # The new variable will be named `{param}_masked`
+
+    And with a threshold:
+
+    .. code-block:: yaml
+
+        input:
+        - source: # Can be `mars`, `netcdf`, etc.
+            param: ...
+        - apply_mask:
+            path: /path/to/mask_file.nc # E.g. a land-sea mask
+            threshold_operator: '<='
+            threshold: 0.5 # Will set to NaN all values where mask <= 0.5
+
+    Notes
+    -----
 
     The mask file should contain a variable with the same grid as the input data.
 

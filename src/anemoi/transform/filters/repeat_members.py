@@ -80,7 +80,7 @@ class RepeatMembers(Filter):
             - repeat_members:
                 count: 5 # Replicate each input field 5 times
 
-    Or using specific member indices (0-based), to set the ``number`` attribute of the resulting fields to 1, 3 and 5.:
+    Or using specific member indices (0-based), to set the ``number`` attribute of the resulting fields to 1, 3 and 5:
 
     .. code-block:: yaml
 
@@ -91,7 +91,7 @@ class RepeatMembers(Filter):
             - repeat_members:
                 members: [0, 2, 4]
 
-    Or using specific field numbers (1-based), to set the ``number`` attribute of the resulting fields to 1, 3 and 5.:
+    Or using specific field numbers (1-based), to set the ``number`` attribute of the resulting fields to 1, 3 and 5:
 
     .. code-block:: yaml
 

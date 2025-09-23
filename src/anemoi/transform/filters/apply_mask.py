@@ -70,9 +70,9 @@ class MaskVariable(Filter):
             - source: # Can be `mars`, `netcdf`, etc.
                param: ...
             - apply_mask:
-                path: /path/to/mask_file.grib # E.g. a land-sea mask
-                mask_value: 0 # Will set to NaN all values where mask == 0 (i.e. sea points)
-                rename: masked # The new variable will be named `{param}_masked`
+                path: /path/to/mask_file.nc # E.g. a land-sea mask
+                threshold_operator: "<=" # Operator to use for thresholding
+                threshold: 0.5 # Will set to NaN all values where mask <= 0.5
 
     Notes
     -----

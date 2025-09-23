@@ -21,7 +21,7 @@ class Orography(SingleFieldFilter):
     This filter converts orography (in metres) to surface
     geopotential height (m\ :sup:`2`/s\ :sup:`2`) using the equation
 
-    .. math:: `geopotential = g \cdot orography`
+    .. math:: geopotential = g \cdot orography
 
     where `g` refers to the :data:`gravitational acceleration constant <earthkit.meteo.constants.g>`.
 

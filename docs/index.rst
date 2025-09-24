@@ -63,7 +63,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    installing
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :hidden:
    :caption: Filters
 

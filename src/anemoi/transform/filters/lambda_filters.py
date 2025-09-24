@@ -31,11 +31,15 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
     parameter(s) as input. No assumptions are made about physical
     quantities, it is entirely user-defined.
 
-    For example, you can use it to convert temperatures from Kelvin to
-    Celsius by subtracting a constant.
+    Notes
+    -----
+
+    This general purpose filter allows users to quickly prototype some data transformation. For an operational usage it is recommended to develop dedicated filters, that can be contributed to the project or developed as :ref:`plugins <anemoi-plugins:index-page>`.
 
     Examples
     --------
+
+    For example, you can use it to convert temperatures from Kelvin to Celsius by subtracting a constant.
 
     .. code-block:: yaml
 

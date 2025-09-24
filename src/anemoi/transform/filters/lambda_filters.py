@@ -34,7 +34,10 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
     Notes
     -----
 
-    This general purpose filter allows users to quickly prototype some data transformation. For an operational usage it is recommended to develop dedicated filters, that can be contributed to the project or developed as :ref:`plugins <anemoi-plugins:index-page>`.
+    This general purpose filter allows users to quickly prototype some data transformation.
+    For an operational usage it is recommended to develop dedicated filters,
+    that can be contributed to the project or developed
+    as :ref:`plugins <anemoi-plugins:index-page>`.
 
     Examples
     --------

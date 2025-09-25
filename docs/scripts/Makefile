@@ -3,7 +3,8 @@ html: rst
 clean:
 	rm -rf ../_api
 	rm -fr ../filters/filter-list
-	rm -fr ../filters/list-of-filters. rst
+	rm -fr ../filters/list-of-filters.rst
+
 
 rst:
 # 	sphinx-apidoc -M -f -o ../_api ../../src/anemoi -t ../_templates/apidoc

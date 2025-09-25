@@ -39,7 +39,9 @@ class ScriptDocumenter(Documenter):
 
         return super().get_signature(cls)
 
-    def make_examples(self, params):
+    def process_yaml_example(self, data: dict) -> CommentedMap:
+        if "input" in data:
+            return data
 
         dataset_example = CommentedMap(
             {
@@ -55,7 +57,7 @@ class ScriptDocumenter(Documenter):
                                     }
                                 }
                             ),
-                            CommentedMap({self.name: params}),
+                            data,
                         ]
                     }
                 )
@@ -63,6 +65,12 @@ class ScriptDocumenter(Documenter):
         )
 
         s.yaml_add_eol_comment("Replace `source` with actual data source, e.g., 'mars', 'netcdf', etc.", "source")
+
+        return dataset_example
+
+    def make_examples(self, params):
+
+        dataset_example = self.process_yaml_example(CommentedMap({self.name: params}))
 
         prefix = textwrap.dedent(
             """

@@ -45,7 +45,7 @@ class MaskVariable(Filter):
     - equal to `mask_value` if provided, or
     - meeting a `threshold` condition if provided.
 
-    The variable can then be renamed by appending `_{rename}` to the original name.
+    The variable can then optionally be renamed by appending `_{rename}` to the original name.
 
     Examples
     --------

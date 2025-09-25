@@ -38,21 +38,7 @@ numpydoc_class_order = [
 
 
 def split_rst_blocks(lines: list[str]) -> list[list[str]]:
-    """Split an RST document into paragraphs and directives.
-
-    Parameters
-    ----------
-    lines : list of str
-        Full RST document as a list of lines.
-
-    Returns
-    -------
-    list of list of str
-        Each sublist is either:
-        - a paragraph (normal text, blank lines preserved inside)
-        - a directive block (including options + body, as raw lines)
-        If two directives are consecutive, an empty paragraph [''] is added between them.
-    """
+    """Split an RST document into paragraphs and directives."""
     blocks = []
     i = 0
     while i < len(lines):
@@ -90,18 +76,7 @@ def split_rst_blocks(lines: list[str]) -> list[list[str]]:
 
 
 def parse_directive(lines: list[str]) -> tuple[str, dict[str, str], str]:
-    """Parse a generic RST directive from a list of lines.
-
-    Parameters
-    ----------
-    lines : list of str
-        The lines of the directive, starting with '.. name::'.
-
-    Returns
-    -------
-    tuple
-        (name: str, options: dict[str, str], body: str)
-    """
+    """Parse a generic RST directive from a list of lines."""
     if not lines or not lines[0].lstrip().startswith(".. "):
         line = lines[0] if lines else "EOF"
         raise ValueError(f"Not a valid directive: must start with '.. name::' ({line=})")

@@ -11,7 +11,7 @@ from collections.abc import Iterator
 from typing import Literal
 
 import earthkit.data as ekd
-from earthkit.meteo import thermo
+import earthkit.meteo.thermo.array as thermo
 
 from anemoi.transform.filters import filter_registry
 
@@ -20,7 +20,18 @@ from .matching import matching
 
 
 class HumidityConversion(MatchingFieldsFilter):
-    """A filter to convert specific humidity to relative humidity with standard thermodynamical formulas."""
+    """A filter to convert specific humidity to relative humidity using standard thermodynamical formulas.
+
+    This filter provides forward and backward transformations between specific humidity and relative humidity,
+    given temperature and pressure information. It is designed to be used in data processing pipelines where
+    conversion between these humidity representations is required.
+
+    Notes
+    -----
+    For more information, see the :func:`relative_humidity_from_specific_humidity <earthkit.meteo.thermo.array.relative_humidity_from_specific_humidity>`
+    function in the earthkit-meteo documentation.
+
+    """
 
     @matching(
         select="param",
@@ -35,7 +46,7 @@ class HumidityConversion(MatchingFieldsFilter):
         humidity: str = "q",
         return_inputs: Literal["all", "none"] | list[str] = "all",
     ):
-        """Initialize the VerticalVelocity filter.
+        """Initialize the HumidityConversion filter.
 
         Parameters
         ----------

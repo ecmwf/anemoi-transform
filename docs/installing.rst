@@ -21,8 +21,7 @@ The options are:
 
    git clone git@github.com:ecmwf/anemoi-transform.git
    cd anemoi-transform
-   pip install .[dev]
-   pip install -r docs/requirements.txt
+   pip install -e .[dev]
 
 You may also have to install pandoc on MacOS:
 

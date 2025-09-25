@@ -22,15 +22,6 @@ class Clipper(MatchingFieldsFilter):
     """Clip the values of a single field to a specified range [minimum, maximum].
     Values below `minimum` will be set to `minimum`, and values above `maximum` will be set to `maximum`.
     At least one of `minimum` or `maximum` must be specified.
-
-    Parameters
-    ----------
-    param : str
-        Name of the field to clip.
-    minimum : float, optional
-        Minimum allowed value. Values below this will be set to minimum.
-    maximum : float, optional
-        Maximum allowed value. Values above this will be set to maximum.
     """
 
     @matching(select="param", forward=("param",))
@@ -41,6 +32,17 @@ class Clipper(MatchingFieldsFilter):
         minimum: float | None = None,
         maximum: float | None = None,
     ):
+        """Initialize the Clipper filter.
+
+        Parameters
+        ----------
+        param : str
+            Name of the field to clip.
+        minimum : float, optional
+            Minimum allowed value. Values below this will be set to minimum.
+        maximum : float, optional
+            Maximum allowed value. Values above this will be set to maximum.
+        """
         if minimum is None and maximum is None:
             raise ValueError("At least one value for minimum or maximum must be specified.")
         self.param = param

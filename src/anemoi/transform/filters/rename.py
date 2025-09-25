@@ -29,6 +29,14 @@ class FormatRename:
             return field
 
         values = field.metadata(*self.bits)
+        values = (
+            [
+                values,
+            ]
+            if isinstance(values, str)
+            else values
+        )
+
         kwargs = {k: v for k, v in zip(self.bits, values)}
         kwargs = {self.what: self.format.format(**kwargs)}
         return new_field_with_metadata(template=field, **kwargs)
@@ -54,6 +62,55 @@ class DictRename:
 
 @filter_registry.register("rename")
 class Rename(Filter):
+    """A filter to rename fields based on their metadata.
+
+    When combining several sources, it is common to have different values
+    for a given attribute to represent the same concept. For example,
+    ``temperature_850hPa`` and ``t_850`` are two different ways to represent
+    the temperature at 850 hPa. The ``rename`` filter allows renaming a key
+    to another key.
+
+    Notes
+    -----
+
+    The ``rename`` filter was primarily designed to rename the ``param``
+    attribute, but any key can be renamed. The ``rename`` filter can take
+    several renaming keys.
+
+    Examples
+    --------
+
+    You can rename using a dictionary:
+
+    .. code-block:: yaml
+
+        input:
+          pipe:
+            - source:
+                ...
+            - rename:
+                param:
+                    z: geopotential
+                    t: temperature
+                levelist:
+                    1000: 1000hPa
+                    850: 850hPa
+
+    or using a format string:
+
+    .. code-block:: yaml
+
+        input:
+            pipe:
+                - source:
+                    ...
+                - rename:
+                    param: "{param}_{levelist}_{levtype}"
+
+    In the latter case, the keys between curly braces are replaced by their
+    corresponding metadata values in the field.
+
+    """
 
     def __init__(self, **kwargs):
 

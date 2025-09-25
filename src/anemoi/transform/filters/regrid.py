@@ -84,7 +84,57 @@ def as_griddata(grid: str | Field | dict[str, Any] | None) -> dict[str, Any] | N
 
 @filter_registry.register("regrid")
 class RegridFilter(Filter):
-    """A filter to regrid fields using earthkit-regrid."""
+    """A filter to regrid fields using earthkit-regrid.
+
+    When building a dataset for a specific model, it is possible that the
+    source grid or resolution does not fit the needs. In that case, it is
+    possible to add a filter to interpolate the data to a target grid. It
+    will call the ``interpolate`` function from `earthkit-regrid
+    <https://earthkit-regrid.readthedocs.io/en/latest/interpolate.html>`_ if
+    the keys ``method``, ``in_grid`` and ``out_grid`` are provided and if a
+    `pre-generated matrix
+    <https://earthkit-regrid.readthedocs.io/en/latest/inventory/index.html>`_
+    exists for this transformation. Otherwise, it is possible to provide a
+    ``regrid matrix`` previously generated with :ref:`make-regrid-matrix`.
+    The generated matrix is an NPZ file containing the
+    input/output coordinates, the indices, and the weights of the
+    interpolation.
+
+    ``regrid`` filter must follow a source or another filter in a
+    `building-pipe
+    <https://anemoi.readthedocs.io/projects/datasets/en/latest/datasets/building/operations.html#pipe>`_
+    operation.
+
+    Examples
+    --------
+
+    .. code-block:: yaml
+
+      input:
+        pipe:
+        - source:
+            # mars, grib, netcdf, etc.
+            # source attributes here
+            # ...
+
+        - regrid:
+            method: nearest
+            in_grid: o32
+            out_grid: o48
+
+    .. code-block:: yaml
+
+      input:
+        pipe:
+        - source:
+            # mars, grib, netcdf, etc.
+            # source attributes here
+            # ...
+
+        - regrid:
+            matrix: /path/to/regrid/matrix.npz
+
+    """
 
     def __init__(
         self,

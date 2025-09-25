@@ -51,8 +51,10 @@ optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]
 
 optional-dependencies.docs = [
   "nbsphinx",
+  "numpydoc",
   "pandoc",
   "requests",
+  "ruamel-yaml",
   "sphinx>=8.2; python_version>='3.11'",
   "sphinx-argparse<0.5",
   "sphinx-rtd-theme",

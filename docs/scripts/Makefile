@@ -2,9 +2,11 @@ html: rst
 
 clean:
 	rm -rf ../_api
-	rm -rf ../_build/list-of-filters.rst
+	rm -fr ../filters/filter-list
+	rm -fr ../filters/list-of-filters.rst
+
 
 rst:
-	mkdir -p ../_build
 # 	sphinx-apidoc -M -f -o ../_api ../../src/anemoi -t ../_templates/apidoc
-	./list-filters.py > ../_build/list-of-filters.rst
+	mkdir -p ../filters/list
+	./list-filters.py --target-dir ../filters/filter-list --index ../filters/list-of-filters.rst

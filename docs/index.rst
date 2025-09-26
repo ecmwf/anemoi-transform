@@ -21,8 +21,9 @@ models from existing recipes but with their own data.
 
 This package provides a series of data transformation and filering
 functions for use by components of the Anemoi framework. Particularly
-for those packages which handle incoming raw data, i.e. ``datasets`` and
-``inference``.
+for those packages which handle incoming raw data, i.e.
+:ref:`anemoi-datasets <anemoi-datasets:index-page>` and
+:ref:`anemoi-inference <anemoi-inference:index-page>`.
 
 -  :doc:`installing`
 
@@ -63,7 +64,7 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    installing
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :hidden:
    :caption: Filters
 

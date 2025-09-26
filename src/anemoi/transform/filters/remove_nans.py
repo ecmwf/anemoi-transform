@@ -24,7 +24,29 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("remove_nans")
 class RemoveNaNs(Filter):
-    """A filter to mask out NaNs."""
+    """A filter to mask out NaNs.
+
+    All grid points where the first field has NaNs are removed from all fields, and the underlying grid (latitudes and longitudes)
+    are updated accordingly. This results in a set of fields on a reduced grid without NaNs.
+
+    Notes
+    -----
+
+    This filter will remove NaNs from the input fields by creating a mask based on the first field.
+    It assumes that all following fields have NaNs in the same locations as the first field.
+
+    Examples
+    --------
+
+    .. code-block:: yaml
+
+        input:
+          pipe:
+            - source: # Can be `mars`, `netcdf`, etc.
+                param: ...
+            - remove_nans: {} # Remove NaNs from all fields based on the first field
+
+    """
 
     def __init__(self, *, method: str = "mask", check: bool = False):
         """Initialize the RemoveNaNs filter.

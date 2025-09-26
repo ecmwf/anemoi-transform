@@ -19,7 +19,10 @@ from anemoi.transform.filters import filter_registry
 class Empty(Filter):
     """A filter consumes all input data and returns an empty output.
 
-    The ``empty`` filter is for debugging purposes.
+    Notes
+    -----
+
+    This filter is for debugging purposes only.
 
     """
 

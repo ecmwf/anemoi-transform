@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+import argparse
 import inspect
 import logging
-import sys
+import os
 import textwrap
 
 import rich
@@ -14,6 +15,11 @@ from anemoi.transform.documentation import YAMLExample
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger("list-filters")
+
+parser = argparse.ArgumentParser(description="List available filters")
+parser.add_argument("--target-dir", type=str, required=True, help="Directory where to write the filter documentation")
+parser.add_argument("--index", type=str, required=True, help="Path to the index file")
+args = parser.parse_args()
 
 
 class ScriptDocumenter(Documenter):
@@ -33,7 +39,9 @@ class ScriptDocumenter(Documenter):
 
         return super().get_signature(cls)
 
-    def make_examples(self, params):
+    def process_yaml_example(self, data: dict) -> CommentedMap:
+        if "input" in data:
+            return data
 
         dataset_example = CommentedMap(
             {
@@ -49,7 +57,7 @@ class ScriptDocumenter(Documenter):
                                     }
                                 }
                             ),
-                            CommentedMap({self.name: params}),
+                            data,
                         ]
                     }
                 )
@@ -57,6 +65,12 @@ class ScriptDocumenter(Documenter):
         )
 
         s.yaml_add_eol_comment("Replace `source` with actual data source, e.g., 'mars', 'netcdf', etc.", "source")
+
+        return dataset_example
+
+    def make_examples(self, params):
+
+        dataset_example = self.process_yaml_example(CommentedMap({self.name: params}))
 
         prefix = textwrap.dedent(
             """
@@ -68,9 +82,11 @@ class ScriptDocumenter(Documenter):
         return YAMLExample(dataset_example, prefix=prefix)
 
 
+filters = []
+
 for f in filter_registry.registered:
 
-    rich.print(f"Processing filter '{f}'", file=sys.stderr)
+    rich.print(f"Processing filter '{f}'")
 
     filter = filter_registry.lookup(f, return_none=True)
 
@@ -78,29 +94,56 @@ for f in filter_registry.registered:
         LOG.error(f"Cannot find '{f}' in {filter_registry.package}")
         continue
 
-    print()
-    print(f".. _{f}-filter:")
-    print()
-    print()
-    print("-" * len(f))
-    print(f)
-    print("-" * len(f))
-    print()
+    filters.append(f)
 
-    module = getattr(filter, "__module__", "")
-    if not module.startswith("anemoi.transform."):
-        # Only the filters in src/anemoi/transform/filters should be listed
-        # This can happen when plugin filters are registered
-        # This is also something we may want to support in the future
-        LOG.warning(f"Filter {f} is in unexpected module {module}")
-        continue
+    os.path.exists(args.target_dir) or os.makedirs(args.target_dir)
 
-    txt = str(SphinxDocString(filter.documentation(ScriptDocumenter(f))))
+    with open(f"{args.target_dir}/{f}.rst", "w") as docfile:
 
-    while "\n\n\n" in txt:
-        txt = txt.replace("\n\n\n", "\n\n")
+        print(file=docfile)
+        print(f".. _{f}-filter:", file=docfile)
+        print(file=docfile)
+        print(file=docfile)
+        print("-" * len(f), file=docfile)
+        print(f, file=docfile)
+        print("-" * len(f), file=docfile)
+        print(file=docfile)
 
-    while txt.strip() != txt:
-        txt = txt.strip()
+        module = getattr(filter, "__module__", "")
+        if not module.startswith("anemoi.transform."):
+            # Only the filters in src/anemoi/transform/filters should be listed
+            # This can happen when plugin filters are registered
+            # This is also something we may want to support in the future
+            LOG.warning(f"Filter {f} is in unexpected module {module}")
+            continue
 
-    print(txt)
+        txt = str(SphinxDocString(filter.documentation(ScriptDocumenter(f))))
+
+        while "\n\n\n" in txt:
+            txt = txt.replace("\n\n\n", "\n\n")
+
+        while txt.strip() != txt:
+            txt = txt.strip()
+
+        print(txt, file=docfile)
+
+relative_target_dir = os.path.relpath(os.path.realpath(args.target_dir), os.path.realpath(os.path.dirname(args.index)))
+
+
+with open(args.index, "w") as docfile:
+
+    print(file=docfile)
+    print(".. _list-of-filters:", file=docfile)
+    print(file=docfile)
+    print(file=docfile)
+    print("List of filters", file=docfile)
+    print("================", file=docfile)
+    print(file=docfile)
+    print("The following filters are available:", file=docfile)
+
+    print(file=docfile)
+    print(".. toctree::", file=docfile)
+    print("   :maxdepth: 1", file=docfile)
+    print(file=docfile)
+    for f in filters:
+        print(f"   {relative_target_dir}/{f}.rst", file=docfile)

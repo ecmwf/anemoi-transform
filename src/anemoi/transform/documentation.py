@@ -8,13 +8,11 @@
 # nor does it submit to any jurisdiction.
 
 import inspect
-import sys
 import textwrap
+from collections.abc import Iterator
 from io import StringIO
 from typing import Any
-from typing import Iterator
 
-import rich
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 
@@ -37,6 +35,79 @@ numpydoc_class_order = [
     "References",
     "Examples",
 ]
+
+
+def split_rst_blocks(lines: list[str]) -> list[list[str]]:
+    """Split an RST document into paragraphs and directives."""
+    blocks = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line.lstrip().startswith(".. ") and "::" in line:
+            # Directive block
+            start = i
+            i += 1
+            while i < len(lines):
+                ln = lines[i]
+                if not ln.strip():
+                    i += 1
+                    continue
+                indent = len(ln) - len(ln.lstrip())
+                if indent == 0:  # block ended
+                    break
+                i += 1
+            directive_block = lines[start:i]
+
+            # If previous block was also a directive, add a separator paragraph
+            if blocks and blocks[-1][0].lstrip().startswith(".. "):
+                blocks.append([""])
+
+            blocks.append(directive_block)
+        else:
+            # Normal paragraph
+            start = i
+            while i < len(lines):
+                if lines[i].lstrip().startswith(".. ") and "::" in lines[i]:
+                    break
+                i += 1
+            para_block = lines[start:i]
+            blocks.append(para_block)
+    return blocks
+
+
+def parse_directive(lines: list[str]) -> tuple[str, dict[str, str], str]:
+    """Parse a generic RST directive from a list of lines."""
+    if not lines or not lines[0].lstrip().startswith(".. "):
+        line = lines[0] if lines else "EOF"
+        raise ValueError(f"Not a valid directive: must start with '.. name::' ({line=})")
+
+    # First line: ".. name::"
+    header = lines[0].lstrip()[3:]  # strip leading ".. "
+    if "::" not in header:
+        raise ValueError("Directive missing '::'")
+
+    name, _default = header.split("::", 1)
+    name = name.strip()
+
+    # Collect options and body
+    options = dict(_default=_default.strip())
+    body_lines = []
+    in_options = True
+
+    for line in lines[1:]:
+        stripped = line.strip()
+        if in_options and stripped.startswith(":") and ":" in stripped[1:]:
+            # Option line like ":key: value"
+            key, _, val = stripped[1:].partition(":")
+            options[key.strip()] = val.strip()
+        else:
+            in_options = False
+            body_lines.append(line)
+
+    # Dedent the body (remove consistent leading spaces)
+    body = textwrap.dedent("\n".join(body_lines)).strip("\n")
+
+    return name, options, body
 
 
 class Documenter:
@@ -158,6 +229,67 @@ class Documenter:
 
         return rubrics
 
+    def add_generated_examples(self, cls) -> list[str]:
+        """Generates the example section for documentation."""
+
+        params = self.construct_signature(cls)
+
+        examples = []
+        examples.append("")
+        examples.append("Examples")
+        examples.append("--------")
+        examples.append("")
+
+        for example in self.make_examples(params):
+            examples.extend(str(example).splitlines())
+
+        examples.append("")
+
+        return examples
+
+    def format_user_examples(self, lines: list[str]) -> None:
+        """Formats user-provided examples in the docstring."""
+
+        splits = split_rst_blocks(lines)
+
+        result = []
+
+        for i, block in enumerate(splits):
+            if i % 2 == 0:
+                result.extend(block)
+            else:
+                name, options, body = parse_directive(block)
+                if name == "code-block":
+                    result.extend(self.parse_block(name, options, body))
+                else:
+                    result.append(block)
+
+        lines[:] = result
+
+    def parse_block(self, name, options, body: list[str]) -> list[str]:
+        """Parses a block of lines and returns formatted lines."""
+
+        lang = options.get("language", options.get("_default", None))
+
+        if not lang:
+            raise ValueError("No language specifier found in code block")
+
+        format = getattr(self, f"format_user_example_{lang}", None)
+        if format is None:
+            raise ValueError(f"No parser for language: {lang}")
+
+        return str(format(body, header=options)).splitlines()
+
+    def format_user_example_yaml(self, text: str, header: list[str]) -> list[str]:
+        """Parses a YAML block and returns formatted lines."""
+        yaml = YAML()
+        data = yaml.load(text)
+        data = self.process_yaml_example(data)
+        return YAMLExample(data, header=header)
+
+    def process_yaml_example(self, data: Any) -> Any:
+        return data
+
 
 class Example:
     """Base class for examples."""
@@ -184,12 +316,17 @@ class YAMLExample(Example):
         Text to prepend before the YAML block.
     suffix : str | None, optional
         Text to append after the YAML block.
+    header : list of str | None, optional
+        Additional header lines to include before the YAML block.
     """
 
-    def __init__(self, example: Any, *, prefix: str | None = None, suffix: str | None = None) -> None:
+    def __init__(
+        self, example: Any, *, prefix: str | None = None, suffix: str | None = None, header: list[str] | None = None
+    ) -> None:
         self.example = example
         self.prefix = prefix
         self.suffix = suffix
+        self.header = header or []
 
     def __str__(self) -> str:
         """Returns the YAML-formatted example as a string.
@@ -240,25 +377,11 @@ def documentation(cls: type, documenter: Documenter) -> str:
     result = documenter.docstring(cls).splitlines()
     rubrics = documenter.find_rubrics(result)
 
-    rich.print(f"Docstring lines: {result}", file=sys.stderr)
-    rich.print(f"Rubrics found: {list(rubrics.keys())}", file=sys.stderr)
-
-    if "Examples" not in rubrics:
-        params = documenter.construct_signature(cls)
-
-        examples = []
-        examples.append("")
-        examples.append("Examples")
-        examples.append("--------")
-        examples.append("")
-
-        for example in documenter.make_examples(params):
-            examples.extend(str(example).splitlines())
-
-        examples.append("")
-
+    if "Examples" in rubrics:
+        documenter.format_user_examples(rubrics["Examples"])
+    else:
+        examples = documenter.add_generated_examples(cls)
         result.extend(examples)
-
         rubrics = documenter.find_rubrics(result)
 
     result = []
@@ -270,6 +393,5 @@ def documentation(cls: type, documenter: Documenter) -> str:
             result.append("")
         result.extend(lines)
         result.append("")
-    rich.print(f"Docstring lines: {result}", file=sys.stderr)
-    rich.print(f"Rubrics found: {list(rubrics.keys())}", file=sys.stderr)
+
     return "\n".join(result)

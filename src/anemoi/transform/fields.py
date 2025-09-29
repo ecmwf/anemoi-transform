@@ -507,14 +507,14 @@ class _NewMetadataField(WrappedField, ABC):
 
                 def keys(self):
                     return this._field.metadata().keys()
-                
+
                 def __getitem__(self, key):
                     value = this.mapping(key, this._field)
                     if value is not MISSING_METADATA:
                         return value
 
                     return this._field.metadata()[key]
-                
+
                 def override(self, *args, **kwargs):
                     return this._field.metadata().override(*args, **kwargs)
 

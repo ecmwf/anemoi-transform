@@ -126,7 +126,6 @@ temp/
 logs/
 _dev/
 _api/
-_filters/
 ./outputs
 *tmp_data/
 

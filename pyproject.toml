@@ -39,7 +39,7 @@ classifiers = [
 
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.4.32",
+  "anemoi-utils>=0.4.36",
   "cfunits",
   "earthkit-data>=0.12.4",
   "earthkit-geo>=0.3",
@@ -52,8 +52,10 @@ optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]
 
 optional-dependencies.docs = [
   "nbsphinx",
+  "numpydoc",
   "pandoc",
   "requests",
+  "ruamel-yaml",
   "sphinx>=8.2; python_version>='3.11'",
   "sphinx-argparse<0.5",
   "sphinx-rtd-theme",

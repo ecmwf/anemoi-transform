@@ -16,7 +16,7 @@ from anemoi.transform.filters import filter_registry
 
 
 class Orography(SingleFieldFilter):
-    """A filter to convert orography in m to surface geopotential in m²/s², and back.
+    r"""A filter to convert orography in m to surface geopotential in m²/s², and back.
 
     This filter converts orography (in metres) to surface
     geopotential height (m\ :sup:`2`/s\ :sup:`2`) using the equation

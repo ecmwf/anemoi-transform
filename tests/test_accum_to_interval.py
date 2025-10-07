@@ -13,7 +13,6 @@ from anemoi.transform.filters import filter_registry
 
 from .utils import collect_fields_by_param
 
-
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
     "longitudes": [20, 40.0],
@@ -36,12 +35,42 @@ def test_accum_to_interval_zero_left_true(test_source):
 
     # Provide inputs out of chronological order to ensure sorting by valid_datetime works
     FIELD_SPECS = [
-        {"param": "tp", "shortName": "tp", "values": ACC_12, "valid_datetime": "2018-08-01T12:00:00Z", **MOCK_FIELD_METADATA},
-        {"param": "tp", "shortName": "tp", "values": ACC_00, "valid_datetime": "2018-08-01T00:00:00Z", **MOCK_FIELD_METADATA},
-        {"param": "tp", "shortName": "tp", "values": ACC_06, "valid_datetime": "2018-08-01T06:00:00Z", **MOCK_FIELD_METADATA},
+        {
+            "param": "tp",
+            "shortName": "tp",
+            "values": ACC_12,
+            "valid_datetime": "2018-08-01T12:00:00Z",
+            **MOCK_FIELD_METADATA,
+        },
+        {
+            "param": "tp",
+            "shortName": "tp",
+            "values": ACC_00,
+            "valid_datetime": "2018-08-01T00:00:00Z",
+            **MOCK_FIELD_METADATA,
+        },
+        {
+            "param": "tp",
+            "shortName": "tp",
+            "values": ACC_06,
+            "valid_datetime": "2018-08-01T06:00:00Z",
+            **MOCK_FIELD_METADATA,
+        },
         # Non-target variable should pass through unchanged
-        {"param": "t", "shortName": "t", "values": B + 10, "valid_datetime": "2018-08-01T00:00:00Z", **MOCK_FIELD_METADATA},
-        {"param": "t", "shortName": "t", "values": B + 20, "valid_datetime": "2018-08-01T06:00:00Z", **MOCK_FIELD_METADATA},
+        {
+            "param": "t",
+            "shortName": "t",
+            "values": B + 10,
+            "valid_datetime": "2018-08-01T00:00:00Z",
+            **MOCK_FIELD_METADATA,
+        },
+        {
+            "param": "t",
+            "shortName": "t",
+            "values": B + 20,
+            "valid_datetime": "2018-08-01T06:00:00Z",
+            **MOCK_FIELD_METADATA,
+        },
     ]
 
     source = test_source(FIELD_SPECS)
@@ -79,9 +108,27 @@ def test_accum_to_interval_zero_left_false(test_source):
     ACC_12 = 3 * B
 
     FIELD_SPECS = [
-        {"param": "tp", "shortName": "tp", "values": ACC_12, "valid_datetime": "2018-08-01T12:00:00Z", **MOCK_FIELD_METADATA},
-        {"param": "tp", "shortName": "tp", "values": ACC_06, "valid_datetime": "2018-08-01T06:00:00Z", **MOCK_FIELD_METADATA},
-        {"param": "tp", "shortName": "tp", "values": ACC_00, "valid_datetime": "2018-08-01T00:00:00Z", **MOCK_FIELD_METADATA},
+        {
+            "param": "tp",
+            "shortName": "tp",
+            "values": ACC_12,
+            "valid_datetime": "2018-08-01T12:00:00Z",
+            **MOCK_FIELD_METADATA,
+        },
+        {
+            "param": "tp",
+            "shortName": "tp",
+            "values": ACC_06,
+            "valid_datetime": "2018-08-01T06:00:00Z",
+            **MOCK_FIELD_METADATA,
+        },
+        {
+            "param": "tp",
+            "shortName": "tp",
+            "values": ACC_00,
+            "valid_datetime": "2018-08-01T00:00:00Z",
+            **MOCK_FIELD_METADATA,
+        },
     ]
 
     source = test_source(FIELD_SPECS)
@@ -94,11 +141,9 @@ def test_accum_to_interval_zero_left_false(test_source):
     tp_fields = sorted(output_fields["tp"], key=lambda f: f.metadata("valid_datetime"))
 
     expected_tp = [
-        ACC_00,            # first step unchanged when zero_left is False
-        ACC_06 - ACC_00,   # interval differences thereafter
+        ACC_00,  # first step unchanged when zero_left is False
+        ACC_06 - ACC_00,  # interval differences thereafter
         ACC_12 - ACC_06,
     ]
     for f, exp in zip(tp_fields, expected_tp):
         assert np.allclose(f.to_numpy(), exp)
-
-

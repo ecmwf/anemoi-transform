@@ -1,15 +1,21 @@
 from __future__ import annotations
-from typing import Iterable, List, Dict
-import numpy as np
-import earthkit.data as ekd
 
-from anemoi.transform.fields import new_field_from_numpy, new_fieldlist_from_list
+from typing import Dict
+from typing import Iterable
+from typing import List
+
+import earthkit.data as ekd
+import numpy as np
+
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
+
 from . import filter_registry  # comes from anemoi.transform.filters
+
 
 @filter_registry.register("accum_to_interval")
 class AccumToInterval:
-    """
-    Convert accumulated-from-start fields into interval accumulations by time differencing.
+    """Convert accumulated-from-start fields into interval accumulations by time differencing.
     - Works per-variable along valid_datetime.
     - For the first step, sets zero if zero_left=True.
     """
@@ -31,7 +37,6 @@ class AccumToInterval:
         level = f.metadata("level", default=None)
         levelType = f.metadata("levelType", default=None)
         return (short_name, level, levelType)
-
 
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         # Group by identifier (name + level) so it works for sfc and pl/ml variables

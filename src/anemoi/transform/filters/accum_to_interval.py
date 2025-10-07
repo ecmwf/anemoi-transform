@@ -56,16 +56,13 @@ class AccumToInterval(Filter):
                 continue
 
             # Convert accum-from-start → interval accumulations by differencing
-            for i, f in enumerate(fl):
-                if i == 0:
-                    if self.zero_left:
-                        zero = np.zeros_like(f.to_numpy())
-                        out.append(new_field_from_numpy(zero, template=f))
-                    else:
-                        out.append(f)
-                else:
-                    prev = fl[i - 1]
-                    diff = f.to_numpy() - prev.to_numpy()
-                    out.append(new_field_from_numpy(diff, template=f))
+            if self.zero_left:
+                out.append(new_field_from_numpy(np.zeros_like(fl[0].to_numpy()), template=fl[0]))
+            else:
+                out.append(fl[0])
+
+            # subsequent steps via indexing
+            for i in range(1, len(fl)):
+                out.append(new_field_from_numpy(fl[i].to_numpy() - fl[i - 1].to_numpy(), template=fl[i]))
 
         return new_fieldlist_from_list(out)

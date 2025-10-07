@@ -81,7 +81,7 @@ class FillSquareGribs(Filter):
         print(unique_lats)
         print(len(unique_lons))
         print(len(unique_lats))
-        
+
         nb_lats_input = len(unique_lats)
 
         step_lon = unique_lons[1] - unique_lons[0]

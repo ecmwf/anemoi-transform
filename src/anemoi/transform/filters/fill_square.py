@@ -71,17 +71,21 @@ class FillSquareGribs(Filter):
         ekd.FieldList
 
         """
-
         first = fields[0]
         input_lon, input_lat = first.state["longitudes"], first.state["latitudes"]
-
+        input_data = first.to_numpy(flatten=True)
+        print(input_data.shape)
         unique_lons = np.unique(input_lon)
         unique_lats = np.unique(input_lat)
+        print(unique_lons)
+        print(unique_lats)
+        print(len(unique_lons))
+        print(len(unique_lats))
+        
         nb_lats_input = len(unique_lats)
 
         step_lon = unique_lons[1] - unique_lons[0]
         step_lat = unique_lats[1] - unique_lats[0]
-
         nb_lats_output = round((self.max_lat_output - self.min_lat_output) / step_lat) + 1
         nb_lons_output = round((self.max_lon_output - self.min_lon_output) / step_lon) + 1
 
@@ -108,25 +112,9 @@ class FillSquareGribs(Filter):
 
         result = []
         for field in tqdm.tqdm(fields, desc=f"Fill with {self.fill_value}"):
-            output_data = np.ones((nb_lats_output * nb_lons_output)) * self.fill_value
             input_data = field.to_numpy(flatten=True)
-            for idx_input_lat in range(nb_lats_input):
-                nb_lon_before_lat_in_input = sum_nb_lon_before_lat_in_input[idx_input_lat]
-                nb_lon_by_lat_in_input = list_nb_lon_by_lat_in_input[idx_input_lat]
-                idx_output_lat = list_idx_output_lat[
-                    nb_lon_before_lat_in_input : nb_lon_before_lat_in_input + nb_lon_by_lat_in_input
-                ][0]
-                # list_idx are the index of output_data where we keep original data
-                list_idx = (
-                    idx_output_lat * nb_lats_output
-                    + list_idx_output_lon[
-                        nb_lon_before_lat_in_input : nb_lon_before_lat_in_input + nb_lon_by_lat_in_input
-                    ]
-                )
-                output_data[list_idx] = input_data[
-                    nb_lon_before_lat_in_input : nb_lon_before_lat_in_input + nb_lon_by_lat_in_input
-                ]
-
+            output_data = np.ones((nb_lats_output, nb_lons_output)) * self.fill_value
+            output_data[list_idx_output_lat, list_idx_output_lon] = input_data
             result.append(
                 new_field_from_latitudes_longitudes(
                     new_field_from_numpy(output_data, template=field),

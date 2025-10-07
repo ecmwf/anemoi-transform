@@ -10,7 +10,7 @@ import numpy as np
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 
-from . import filter_registry  # comes from anemoi.transform.filters
+from anemoi.transform.filters import filter_registry
 
 
 @filter_registry.register("accum_to_interval")

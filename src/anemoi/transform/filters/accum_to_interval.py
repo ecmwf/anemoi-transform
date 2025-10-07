@@ -16,8 +16,30 @@ from anemoi.transform.filters import filter_registry
 @filter_registry.register("accum_to_interval")
 class AccumToInterval(Filter):
     """Convert accumulated-from-start fields into interval accumulations by time differencing.
-    - Works per-variable along valid_datetime.
-    - For the first step, sets zero if zero_left=True.
+
+    This filter:
+    - Works per variable (grouped by shortName, level, levelType) along valid_datetime.
+    - Sorts inputs by valid_datetime inside each group before differencing.
+    - For the first step, sets zero if `zero_left=True` (default); otherwise keeps the first step unchanged.
+    - Passes through non-target variables unchanged.
+
+    Notes
+    -----
+    - Target variables are matched by their GRIB `shortName` (e.g. "tp"), not by `param`.
+    - Grouping is done by `(shortName, level, levelType)`, so both surface and model/pressure levels are supported.
+
+    Examples
+    --------
+    .. code-block:: yaml
+
+        input:
+          pipe:
+            - source:   # e.g. mars / file / netcdf
+                param: [tp, t]
+            - accum_to_interval:
+                variables: ["tp"]  # convert accumulated total precipitation to interval totals
+                zero_left: true    # set the first interval to zero
+
     """
 
     def __init__(

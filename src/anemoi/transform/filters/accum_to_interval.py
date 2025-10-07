@@ -9,16 +9,13 @@ import numpy as np
 
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
-<<<<<<< HEAD
-=======
-from anemoi.transform.filter import SingleFieldFilter
+from anemoi.transform.filter import Filter
 
->>>>>>> ddd383f (Update AccumToInterval to inherit from Filter)
 from anemoi.transform.filters import filter_registry
 
 
 @filter_registry.register("accum_to_interval")
-class AccumToInterval(SingleFieldFilter):
+class AccumToInterval(Filter):
     """Convert accumulated-from-start fields into interval accumulations by time differencing.
     - Works per-variable along valid_datetime.
     - For the first step, sets zero if zero_left=True.
@@ -34,7 +31,6 @@ class AccumToInterval(SingleFieldFilter):
         self.variables = set(variables)
         self.zero_left = bool(zero_left)
         self.window = window  # kept for API completeness
-        super().__init__(variables=variables, window=window, zero_left=zero_left, **kwargs)
 
     def _identifier(self, f):
         # Build a unique key for time series: (name, level)

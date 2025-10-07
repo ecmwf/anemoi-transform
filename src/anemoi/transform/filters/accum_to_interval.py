@@ -18,15 +18,15 @@ class AccumToInterval(Filter):
     """Convert accumulated-from-start fields into interval accumulations by time differencing.
 
     This filter:
-    - Works per variable (grouped by shortName, level, levelType) along valid_datetime.
+    - Works per variable (grouped by param, level, levelType) along valid_datetime.
     - Sorts inputs by valid_datetime inside each group before differencing.
     - For the first step, sets zero if `zero_left=True` (default); otherwise keeps the first step unchanged.
     - Passes through non-target variables unchanged.
 
     Notes
     -----
-    - Target variables are matched by their GRIB `shortName` (e.g. "tp"), not by `param`.
-    - Grouping is done by `(shortName, level, levelType)`, so both surface and model/pressure levels are supported.
+    - Target variables are matched by their GRIB `param` (e.g. "tp"), not by `param`.
+    - Grouping is done by `(param, level, levelType)`, so both variables are considered unique across surface and model/pressure levels.
 
     Examples
     --------
@@ -55,10 +55,10 @@ class AccumToInterval(Filter):
 
     def _identifier(self, f):
         # Build a unique key for time series: (name, level)
-        short_name = f.metadata("shortName")
+        param = f.metadata("param")
         level = f.metadata("level", default=None)
         levelType = f.metadata("levelType", default=None)
-        return (short_name, level, levelType)
+        return (param, level, levelType)
 
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         # Group by identifier (name + level) so it works for sfc and pl/ml variables
@@ -71,9 +71,9 @@ class AccumToInterval(Filter):
             groups[k] = sorted(fl, key=lambda x: x.metadata("valid_datetime"))
 
         out: List[ekd.Field] = []
-        for (short_name, level, levelType), fl in groups.items():
+        for (param_name, level, level_type), fl in groups.items():
             # Only transform targeted variables; pass-through others untouched
-            if short_name not in self.variables or len(fl) == 0:
+            if param_name not in self.variables or len(fl) == 0:
                 out.extend(fl)
                 continue
 

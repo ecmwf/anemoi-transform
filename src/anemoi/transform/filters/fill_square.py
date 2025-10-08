@@ -74,14 +74,9 @@ class FillSquareGribs(Filter):
         first = fields[0]
         input_lon, input_lat = first.state["longitudes"], first.state["latitudes"]
         input_data = first.to_numpy(flatten=True)
-        print(input_data.shape)
         unique_lons = np.unique(input_lon)
         unique_lats = np.unique(input_lat)
-        print(unique_lons)
-        print(unique_lats)
-        print(len(unique_lons))
-        print(len(unique_lats))
-
+        
         nb_lats_input = len(unique_lats)
 
         step_lon = unique_lons[1] - unique_lons[0]

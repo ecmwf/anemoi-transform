@@ -94,6 +94,7 @@ def test_accum_to_interval_zero_left_true(test_source):
     # Non-target variable t should be unchanged (match by valid_datetime)
     def _norm_ts(s):
         return s[:-1] + "+00:00" if isinstance(s, str) and s.endswith("Z") else s
+
     t_inputs = {_norm_ts(spec["valid_datetime"]): spec["values"] for spec in FIELD_SPECS if spec["param"] == "t"}
     for f in output_fields["t"]:
         ts = _norm_ts(f.metadata("valid_datetime"))

@@ -39,7 +39,10 @@ def _path_to_lat_lon(path):
     if path.endswith(".npz"):
         data = np.load(path)
         return data["latitudes"], data["longitudes"]
-
+    if path.endswith(".zarr"):
+        from anemoi.datasets import open_dataset
+        dataset = open_dataset(path)
+        return dataset.latitudes, dataset.longitudes
     ds = ekd.from_source("file", path)
     return _ds_to_lat_lon(ds)
 

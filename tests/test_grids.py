@@ -47,7 +47,7 @@ def do_not_test_unstructured_from_url() -> None:
     assert len(forcings) == 2
 
 
-def test_o96() -> None:
+def test_lookup_o96() -> None:
     """Test the grids function for the 'o96' grid."""
     x = lookup("o96")
     assert x["latitudes"].mean() == pytest.approx(0.0)

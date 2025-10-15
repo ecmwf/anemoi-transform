@@ -76,8 +76,4 @@ def compare_npz_files(file1, file2):
     ), f"Keys in NPZ files do not match {set(data1.keys())} and {set(data2.keys())}"
 
     for key in data1.keys():
-        try:
-            assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"
-        except Exception as e:
-            LOG.error(f"Error comparing key {key} :between {file1} and {file2}: {e}")
-            raise
+        assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"

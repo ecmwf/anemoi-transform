@@ -68,8 +68,6 @@ class SelectFieldSource(Source):
 
 
 def compare_npz_files(file1, file2):
-    import numpy as np
-
     data1 = np.load(file1)
     data2 = np.load(file2)
 

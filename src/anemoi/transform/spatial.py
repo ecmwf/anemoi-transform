@@ -494,7 +494,6 @@ def global_on_lam_mask(
     """Return the list of points in [global_lats, global_lons] closest to [lats, lons] ."""
     from scipy.spatial import cKDTree
 
-    distance = None
 
     _check_latlon_arrays(lats, lons, global_lats, global_lons)
 
@@ -512,12 +511,9 @@ def global_on_lam_mask(
         global_points,
     )
 
-    if distance is not None:
-        # Use a cKDTree to find the nearest points with a distance limit
-        indices = cKDTree(global_points).query_ball_point(lam_points, distance)
-        indices = np.array(sorted(set(i for sublist in indices for i in sublist)))
-    else:
-        _, indices = cKDTree(global_points).query(lam_points, k=1)
+    # Use a cKDTree to find the nearest points with a distance limit
+    indices = cKDTree(global_points).query_ball_point(lam_points, distance)
+    indices = np.array(sorted(set(i for sublist in indices for i in sublist)))
 
     if plot:
         import matplotlib.pyplot as plt

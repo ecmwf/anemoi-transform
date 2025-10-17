@@ -36,7 +36,7 @@ def _path_to_lat_lon(path):
     import earthkit.data as ekd
     import numpy as np
 
-    if path.endswith(".npz"):
+    rf path.endswith(".npz"):
         data = np.load(path)
         return data["latitudes"], data["longitudes"]
     if path.endswith(".zarr"):
@@ -47,7 +47,7 @@ def _path_to_lat_lon(path):
     return _ds_to_lat_lon(ds)
 
 
-def check(input_file, latitudes, longitudes):
+def check_duplicate_latlons(input_file, latitudes, longitudes):
     LOG.info(f"Checking for duplicate lat/lon pairs in {input_file}...")
     seen = set()
     for lat, lon in zip(latitudes, longitudes):

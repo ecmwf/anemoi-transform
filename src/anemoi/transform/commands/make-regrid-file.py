@@ -63,35 +63,6 @@ def round_lat_lon(latitudes, longitudes, rounding):
     return np.round(latitudes, rounding), np.round(longitudes, rounding)
 
 
-def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **kwargs):
-
-    import numpy as np
-    from earthkit.regrid.utils.mir import mir_make_matrix
-
-    sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=mir, **kwargs)
-
-    np.savez(
-        output,
-        matrix_data=sparse_array.data,
-        matrix_indices=sparse_array.indices,
-        matrix_indptr=sparse_array.indptr,
-        matrix_shape=sparse_array.shape,
-        in_latitudes=lat1,
-        in_longitudes=lon1,
-        out_latitudes=lat2,
-        out_longitudes=lon2,
-    )
-
-
-def make_global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, output, **kwargs):
-    import numpy as np
-
-    from anemoi.transform.spatial import global_on_lam_mask
-
-    mask = global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, **kwargs)
-    np.savez(output, mask=mask)
-
-
 class MakeMIRMatrix:
     """Extract the grid from a pair GRIB or NetCDF files extract the MIR interpolation matrix to be used
     by earthkit-regrid.
@@ -150,8 +121,27 @@ class MakeMIRMatrix:
             check_duplicate_latlons(args.source_grid, source_lat, source_lon)
             check_duplicate_latlons(args.target_grid, target_lat, target_lon)
 
-        make_mir_matrix(source_lat, source_lon, target_lat, target_lon, output=args.output, mir=args.mir, **kwargs)
+        MakeMIRMatrix.make_mir_matrix(source_lat, source_lon, target_lat, target_lon, output=args.output, mir=args.mir, **kwargs)
+    
+    @staticmethod
+    def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **kwargs):
 
+        import numpy as np
+        from earthkit.regrid.utils.mir import mir_make_matrix
+
+        sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=mir, **kwargs)
+
+        np.savez(
+            output,
+            matrix_data=sparse_array.data,
+            matrix_indices=sparse_array.indices,
+            matrix_indptr=sparse_array.indptr,
+            matrix_shape=sparse_array.shape,
+            in_latitudes=lat1,
+            in_longitudes=lon1,
+            out_latitudes=lat2,
+            out_longitudes=lon2,
+        )
 
 class MakeGlobalOnLamMask:
 
@@ -195,9 +185,18 @@ class MakeGlobalOnLamMask:
         lam_lat, lam_lon = _path_to_lat_lon(args.lam_grid)
         global_lat, global_lon = _path_to_lat_lon(args.global_grid)
 
-        make_global_on_lam_mask(
+        MakeGlobalOnLamMask.make_global_on_lam_mask(
             lam_lat, lam_lon, global_lat, global_lon, output=args.output, distance_km=args.distance_km, plot=args.plot
         )
+
+    @staticmethod
+    def make_global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, output, **kwargs):
+        import numpy as np
+
+        from anemoi.transform.spatial import global_on_lam_mask
+
+        mask = global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, **kwargs)
+        np.savez(output, mask=mask)
 
 
 OPTIONS = {

@@ -18,8 +18,9 @@ from typing import Union
 import numpy as np
 from numpy.typing import NDArray
 
+from anemoi.transform.constants import R_earth_km
+
 LOG = logging.getLogger(__name__)
-EARTH_RADIUS = 6_371
 
 
 def _plot_mask(
@@ -101,10 +102,10 @@ def _resolution(points) -> float:
 
 def _distance_km_to_resolution(function, distance_km, lam_points, global_points) -> float:
     if isinstance(distance_km, (int, float)):
-        distance = distance_km / EARTH_RADIUS
+        distance = distance_km / R_earth_km
     else:
         distance = _resolution({"lam": lam_points, "global": global_points, None: global_points}[distance_km])
-        LOG.info(f"{function} using distance = {distance * EARTH_RADIUS} km")
+        LOG.info(f"{function} using distance = {distance * R_earth_km} km")
     return distance
 
 

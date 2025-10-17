@@ -147,8 +147,8 @@ class MakeMIRMatrix:
             target_lat, target_lon = round_lat_lon(target_lat, target_lon, args.rounding)
 
         if args.check:
-            check(args.source_grid, source_lat, source_lon)
-            check(args.target_grid, target_lat, target_lon)
+            check_duplicate_latlons(args.source_grid, source_lat, source_lon)
+            check_duplicate_latlons(args.target_grid, target_lat, target_lon)
 
         make_mir_matrix(source_lat, source_lon, target_lat, target_lon, output=args.output, mir=args.mir, **kwargs)
 

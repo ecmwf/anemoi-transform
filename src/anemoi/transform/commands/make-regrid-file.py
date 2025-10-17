@@ -13,6 +13,7 @@ import logging
 import os
 
 from anemoi.transform.commands import Command
+from anemoi.transform.constants import L_1_degree_earth_arc_length_km as L_1d_km
 
 LOG = logging.getLogger(__name__)
 
@@ -58,12 +59,7 @@ def check_duplicate_latlons(input_file, latitudes, longitudes):
 
 def round_lat_lon(latitudes, longitudes, rounding):
     import numpy as np
-
-    # 1 deg = 111.32 km
-    D = 111.32 * 1000  # in meters
-    for n in range(rounding):
-        D /= 10
-    LOG.info(f"Rounding latitudes and longitudes to {rounding} decimal places ({D} m).")
+    LOG.info(f"Rounding latitudes and longitudes to {rounding} decimal places ({L_1d_km / ( 10 ) ** rounding} m).")
     return np.round(latitudes, rounding), np.round(longitudes, rounding)
 
 

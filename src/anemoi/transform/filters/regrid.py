@@ -153,8 +153,6 @@ class EarthkitRegrid:
             The output grid specification.
         method : str
             The interpolation method.
-        matrix : str
-            The regrid matrix file path.
         check : bool
             Whether to perform checks.
         """

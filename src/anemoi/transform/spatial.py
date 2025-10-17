@@ -482,14 +482,12 @@ def thinning_mask(
 
     return indices
 
-
 def global_on_lam_mask(
     lats: NDArray[Any],
     lons: NDArray[Any],
     global_lats: NDArray[Any],
     global_lons: NDArray[Any],
     distance_km: float = None,
-    plot: Optional[str] = None,
 ) -> NDArray[Any]:
     """Return the list of points in [global_lats, global_lons] closest to [lats, lons] ."""
     from scipy.spatial import cKDTree
@@ -514,17 +512,6 @@ def global_on_lam_mask(
     # Use a cKDTree to find the nearest points with a distance limit
     indices = cKDTree(global_points).query_ball_point(lam_points, distance)
     indices = np.array(sorted(set(i for sublist in indices for i in sublist)))
-
-    if plot:
-        import matplotlib.pyplot as plt
-
-        lat = global_lats[indices]
-        lon = global_lons[indices]
-        lon = np.where(lon >= 180, lon - 360, lon)
-
-        plt.figure(figsize=(10, 5))
-        plt.scatter(lon, lat, s=0.1, c="k")
-        plt.savefig(plot)
 
     return indices
 

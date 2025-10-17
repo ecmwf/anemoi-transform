@@ -281,6 +281,22 @@ def cropping_mask(
     )
     return mask
 
+def _check_latlon_arrays(
+        lats: NDArray[Any],
+        lons: NDArray[Any],
+        global_lats: NDArray[Any], 
+        global_lons: NDArray[Any],
+) -> None:
+    """Checks that the shape of global_lats, global_lons, lats and lons are identical, and one dimensional."""
+    assert global_lats.ndim == 1
+    assert global_lons.ndim == 1
+    assert lats.ndim == 1
+    assert lons.ndim == 1
+    
+    assert global_lats.shape == global_lons.shape
+    assert lats.shape == lons.shape
+
+
 
 def cutout_mask(
     lats: NDArray[Any],
@@ -321,14 +337,7 @@ def cutout_mask(
     from scipy.spatial import cKDTree
 
     # TODO: transform min_distance from lat/lon to xyz
-
-    assert global_lats.ndim == 1
-    assert global_lons.ndim == 1
-    assert lats.ndim == 1
-    assert lons.ndim == 1
-
-    assert global_lats.shape == global_lons.shape
-    assert lats.shape == lons.shape
+    _check_latlon_arrays(lats, lons, global_lats, global_lons)
 
     north = np.amax(lats)
     south = np.amin(lats)
@@ -440,13 +449,7 @@ def thinning_mask(
     """
     from scipy.spatial import cKDTree
 
-    assert global_lats.ndim == 1
-    assert global_lons.ndim == 1
-    assert lats.ndim == 1
-    assert lons.ndim == 1
-
-    assert global_lats.shape == global_lons.shape
-    assert lats.shape == lons.shape
+    _check_latlon_arrays(lats, lons, global_lats, global_lons)
 
     north = np.amax(lats)
     south = np.amin(lats)
@@ -493,13 +496,7 @@ def global_on_lam_mask(
 
     distance = None
 
-    assert global_lats.ndim == 1
-    assert global_lons.ndim == 1
-    assert lats.ndim == 1
-    assert lons.ndim == 1
-
-    assert global_lats.shape == global_lons.shape
-    assert lats.shape == lons.shape
+    _check_latlon_arrays(lats, lons, global_lats, global_lons)
 
     global_xyx = latlon_to_xyz(global_lats, global_lons)
     global_points = np.array(global_xyx).transpose()

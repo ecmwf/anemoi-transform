@@ -88,7 +88,10 @@ class MakeMIRMatrix:
             help="Round latitudes and longitudes to this precision (default: None).",
         )
         command_parser.add_argument("--check", action="store_true", help="Check for duplicate lat/lon pairs.")
-        command_parser.add_argument("kwargs", nargs="*", help="MIR arguments.")
+        command_parser.add_argument(
+            "--mir_args", 
+            nargs="*", help="MIR arguments. Usage: --mir_args arg1=val1 arg2=val2 ...", 
+            type=lambda kv: kv.split("="))
         command_parser.add_argument(
             "--output",
             type=str,
@@ -104,14 +107,9 @@ class MakeMIRMatrix:
         args : argparse.Namespace
             The arguments to run the command with.
         """
-
+        mir_kwargs = dict(args.mir_kwargs) if args.mir_kwargs is not None else {}
         source_lat, source_lon = _path_to_lat_lon(args.source_grid)
         target_lat, target_lon = _path_to_lat_lon(args.target_grid)
-
-        kwargs = {}
-        # for arg in args.kwargs:
-        #     key, value = arg.split("=")
-        #     kwargs[key] = value
 
         if args.rounding is not None:
             source_lat, source_lon = round_lat_lon(source_lat, source_lon, args.rounding)
@@ -121,15 +119,15 @@ class MakeMIRMatrix:
             check_duplicate_latlons(args.source_grid, source_lat, source_lon)
             check_duplicate_latlons(args.target_grid, target_lat, target_lon)
 
-        MakeMIRMatrix.make_mir_matrix(source_lat, source_lon, target_lat, target_lon, output=args.output, mir=args.mir, **kwargs)
+        MakeMIRMatrix.make_mir_matrix(source_lat, source_lon, target_lat, target_lon, output=args.output, mir=args.mir, **mir_kwargs)
     
     @staticmethod
-    def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **kwargs):
+    def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **mir_kwargs):
 
         import numpy as np
         from earthkit.regrid.utils.mir import mir_make_matrix
 
-        sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=mir, **kwargs)
+        sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=mir, **mir_kwargs)
 
         np.savez(
             output,

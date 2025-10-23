@@ -67,9 +67,9 @@ class CosSinFromRad(MatchingFieldsFilter):
             Fields of cosine and sine of the direction.
         """
         data = param.to_numpy()
-        if (min:=data.min()) < -2 * np.pi:
+        if (min := data.min()) < -2 * np.pi:
             raise ValueError(f"Param {self.param} is expected in radians in the range [-2pi, pi], but {min=}")
-        if (max:=data.max()) > 2 * np.pi:
+        if (max := data.max()) > 2 * np.pi:
             raise ValueError(f"Param {self.param} is expected in radians in the range [-2pi, pi], but {max=}")
 
         yield self.new_field_from_numpy(np.cos(data), template=param, param=self.cos_param)
@@ -117,9 +117,7 @@ class CosSinFromRad(MatchingFieldsFilter):
             return data_request
 
         if self.cos_param in param or self.sin_param in param:
-            data_request["param"] = [
-                p for p in param if p not in (self.cos_param, self.sin_param)
-            ]
+            data_request["param"] = [p for p in param if p not in (self.cos_param, self.sin_param)]
             data_request["param"].append(self.param)
 
         return data_request

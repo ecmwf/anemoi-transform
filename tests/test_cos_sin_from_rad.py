@@ -20,7 +20,7 @@ MOCK_FIELD_METADATA = {
     "valid_datetime": "2018-08-01T09:00:00Z",
 }
 
-RAD_VALUES = np.array([[2.67687254, 2.59108576], [1.83746659, 1.73104875], [1.1348185 , 2.23051268]])
+RAD_VALUES = np.array([[2.67687254, 2.59108576], [1.83746659, 1.73104875], [1.1348185, 2.23051268]])
 
 COS_RAD_VALUES = np.array([[-0.89394704, -0.85225947], [-0.26352086, -0.15956740], [0.42229696, -0.61289275]])
 
@@ -111,14 +111,15 @@ def test_round_trip(RAD_source):
 
 def test_exception(DEG_source):
     """Test the cos_sin_from_rad exception.
-    
-    Inpupt data in degrees."""
+
+    Inpupt data in degrees.
+    """
     filter = filter_registry.create(
         "cos_sin_from_rad",
         param="DEG",
     )
     pipeline = DEG_source | filter
-    
+
     with pytest.raises(ValueError):
         collect_fields_by_param(pipeline)
 

@@ -21,7 +21,7 @@ from anemoi.transform.filters.matching import matching
 
 @filter_registry.register("cos_sin_from_rad")
 class CosSinFromRad(MatchingFieldsFilter):
-    """A filter to convert any variable in radian to cos() and sin() and back."""
+    """A filter to convert any variable in radians to cos() and sin() and back."""
 
     @matching(
         select="param",
@@ -67,8 +67,10 @@ class CosSinFromRad(MatchingFieldsFilter):
             Fields of cosine and sine of the direction.
         """
         data = param.to_numpy()
-        assert (min:=data.min()) > -10, f"Param {self.param} is supposed to be in radian, but {min=}"
-        assert (max:=data.max()) < 10, f"Param {self.param} is supposed to be in radian, but {max=}"
+        if (min:=data.min()) < -2 * np.pi:
+            raise ValueError(f"Param {self.param} is expected in radians in the range [-2pi, pi], but {min=}")
+        if (max:=data.max()) > 2 * np.pi:
+            raise ValueError(f"Param {self.param} is expected in radians in the range [-2pi, pi], but {max=}")
 
         yield self.new_field_from_numpy(np.cos(data), template=param, param=self.cos_param)
         yield self.new_field_from_numpy(np.sin(data), template=param, param=self.sin_param)
@@ -78,7 +80,7 @@ class CosSinFromRad(MatchingFieldsFilter):
         cos_param: ekd.Field,
         sin_param: ekd.Field,
     ) -> Iterator[ekd.Field]:
-        """Convert cosine and sine components back to direction in radian in the range [-pi, pi).
+        """Convert cosine and sine components back to direction in radians in the range [-pi, pi).
 
         Parameters
         ----------

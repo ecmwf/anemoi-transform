@@ -62,8 +62,9 @@ def round_lat_lon(latitudes, longitudes, rounding):
     LOG.info(f"Rounding latitudes and longitudes to {rounding} decimal places ({L_1d_km / ( 10 ) ** rounding} m).")
     return np.round(latitudes, rounding), np.round(longitudes, rounding)
 
-def _lat_lon_plot(lat:NDArray[Any], lon:NDArray[Any], plot:str) -> None:
+def _lat_lon_plot(lat, lon, plot:str) -> None:
     import matplotlib.pyplot as plt
+    import numpy as np
     lon = np.where(lon >= 180, lon - 360, lon)
     plt.figure(figsize=(10, 5))
     plt.scatter(lon, lat, s=0.1, c="k")

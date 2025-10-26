@@ -37,7 +37,7 @@ def _path_to_lat_lon(path):
     import earthkit.data as ekd
     import numpy as np
 
-    rf path.endswith(".npz"):
+    if path.endswith(".npz"):
         data = np.load(path)
         return data["latitudes"], data["longitudes"]
     if path.endswith(".zarr"):

@@ -10,10 +10,6 @@
 
 import logging
 from typing import Any
-from typing import List
-from typing import Optional
-from typing import Tuple
-from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -111,7 +107,7 @@ def _distance_km_to_resolution(function, distance_km, lam_points, global_points)
 
 # TODO: Use the one from anemoi.utils.grids instead
 # from anemoi.utils.grids import ...
-def xyz_to_latlon(x: NDArray[Any], y: NDArray[Any], z: NDArray[Any]) -> Tuple[NDArray[Any], NDArray[Any]]:
+def xyz_to_latlon(x: NDArray[Any], y: NDArray[Any], z: NDArray[Any]) -> tuple[NDArray[Any], NDArray[Any]]:
     """Convert Cartesian coordinates to latitude and longitude.
 
     Parameters
@@ -125,7 +121,7 @@ def xyz_to_latlon(x: NDArray[Any], y: NDArray[Any], z: NDArray[Any]) -> Tuple[ND
 
     Returns
     -------
-    Tuple[NDArray[Any], NDArray[Any]]
+    tuple[NDArray[Any], NDArray[Any]]
         Latitude and longitude coordinates.
     """
     return (
@@ -138,7 +134,7 @@ def xyz_to_latlon(x: NDArray[Any], y: NDArray[Any], z: NDArray[Any]) -> Tuple[ND
 # from anemoi.utils.grids import ...
 def latlon_to_xyz(
     lat: NDArray[Any], lon: NDArray[Any], radius: float = 1.0
-) -> Tuple[NDArray[Any], NDArray[Any], NDArray[Any]]:
+) -> tuple[NDArray[Any], NDArray[Any], NDArray[Any]]:
     """Convert latitude and longitude to Cartesian coordinates.
 
     Parameters
@@ -152,7 +148,7 @@ def latlon_to_xyz(
 
     Returns
     -------
-    Tuple[NDArray[Any], NDArray[Any], NDArray[Any]]
+    tuple[NDArray[Any], NDArray[Any], NDArray[Any]]
         X, Y, and Z coordinates.
     """
     # https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#From_geodetic_to_ECEF_coordinates
@@ -305,8 +301,8 @@ def cutout_mask(
     global_lons: NDArray[Any],
     cropping_distance: float = 2.0,
     neighbours: int = 5,
-    min_distance_km: Optional[Union[int, float]] = None,
-    plot: Optional[str] = None,
+    min_distance_km: int | float = None,
+    plot: str = None,
 ) -> NDArray[Any]:
     """Return a mask for the points in [global_lats, global_lons] that are inside of [lats, lons].
 
@@ -324,9 +320,9 @@ def cutout_mask(
         Cropping distance. Defaults to 2.0.
     neighbours : int, optional
         Number of neighbours. Defaults to 5.
-    min_distance_km : Optional[Union[int, float]], optional
+    min_distance_km : int | float, optional
         Minimum distance in kilometers. Defaults to None.
-    plot : Optional[str], optional
+    plot : str, optional
         Path for saving the plot. Defaults to None.
 
     Returns
@@ -516,7 +512,7 @@ def global_on_lam_mask(
     return indices
 
 
-def outline(lats: NDArray[Any], lons: NDArray[Any], neighbours: int = 5) -> List[int]:
+def outline(lats: NDArray[Any], lons: NDArray[Any], neighbours: int = 5) -> list[int]:
     """Find the outline of the grid points.
 
     Parameters
@@ -530,7 +526,7 @@ def outline(lats: NDArray[Any], lons: NDArray[Any], neighbours: int = 5) -> List
 
     Returns
     -------
-    List[int]
+    list[int]
         Indices of the outline points.
     """
     from scipy.spatial import cKDTree

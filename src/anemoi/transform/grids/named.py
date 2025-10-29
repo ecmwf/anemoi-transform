@@ -13,9 +13,6 @@
 import logging
 import os
 from io import BytesIO
-from typing import List
-from typing import Tuple
-from typing import Union
 
 import numpy as np
 import requests
@@ -28,7 +25,7 @@ GRIDS_URL_PATTERN = "https://get.ecmwf.int/repository/anemoi/grids/grid-{name}.n
 
 
 @cached(collection="grids", encoding="npz")
-def _grids(name: Union[str, List[float], Tuple[float, ...]]) -> bytes:
+def _grids(name: str | list[float] | tuple[float, ...]) -> bytes:
     """Get grid data by name.
 
     Parameters
@@ -73,7 +70,7 @@ def _grids(name: Union[str, List[float], Tuple[float, ...]]) -> bytes:
     return response.content
 
 
-def lookup(name: Union[str, List[float], Tuple[float, ...]]) -> dict:
+def lookup(name: str | list[float] | tuple[float, ...]) -> dict:
     """Load grid data by name.
 
     Parameters

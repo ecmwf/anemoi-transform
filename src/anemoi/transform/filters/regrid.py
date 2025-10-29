@@ -26,17 +26,17 @@ from anemoi.transform.filters import filter_registry
 LOG = logging.getLogger(__name__)
 
 
-def as_gridspec(grid: str | dict[str, Any] | None) -> dict[str, Any] | None:
+def as_gridspec(grid: str | dict[str, Any] | None = None) -> dict[str, Any] | None:
     """Convert grid specification to a dictionary format.
 
     Parameters
     ----------
-    grid : Optional[Union[str, Dict[str, Any]]]
+    grid : str | dict[str, Any] | None
         The grid specification.
 
     Returns
     -------
-    Optional[Dict[str, Any]]
+    dict[str, Any]
         The grid specification as a dictionary.
     """
     if grid is None:
@@ -48,17 +48,17 @@ def as_gridspec(grid: str | dict[str, Any] | None) -> dict[str, Any] | None:
     return grid
 
 
-def as_griddata(grid: str | Field | dict[str, Any] | None) -> dict[str, Any] | None:
+def as_griddata(grid: str | Field | dict[str, Any] | None = None) -> dict[str, Any] | None:
     """Convert grid data to a dictionary format.
 
     Parameters
     ----------
-    grid : Optional[Union[str, Field, Dict[str, Any]]]
+    grid : str | Field | dict[str, Any] | None
         The grid data.
 
     Returns
     -------
-    Optional[Dict[str, Any]]
+    dict[str, Any]
         The grid data as a dictionary.
     """
     if grid is None:
@@ -100,17 +100,17 @@ class RegridFilter(Filter):
     ) -> None:
         """Parameters
         -------------
-        in_grid : Optional[Any]
+        in_grid : Any, optional
             The input grid specification.
-        out_grid : Optional[Any]
+        out_grid : Any, optional
             The output grid specification.
-        method : Optional[str]
+        method : str, optional
             The interpolation method.
-        matrix : Optional[str]
+        matrix : str, optional
             The regrid matrix file path.
-        mask : Optional[str]
+        mask : str, optional
             The mask file path.
-        check : bool
+        check : bool, default = False
             Whether to perform checks.
         """
 
@@ -154,7 +154,7 @@ class EarthkitRegrid:
             The output grid specification.
         method : str
             The interpolation method.
-        check : bool
+        check : bool, default = False
             Whether to perform checks.
         """
         self.in_grid = as_gridspec(in_grid)
@@ -201,7 +201,7 @@ class MIRMatrix:
         -------------
         matrix : str
             The regrid matrix file path.
-        check : bool
+        check : bool, default = False
             Whether to perform checks.
         """
         import numpy as np
@@ -259,7 +259,7 @@ class ScipyKDTreeNearestNeighbours:
             The output grid specification.
         method : str
             The interpolation method.
-        check : bool
+        check : bool, default = False
             Whether to perform checks.
         """
         if method != "nearest":
@@ -322,7 +322,7 @@ class MaskedRegrid:
         -------------
         mask : str
             The mask file path.
-        check : bool
+        check : bool, default = False
             Whether to perform checks.
         """
 
@@ -420,7 +420,7 @@ def make_interpolator(
         The regrid matrix file path.
     mask : str, optional
         The mask file path.
-    check : bool, optional
+    check : bool, optional, default = False
         Whether to perform checks.
 
     Returns

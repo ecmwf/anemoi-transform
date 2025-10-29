@@ -21,7 +21,6 @@ import pytest
 from anemoi.utils.testing import cli_testing
 from anemoi.utils.testing import skip_if_missing_command
 from anemoi.utils.testing import skip_if_offline
-from anemoi.utils.testing import skip_slow_tests
 
 from anemoi.transform.filters import filter_registry
 
@@ -32,7 +31,6 @@ LOG = logging.getLogger(__name__)
 
 @skip_if_offline
 @skip_if_missing_command("mir")
-@skip_slow_tests
 def test_make_regrid_matrix(get_test_data):
     era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
     carra = get_test_data("anemoi-transform/filters/regrid/2t-rr.grib")
@@ -64,8 +62,6 @@ def test_regrid_matrix(get_test_data, test_source):
 
 
 @skip_if_offline
-@skip_slow_tests
-@pytest.mark.xfail(reason="test data has wrong shape")
 def test_make_regrid_mask(get_test_data):
     era5 = get_test_data("anemoi-transform/filters/regrid/2t-ea.grib")
     carra = get_test_data("anemoi-transform/filters/regrid/2t-rr.grib")

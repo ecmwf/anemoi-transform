@@ -19,6 +19,7 @@ from earthkit.data.core.fieldlist import Field
 from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.fields import NewLatLonField
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters import filter_registry
 
@@ -163,7 +164,7 @@ class EarthkitRegrid:
         if check:
             LOG.warning("Check is not supported by EarthkitRegrid")
 
-    def __call__(self, field: Any) -> Any:
+    def __call__(self, field: Any) -> NewLatLonField:
         """Interpolate the field data.
 
         Parameters
@@ -221,7 +222,7 @@ class MIRMatrix:
         self.in_grid = dict(latitudes=loaded["in_latitudes"], longitudes=loaded["in_longitudes"])
         self.out_grid = dict(latitudes=loaded["out_latitudes"], longitudes=loaded["out_longitudes"])
 
-    def __call__(self, field: Any) -> Any:
+    def __call__(self, field: Field) -> NewLatLonField:
         """Interpolate the field data using the regrid matrix.
 
         Parameters
@@ -275,7 +276,7 @@ class ScipyKDTreeNearestNeighbours:
         if check:
             LOG.warning("Check is not supported by ScipyKDTreeNearestNeighbours")
 
-    def __call__(self, field: Any) -> Any:
+    def __call__(self, field: Any) -> NewLatLonField:
         """Interpolate the field data using nearest neighbours.
 
         Parameters
@@ -330,7 +331,7 @@ class MaskedRegrid:
 
         self.mask = np.load(mask)["mask"]
 
-    def __call__(self, field: Any) -> Any:
+    def __call__(self, field: Field) -> NewLatLonField:
         """Interpolate the field data using nearest neighbours.
 
         Parameters

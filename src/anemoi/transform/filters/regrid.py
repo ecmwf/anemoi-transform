@@ -263,7 +263,7 @@ class ScipyKDTreeNearestNeighbours:
             Whether to perform checks.
         """
         if method != "nearest":
-            # Rename to scipy_kdtree_nearest_neighbours
+            # TODO Rename to scipy_kdtree_nearest_neighbours
             # To use earthkit.regrid nearest
             raise NotImplementedError(f"ScipyKDTreeNearestNeighbours does not support {method}, only 'nearest'")
 

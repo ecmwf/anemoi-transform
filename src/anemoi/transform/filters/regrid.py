@@ -174,7 +174,7 @@ class EarthkitRegrid:
 
         Returns
         -------
-        Any
+        NewLatLonField
             The interpolated field.
         """
         from earthkit.regrid import interpolate
@@ -227,12 +227,12 @@ class MIRMatrix:
 
         Parameters
         ----------
-        field : Any
+        field : Field
             The field to be interpolated.
 
         Returns
         -------
-        Any
+        NewLatLonField
             The interpolated field.
         """
         if self.check:
@@ -286,7 +286,7 @@ class ScipyKDTreeNearestNeighbours:
 
         Returns
         -------
-        Any
+        NewLatLonField
             The interpolated field.
         """
         if self.in_grid is None:
@@ -336,12 +336,12 @@ class MaskedRegrid:
 
         Parameters
         ----------
-        field : Any
+        field : Field
             The field to be interpolated.
 
         Returns
         -------
-        Any
+        NewLatLonField
             The interpolated field.
         """
 

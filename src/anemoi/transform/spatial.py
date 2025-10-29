@@ -105,8 +105,6 @@ def _distance_km_to_resolution(function, distance_km, lam_points, global_points)
     return distance
 
 
-# TODO: Use the one from anemoi.utils.grids instead
-# from anemoi.utils.grids import ...
 def xyz_to_latlon(x: NDArray[Any], y: NDArray[Any], z: NDArray[Any]) -> tuple[NDArray[Any], NDArray[Any]]:
     """Convert Cartesian coordinates to latitude and longitude.
 
@@ -130,8 +128,6 @@ def xyz_to_latlon(x: NDArray[Any], y: NDArray[Any], z: NDArray[Any]) -> tuple[ND
     )
 
 
-# TODO: Use the one from anemoi.utils.grids instead
-# from anemoi.utils.grids import ...
 def latlon_to_xyz(
     lat: NDArray[Any], lon: NDArray[Any], radius: float = 1.0
 ) -> tuple[NDArray[Any], NDArray[Any], NDArray[Any]]:
@@ -588,8 +584,6 @@ def nearest_grid_points(
     NDArray[Any]
         Indices of the nearest grid points.
     """
-    # TODO: Use the one from anemoi.utils.grids instead
-    # from anemoi.utils.grids import ...
     from scipy.spatial import cKDTree
 
     source_xyz = latlon_to_xyz(source_latitudes, source_longitudes)

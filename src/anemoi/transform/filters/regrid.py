@@ -312,7 +312,7 @@ class ScipyKDTreeNearestNeighbours:
 
 
 class MaskedRegrid:
-    """Interpolator tools for the grids that are not supported yet by earthkit."""
+    """Tool to regrid data using a spatial mask (latitude, longitude)."""
 
     out_latitudes = None
     out_longitudes = None
@@ -332,17 +332,17 @@ class MaskedRegrid:
         self.mask = np.load(mask)["mask"]
 
     def __call__(self, field: Field) -> NewLatLonField:
-        """Interpolate the field data using nearest neighbours.
+        """Regrid the field data using the mask.
 
         Parameters
         ----------
         field : Field
-            The field to be interpolated.
+            The field to be regridded.
 
         Returns
         -------
         NewLatLonField
-            The interpolated field.
+            The regridded field.
         """
 
         data = field.to_numpy(flatten=True)

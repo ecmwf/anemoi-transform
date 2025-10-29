@@ -258,8 +258,6 @@ class ScipyKDTreeNearestNeighbours:
             The output grid specification.
         method : str
             The interpolation method.
-        matrix : str, optional
-            The regrid matrix file path.
         check : bool
             Whether to perform checks.
         """

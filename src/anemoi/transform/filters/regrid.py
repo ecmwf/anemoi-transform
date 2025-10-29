@@ -335,7 +335,6 @@ class MaskedRegrid:
             LOG.warning("Check is not supported by MaskedRegrid")
 
         self.mask = np.load(mask)["mask"]
-        print(f"Mask shape: {self.mask.shape}")
 
     def __call__(self, field: Any) -> Any:
         """Interpolate the field data using nearest neighbours.

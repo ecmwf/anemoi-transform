@@ -319,14 +319,8 @@ class MaskedRegrid:
     def __init__(self, *, mask: str, check: bool) -> None:
         """Parameters
         -------------
-        in_grid : Any
-            The input grid specification.
-        out_grid : Any
-            The output grid specification.
-        method : str
-            The interpolation method.
-        matrix : str, optional
-            The regrid matrix file path.
+        mask : str
+            The mask file path.
         check : bool
             Whether to perform checks.
         """

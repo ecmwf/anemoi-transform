@@ -198,12 +198,6 @@ class MIRMatrix:
     def __init__(self, *, matrix: str, check: bool) -> None:
         """Parameters
         -------------
-        in_grid : Any
-            The input grid specification.
-        out_grid : Any
-            The output grid specification.
-        method : str
-            The interpolation method.
         matrix : str
             The regrid matrix file path.
         check : bool

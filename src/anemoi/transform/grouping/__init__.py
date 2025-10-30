@@ -79,6 +79,7 @@ class GroupByParam:
                     raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
 
             param = key.pop("param", f.metadata("param"))
+            key.pop("variable", f.metadata("param"))
 
             if param not in self.params:
                 other(f)

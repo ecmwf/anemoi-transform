@@ -18,17 +18,19 @@ class Origin:
     def from_dict(origins: dict, variables: list[str], dataset_name: str) -> "Origin":
         type = origins.get("type", "unknown")
         type = type.title() + "Origin"
-        return globals()[type](origins, variables, dataset_name)
+        return globals().get(type, "UnknownOrigin")(origins, variables, dataset_name)
 
+
+class _FunctionOrigin(Origin):
     def __repr__(self):
         return self.origins["name"]
 
 
-class SourceOrigin(Origin):
+class SourceOrigin(_FunctionOrigin):
     pass
 
 
-class FilterOrigin(Origin):
+class FilterOrigin(_FunctionOrigin):
     pass
 
 
@@ -38,6 +40,11 @@ class PipeOrigin(Origin):
         return " -> ".join(
             [str(Origin.from_dict(s, self.origins.get("variables", []), self.dataset_name)) for s in steps]
         )
+
+
+class UnknownOrigin(Origin):
+    def __repr__(self):
+        return f"unknown({self.origins})"
 
 
 def make_origins(origins: dict, dataset_name: str) -> Origin:

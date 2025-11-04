@@ -21,7 +21,7 @@ class FormatRename:
     def __init__(self, what, format):
         self.what = what
         self.format = format
-        self.bits = re.findall(r"{([\w:]*)}", format)
+        self.bits = re.findall(r"{([\w:]+)}", format)
 
         # escape colon format delimiter of eccodes
         self.format = re.sub(r"{([^}]+)}", lambda m: "{" + m.group(1).replace(":", "_") + "}", self.format)

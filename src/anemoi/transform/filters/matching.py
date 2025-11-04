@@ -111,6 +111,8 @@ class matching:
         return_inputs: Literal["all", "none"] | List[str], optional
             Indicate which one of the input values for the filter should be kept, by default "none"
             "all" will return all inputs, while a List[str] will select the inputs as defined by the user.
+        vertical: bool, optional
+            If True, join grouped data vertically, by default False.
         """
         self.select = select
         self.vertical = vertical

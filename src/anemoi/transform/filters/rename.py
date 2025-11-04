@@ -24,7 +24,7 @@ class FormatRename:
         self.bits = re.findall(r"{([\w:]*)}", format)
 
         # escape colon format delimiter of eccodes
-        self.format = re.sub(r'{([^}]+)}', lambda m: '{' + m.group(1).replace(':', '_') + '}', self.format)
+        self.format = re.sub(r"{([^}]+)}", lambda m: "{" + m.group(1).replace(":", "_") + "}", self.format)
         self.bits = [b.replace(":", "_") for b in self.bits]
 
     def rename(self, field):

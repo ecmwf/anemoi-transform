@@ -23,16 +23,17 @@ class FormatRename:
         self.format = format
         self.bits = re.findall(r"{([\w:]+)}", format)
 
-        # escape colon format delimiter of eccodes
-        self.format = re.sub(r"{([^}]+)}", lambda m: "{" + m.group(1).replace(":", "_") + "}", self.format)
-        self.bits = [b.replace(":", "_") for b in self.bits]
+        # Escape ":" type delimiter used by eccodes as ":" is a reserved symbol in str.format.
+        self._delimiter = "|"
+        self.format = re.sub(r"{([^}]+)}", lambda m: "{" + m.group(1).replace(":", self._delimiter) + "}", self.format)
+        self.bits = [b.replace(":", self._delimiter) for b in self.bits]
 
     def rename(self, field):
         md = field.metadata(self.what, default=None)
         if md is None:
             return field
 
-        values = field.metadata(*[b.replace("_", ":") for b in self.bits])
+        values = field.metadata(*[b.replace(self._delimiter, ":") for b in self.bits])
         values = (
             [
                 values,

@@ -126,7 +126,6 @@ temp/
 logs/
 _dev/
 _api/
-_filters/
 ./outputs
 *tmp_data/
 
@@ -142,3 +141,8 @@ _version.py
 *.to_upload
 tempCodeRunnerFile.python
 Untitled-*.py
+trace.txt
+?/
+*.prof
+prof/
+*.gz

@@ -9,6 +9,18 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.19](https://github.com/ecmwf/anemoi-transform/compare/0.1.18...0.1.19) (2025-11-07)
+
+
+### Features
+
+* Support formats in rename filter ([#186](https://github.com/ecmwf/anemoi-transform/issues/186)) ([00e9890](https://github.com/ecmwf/anemoi-transform/commit/00e989013018bfde8d8f73da17c0b59265d7760b))
+
+
+### Bug Fixes
+
+* Update README to reflect project maturity status ([#184](https://github.com/ecmwf/anemoi-transform/issues/184)) ([d183f94](https://github.com/ecmwf/anemoi-transform/commit/d183f94c44f3729a97d5d09fe00e865191856973))
+
 ## [0.1.18](https://github.com/ecmwf/anemoi-transform/compare/0.1.17...0.1.18) (2025-10-30)
 
 

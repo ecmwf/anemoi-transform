@@ -8,18 +8,15 @@
 # nor does it submit to any jurisdiction.
 
 import logging
-from itertools import groupby
 
 import earthkit.data as ekd
 import numpy as np
 import tqdm
-
 from anemoi.inference.post_processors.earthkit_state import StateField
-from anemoi.transform.fields import (
-    new_field_from_latitudes_longitudes,
-    new_field_from_numpy,
-    new_fieldlist_from_list,
-)
+
+from anemoi.transform.fields import new_field_from_latitudes_longitudes
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters import filter_registry
 
@@ -28,8 +25,7 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("fill_square_gribs")
 class FillSquareGribs(Filter):
-    """
-    A filter to recenter gribs at given coordinates
+    """A filter to recenter gribs at given coordinates
     Fill the missing values with a default value.
     """
 
@@ -62,8 +58,7 @@ class FillSquareGribs(Filter):
         return fields
 
     def backward(self, fields: ekd.FieldList) -> ekd.FieldList:
-        """
-        Fill missing grid points with a default value in the fields.
+        """Fill missing grid points with a default value in the fields.
         The longitude step and the latitude step is supposed to be constant.
          Parameters
         ----------
@@ -79,7 +74,7 @@ class FillSquareGribs(Filter):
         input_data = first.to_numpy(flatten=True)
         unique_lons = np.unique(input_lon)
         unique_lats = np.unique(input_lat)
-        
+
         step_lon = unique_lons[1] - unique_lons[0]
         step_lat = unique_lats[1] - unique_lats[0]
         nb_lats_output = round((self.max_lat_output - self.min_lat_output) / step_lat) + 1

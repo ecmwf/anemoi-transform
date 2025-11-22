@@ -14,9 +14,12 @@ import earthkit.data as ekd
 import numpy as np
 import tqdm
 
-from anemoi.transform.fields import new_field_from_latitudes_longitudes
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.inference.post_processors.earthkit_state import StateField
+from anemoi.transform.fields import (
+    new_field_from_latitudes_longitudes,
+    new_field_from_numpy,
+    new_fieldlist_from_list,
+)
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters import filter_registry
 
@@ -25,7 +28,8 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("fill_square_gribs")
 class FillSquareGribs(Filter):
-    """A filter to recenter gribs at given coordinates
+    """
+    A filter to recenter gribs at given coordinates
     Fill the missing values with a default value.
     """
 
@@ -37,7 +41,7 @@ class FillSquareGribs(Filter):
         Parameters
         ----------
         fill_value : int
-            The default value to use to fill gribs
+            The default value used to fill gribs
         max_lon_output : float
             The maximal longitude of the square
         min_lon_output : float
@@ -55,30 +59,27 @@ class FillSquareGribs(Filter):
         self.min_lat_output = min_lat_output
 
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
-
         return fields
 
     def backward(self, fields: ekd.FieldList) -> ekd.FieldList:
-        """Fill missing grid points with a default value in the fields.
+        """
+        Fill missing grid points with a default value in the fields.
         The longitude step and the latitude step is supposed to be constant.
          Parameters
         ----------
         fields : ekd.FieldList
             List of fields to be processed.
-
         Returns
         -------
         ekd.FieldList
-
         """
         first = fields[0]
+        assert isinstance(first, StateField)
         input_lon, input_lat = first.state["longitudes"], first.state["latitudes"]
         input_data = first.to_numpy(flatten=True)
         unique_lons = np.unique(input_lon)
         unique_lats = np.unique(input_lat)
-
-        nb_lats_input = len(unique_lats)
-
+        
         step_lon = unique_lons[1] - unique_lons[0]
         step_lat = unique_lats[1] - unique_lats[0]
         nb_lats_output = round((self.max_lat_output - self.min_lat_output) / step_lat) + 1
@@ -88,16 +89,6 @@ class FillSquareGribs(Filter):
         output_lat = np.repeat(
             np.arange(self.min_lat_output, self.max_lat_output + step_lat, nb_lats_output), nb_lons_output
         )[::-1]
-
-        # Number of lon at the latitude idx
-        # list_nb_lon_by_lat_in_input = [201, 291 ...]
-        list_nb_lon_by_lat_in_input = [len(list(g)) for v, g in groupby(input_lat)]
-
-        # Each element of the vector is the sum of the number of longitude before a given latitude in the data
-        # First element represents the first latitude, there is 0 longitude before the first lat
-        # sum_nb_lon_before_lat_in_input = [0, 201, 492 ...]
-        cumsum = np.cumsum(list_nb_lon_by_lat_in_input)
-        sum_nb_lon_before_lat_in_input = np.insert(cumsum[:-1], 0, 0)
 
         # Compute longitude and latitude idx in the input vector
         # list_idx_output_lon = [0, 1, 2, ..., 1120, 0, 1, ..., 1120 ...]

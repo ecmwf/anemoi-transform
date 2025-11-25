@@ -48,7 +48,7 @@ class RemoveNaNs(Filter):
 
     """
 
-    def __init__(self, *, method: str = "mask", check: bool = False):
+    def __init__(self, *, method: str = "mask", check: bool = False, param: str | None = None):
         """Initialize the RemoveNaNs filter.
 
         Parameters
@@ -57,10 +57,13 @@ class RemoveNaNs(Filter):
             The method to use for removing NaNs, by default "mask".
         check : bool, optional
             Whether to perform a check, by default False.
+        param: str, optional
+            Param name of the "first" field.
         """
 
         self.method = method
         self.check = check
+        self.param = param
 
         assert method == "mask", f"Method {method} not implemented"
         assert not check, "Check not implemented"
@@ -85,7 +88,14 @@ class RemoveNaNs(Filter):
         import numpy as np
 
         if self._mask is None:
-            first = fields[0]
+            if self.param is None:
+                first = fields[0]
+            else:
+                for first in fields:
+                    if first.metadata("param") == self.param: break
+                else:
+                    raise ValueError(f"{param=} not found in\n{fields.ls}")
+
             data = first.to_numpy(flatten=True)
             self._mask = ~np.isnan(data)
 

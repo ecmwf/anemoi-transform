@@ -92,7 +92,8 @@ class RemoveNaNs(Filter):
                 first = fields[0]
             else:
                 for first in fields:
-                    if first.metadata("param") == self.param: break
+                    if first.metadata("param") == self.param:
+                        break
                 else:
                     raise ValueError(f"{param=} not found in\n{fields.ls}")
 

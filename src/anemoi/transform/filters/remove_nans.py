@@ -95,7 +95,7 @@ class RemoveNaNs(Filter):
                     if first.metadata("param") == self.param:
                         break
                 else:
-                    raise ValueError(f"{param=} not found in\n{fields.ls}")
+                    raise ValueError(f"{self.param=} not found in\n{fields.ls}")
 
             data = first.to_numpy(flatten=True)
             self._mask = ~np.isnan(data)

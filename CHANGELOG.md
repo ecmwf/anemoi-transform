@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.20](https://github.com/ecmwf/anemoi-transform/compare/0.1.19...0.1.20) (2025-12-04)
+
+
+### Features
+
+* Add param option to the remove_nans filter ([#190](https://github.com/ecmwf/anemoi-transform/issues/190)) ([eaaeef5](https://github.com/ecmwf/anemoi-transform/commit/eaaeef5a114d701470a8e95f28f7d4d0a537a99a))
+
 ## [0.1.19](https://github.com/ecmwf/anemoi-transform/compare/0.1.18...0.1.19) (2025-11-07)
 
 

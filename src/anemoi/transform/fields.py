@@ -589,12 +589,12 @@ class NewValidDateTimeField(NewMetadataField):
     """
 
     def __init__(self, field: Any, valid_datetime: Any) -> None:
-        date = int(valid_datetime.date().strftime("%Y%m%d"))
-        assert valid_datetime.time().minute == 0, valid_datetime
-        time = valid_datetime.time().hour
+        date = int(valid_datetime.strftime("%Y%m%d"))
+        time = int(valid_datetime.strftime("%H%M"))
 
         self.valid_datetime = valid_datetime
 
+        # is 0 a valid step value here!?!
         super().__init__(field, date=date, time=time, step=0, valid_datetime=valid_datetime.isoformat())
 
 

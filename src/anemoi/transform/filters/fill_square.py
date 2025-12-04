@@ -12,7 +12,6 @@ import logging
 import earthkit.data as ekd
 import numpy as np
 import tqdm
-from anemoi.inference.post_processors.earthkit_state import StateField
 
 from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
@@ -60,16 +59,17 @@ class FillSquareGribs(Filter):
     def backward(self, fields: ekd.FieldList) -> ekd.FieldList:
         """Fill missing grid points with a default value in the fields.
         The longitude step and the latitude step is supposed to be constant.
+
          Parameters
         ----------
         fields : ekd.FieldList
             List of fields to be processed.
+
         Returns
         -------
         ekd.FieldList
         """
         first = fields[0]
-        assert isinstance(first, StateField)
         input_lon, input_lat = first.state["longitudes"], first.state["latitudes"]
         input_data = first.to_numpy(flatten=True)
         unique_lons = np.unique(input_lon)

@@ -85,5 +85,5 @@ for those packages which handle incoming raw data, i.e.
    :caption: CLI
 
    cli/get-grid
-   cli/make-regrid-matrix
+   cli/make-regrid-file
    cli/filters

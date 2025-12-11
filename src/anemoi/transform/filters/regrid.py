@@ -16,10 +16,10 @@ import numpy as np
 import tqdm
 from earthkit.data.core.fieldlist import Field
 
+from anemoi.transform.fields import NewLatLonField
 from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
-from anemoi.transform.fields import NewLatLonField
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters import filter_registry
 

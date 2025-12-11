@@ -273,21 +273,21 @@ def cropping_mask(
     )
     return mask
 
+
 def _check_latlon_arrays(
-        lats: NDArray[Any],
-        lons: NDArray[Any],
-        global_lats: NDArray[Any], 
-        global_lons: NDArray[Any],
+    lats: NDArray[Any],
+    lons: NDArray[Any],
+    global_lats: NDArray[Any],
+    global_lons: NDArray[Any],
 ) -> None:
     """Checks that the shape of global_lats, global_lons, lats and lons are identical, and one dimensional."""
     assert global_lats.ndim == 1
     assert global_lons.ndim == 1
     assert lats.ndim == 1
     assert lons.ndim == 1
-    
+
     assert global_lats.shape == global_lons.shape
     assert lats.shape == lons.shape
-
 
 
 def cutout_mask(
@@ -474,6 +474,7 @@ def thinning_mask(
 
     return indices
 
+
 def global_on_lam_mask(
     lats: NDArray[Any],
     lons: NDArray[Any],
@@ -483,7 +484,6 @@ def global_on_lam_mask(
 ) -> NDArray[Any]:
     """Return the list of points in [global_lats, global_lons] closest to [lats, lons] ."""
     from scipy.spatial import cKDTree
-
 
     _check_latlon_arrays(lats, lons, global_lats, global_lons)
 

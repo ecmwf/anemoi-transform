@@ -17,7 +17,6 @@
 
 import logging
 
-import pytest
 from anemoi.utils.testing import cli_testing
 from anemoi.utils.testing import skip_if_missing_command
 from anemoi.utils.testing import skip_if_offline

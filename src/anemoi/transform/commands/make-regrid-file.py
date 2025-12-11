@@ -42,6 +42,7 @@ def _path_to_lat_lon(path):
         return data["latitudes"], data["longitudes"]
     if path.endswith(".zarr"):
         from anemoi.datasets import open_dataset
+
         dataset = open_dataset(path)
         return dataset.latitudes, dataset.longitudes
     ds = ekd.from_source("file", path)
@@ -59,16 +60,20 @@ def check_duplicate_latlons(input_file, latitudes, longitudes):
 
 def round_lat_lon(latitudes, longitudes, rounding):
     import numpy as np
+
     LOG.info(f"Rounding latitudes and longitudes to {rounding} decimal places ({L_1d_km / ( 10 ) ** rounding} m).")
     return np.round(latitudes, rounding), np.round(longitudes, rounding)
 
-def _lat_lon_plot(lat, lon, plot:str) -> None:
+
+def _lat_lon_plot(lat, lon, plot: str) -> None:
     import matplotlib.pyplot as plt
     import numpy as np
+
     lon = np.where(lon >= 180, lon - 360, lon)
     plt.figure(figsize=(10, 5))
     plt.scatter(lon, lat, s=0.1, c="k")
     plt.savefig(plot)
+
 
 class MakeMIRMatrix:
     """Extract the grid from a pair GRIB or NetCDF files extract the MIR interpolation matrix to be used
@@ -96,9 +101,11 @@ class MakeMIRMatrix:
         )
         command_parser.add_argument("--check", action="store_true", help="Check for duplicate lat/lon pairs.")
         command_parser.add_argument(
-            "--mir_args", 
-            nargs="*", help="MIR arguments. Usage: --mir_args arg1=val1 arg2=val2 ...", 
-            type=lambda kv: kv.split("="))
+            "--mir_args",
+            nargs="*",
+            help="MIR arguments. Usage: --mir_args arg1=val1 arg2=val2 ...",
+            type=lambda kv: kv.split("="),
+        )
         command_parser.add_argument(
             "--output",
             type=str,
@@ -126,8 +133,10 @@ class MakeMIRMatrix:
             check_duplicate_latlons(args.source_grid, source_lat, source_lon)
             check_duplicate_latlons(args.target_grid, target_lat, target_lon)
 
-        MakeMIRMatrix.make_mir_matrix(source_lat, source_lon, target_lat, target_lon, output=args.output, mir=args.mir, **mir_kwargs)
-    
+        MakeMIRMatrix.make_mir_matrix(
+            source_lat, source_lon, target_lat, target_lon, output=args.output, mir=args.mir, **mir_kwargs
+        )
+
     @staticmethod
     def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **mir_kwargs):
 
@@ -147,6 +156,7 @@ class MakeMIRMatrix:
             out_latitudes=lat2,
             out_longitudes=lon2,
         )
+
 
 class MakeGlobalOnLamMask:
 
@@ -195,7 +205,7 @@ class MakeGlobalOnLamMask:
         )
 
     @staticmethod
-    def make_global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, output, plot:str|None=None, **kwargs):
+    def make_global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, output, plot: str | None = None, **kwargs):
         import numpy as np
 
         from anemoi.transform.spatial import global_on_lam_mask

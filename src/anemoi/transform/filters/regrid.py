@@ -86,7 +86,57 @@ def as_griddata(grid: str | Field | dict[str, Any] | None = None) -> dict[str, A
 
 @filter_registry.register("regrid")
 class RegridFilter(Filter):
-    """A filter to regrid fields using earthkit-regrid."""
+    """A filter to regrid fields using earthkit-regrid.
+
+    When building a dataset for a specific model, it is possible that the
+    source grid or resolution does not fit the needs. In that case, it is
+    possible to add a filter to interpolate the data to a target grid. It
+    will call the ``interpolate`` function from `earthkit-regrid
+    <https://earthkit-regrid.readthedocs.io/en/latest/interpolate.html>`_ if
+    the keys ``method``, ``in_grid`` and ``out_grid`` are provided and if a
+    `pre-generated matrix
+    <https://earthkit-regrid.readthedocs.io/en/latest/inventory/index.html>`_
+    exists for this transformation. Otherwise, it is possible to provide a
+    ``regrid matrix`` previously generated with :ref:`make-regrid-matrix`.
+    The generated matrix is an NPZ file containing the
+    input/output coordinates, the indices, and the weights of the
+    interpolation.
+
+    ``regrid`` filter must follow a source or another filter in a
+    `building-pipe
+    <https://anemoi.readthedocs.io/projects/datasets/en/latest/datasets/building/operations.html#pipe>`_
+    operation.
+
+    Examples
+    --------
+
+    .. code-block:: yaml
+
+      input:
+        pipe:
+        - source:
+            # mars, grib, netcdf, etc.
+            # source attributes here
+            # ...
+
+        - regrid:
+            method: nearest
+            in_grid: o32
+            out_grid: o48
+
+    .. code-block:: yaml
+
+      input:
+        pipe:
+        - source:
+            # mars, grib, netcdf, etc.
+            # source attributes here
+            # ...
+
+        - regrid:
+            matrix: /path/to/regrid/matrix.npz
+
+    """
 
     def __init__(
         self,
@@ -133,6 +183,22 @@ class RegridFilter(Filter):
         -------
         ekd.FieldList
             The transformed data.
+        """
+
+        return self._interpolate(data)
+
+    def _interpolate(self, data: Any) -> Any:
+        """Interpolate the data from one grid to another.
+
+        Parameters
+        ----------
+        data : Any
+            The input data to be interpolated.
+
+        Returns
+        -------
+        Any
+            The interpolated data.
         """
 
         result = []
@@ -214,13 +280,14 @@ class MIRMatrix:
 
         loaded = dict(np.load(matrix))
 
-        self.matrix = csr_array(
-            (loaded["matrix_data"], loaded["matrix_indices"], loaded["matrix_indptr"]),
-            shape=loaded["matrix_shape"],
+        self.matrix: csr_array = csr_array(
+            (loaded["matrix_data"], loaded["matrix_indices"], loaded["matrix_indptr"]), shape=loaded["matrix_shape"]
         )
 
-        self.in_grid = dict(latitudes=loaded["in_latitudes"], longitudes=loaded["in_longitudes"])
-        self.out_grid = dict(latitudes=loaded["out_latitudes"], longitudes=loaded["out_longitudes"])
+        self.in_grid: dict[str, np.ndarray] = dict(latitudes=loaded["in_latitudes"], longitudes=loaded["in_longitudes"])
+        self.out_grid: dict[str, np.ndarray] = dict(
+            latitudes=loaded["out_latitudes"], longitudes=loaded["out_longitudes"]
+        )
 
     def __call__(self, field: Field) -> NewLatLonField:
         """Interpolate the field data using the regrid matrix.
@@ -250,7 +317,9 @@ class ScipyKDTreeNearestNeighbours:
 
     nearest_grid_points = None
 
-    def __init__(self, *, in_grid: Any = None, out_grid: Any = None, method: str, check: bool = False) -> None:
+    def __init__(
+        self, *, in_grid: Any, out_grid: Any, method: str, matrix: str | None = None, check: bool = False
+    ) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -295,6 +364,9 @@ class ScipyKDTreeNearestNeighbours:
 
         if self.nearest_grid_points is None:
             from anemoi.transform.spatial import nearest_grid_points
+
+            if self.out_grid is None:
+                raise ValueError("out_grid is required, but not provided")
 
             self.nearest_grid_points = nearest_grid_points(
                 self.in_grid["latitudes"],
@@ -400,10 +472,10 @@ def _interpolator(
 def make_interpolator(
     in_grid: Any = None,
     out_grid: Any = None,
-    method: str = None,
-    matrix: str = None,
-    mask: str = None,
-    check: bool = False,
+    method: str | None = None,
+    matrix: str | None = None,
+    mask: str | None = None,
+    check: bool | None = None,
 ) -> Any:
     """Create an interpolator.
 

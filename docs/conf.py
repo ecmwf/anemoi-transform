@@ -110,6 +110,8 @@ intersphinx_mapping = {
         "https://anemoi-plugins.readthedocs.io/en/latest/",
         ("../../anemoi-plugins/docs/_build/html/objects.inv", None),
     ),
+    "earthkit-data": ("https://earthkit-data.readthedocs.io/en/latest/", None),
+    "earthkit-meteo": ("https://earthkit-meteo.readthedocs.io/en/latest/", None),
 }
 
 # -- Options for HTML output -------------------------------------------------

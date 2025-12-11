@@ -36,7 +36,7 @@ def make_list_int(value: Any) -> list[int]:
     """
     if isinstance(value, str):
         if "/" not in value:
-            return [value]
+            return [int(value)]
         bits = value.split("/")
         if len(bits) == 3 and bits[1].lower() == "to":
             value = list(range(int(bits[0]), int(bits[2]) + 1, 1))
@@ -47,7 +47,7 @@ def make_list_int(value: Any) -> list[int]:
     if isinstance(value, list):
         return value
     if isinstance(value, tuple):
-        return value
+        return list(value)
     if isinstance(value, int):
         return [value]
 
@@ -58,18 +58,57 @@ def make_list_int(value: Any) -> list[int]:
 class RepeatMembers(Filter):
     """The filter can be used to replicate non-ensembles fields into ensemble fields.
 
-    Args: (only one of the following)
-      numbers: A list of numbers (1-based) of the fields to replicate.
-      members: A list of 0-based indices of the fields to replicate.
-      count: The number of times to replicate the fields.
+    Only one of the following parameters should be provided.
+
+    - ``numbers``: A list of 1-based numbers.
+    - ``members``: A list of 0-based indices.
+    - ``count``: The number of times to replicate the fields.
+
+    The resulting fields will have their field number set to the corresponding member index + 1.
+
+    Examples
+    --------
+
+    The code below replicates each input field 5 times, setting the ``number`` attribute of the resulting fields from 1 to 5.
+
+    .. code-block:: yaml
+
+        input:
+          pipe:
+            - source: # Can be `mars`, `netcdf`, etc.
+                param: ...
+            - repeat_members:
+                count: 5 # Replicate each input field 5 times
+
+    Or using specific member indices (0-based), to set the ``number`` attribute of the resulting fields to 1, 3 and 5:
+
+    .. code-block:: yaml
+
+        input:
+          pipe:
+            - source: # Can be `mars`, `netcdf`, etc.
+                param: ...
+            - repeat_members:
+                members: [0, 2, 4]
+
+    Or using specific field numbers (1-based), to set the ``number`` attribute of the resulting fields to 1, 3 and 5:
+
+    .. code-block:: yaml
+
+        input:
+          pipe:
+            - source: # Can be `mars`, `netcdf`, etc.
+                param: ...
+            - repeat_members:
+                numbers: [1, 3, 5]
     """
 
     def __init__(
         self,
         *,
-        numbers: list[int] = None,
-        members: list[int] = None,
-        count: int = None,
+        numbers: list[int] | None = None,
+        members: list[int] | None = None,
+        count: int | None = None,
     ) -> None:
         """Parameters
         -------------

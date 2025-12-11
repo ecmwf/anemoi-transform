@@ -14,6 +14,7 @@ requires = [ "setuptools>=60", "setuptools-scm>=8" ]
 name = "anemoi-transform"
 
 description = "A package to hold various data transformation functions to support training of ML models on ECMWF data."
+readme = "README.md"
 keywords = [ "ai", "tools" ]
 
 license = { file = "LICENSE" }
@@ -39,10 +40,10 @@ classifiers = [
 
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.4.32",
+  "anemoi-utils>=0.4.36",
   "cfunits",
   "earthkit-data>=0.12.4",
-  "earthkit-meteo>=0.3",
+  "earthkit-meteo>=0.4.1",
   "earthkit-regrid>=0.4",
 ]
 
@@ -51,8 +52,10 @@ optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]
 
 optional-dependencies.docs = [
   "nbsphinx",
+  "numpydoc",
   "pandoc",
   "requests",
+  "ruamel-yaml",
   "sphinx>=8.2; python_version>='3.11'",
   "sphinx-argparse<0.5",
   "sphinx-rtd-theme",
@@ -73,11 +76,12 @@ version_file = "src/anemoi/transform/_version.py"
 
 [tool.mypy]
 strict = false
+disable_error_code = [ "import-untyped" ]
 exclude = [
-  "docs/**",
+  "docs/*",
 ]
 
 [tool.pydocstringformatter]
 write = true
-exclude = "docs/**"
+exclude = "docs/*"
 style = "numpydoc"

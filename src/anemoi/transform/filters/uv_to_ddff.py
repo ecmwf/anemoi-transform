@@ -20,8 +20,14 @@ from anemoi.transform.filters.matching import matching
 
 
 class WindComponents(MatchingFieldsFilter):
-    """A filter to convert wind speed and direction to U and V components,
-    and back.
+    """A filter to convert wind speed and direction to U and V components, and back.
+
+    This filter converts wind speed and direction from U and V
+    components, and back. This filter a source that provides the wind (U and
+    V) components. For details regarding the exact formula used please refer
+    to :func:`xy_to_polar <earthkit.meteo.wind.array.xy_to_polar>` and
+    :func:`polar_to_xy <earthkit.meteo.wind.array.polar_to_xy>`.
+
     """
 
     @matching(

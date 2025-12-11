@@ -21,7 +21,45 @@ from anemoi.transform.filters.matching import matching
 
 @filter_registry.register("earthkitfieldlambda")
 class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
-    """A filter to apply an arbitrary function to individual fields."""
+    """A filter to apply an arbitrary function to individual fields.
+
+    This filter allows you to apply an arbitrary
+    Python function (either provided inline as a lambda or imported from a
+    module) to fields selected by parameter name. This enables advanced and
+    flexible transformations that aren't covered by built-in filters. This
+    filter must follow a source or filter that provides the necessary
+    parameter(s) as input. No assumptions are made about physical
+    quantities, it is entirely user-defined.
+
+    Notes
+    -----
+
+    This general purpose filter allows users to quickly prototype some data transformation.
+    For an operational usage it is recommended to develop dedicated filters,
+    that can be contributed to the project or developed
+    as :ref:`plugins <anemoi-plugins:index-page>`.
+
+    Examples
+    --------
+
+    For example, you can use it to convert temperatures from Kelvin to Celsius by subtracting a constant.
+
+    .. code-block:: yaml
+
+      input:
+        pipe:
+            - source:
+            # mars, grib, netcdf, etc.
+            # source attributes here
+            # ...
+            # Must load the input variable
+
+            - earthkitfieldlambda:
+                param: "2t" # Name of variable (input) to be transformed
+                fn: "lambda x, s: x.clone(values=x.values - s)"
+                fn_args: [273.15]
+
+    """
 
     @matching(
         select="param",
@@ -78,6 +116,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
 
         self.fn = self._import_fn(fn) if isinstance(fn, str) else fn
 
+        self.backward_fn: Callable[[Field, Any], Field] | None
         if isinstance(backward_fn, str):
             self.backward_fn = self._import_fn(backward_fn)
         else:
@@ -115,6 +154,8 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
         Iterator[Field]
             Transformed fields.
         """
+        if self.backward_fn is None:
+            raise ValueError("Backward function is undefined.")
         yield self.backward_fn(*fields, *self.fn_args, **self.fn_kwargs)
 
     def _import_fn(self, fn: str) -> Callable[..., Field]:
@@ -151,7 +192,7 @@ class EarthkitFieldLambdaFilter(MatchingFieldsFilter):
             The string representation of the filter.
         """
         out = f"{self.__class__.__name__}(fn={self.fn},"
-        if self.backward_fn:
+        if self.backward_fn is not None:
             out += f"backward_fn={self.backward_fn},"
         out += f"param={self.param},"
         out += f"fn_args={self.fn_args},"

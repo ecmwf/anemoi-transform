@@ -508,6 +508,16 @@ class _NewMetadataField(WrappedField, ABC):
                 def keys(self):
                     return this._field.metadata().keys()
 
+                def __getitem__(self, key):
+                    value = this.mapping(key, this._field)
+                    if value is not MISSING_METADATA:
+                        return value
+
+                    return this._field.metadata()[key]
+
+                def override(self, *args, **kwargs):
+                    return this._field.metadata().override(*args, **kwargs)
+
             return MD()
 
         if kwargs.get("namespace"):
@@ -691,7 +701,7 @@ def new_field_with_metadata(template: WrappedField, **metadata: Any) -> NewMetad
 
 def new_field_from_latitudes_longitudes(
     template: WrappedField, latitudes: np.ndarray, longitudes: np.ndarray
-) -> NewGridField:
+) -> NewLatLonField:
     """Create a new field from latitudes and longitudes.
 
     Parameters

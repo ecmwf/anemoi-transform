@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import logging
 from collections.abc import Iterator
 
 import earthkit.data as ekd
@@ -15,6 +16,8 @@ import numpy as np
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
+
+LOG = logging.getLogger(__name__)
 
 NODATA = -9.999e06
 UNDETECTED = -8.888e06
@@ -34,8 +37,8 @@ def _clip_variable(variable: np.ndarray, max_value: float) -> np.ndarray:
 
 
 def clip_opera(
-    tp: np.ndarray, quality: np.ndarray = None, max_total_precipitation: int = MAX_TP
-) -> tuple[np.ndarray, np.ndarray]:
+    tp: np.ndarray, quality: np.ndarray, max_total_precipitation: int = MAX_TP
+) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
     """Clip the tp and quality arrays to specified maximum values.
 
     Parameters
@@ -57,7 +60,7 @@ def clip_opera(
     return tp, quality
 
 
-def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndarray:
+def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Apply masking to the tp array based on the mask array.
 
     Parameters
@@ -86,7 +89,10 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
     tp[mask == _INF] = np.nan
 
     quality[mask == _UNDETECTED] = 0
-    assert np.isnan(tp).sum() == np.isnan(quality).sum()
+
+    if not np.isnan(tp).sum() == np.isnan(quality).sum():
+        msg = f"Mismatch between NaNs on tp {np.isnan(tp).sum()} and qi {np.isnan(quality).sum()}"
+        LOG.warning(msg)
 
     return tp, quality
 
@@ -95,18 +101,30 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> np.ndar
 class RodeoOperaPreProcessing(MatchingFieldsFilter):
     """A filter to select only good quality data in Rodeo Opera data.
 
-    Parameters
-    ----------
-    total_precipitation : str, optional
-        The name of the total_precipitation field, by default "tp".
-    quality : str, optional
-        The name of the quality field, by default "quality".
-    mask : str, optional
-        The name of the mask field, by default "mask".
-    max_total_precipitation : int, optional
-        The maximum value for tp, by default MAX_TP.
-    return_mask: bool, optional
-        Whether or not to return the mask
+    The ``rodeo_opera_preprocessing`` function applies filtering to the
+    OPERA Pan-European composites. This preprocessing consists of:
+
+    -  Masking of undetected pixels using the ``mask`` variable
+
+    -  Clipping of precipitation values to the range ``[0,
+       max_total_precipitation]``, where ``max_total_precipitation`` is
+       defined at the configuration level. If no value is passed a default
+       value (``MAX_TP``) of 10000 is used.
+
+    -  Clipping of the quality index to the range ``[0, 1]``
+
+       By default the ``mask`` variable is dropped as part of this filter (the
+       output field just contains ``total_precipitation`` and ``quality``).
+       This can be controlled by settings the ``return_mask`` flag from
+       ``False`` to ``True``.
+
+    Notes
+    -----
+
+    The ``rodeo_opera_preprocessing`` filter was primarily designed to
+    work with the 'OPERA Pan-European' Composites. It's likely these
+    filters will be moved into a plugin in the near-future.
+
     """
 
     @matching(

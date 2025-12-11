@@ -41,7 +41,39 @@ def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.n
 
 @filter_registry.register("snow_cover")
 class SnowCover(MatchingFieldsFilter):
-    """A filter to compute snow cover from snow density and snow depth."""
+    """A filter to compute snow cover from snow density and snow depth.
+
+    Notes
+    -----
+    The `snow cover` (``scover``) is computed from `snow depth` (``sd``) and `snow density` (``rsn``) as:
+
+    .. math::
+
+        \\text{scover}(sd,rsn) =
+        \\operatorname{clip}\\left(
+        \\tanh\\left(
+        \\frac{4000 \\cdot \\tfrac{1000 \\cdot sd}{rsn}}
+        {\\operatorname{clip}(rsn,100,400)}
+        \\right), 0, 1
+        \\right)
+
+    Post-processing rule:
+
+    .. math::
+
+        \\text{scover} =
+        \\begin{cases}
+        1.0 & \\text{if } \\text{scover} > 0.99 \\\\[0.8em]
+        \\text{scover} & \\text{otherwise}
+        \\end{cases}
+
+    with clipping defined as:
+
+    .. math::
+
+        \\operatorname{clip}(x,a,b) = \\min(\\max(x,a),b).
+
+    """
 
     @matching(
         select="param",

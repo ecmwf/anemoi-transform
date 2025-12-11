@@ -9,6 +9,37 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.17](https://github.com/ecmwf/anemoi-transform/compare/0.1.16...0.1.17) (2025-10-01)
+
+
+### Features
+
+* Add lsnp to sp filter ([#163](https://github.com/ecmwf/anemoi-transform/issues/163)) ([7c19393](https://github.com/ecmwf/anemoi-transform/commit/7c19393aa2347a329c7a41488cfd83de821fae2d))
+* Add methods to MD() in field wrapper ([#173](https://github.com/ecmwf/anemoi-transform/issues/173)) ([c564459](https://github.com/ecmwf/anemoi-transform/commit/c56445974e0eb73ac5fd54df414b79d146f99bb6))
+* Control returned inputs in filters ([#100](https://github.com/ecmwf/anemoi-transform/issues/100)) ([32cb937](https://github.com/ecmwf/anemoi-transform/commit/32cb937bc64d89140523d8797e62650d2256db75))
+* **filters:** Add filter for thermodynamic conversions at specific height levels ([#140](https://github.com/ecmwf/anemoi-transform/issues/140)) ([c28fd07](https://github.com/ecmwf/anemoi-transform/commit/c28fd07e0acbcc7453d6b02dfb17af585fc46ab5))
+
+
+### Bug Fixes
+
+* **filter:** Fix small bug in rename filter ([#164](https://github.com/ecmwf/anemoi-transform/issues/164)) ([8fb7158](https://github.com/ecmwf/anemoi-transform/commit/8fb7158c6aa9bd15993ef705a2e5d859151187ab))
+* Rename filter metadata handling ([#165](https://github.com/ecmwf/anemoi-transform/issues/165)) ([eb16768](https://github.com/ecmwf/anemoi-transform/commit/eb167687fd99ab109dec5a7901041a2b7d7cdd1f))
+* Replace assert with warning ([#157](https://github.com/ecmwf/anemoi-transform/issues/157)) ([ca55a62](https://github.com/ecmwf/anemoi-transform/commit/ca55a62b5511471dc3d9df14c2ec6c0b56cf55d6))
+
+
+### Documentation
+
+* Filter documentation review ([#172](https://github.com/ecmwf/anemoi-transform/issues/172)) ([c606ed6](https://github.com/ecmwf/anemoi-transform/commit/c606ed69a6e6e2ab34402bbcb3d003083a701467))
+* Revisit documentation of filters ([#169](https://github.com/ecmwf/anemoi-transform/issues/169)) ([2657b13](https://github.com/ecmwf/anemoi-transform/commit/2657b13bea53fe7b1782221551a8c714a5f1bc78))
+
+## [0.1.16](https://github.com/ecmwf/anemoi-transform/compare/0.1.15...0.1.16) (2025-08-05)
+
+
+### Features
+
+* Improve conftest types ([#144](https://github.com/ecmwf/anemoi-transform/issues/144)) ([bc9c4cd](https://github.com/ecmwf/anemoi-transform/commit/bc9c4cd16b08399f74d8d3a8f0f874be82fda97d))
+* Rodeo filters add docs and fix masking of QI ([#145](https://github.com/ecmwf/anemoi-transform/issues/145)) ([0104c00](https://github.com/ecmwf/anemoi-transform/commit/0104c008cc3666a988fa8814447d490ec7ca59fd))
+
 ## [0.1.15](https://github.com/ecmwf/anemoi-transform/compare/0.1.14...0.1.15) (2025-07-31)
 
 

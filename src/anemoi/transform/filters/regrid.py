@@ -72,14 +72,14 @@ def as_griddata(grid: str | Field | dict[str, Any] | None = None) -> dict[str, A
         return grid
 
     if isinstance(grid, str):
-        from anemoi.utils.grids import grids
+        from anemoi.transform.grids.named import lookup
 
-        return grids(grid)
+        return lookup(grid)
 
     if isinstance(grid, (list, tuple)):
-        from anemoi.utils.grids import grids
+        from anemoi.transform.grids.named import lookup
 
-        return grids(grid)
+        return lookup(grid)
 
     raise ValueError(f"Invalid grid: {grid}")
 

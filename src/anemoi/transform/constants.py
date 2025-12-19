@@ -9,10 +9,20 @@
 
 import numpy as np
 from earthkit.meteo.constants.constants import R as R_universal_gas_constant
+from earthkit.meteo.constants.constants import R_earth as R_earth_meter
 from earthkit.meteo.constants.constants import g as g_gravitational_acceleration
+from earthkit.meteo.constants.constants import radian
 
-__all__ = ["g_gravitational_acceleration", "R_universal_gas_constant", "model_level_AB"]
+__all__ = [
+    "g_gravitational_acceleration",
+    "R_universal_gas_constant",
+    "model_level_AB",
+    "R_earth_km",
+    "L_1_degree_earth_arc_length_km",
+]
 
+R_earth_km = R_earth_meter / 1000
+L_1_degree_earth_arc_length_km = R_earth_km / radian
 
 # A and B-coefficients defining the model levels for different models
 # Only IFS with 137 vertical levels implemented for now

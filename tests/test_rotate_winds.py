@@ -65,12 +65,13 @@ def test_rotate_winds(wind_source, rotated_wind_source):
         for output_field, expected_field in zip(output_fields[param], expected_fields[param]):
             assert np.allclose(output_field.to_numpy(flatten=True), expected_field.to_numpy(flatten=True))
 
+
 def test_unrotate_winds(rotated_wind_source, wind_source):
     unrotate_winds = filter_registry.create(
         "unrotate_winds",
         x_wind="10u",
         y_wind="10v",
-        source_projection="+proj=eqc +ellps=WGS84 +a=6378137.0 +lon_0=0.0 +to_meter=111319.4907932736 +no_defs +type=crs"
+        source_projection="+proj=eqc +ellps=WGS84 +a=6378137.0 +lon_0=0.0 +to_meter=111319.4907932736 +no_defs +type=crs",
     )
 
     pipeline = rotated_wind_source | unrotate_winds
@@ -90,13 +91,14 @@ def test_unrotate_winds(rotated_wind_source, wind_source):
         for output_field, expected_field in zip(output_fields[param], expected_fields[param]):
             assert np.allclose(output_field.to_numpy(flatten=True), expected_field.to_numpy(flatten=True))
 
+
 def test_rotate_winds_roundtrip(wind_source):
     rotate_winds = filter_registry.create("rotate_winds", x_wind="10u", y_wind="10v")
     unrotate_winds = filter_registry.create(
         "unrotate_winds",
         x_wind="10u",
         y_wind="10v",
-        source_projection="+proj=eqc +ellps=WGS84 +a=6378137.0 +lon_0=0.0 +to_meter=111319.4907932736 +no_defs +type=crs"
+        source_projection="+proj=eqc +ellps=WGS84 +a=6378137.0 +lon_0=0.0 +to_meter=111319.4907932736 +no_defs +type=crs",
     )
 
     rotated_wind_source = wind_source | rotate_winds

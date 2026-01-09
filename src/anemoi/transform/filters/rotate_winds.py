@@ -45,6 +45,8 @@ class RotateWinds(MatchingFieldsFilter):
             Y wind component parameter.
         source_projection : str | None, optional
             Source projection, by default None.
+            If None, the forward transform try to get it from the input fields.
+            Cannot be None if using unrotate!
         target_projection : str, optional
             Target projection, by default "+proj=longlat".
         """
@@ -99,17 +101,16 @@ class RotateWinds(MatchingFieldsFilter):
             The rotated wind component fields.
         """
         lats, lons = x_wind.grid_points()
-        raw_lats, raw_longs = x_wind.grid_points_unrotated()
 
-        x_unrotated, y_unrotated = unrotate_vector(
+        assert self.source_projection is not None, "source_projection cannot be None when unrotating winds!"
+
+        x_unrotated, y_unrotated = rotate_vector(
             lats,
             lons,
             x_wind.to_numpy(flatten=True),
             y_wind.to_numpy(flatten=True),
-            *x_wind.rotation[:2],
-            south_pole_rotation_angle=0,
-            lat_unrotated=raw_lats,
-            lon_unrotated=raw_longs,
+            self.target_projection,
+            self.source_projection,
         )
 
         yield self.new_field_from_numpy(x_unrotated, template=x_wind, param=x_wind.metadata("param"))

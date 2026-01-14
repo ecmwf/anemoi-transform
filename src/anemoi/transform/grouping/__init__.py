@@ -79,6 +79,7 @@ class GroupByParam:
                     raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
 
             param = key.pop("param", f.metadata("param"))
+            key.pop("variable", f.metadata("param"))
 
             if param not in self.params:
                 other(f)
@@ -112,7 +113,7 @@ class GroupByParam:
             if len(group) != len(self.params):
                 for p in data:
                     print(p)
-                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(self.groups.keys())}")
+                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(group.keys())}")
 
             yield tuple(group[p] for p in self.params)
 

@@ -43,13 +43,17 @@ def test_rename_grib_dict_rename(grib_source):
 def test_rename_grib_format_rename(grib_source):
     rename = filter_registry.create(
         "rename",
-        param="{param}_{levelist}_{levtype}",
+        param="{param}_{levelist}_{levtype}_{levelist:d}",
     )
     pipeline = grib_source | rename
 
     for original, result in zip(grib_source, pipeline):
-        orig_param, orig_level, orig_levtype = original.metadata("param", "levelist", "levtype")
-        assert result.metadata("param") == f"{orig_param}_{orig_level}_{orig_levtype}"
+        orig_param, orig_level, orig_levtype, orig_level_d = original.metadata(
+            "param", "levelist", "levtype", "levelist:d"
+        )
+        assert isinstance(orig_level, int)
+        assert isinstance(orig_level_d, float)
+        assert result.metadata("param") == f"{orig_param}_{orig_level}_{orig_levtype}_{orig_level_d}"
 
 
 @skip_if_offline

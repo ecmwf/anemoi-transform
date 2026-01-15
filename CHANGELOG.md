@@ -9,6 +9,19 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.20](https://github.com/ecmwf/anemoi-transform/compare/0.1.19...0.1.20) (2026-01-15)
+
+
+### Features
+
+* Add param option to the remove_nans filter ([#190](https://github.com/ecmwf/anemoi-transform/issues/190)) ([eaaeef5](https://github.com/ecmwf/anemoi-transform/commit/eaaeef5a114d701470a8e95f28f7d4d0a537a99a))
+* Rotate/unrotate winds filters ([#150](https://github.com/ecmwf/anemoi-transform/issues/150)) ([3f957a2](https://github.com/ecmwf/anemoi-transform/commit/3f957a212ac4e5739248ce705da8812860386f0f))
+
+
+### Bug Fixes
+
+* Fix time metadata ([#188](https://github.com/ecmwf/anemoi-transform/issues/188)) ([96b3c3e](https://github.com/ecmwf/anemoi-transform/commit/96b3c3e8dcc551fc5d2ed0294070c8d3ec7af878))
+
 ## [0.1.19](https://github.com/ecmwf/anemoi-transform/compare/0.1.18...0.1.19) (2025-11-07)
 
 

@@ -6,13 +6,15 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-
+import logging
 from collections import defaultdict
 
 import numpy as np
 
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.source import Source
+
+LOG = logging.getLogger(__name__)
 
 
 def collect_fields_by_param(pipeline):
@@ -90,3 +92,15 @@ class SelectAndAddFieldSource(Source):
             if self.params and f.metadata("param") in self.params and f.metadata("param") not in params:
                 fields.append(f)
         return new_fieldlist_from_list(fields)
+
+
+def compare_npz_files(file1, file2):
+    data1 = np.load(file1)
+    data2 = np.load(file2)
+
+    assert set(data1.keys()) == set(
+        data2.keys()
+    ), f"Keys in NPZ files do not match {set(data1.keys())} and {set(data2.keys())}"
+
+    for key in data1.keys():
+        assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"

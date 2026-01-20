@@ -6,15 +6,12 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-import logging
 from collections import defaultdict
 
 import numpy as np
 
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.source import Source
-
-LOG = logging.getLogger(__name__)
 
 
 def collect_fields_by_param(pipeline):

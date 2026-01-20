@@ -18,35 +18,43 @@ from anemoi.transform.constants import L_1_degree_earth_arc_length_km as L_1d_km
 LOG = logging.getLogger(__name__)
 
 
-def _ds_to_lat_lon(ds):
+def _xr_ds_lat_lon(path, lat_name, lon_name):
+    import xarray as xr
+
+    ds = xr.open_dataset(path)
+    lat = ds[lat_name].values.flatten()
+    lon = ds[lon_name].values.flatten()
+    return lat, lon
+
+
+def _ds_to_lat_lon(path):
+    import earthkit.data as ekd
+
     try:
+        ds = ekd.from_source("file", path)
         return ds[0].grid_points()
     except TypeError:
         # This is a workaround for datasets that do not have data variables,
-        # but have latitude and longitude coordinates.
-        import xarray as xr
-
-        ds = xr.open_dataset(ds.path)
-        lat = ds["latitude"].values.flatten()
-        lon = ds["longitude"].values.flatten()
-        return lat, lon
+        # but have "latitude" and "longitude" coordinates.
+        return _xr_ds_lat_lon(path, "latitude", "longitude")
 
 
 def _path_to_lat_lon(path):
     """Extract latitudes and longitudes from a file path."""
-    import earthkit.data as ekd
     import numpy as np
 
     if path.endswith(".npz"):
         data = np.load(path)
         return data["latitudes"], data["longitudes"]
     if path.endswith(".zarr"):
-        from anemoi.datasets import open_dataset
+        # assume anemoi-dataset first - load with xarray
+        try:
+            return _xr_ds_lat_lon(path, "latitudes", "longitudes")
+        except KeyError:
+            pass
 
-        dataset = open_dataset(path)
-        return dataset.latitudes, dataset.longitudes
-    ds = ekd.from_source("file", path)
-    return _ds_to_lat_lon(ds)
+    # fallback to earthkit-data
+    return _ds_to_lat_lon(path)
 
 
 def check_duplicate_latlons(input_file, latitudes, longitudes):
@@ -58,11 +66,13 @@ def check_duplicate_latlons(input_file, latitudes, longitudes):
         seen.add((lat, lon))
 
 
-def round_lat_lon(latitudes, longitudes, rounding):
+def round_lat_lon(latitudes, longitudes, num_decimals):
     import numpy as np
 
-    LOG.info(f"Rounding latitudes and longitudes to {rounding} decimal places ({L_1d_km / ( 10 ) ** rounding} m).")
-    return np.round(latitudes, rounding), np.round(longitudes, rounding)
+    LOG.info(
+        f"Rounding latitudes and longitudes to {num_decimals} decimal places ({L_1d_km / (10) ** num_decimals} m)."
+    )
+    return np.round(latitudes, num_decimals), np.round(longitudes, num_decimals)
 
 
 def _lat_lon_plot(lat, lon, plot: str) -> None:

@@ -62,7 +62,7 @@ optional-dependencies.docs = [
   "termcolor",
 ]
 
-optional-dependencies.tests = [ "pytest" ]
+optional-dependencies.tests = [ "pytest", "pytest-skip-slow" ]
 
 urls.Documentation = "https://anemoi-transform.readthedocs.io/"
 urls.Homepage = "https://github.com/ecmwf/anemoi-transform/"

@@ -596,29 +596,3 @@ def nearest_grid_points(
     else:
         _, indices = cKDTree(source_points).query(target_points, k=1, distance_upper_bound=max_distance)
     return indices
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-
-    import earthkit.data as ekd
-
-    glob = ekd.from_source("file", "tmp/era5.grib")
-    lam = ekd.from_source("file", "tmp/carra-east.grib")
-
-    global_lats, global_lons = glob[0].grid_points()
-
-    lats, lons = lam[0].grid_points()
-
-    mask = global_on_lam_mask(lats, lons, global_lats, global_lons)
-    print(len(mask))
-    import matplotlib.pyplot as plt
-
-    lat = global_lats[mask]
-    lon = global_lons[mask]
-    lon = np.where(lon >= 180, lon - 360, lon)
-
-    fig = plt.figure(figsize=(10, 5))
-    plt.scatter(lon, lat, s=0.1, c="k")
-    # plt.scatter(lons, lats, s=0.01)
-    plt.savefig("cutout.png")

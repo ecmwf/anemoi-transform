@@ -1,4 +1,4 @@
-make-regrid-file
+.. _make-regrid-file:
 ------------------
 
 .. argparse::

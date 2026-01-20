@@ -75,16 +75,6 @@ def round_lat_lon(latitudes, longitudes, num_decimals):
     return np.round(latitudes, num_decimals), np.round(longitudes, num_decimals)
 
 
-def _lat_lon_plot(lat, lon, plot: str) -> None:
-    import matplotlib.pyplot as plt
-    import numpy as np
-
-    lon = np.where(lon >= 180, lon - 360, lon)
-    plt.figure(figsize=(10, 5))
-    plt.scatter(lon, lat, s=0.1, c="k")
-    plt.savefig(plot)
-
-
 class MakeMIRMatrix:
     """Extract the grid from a pair GRIB or NetCDF files extract the MIR interpolation matrix to be used
     by earthkit-regrid.
@@ -211,19 +201,37 @@ class MakeGlobalOnLamMask:
         global_lat, global_lon = _path_to_lat_lon(args.global_grid)
 
         MakeGlobalOnLamMask.make_global_on_lam_mask(
-            lam_lat, lam_lon, global_lat, global_lon, output=args.output, plot=args.plot, distance_km=args.distance_km
+            lam_lat,
+            lam_lon,
+            global_lat,
+            global_lon,
+            output=args.output,
+            plot_path=args.plot,
+            distance_km=args.distance_km,
         )
 
     @staticmethod
-    def make_global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, output, plot: str | None = None, **kwargs):
+    def _lat_lon_plot(lat, lon, plot_path: str) -> None:
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        lon = np.where(lon >= 180, lon - 360, lon)
+        plt.figure(figsize=(10, 5))
+        plt.scatter(lon, lat, s=0.1, c="k")
+        plt.savefig(plot_path)
+
+    @staticmethod
+    def make_global_on_lam_mask(
+        lam_lat, lam_lon, global_lat, global_lon, output, plot_path: str | None = None, **kwargs
+    ):
         import numpy as np
 
         from anemoi.transform.spatial import global_on_lam_mask
 
         mask = global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, **kwargs)
         np.savez(output, mask=mask)
-        if plot:
-            _lat_lon_plot(global_lat[mask], global_lon[mask], plot)
+        if plot_path:
+            MakeGlobalOnLamMask._lat_lon_plot(global_lat[mask], global_lon[mask], plot_path)
 
 
 OPTIONS = {

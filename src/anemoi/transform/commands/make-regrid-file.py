@@ -213,7 +213,7 @@ class MakeGlobalOnLamMask:
         mask = global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, **kwargs)
         np.savez(output, mask=mask)
         if plot:
-            _plot_lat_lon(global_lat[mask], global_lons[mask], plot)
+            _lat_lon_plot(global_lat[mask], global_lon[mask], plot)
 
 
 OPTIONS = {

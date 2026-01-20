@@ -47,7 +47,7 @@ dependencies = [
   "earthkit-regrid>=0.4",
 ]
 
-optional-dependencies.all = [ "anemoi-transform" ]
+optional-dependencies.all = [ "anemoi-transform[plots]" ]
 optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]
 
 optional-dependencies.docs = [
@@ -61,6 +61,8 @@ optional-dependencies.docs = [
   "sphinx-rtd-theme",
   "termcolor",
 ]
+
+optional-dependencies.plots = [ "matplotlib" ]
 
 optional-dependencies.tests = [ "pytest", "pytest-skip-slow" ]
 

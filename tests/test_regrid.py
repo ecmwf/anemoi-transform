@@ -15,8 +15,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import logging
-
 import pytest
 from anemoi.utils.testing import cli_testing
 from anemoi.utils.testing import skip_if_missing_command
@@ -25,8 +23,6 @@ from anemoi.utils.testing import skip_if_offline
 from anemoi.transform.filters import filter_registry
 
 from .utils import compare_npz_files
-
-LOG = logging.getLogger(__name__)
 
 
 @skip_if_offline

@@ -26,7 +26,7 @@ from anemoi.transform.filters import filter_registry
 LOG = logging.getLogger(__name__)
 
 
-def as_gridspec(grid: str | dict[str, Any] | None = None) -> dict[str, Any] | None:
+def as_gridspec(grid: str | dict[str, Any] | None) -> dict[str, Any] | None:
     """Convert grid specification to a dictionary format.
 
     Parameters
@@ -36,7 +36,7 @@ def as_gridspec(grid: str | dict[str, Any] | None = None) -> dict[str, Any] | No
 
     Returns
     -------
-    dict[str, Any]
+    dict[str, Any] | None
         The grid specification as a dictionary.
     """
     if grid is None:
@@ -48,7 +48,7 @@ def as_gridspec(grid: str | dict[str, Any] | None = None) -> dict[str, Any] | No
     return grid
 
 
-def as_griddata(grid: str | Field | dict[str, Any] | None = None) -> dict[str, Any] | None:
+def as_griddata(grid: str | Field | dict[str, Any] | None) -> dict[str, Any] | None:
     """Convert grid data to a dictionary format.
 
     Parameters
@@ -58,7 +58,7 @@ def as_griddata(grid: str | Field | dict[str, Any] | None = None) -> dict[str, A
 
     Returns
     -------
-    dict[str, Any]
+    dict[str, Any] | None
         The grid data as a dictionary.
     """
     if grid is None:
@@ -267,7 +267,7 @@ class MIRMatrix:
         -------------
         matrix : str
             The regrid matrix file path.
-        check : bool, default = False
+        check : bool
             Whether to perform checks.
         """
         import numpy as np
@@ -317,9 +317,7 @@ class ScipyKDTreeNearestNeighbours:
 
     nearest_grid_points = None
 
-    def __init__(
-        self, *, in_grid: Any, out_grid: Any, method: str, matrix: str | None = None, check: bool = False
-    ) -> None:
+    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, check: bool = False) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -394,7 +392,7 @@ class MaskedRegrid:
         -------------
         mask : str
             The mask file path.
-        check : bool, default = False
+        check : bool
             Whether to perform checks.
         """
 
@@ -492,7 +490,7 @@ def make_interpolator(
         The regrid matrix file path.
     mask : str, optional
         The mask file path.
-    check : bool, optional, default = False
+    check : bool, optional
         Whether to perform checks.
 
     Returns

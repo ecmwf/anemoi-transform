@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from typing import Any
 
 import earthkit.data as ekd
 import numpy as np
@@ -63,6 +64,39 @@ class LnspToSp(SingleFieldFilter):
         return self.new_field_from_numpy(
             np.log(surface_pressure.to_numpy()), template=surface_pressure, **orig_metadata
         )
+
+    def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
+        """Modify the data request to include the other parameter.
+
+        Parameters
+        ----------
+        data_request : Dict[str, Any]
+            The original data request.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The modified data request.
+        """
+        param = data_request.get("param")
+        if param is None:
+            return data_request
+
+        param = param if isinstance(param, list) else [param]
+        if self.surface_pressure in param and self.log_of_surface_pressure in param:
+            raise ValueError(
+                "Data request cannot contain both surface pressure and log of surface pressure parameters."
+            )
+
+        if self.surface_pressure in param:
+            data_request["param"].remove(self.surface_pressure)
+            data_request["param"].append(self.log_of_surface_pressure)
+
+        elif self.log_of_surface_pressure in param:
+            data_request["param"].remove(self.log_of_surface_pressure)
+            data_request["param"].append(self.surface_pressure)
+
+        return data_request
 
 
 filter_registry.register("lnsp_to_sp", LnspToSp)

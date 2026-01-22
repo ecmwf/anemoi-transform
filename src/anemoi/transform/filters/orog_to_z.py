@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from typing import Any
 
 import earthkit.data as ekd
 
@@ -75,6 +76,22 @@ class Orography(SingleFieldFilter):
         return self.new_field_from_numpy(
             geopotential.to_numpy() / g_gravitational_acceleration, template=geopotential, **orig_metadata
         )
+
+    def patch_data_request(self, data_request: Any) -> Any:
+        param = data_request.get("param")
+        if param is None:
+            return data_request
+
+        param = param if isinstance(param, list) else [param]
+
+        if self.geopotential in param and self.orography in param:
+            raise ValueError("Data request cannot contain both orography and geopotential parameters.")
+
+        if self.geopotential in param and (data_request.get("levtype", "") == "pl" or data_request.get("levelist", [])):
+            data_request["param"] = [self.orography if p == self.geopotential else p for p in param]
+        elif self.orography in param and (data_request.get("levtype", "") == "pl" or data_request.get("levelist", [])):
+            data_request["param"] = [self.geopotential if p == self.orography else p for p in param]
+        return data_request
 
 
 filter_registry.register("orog_to_z", Orography)

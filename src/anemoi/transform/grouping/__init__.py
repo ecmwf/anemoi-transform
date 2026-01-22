@@ -133,6 +133,8 @@ class GroupByParamVertical(GroupByParam):
                     raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
 
             param = key.pop("param", f.metadata("param"))
+            key.pop("variable", None)
+
             _ = key.pop("levtype", None)
             level = key.pop("levelist", None)
 

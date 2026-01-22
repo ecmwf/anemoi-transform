@@ -82,6 +82,11 @@ class Orography(SingleFieldFilter):
         if param is None:
             return data_request
 
+        param = param if isinstance(param, list) else [param]
+
+        if self.geopotential in param and self.orography in param:
+            raise ValueError("Data request cannot contain both orography and geopotential parameters.")
+
         if self.geopotential in param and (data_request.get("levtype", "") == "pl" or data_request.get("levelist", [])):
             data_request["param"] = [self.orography if p == self.geopotential else p for p in param]
         elif self.orography in param and (data_request.get("levtype", "") == "pl" or data_request.get("levelist", [])):

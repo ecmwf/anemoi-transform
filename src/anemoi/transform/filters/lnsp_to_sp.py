@@ -82,6 +82,12 @@ class LnspToSp(SingleFieldFilter):
         if param is None:
             return data_request
 
+        param = param if isinstance(param, list) else [param]
+        if self.surface_pressure in param and self.log_of_surface_pressure in param:
+            raise ValueError(
+                "Data request cannot contain both surface pressure and log of surface pressure parameters."
+            )
+
         if self.surface_pressure in param:
             data_request["param"].remove(self.surface_pressure)
             data_request["param"].append(self.log_of_surface_pressure)

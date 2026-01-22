@@ -60,9 +60,8 @@ def _get_grid_data(grid_id: str | list[float] | tuple[float, float]) -> bytes:
         else:
             LOG.warning("Custom user path %s does not exist", path)
 
-    # To add a grid
+    # To generate a grid
     # anemoi-transform get-grid --source mars grid=o400,levtype=sfc,param=2t grid-o400.npz
-    # and upload to the repository
 
     url = GRIDS_URL_PATTERN.format(name=grid_id.lower())
     LOG.warning("Downloading grids from %s", url)

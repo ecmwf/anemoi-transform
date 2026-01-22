@@ -12,13 +12,15 @@ import argparse
 import logging
 import os
 
+import numpy as np
+
 from anemoi.transform.commands import Command
 from anemoi.transform.constants import L_1_degree_earth_arc_length_km as L_1d_km
 
 LOG = logging.getLogger(__name__)
 
 
-def _xr_ds_lat_lon(path, lat_name, lon_name):
+def _xr_ds_lat_lon(path: str, lat_name: str, lon_name: str) -> tuple[np.ndarray, np.ndarray]:
     import xarray as xr
 
     ds = xr.open_dataset(path)
@@ -27,7 +29,7 @@ def _xr_ds_lat_lon(path, lat_name, lon_name):
     return lat, lon
 
 
-def _ds_to_lat_lon(path):
+def _ds_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
     import earthkit.data as ekd
 
     try:
@@ -39,7 +41,7 @@ def _ds_to_lat_lon(path):
         return _xr_ds_lat_lon(path, "latitude", "longitude")
 
 
-def _path_to_lat_lon(path):
+def _path_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
     """Extract latitudes and longitudes from a file path."""
     import numpy as np
 
@@ -57,7 +59,7 @@ def _path_to_lat_lon(path):
     return _ds_to_lat_lon(path)
 
 
-def check_duplicate_latlons(input_file, latitudes, longitudes):
+def check_duplicate_latlons(input_file: str, latitudes: np.ndarray, longitudes: np.ndarray) -> None:
     LOG.info(f"Checking for duplicate lat/lon pairs in {input_file}...")
     seen = set()
     for lat, lon in zip(latitudes, longitudes):
@@ -66,7 +68,7 @@ def check_duplicate_latlons(input_file, latitudes, longitudes):
         seen.add((lat, lon))
 
 
-def round_lat_lon(latitudes, longitudes, num_decimals):
+def round_lat_lon(latitudes: np.ndarray, longitudes: np.ndarray, num_decimals: int) -> tuple[np.ndarray, np.ndarray]:
     import numpy as np
 
     LOG.info(
@@ -211,7 +213,7 @@ class MakeGlobalOnLamMask:
         )
 
     @staticmethod
-    def _lat_lon_plot(lat, lon, plot_path: str) -> None:
+    def _lat_lon_plot(lat: np.ndarray, lon: np.ndarray, plot_path: str) -> None:
         import matplotlib.pyplot as plt
         import numpy as np
 
@@ -222,8 +224,14 @@ class MakeGlobalOnLamMask:
 
     @staticmethod
     def make_global_on_lam_mask(
-        lam_lat, lam_lon, global_lat, global_lon, output, plot_path: str | None = None, **kwargs
-    ):
+        lam_lat: np.ndarray,
+        lam_lon: np.ndarray,
+        global_lat: np.ndarray,
+        global_lon: np.ndarray,
+        output: str,
+        plot_path: str | None = None,
+        **kwargs,
+    ) -> None:
         import numpy as np
 
         from anemoi.transform.spatial import global_on_lam_mask

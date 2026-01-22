@@ -25,13 +25,14 @@ GRIDS_URL_PATTERN = "https://get.ecmwf.int/repository/anemoi/grids/grid-{name}.n
 
 
 @cached(collection="grids", encoding="npz")
-def _grids(name: str | list[float] | tuple[float, ...]) -> bytes:
-    """Get grid data by name.
+def _get_grid_data(grid_id: str | list[float] | tuple[float, float]) -> bytes:
+    """Get grid data from the grid registry by identifier.
 
     Parameters
     ----------
-    name : str
-        The name of the grid
+    grid_id : str | list[float] | tuple[float, float]
+        The identifier of the grid, either a string like "o96" or a tuple/list
+        of two numbers (describing the resolution).
 
     Returns
     -------
@@ -40,18 +41,18 @@ def _grids(name: str | list[float] | tuple[float, ...]) -> bytes:
     """
     from anemoi.utils.config import load_config
 
-    if isinstance(name, (tuple, list)):
-        assert len(name) == 2, "Grid name must be a list or a tuple of length 2"
-        assert all(isinstance(i, (int, float)) for i in name), "Grid name must be a list or a tuple of numbers"
-        if name[0] == name[1]:
-            name = str(float(name[0]))
+    if isinstance(grid_id, (tuple, list)):
+        assert len(grid_id) == 2, "Grid name must be a list or a tuple of length 2"
+        assert all(isinstance(i, (int, float)) for i in grid_id), "Grid name must be a list or a tuple of numbers"
+        if grid_id[0] == grid_id[1]:
+            grid_id = str(float(grid_id[0]))
         else:
-            name = str(float(name[0])) + "x" + str(float(name[1]))
-        name = name.replace(".", "p")
+            grid_id = str(float(grid_id[0])) + "x" + str(float(grid_id[1]))
+        grid_id = grid_id.replace(".", "p")
 
     user_path = load_config().get("utils", {}).get("grids_path")
     if user_path:
-        path = os.path.expanduser(os.path.join(user_path, f"grid-{name}.npz"))
+        path = os.path.expanduser(os.path.join(user_path, f"grid-{grid_id}.npz"))
         if os.path.exists(path):
             LOG.warning("Loading grids from custom user path %s", path)
             with open(path, "rb") as f:
@@ -59,11 +60,10 @@ def _grids(name: str | list[float] | tuple[float, ...]) -> bytes:
         else:
             LOG.warning("Custom user path %s does not exist", path)
 
-    # To add a grid
+    # To generate a grid
     # anemoi-transform get-grid --source mars grid=o400,levtype=sfc,param=2t grid-o400.npz
-    # nexus-cli -u xxxx -p yyyy -s GET_INSTANCE --repository anemoi upload --remote-path grids --local-path grid-o400.npz
 
-    url = GRIDS_URL_PATTERN.format(name=name.lower())
+    url = GRIDS_URL_PATTERN.format(name=grid_id.lower())
     LOG.warning("Downloading grids from %s", url)
     response = requests.get(url)
     response.raise_for_status()
@@ -83,9 +83,6 @@ def lookup(name: str | list[float] | tuple[float, ...]) -> dict:
     dict
         The grid data
     """
-    if isinstance(name, str) and name.endswith(".npz"):
-        return dict(np.load(name))
-
-    data = _grids(name)
-    npz = np.load(BytesIO(data))
-    return dict(npz)
+    is_npz_file = isinstance(name, str) and name.endswith(".npz")
+    data = name if is_npz_file else BytesIO(_get_grid_data(name))
+    return dict(np.load(data))

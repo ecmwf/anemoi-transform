@@ -47,7 +47,7 @@ dependencies = [
   "earthkit-regrid>=0.4",
 ]
 
-optional-dependencies.all = [ "anemoi-transform" ]
+optional-dependencies.all = [ "anemoi-transform[plots]" ]
 optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]
 
 optional-dependencies.docs = [
@@ -62,7 +62,9 @@ optional-dependencies.docs = [
   "termcolor",
 ]
 
-optional-dependencies.tests = [ "pytest" ]
+optional-dependencies.plots = [ "matplotlib" ]
+
+optional-dependencies.tests = [ "pytest", "pytest-skip-slow" ]
 
 urls.Documentation = "https://anemoi-transform.readthedocs.io/"
 urls.Homepage = "https://github.com/ecmwf/anemoi-transform/"

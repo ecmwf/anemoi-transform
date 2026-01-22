@@ -25,12 +25,12 @@ GRIDS_URL_PATTERN = "https://get.ecmwf.int/repository/anemoi/grids/grid-{name}.n
 
 
 @cached(collection="grids", encoding="npz")
-def _get_grid_data(id: str | list[float] | tuple[float, float]) -> bytes:
+def _get_grid_data(grid_id: str | list[float] | tuple[float, float]) -> bytes:
     """Get grid data from the grid registry by identifier.
 
     Parameters
     ----------
-    id : str | list[float] | tuple[float, float]
+    grid_id : str | list[float] | tuple[float, float]
         The identifier of the grid, either a string like "o96" or a tuple/list
         of two numbers (describing the resolution).
 
@@ -41,18 +41,18 @@ def _get_grid_data(id: str | list[float] | tuple[float, float]) -> bytes:
     """
     from anemoi.utils.config import load_config
 
-    if isinstance(id, (tuple, list)):
-        assert len(id) == 2, "Grid name must be a list or a tuple of length 2"
-        assert all(isinstance(i, (int, float)) for i in id), "Grid name must be a list or a tuple of numbers"
-        if id[0] == id[1]:
-            id = str(float(id[0]))
+    if isinstance(grid_id, (tuple, list)):
+        assert len(grid_id) == 2, "Grid name must be a list or a tuple of length 2"
+        assert all(isinstance(i, (int, float)) for i in grid_id), "Grid name must be a list or a tuple of numbers"
+        if grid_id[0] == grid_id[1]:
+            grid_id = str(float(grid_id[0]))
         else:
-            id = str(float(id[0])) + "x" + str(float(id[1]))
-        id = id.replace(".", "p")
+            grid_id = str(float(grid_id[0])) + "x" + str(float(grid_id[1]))
+        grid_id = grid_id.replace(".", "p")
 
     user_path = load_config().get("utils", {}).get("grids_path")
     if user_path:
-        path = os.path.expanduser(os.path.join(user_path, f"grid-{id}.npz"))
+        path = os.path.expanduser(os.path.join(user_path, f"grid-{grid_id}.npz"))
         if os.path.exists(path):
             LOG.warning("Loading grids from custom user path %s", path)
             with open(path, "rb") as f:
@@ -64,7 +64,7 @@ def _get_grid_data(id: str | list[float] | tuple[float, float]) -> bytes:
     # anemoi-transform get-grid --source mars grid=o400,levtype=sfc,param=2t grid-o400.npz
     # and upload to the repository
 
-    url = GRIDS_URL_PATTERN.format(name=id.lower())
+    url = GRIDS_URL_PATTERN.format(name=grid_id.lower())
     LOG.warning("Downloading grids from %s", url)
     response = requests.get(url)
     response.raise_for_status()

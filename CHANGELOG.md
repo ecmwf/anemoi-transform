@@ -9,6 +9,19 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.21](https://github.com/ecmwf/anemoi-transform/compare/0.1.20...0.1.21) (2026-01-23)
+
+
+### Features
+
+* Add support for masks in `regrid` filter ([#108](https://github.com/ecmwf/anemoi-transform/issues/108)) ([89d5214](https://github.com/ecmwf/anemoi-transform/commit/89d521430744ddafdb285a645ff2d4ac02b47e05))
+
+
+### Bug Fixes
+
+* Add `patch_data_request` to some filters ([#203](https://github.com/ecmwf/anemoi-transform/issues/203)) ([22abaf7](https://github.com/ecmwf/anemoi-transform/commit/22abaf7547b7357bae5b280e1422302c2d040c00))
+* Remove `variable` key in `GroupByParamVertical` ([#202](https://github.com/ecmwf/anemoi-transform/issues/202)) ([b3e338b](https://github.com/ecmwf/anemoi-transform/commit/b3e338b9efe281754459249078104b57ec13b903))
+
 ## [0.1.20](https://github.com/ecmwf/anemoi-transform/compare/0.1.19...0.1.20) (2026-01-15)
 
 

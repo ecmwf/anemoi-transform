@@ -9,6 +9,68 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.20](https://github.com/ecmwf/anemoi-transform/compare/0.1.19...0.1.20) (2026-01-15)
+
+
+### Features
+
+* Add param option to the remove_nans filter ([#190](https://github.com/ecmwf/anemoi-transform/issues/190)) ([eaaeef5](https://github.com/ecmwf/anemoi-transform/commit/eaaeef5a114d701470a8e95f28f7d4d0a537a99a))
+* Rotate/unrotate winds filters ([#150](https://github.com/ecmwf/anemoi-transform/issues/150)) ([3f957a2](https://github.com/ecmwf/anemoi-transform/commit/3f957a212ac4e5739248ce705da8812860386f0f))
+
+
+### Bug Fixes
+
+* Fix time metadata ([#188](https://github.com/ecmwf/anemoi-transform/issues/188)) ([96b3c3e](https://github.com/ecmwf/anemoi-transform/commit/96b3c3e8dcc551fc5d2ed0294070c8d3ec7af878))
+
+## [0.1.19](https://github.com/ecmwf/anemoi-transform/compare/0.1.18...0.1.19) (2025-11-07)
+
+
+### Features
+
+* Support formats in rename filter ([#186](https://github.com/ecmwf/anemoi-transform/issues/186)) ([00e9890](https://github.com/ecmwf/anemoi-transform/commit/00e989013018bfde8d8f73da17c0b59265d7760b))
+
+
+### Bug Fixes
+
+* Update README to reflect project maturity status ([#184](https://github.com/ecmwf/anemoi-transform/issues/184)) ([d183f94](https://github.com/ecmwf/anemoi-transform/commit/d183f94c44f3729a97d5d09fe00e865191856973))
+
+## [0.1.18](https://github.com/ecmwf/anemoi-transform/compare/0.1.17...0.1.18) (2025-10-30)
+
+
+### Features
+
+* Add AccumToInterval filter transform ([#168](https://github.com/ecmwf/anemoi-transform/issues/168)) ([0801a4b](https://github.com/ecmwf/anemoi-transform/commit/0801a4b1ea040262efcc4edd654419e0e73ecc54))
+* Generic cos sin from rad filter ([#180](https://github.com/ecmwf/anemoi-transform/issues/180)) ([7fabff9](https://github.com/ecmwf/anemoi-transform/commit/7fabff9d00b685513c36eb4d71aae54368b0d199))
+
+
+### Bug Fixes
+
+* Clarify error message ([#181](https://github.com/ecmwf/anemoi-transform/issues/181)) ([1cd0536](https://github.com/ecmwf/anemoi-transform/commit/1cd0536f68d560cd02644cd9ba305b9db2deebf0))
+* Remove variable from xarray metadata when grouping ([#182](https://github.com/ecmwf/anemoi-transform/issues/182)) ([46465cd](https://github.com/ecmwf/anemoi-transform/commit/46465cdab7518d49e660bacded13763547730d0f))
+
+## [0.1.17](https://github.com/ecmwf/anemoi-transform/compare/0.1.16...0.1.17) (2025-10-01)
+
+
+### Features
+
+* Add lsnp to sp filter ([#163](https://github.com/ecmwf/anemoi-transform/issues/163)) ([7c19393](https://github.com/ecmwf/anemoi-transform/commit/7c19393aa2347a329c7a41488cfd83de821fae2d))
+* Add methods to MD() in field wrapper ([#173](https://github.com/ecmwf/anemoi-transform/issues/173)) ([c564459](https://github.com/ecmwf/anemoi-transform/commit/c56445974e0eb73ac5fd54df414b79d146f99bb6))
+* Control returned inputs in filters ([#100](https://github.com/ecmwf/anemoi-transform/issues/100)) ([32cb937](https://github.com/ecmwf/anemoi-transform/commit/32cb937bc64d89140523d8797e62650d2256db75))
+* **filters:** Add filter for thermodynamic conversions at specific height levels ([#140](https://github.com/ecmwf/anemoi-transform/issues/140)) ([c28fd07](https://github.com/ecmwf/anemoi-transform/commit/c28fd07e0acbcc7453d6b02dfb17af585fc46ab5))
+
+
+### Bug Fixes
+
+* **filter:** Fix small bug in rename filter ([#164](https://github.com/ecmwf/anemoi-transform/issues/164)) ([8fb7158](https://github.com/ecmwf/anemoi-transform/commit/8fb7158c6aa9bd15993ef705a2e5d859151187ab))
+* Rename filter metadata handling ([#165](https://github.com/ecmwf/anemoi-transform/issues/165)) ([eb16768](https://github.com/ecmwf/anemoi-transform/commit/eb167687fd99ab109dec5a7901041a2b7d7cdd1f))
+* Replace assert with warning ([#157](https://github.com/ecmwf/anemoi-transform/issues/157)) ([ca55a62](https://github.com/ecmwf/anemoi-transform/commit/ca55a62b5511471dc3d9df14c2ec6c0b56cf55d6))
+
+
+### Documentation
+
+* Filter documentation review ([#172](https://github.com/ecmwf/anemoi-transform/issues/172)) ([c606ed6](https://github.com/ecmwf/anemoi-transform/commit/c606ed69a6e6e2ab34402bbcb3d003083a701467))
+* Revisit documentation of filters ([#169](https://github.com/ecmwf/anemoi-transform/issues/169)) ([2657b13](https://github.com/ecmwf/anemoi-transform/commit/2657b13bea53fe7b1782221551a8c714a5f1bc78))
+
 ## [0.1.16](https://github.com/ecmwf/anemoi-transform/compare/0.1.15...0.1.16) (2025-08-05)
 
 

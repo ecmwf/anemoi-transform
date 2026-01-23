@@ -17,6 +17,17 @@ from anemoi.transform.filters import filter_registry
 
 @filter_registry.register("empty")
 class Empty(Filter):
+    """A filter consumes all input data and returns an empty output.
+
+    Notes
+    -----
+
+    This filter is for debugging purposes only.
+
+    """
+
+    def __init__(self):
+        super().__init__()
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         return new_empty_fieldlist()

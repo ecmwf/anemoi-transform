@@ -14,6 +14,7 @@ requires = [ "setuptools>=60", "setuptools-scm>=8" ]
 name = "anemoi-transform"
 
 description = "A package to hold various data transformation functions to support training of ML models on ECMWF data."
+readme = "README.md"
 keywords = [ "ai", "tools" ]
 
 license = { file = "LICENSE" }
@@ -31,34 +32,38 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.4.32",
+  "anemoi-utils>=0.4.36",
   "cfunits",
   "earthkit-data>=0.12.4",
+  "earthkit-geo>=0.3",
   "earthkit-meteo>=0.4.1",
   "earthkit-regrid>=0.4",
 ]
 
-optional-dependencies.all = [ "anemoi-transform" ]
+optional-dependencies.all = [ "anemoi-transform[plots]" ]
 optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]
 
 optional-dependencies.docs = [
   "nbsphinx",
+  "numpydoc",
   "pandoc",
   "requests",
+  "ruamel-yaml",
   "sphinx>=8.2",
   "sphinx-argparse<0.5",
   "sphinx-rtd-theme",
   "termcolor",
 ]
 
-optional-dependencies.tests = [ "pytest" ]
+optional-dependencies.plots = [ "matplotlib" ]
+
+optional-dependencies.tests = [ "pytest", "pytest-skip-slow" ]
 
 urls.Documentation = "https://anemoi-transform.readthedocs.io/"
 urls.Homepage = "https://github.com/ecmwf/anemoi-transform/"

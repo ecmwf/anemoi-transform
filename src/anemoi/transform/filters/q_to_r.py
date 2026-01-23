@@ -8,17 +8,30 @@
 # nor does it submit to any jurisdiction.
 
 from collections.abc import Iterator
+from typing import Literal
 
 import earthkit.data as ekd
-from earthkit.meteo import thermo
+import earthkit.meteo.thermo.array as thermo
 
-from . import filter_registry
+from anemoi.transform.filters import filter_registry
+
 from .matching import MatchingFieldsFilter
 from .matching import matching
 
 
 class HumidityConversion(MatchingFieldsFilter):
-    """A filter to convert specific humidity to relative humidity with standard thermodynamical formulas."""
+    """A filter to convert specific humidity to relative humidity using standard thermodynamical formulas.
+
+    This filter provides forward and backward transformations between specific humidity and relative humidity,
+    given temperature and pressure information. It is designed to be used in data processing pipelines where
+    conversion between these humidity representations is required.
+
+    Notes
+    -----
+    For more information, see the :func:`relative_humidity_from_specific_humidity <earthkit.meteo.thermo.array.relative_humidity_from_specific_humidity>`
+    function in the earthkit-meteo documentation.
+
+    """
 
     @matching(
         select="param",
@@ -28,11 +41,25 @@ class HumidityConversion(MatchingFieldsFilter):
     def __init__(
         self,
         *,
-        relative_humidity="r",
-        temperature="t",
-        humidity="q",
+        relative_humidity: str = "r",
+        temperature: str = "t",
+        humidity: str = "q",
+        return_inputs: Literal["all", "none"] | list[str] = "all",
     ):
+        """Initialize the HumidityConversion filter.
 
+        Parameters
+        ----------
+        relative_humidity : str, optional
+            Name of the humidity parameter, by default "q".
+        temperature : str, optional
+            Name of the temperature parameter, by default "t".
+        humidity : str, optional
+            Name of the humidity parameter, by default "q".
+        return_inputs : Literal["all", "none"] | list[str], optional
+            List of which filter inputs should be returned, by default "all"
+        """
+        self.return_inputs = return_inputs
         self.relative_humidity = relative_humidity
         self.temperature = temperature
         self.humidity = humidity
@@ -42,8 +69,6 @@ class HumidityConversion(MatchingFieldsFilter):
         pressure = 100 * float(humidity.metadata("levelist"))
         rh = thermo.relative_humidity_from_specific_humidity(temperature.to_numpy(), humidity.to_numpy(), pressure)
         yield self.new_field_from_numpy(rh, template=humidity, param=self.relative_humidity)
-        yield humidity
-        yield temperature
 
     def backward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """This will return specific humidity along with temperature from relative humidity and temperature"""
@@ -52,8 +77,6 @@ class HumidityConversion(MatchingFieldsFilter):
             temperature.to_numpy(), relative_humidity.to_numpy(), pressure
         )
         yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
-        yield relative_humidity
-        yield temperature
 
 
 filter_registry.register("q_to_r", HumidityConversion)

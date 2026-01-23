@@ -21,7 +21,12 @@ class FormatRename:
     def __init__(self, what, format):
         self.what = what
         self.format = format
-        self.bits = re.findall(r"{(\w+)}", format)
+        self.bits = re.findall(r"{([\w:]+)}", format)
+
+        # Escape ":" type delimiter used by eccodes as ":" is a reserved symbol in str.format.
+        self._delimiter = "|"
+        self.format = re.sub(r"{([^}]+)}", lambda m: "{" + m.group(1).replace(":", self._delimiter) + "}", self.format)
+        self.format_keys = [b.replace(":", self._delimiter) for b in self.bits]
 
     def rename(self, field):
         md = field.metadata(self.what, default=None)
@@ -29,7 +34,15 @@ class FormatRename:
             return field
 
         values = field.metadata(*self.bits)
-        kwargs = {k: v for k, v in zip(self.bits, values)}
+        values = (
+            [
+                values,
+            ]
+            if isinstance(values, str)
+            else values
+        )
+
+        kwargs = dict(zip(self.format_keys, values))
         kwargs = {self.what: self.format.format(**kwargs)}
         return new_field_with_metadata(template=field, **kwargs)
 
@@ -54,6 +67,57 @@ class DictRename:
 
 @filter_registry.register("rename")
 class Rename(Filter):
+    """A filter to rename fields based on their metadata.
+
+    When combining several sources, it is common to have different values
+    for a given attribute to represent the same concept. For example,
+    ``temperature_850hPa`` and ``t_850`` are two different ways to represent
+    the temperature at 850 hPa. The ``rename`` filter allows renaming a key
+    to another key.
+
+    Notes
+    -----
+
+    The ``rename`` filter was primarily designed to rename the ``param``
+    attribute, but any key can be renamed. The ``rename`` filter can take
+    several renaming keys.
+
+    Examples
+    --------
+
+    You can rename using a dictionary:
+
+    .. code-block:: yaml
+
+        input:
+          pipe:
+            - source:
+                ...
+            - rename:
+                param:
+                    z: geopotential
+                    t: temperature
+                levelist:
+                    1000: 1000hPa
+                    850: 850hPa
+
+    or using a format string:
+
+    .. code-block:: yaml
+
+        input:
+            pipe:
+                - source:
+                    ...
+                - rename:
+                    param: "{param}_{levelist}_{levtype}_{level:d}"
+
+    In the latter case, the keys between curly braces are replaced by their
+    corresponding metadata values in the field. The type of metadata values
+    requested via eccodes can be chosen by appending ":i", ":d", ":s" for
+    int, double and str, respectively. (See https://confluence.ecmwf.int/display/ECC/grib_get)
+
+    """
 
     def __init__(self, **kwargs):
 

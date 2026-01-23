@@ -21,8 +21,9 @@ models from existing recipes but with their own data.
 
 This package provides a series of data transformation and filering
 functions for use by components of the Anemoi framework. Particularly
-for those packages which handle incoming raw data, i.e. ``datasets`` and
-``inference``.
+for those packages which handle incoming raw data, i.e.
+:ref:`anemoi-datasets <anemoi-datasets:index-page>` and
+:ref:`anemoi-inference <anemoi-inference:index-page>`.
 
 -  :doc:`installing`
 
@@ -61,16 +62,22 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
 
    overview
    installing
-   cli/overview
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Filters
+
+   filters/introduction
+   filters/list-of-filters
 
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: Filters
+   :caption: Extending
 
-   filters/list-of-filters
-   filters/single-field-filters
-   filters/matching-filters
+   extending/single-field-filters
+   extending/matching-filters
 
 .. toctree::
    :maxdepth: 5
@@ -78,15 +85,5 @@ for those packages which handle incoming raw data, i.e. ``datasets`` and
    :caption: CLI
 
    cli/get-grid
-   cli/make-regrid-matrix
+   cli/make-regrid-file
    cli/filters
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: Modules
-
-   _api/transform.filters
-   _api/transform.grids
-   _api/transform.variables
-   _api/transform.grouping

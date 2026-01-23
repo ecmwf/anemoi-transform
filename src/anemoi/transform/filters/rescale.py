@@ -80,7 +80,27 @@ class Rescale(MatchingFieldsFilter):
 
 
 class Convert(Rescale):
-    """A filter to convert a parameter in a given unit to another unit, and back."""
+    """A filter to convert a parameter in a given unit to another unit, and back.
+
+    This filter uses :mod:`cfunits` (see the `cfunits documentation <https://ncas-cms.github.io/cfunits/>`_)
+    to compute the scale and offset.
+
+    Examples
+    --------
+
+    .. code-block:: yaml
+
+      input:
+        pipe:
+          - necdf:
+              path: /path/to/file.nc
+              variables: [t2m, orog]
+          - rescale:
+              unit_in: degC
+              unit_out: K
+              param: t2m # The parameter to be converted
+
+    """
 
     def __init__(self, *, unit_in: str, unit_out: str, param: str) -> None:
         """Parameters

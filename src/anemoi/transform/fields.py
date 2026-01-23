@@ -508,6 +508,16 @@ class _NewMetadataField(WrappedField, ABC):
                 def keys(self):
                     return this._field.metadata().keys()
 
+                def __getitem__(self, key):
+                    value = this.mapping(key, this._field)
+                    if value is not MISSING_METADATA:
+                        return value
+
+                    return this._field.metadata()[key]
+
+                def override(self, *args, **kwargs):
+                    return this._field.metadata().override(*args, **kwargs)
+
             return MD()
 
         if kwargs.get("namespace"):
@@ -579,9 +589,8 @@ class NewValidDateTimeField(NewMetadataField):
     """
 
     def __init__(self, field: Any, valid_datetime: Any) -> None:
-        date = int(valid_datetime.date().strftime("%Y%m%d"))
-        assert valid_datetime.time().minute == 0, valid_datetime
-        time = valid_datetime.time().hour
+        date = int(valid_datetime.strftime("%Y%m%d"))
+        time = int(valid_datetime.strftime("%H%M"))
 
         self.valid_datetime = valid_datetime
 

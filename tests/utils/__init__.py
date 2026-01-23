@@ -6,7 +6,6 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-
 from collections import defaultdict
 
 import numpy as np
@@ -23,8 +22,12 @@ def collect_fields_by_param(pipeline):
     return fields
 
 
-def assert_fields_equal(field_a, field_b):
+def assert_fields_equal(field_a, field_b, exclude_keys=None):
     METADATA_KEYS = ["param", "valid_datetime", "latitudes", "longitudes", "levelist"]
+
+    if exclude_keys is None:
+        exclude_keys = []
+    exclude_keys = set(exclude_keys)
 
     # workaround for unreliable __contains__ in potentially wrapped objects
     def metadata_contains(field, key):
@@ -34,7 +37,7 @@ def assert_fields_equal(field_a, field_b):
         except KeyError:
             return False
 
-    for key in METADATA_KEYS:
+    for key in set(METADATA_KEYS) - exclude_keys:
         try:
             assert field_a.metadata(key) == field_b.metadata(key)
         except ValueError:
@@ -86,3 +89,15 @@ class SelectAndAddFieldSource(Source):
             if self.params and f.metadata("param") in self.params and f.metadata("param") not in params:
                 fields.append(f)
         return new_fieldlist_from_list(fields)
+
+
+def compare_npz_files(file1, file2):
+    data1 = np.load(file1)
+    data2 = np.load(file2)
+
+    assert set(data1.keys()) == set(
+        data2.keys()
+    ), f"Keys in NPZ files do not match {set(data1.keys())} and {set(data2.keys())}"
+
+    for key in data1.keys():
+        assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"

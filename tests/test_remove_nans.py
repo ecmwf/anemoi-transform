@@ -21,18 +21,18 @@ INPUT_METADATA = {
 }
 
 INPUT_VALUES = [
-    np.array([[1.0, np.nan, 2.0], [np.nan, 3.0, np.nan], [4.0, 4.5, np.nan]]),
+    np.array([[1.0, np.nan, 20.0], [np.nan, 3.0, np.nan], [4.0, 4.5, np.nan]]),
     # fewer NaNs than the first field
-    np.array([[1.0, 1.5, 2.0], [np.nan, 3.0, np.nan], [4.0, 4.5, 5.0]]),
+    np.array([[1.0, 1.5, 21.0], [np.nan, 3.0, np.nan], [4.0, 4.5, 5.0]]),
     # more NaNs than the first field
-    np.array([[np.nan, np.nan, 2.0], [np.nan, 3.0, np.nan], [4.0, 4.5, np.nan]]),
+    np.array([[np.nan, np.nan, 22.0], [np.nan, 3.0, np.nan], [4.0, 4.5, np.nan]]),
 ]
 
 EXPECTED_VALUES = [
     # mask generated from NaNs in the first field is applied
-    np.array([1.0, 2.0, 3.0, 4.0, 4.5]),
-    np.array([1.0, 2.0, 3.0, 4.0, 4.5]),
-    np.array([np.nan, 2.0, 3.0, 4.0, 4.5]),
+    np.array([1.0, 20.0, 3.0, 4.0, 4.5]),
+    np.array([1.0, 21.0, 3.0, 4.0, 4.5]),
+    np.array([np.nan, 22.0, 3.0, 4.0, 4.5]),
 ]
 
 EXPECTED_METADATA = {
@@ -50,6 +50,28 @@ def source(test_source):
         {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA} for i, values in enumerate(INPUT_VALUES)
     ]
     return test_source(FIELD_SPECS)
+
+
+@pytest.fixture
+def source_multiple_params(test_source):
+    FIELD_SPECS = [
+        {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA} for i, values in enumerate(INPUT_VALUES)
+    ] + [
+        # first step of "a" has more NaNs than "t"
+        {"param": "a", "step": i, "values": values.copy(), **INPUT_METADATA}
+        for i, values in enumerate(INPUT_VALUES[::-1])
+    ]
+    source = test_source(FIELD_SPECS)
+
+    input_fields = collect_fields_by_param(source)
+    first_param = list(input_fields.keys())[0]
+
+    output_fields = {}
+    for param in ["a", "t", None]:
+        remove_nans = filter_registry.create("remove_nans", param=param)
+        pipeline = source | remove_nans
+        output_fields[f"param={param}"] = collect_fields_by_param(pipeline)
+    return output_fields, first_param
 
 
 def test_remove_nans(source):
@@ -83,6 +105,24 @@ def test_remove_nans_invalid_method():
 def test_remove_nans_with_check():
     with pytest.raises(AssertionError, match="Check not implemented"):
         filter_registry.create("remove_nans", check=True)
+
+
+class Test_remove_nans_param:
+    def test_dataset_consistency(self, source_multiple_params):
+        output_fields, _ = source_multiple_params
+        for i in range(len(output_fields["param=None"]["a"])):
+            assert output_fields["param=None"]["a"][i].shape == output_fields["param=None"]["t"][i].shape
+
+    def test_params_a_b(self, source_multiple_params):
+        output_fields, _ = source_multiple_params
+        # Test that param="a" and param="t" give different maskings
+        assert output_fields["param=a"]["a"][0].shape != output_fields["param=t"]["a"][0].shape
+        assert output_fields["param=a"]["t"][0].shape != output_fields["param=t"]["t"][0].shape
+
+    def test_default(self, source_multiple_params):
+        output_fields, first_param = source_multiple_params
+        # Test that the first param is used as default
+        assert output_fields["param=" + first_param]["t"][0].shape == output_fields["param=None"]["t"][0].shape
 
 
 if __name__ == "__main__":

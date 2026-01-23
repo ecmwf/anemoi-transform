@@ -7,7 +7,6 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 import logging
-
 from collections.abc import Iterator
 
 import earthkit.data as ekd
@@ -16,6 +15,7 @@ import numpy as np
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
+
 LOG = logging.getLogger(__name__)
 
 NODATA = -9.999e06
@@ -92,7 +92,6 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[n
     if not np.isnan(tp).sum() == np.isnan(quality).sum():
         msg = f"Mismatch between NaNs on tp {np.isnan(tp).sum()} and qi {np.isnan(quality).sum()}"
         LOG.warning(msg)
-
 
     return tp, quality
 

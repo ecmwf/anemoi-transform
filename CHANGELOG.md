@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.22](https://github.com/ecmwf/anemoi-transform/compare/0.1.21...0.1.22) (2026-01-28)
+
+
+### Bug Fixes
+
+* Pin min version for ruamel-yaml ([#209](https://github.com/ecmwf/anemoi-transform/issues/209)) ([78bd07f](https://github.com/ecmwf/anemoi-transform/commit/78bd07f88e4112b0e10aff8baff87d3e843671ec))
+
 ## [0.1.21](https://github.com/ecmwf/anemoi-transform/compare/0.1.20...0.1.21) (2026-01-23)
 
 

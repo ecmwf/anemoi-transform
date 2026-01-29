@@ -55,7 +55,7 @@ optional-dependencies.docs = [
   "numpydoc",
   "pandoc",
   "requests",
-  "ruamel-yaml",
+  "ruamel-yaml>=0.16",
   "sphinx>=8.2",
   "sphinx-argparse<0.5",
   "sphinx-rtd-theme",

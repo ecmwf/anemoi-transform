@@ -407,7 +407,7 @@ def cutout_mask(
 
         too_far = False
         if max_distance_km is not None:
-            too_far = np.min(distance) > (max_distance_km / 6371.0)            
+            too_far = np.min(distance) > (max_distance_km / 6371.0)
 
         inside_lam.append(inside or close or too_far)
 

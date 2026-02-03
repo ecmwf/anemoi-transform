@@ -142,4 +142,3 @@ def test_cutout_mask_large_grid():
     assert np.any(mask)
     # Some points should not be masked
     assert not np.all(mask)
-

@@ -72,12 +72,10 @@ class ScriptDocumenter(Documenter):
 
         dataset_example = self.process_yaml_example(CommentedMap({self.name: params}))
 
-        prefix = textwrap.dedent(
-            """
+        prefix = textwrap.dedent("""
             To use this filter in a dataset recipe, include it as shown below, adjusting parameters as needed.
             See the `anemoi-datasets documentation <https://anemoi.readthedocs.io/projects/datasets/>`_ for more details.
-            """
-        ).strip()
+            """).strip()
 
         return YAMLExample(dataset_example, prefix=prefix)
 

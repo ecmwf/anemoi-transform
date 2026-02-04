@@ -14,8 +14,8 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from anemoi.transform.constants import R_earth_km
 from anemoi.transform.constants import L_1_degree_earth_arc_length_km
+from anemoi.transform.constants import R_earth_km
 
 LOG = logging.getLogger(__name__)
 

@@ -15,6 +15,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from anemoi.transform.constants import R_earth_km
+from anemoi.transform.constants import L_1_degree_earth_arc_length_km
 
 LOG = logging.getLogger(__name__)
 
@@ -335,6 +336,11 @@ def cutout_mask(
     NDArray[Any]
         Mask array.
     """
+    assert cropping_distance >= 0.0, "cropping_distance must be non-negative"
+    assert min_distance_km is None or min_distance_km >= 0.0, "min_distance_km must be non-negative"
+    assert max_distance_km is None or max_distance_km >= 0.0, "max_distance_km must be non-negative"
+    assert neighbours > 0, "neighbours must be positive"
+
     from scipy.spatial import cKDTree
 
     # TODO: transform min_distance from lat/lon to xyz
@@ -347,10 +353,10 @@ def cutout_mask(
 
     # Reduce the global grid to the area of interest
     effective_cropping_distance = cropping_distance
-    if isinstance(max_distance_km, (int, float)):
+    if max_distance_km is not None:
         # If max_distance_km is specified, ensure that cropping_mask() will contain
         # only point too far
-        max_distance_degrees = max_distance_km / 115.0  # (1 degree ≈ 111 km < 115 km)
+        max_distance_degrees = max_distance_km / (1.1 * L_1_degree_earth_arc_length_km)
         effective_cropping_distance = max(cropping_distance, max_distance_degrees)
 
     mask = cropping_mask(
@@ -391,7 +397,7 @@ def cutout_mask(
 
     for i, (global_point, distance, index) in enumerate(zip(global_points, distances, indices)):
 
-        # We check more than one triangle in case te global point
+        # We check more than one triangle in case the global point
         # is near the edge of triangle, (the lam point and global points are colinear)
 
         inside = False
@@ -407,7 +413,7 @@ def cutout_mask(
 
         too_far = False
         if max_distance_km is not None:
-            too_far = np.min(distance) > (max_distance_km / 6371.0)
+            too_far = np.min(distance) > (max_distance_km / R_earth_km)
 
         inside_lam.append(inside or close or too_far)
 

@@ -9,8 +9,10 @@
 from collections import defaultdict
 
 import numpy as np
+import zarr
 
 from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.filters.tabular import create_filter
 from anemoi.transform.source import Source
 
 
@@ -101,3 +103,18 @@ def compare_npz_files(file1, file2):
 
     for key in data1.keys():
         assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"
+
+
+def mock_zarr_dataset(arrays_spec):
+    store = zarr.storage.MemoryStore()
+    root = zarr.group(store=store)
+
+    for key, value in arrays_spec.items():
+        value = np.asarray(value)
+        root.create_dataset(key, shape=value.shape, dtype=value.dtype)
+        root[key][:] = value[:]
+    return root
+
+
+def create_tabular_filter(name, **kwargs):
+    return create_filter(name, **kwargs)

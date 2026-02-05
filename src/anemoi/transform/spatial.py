@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from anemoi.transform.constants import L_1_degree_earth_arc_length_km
 from anemoi.transform.constants import R_earth_km
 
 LOG = logging.getLogger(__name__)
@@ -298,9 +299,15 @@ def cutout_mask(
     cropping_distance: float = 2.0,
     neighbours: int = 5,
     min_distance_km: int | float = None,
+    max_distance_km: int | float = None,
     plot: str = None,
 ) -> NDArray[Any]:
-    """Return a mask for the points in [global_lats, global_lons] that are inside of [lats, lons].
+    """Return a mask for the points in [global_lats, global_lons] to mask out.
+
+    This may be because these points are :
+    -   inside of [lats, lons]
+    -   too close to it (if min_distance_km is set)
+    -   too far from it (if max_distance_km is set)
 
     Parameters
     ----------
@@ -318,6 +325,9 @@ def cutout_mask(
         Number of neighbours. Defaults to 5.
     min_distance_km : int | float, optional
         Minimum distance in kilometers. Defaults to None.
+    max_distance_km : Optional[Union[int, float]], optional
+        Maximum distance in kilometers. Points further than this distance from the LAM
+        region will be excluded from the mask. Defaults to None.
     plot : str, optional
         Path for saving the plot. Defaults to None.
 
@@ -326,6 +336,11 @@ def cutout_mask(
     NDArray[Any]
         Mask array.
     """
+    assert cropping_distance >= 0.0, "cropping_distance must be non-negative"
+    assert min_distance_km is None or min_distance_km >= 0.0, "min_distance_km must be non-negative"
+    assert max_distance_km is None or max_distance_km >= 0.0, "max_distance_km must be non-negative"
+    assert neighbours > 0, "neighbours must be positive"
+
     from scipy.spatial import cKDTree
 
     # TODO: transform min_distance from lat/lon to xyz
@@ -337,14 +352,20 @@ def cutout_mask(
     west = np.amin(lons)
 
     # Reduce the global grid to the area of interest
+    effective_cropping_distance = cropping_distance
+    if max_distance_km is not None:
+        # If max_distance_km is specified, ensure that cropping_mask() will contain
+        # only point too far
+        max_distance_degrees = max_distance_km / (1.1 * L_1_degree_earth_arc_length_km)
+        effective_cropping_distance = max(cropping_distance, max_distance_degrees)
 
     mask = cropping_mask(
         global_lats,
         global_lons,
-        np.min([90.0, north + cropping_distance]),
-        west - cropping_distance,
-        np.max([-90.0, south - cropping_distance]),
-        east + cropping_distance,
+        np.min([90.0, north + effective_cropping_distance]),
+        west - effective_cropping_distance,
+        np.max([-90.0, south - effective_cropping_distance]),
+        east + effective_cropping_distance,
     )
 
     # return mask
@@ -376,7 +397,7 @@ def cutout_mask(
 
     for i, (global_point, distance, index) in enumerate(zip(global_points, distances, indices)):
 
-        # We check more than one triangle in case te global point
+        # We check more than one triangle in case the global point
         # is near the edge of triangle, (the lam point and global points are colinear)
 
         inside = False
@@ -390,18 +411,19 @@ def cutout_mask(
 
         close = np.min(distance) <= min_distance
 
-        inside_lam.append(inside or close)
+        too_far = False
+        if max_distance_km is not None:
+            too_far = np.min(distance) > (max_distance_km / R_earth_km)
 
-    j = 0
-    inside_lam_array = np.array(inside_lam)
-    for i, m in enumerate(mask):
-        if not m:
-            continue
+        inside_lam.append(inside or close or too_far)
 
-        mask[i] = inside_lam_array[j]
-        j += 1
+    # Apply max_distance_km filter if specified
+    too_far = False
+    if isinstance(max_distance_km, (int, float)):
+        too_far = ~mask.copy()  # all points outside the cropping area are too far
 
-    assert j == len(inside_lam_array)
+    mask[mask] = inside_lam
+    mask[too_far] = True
 
     # Invert the mask, so we have only the points outside the cutout
     mask = ~mask

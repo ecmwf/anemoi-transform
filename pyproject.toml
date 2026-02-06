@@ -45,6 +45,7 @@ dependencies = [
   "earthkit-geo>=0.3",
   "earthkit-meteo>=0.4.1",
   "earthkit-regrid>=0.4",
+  "healpy",
 ]
 
 optional-dependencies.all = [ "anemoi-transform[plots]" ]

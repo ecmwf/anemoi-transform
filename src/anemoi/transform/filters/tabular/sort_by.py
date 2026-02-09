@@ -12,6 +12,7 @@ import logging
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
@@ -40,6 +41,7 @@ class SortBy(TabularFilter, registry_name="sort_by"):
     def __init__(self, *, columns: list[str]):
         self.columns = columns
 
+    @expect_tabular
     def forward(self, df: pd.DataFrame) -> pd.DataFrame:
         raise_if_df_missing_cols(df, self.columns)
         df_sorted = df.copy()

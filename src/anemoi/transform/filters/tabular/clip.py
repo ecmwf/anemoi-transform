@@ -12,6 +12,7 @@ import logging
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
@@ -49,6 +50,7 @@ class Clip(TabularFilter, registry_name="clip"):
                 raise ValueError(f"Clip range values for column {column} must be numeric or None: {clip_range}")
         self.config = config
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         raise_if_df_missing_cols(obs_df, self.config.keys())
 

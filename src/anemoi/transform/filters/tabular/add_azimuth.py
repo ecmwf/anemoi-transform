@@ -10,6 +10,7 @@
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.sat_view_angles import calc_azimuth
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
@@ -49,6 +50,7 @@ class AddAzimuth(TabularFilter, registry_name="add_azimuth"):
         self.spacecraft_latitude = spacecraft_latitude
         self.spacecraft_longitude = spacecraft_longitude
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         raise_if_df_missing_cols(obs_df, required_cols=[self.spacecraft_latitude, self.spacecraft_longitude])
 

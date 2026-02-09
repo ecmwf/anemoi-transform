@@ -10,6 +10,7 @@
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
@@ -37,6 +38,7 @@ class Rename(TabularFilter, registry_name="rename"):
     def __init__(self, *, columns: dict[str, str]):
         self.columns = columns
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         raise_if_df_missing_cols(obs_df, list(self.columns.keys()))
         obs_df = obs_df.rename(columns=self.columns)

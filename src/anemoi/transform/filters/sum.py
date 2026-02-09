@@ -16,6 +16,7 @@ import earthkit.data as ekd
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 
 
@@ -66,6 +67,7 @@ class Sum(Filter):
         self.params = params
         self.output = output
 
+    @expect_gridded
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         """Computes the sum over a set of variables.
 
@@ -110,5 +112,6 @@ class Sum(Filter):
 
         return new_fieldlist_from_list(result)
 
+    @expect_gridded
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         raise NotImplementedError("Sum filter is not reversible")

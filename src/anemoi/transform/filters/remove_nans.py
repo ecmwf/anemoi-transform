@@ -17,6 +17,7 @@ from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger(__name__)
@@ -72,6 +73,7 @@ class RemoveNaNs(Filter):
         self._latitudes = None
         self._longitudes = None
 
+    @expect_gridded
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         """Mask out NaNs in the fields.
 

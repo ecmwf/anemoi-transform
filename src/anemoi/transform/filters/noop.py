@@ -11,6 +11,7 @@
 import earthkit.data as ekd
 
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 
 
@@ -21,8 +22,10 @@ class NoOp(Filter):
     def __init__(self):
         super().__init__()
 
+    @expect_gridded
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         return data
 
+    @expect_gridded
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         return data

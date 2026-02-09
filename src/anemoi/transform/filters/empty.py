@@ -12,6 +12,7 @@ import earthkit.data as ekd
 
 from anemoi.transform.fields import new_empty_fieldlist
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 
 
@@ -29,5 +30,6 @@ class Empty(Filter):
     def __init__(self):
         super().__init__()
 
+    @expect_gridded
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         return new_empty_fieldlist()

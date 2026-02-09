@@ -12,6 +12,7 @@ import logging
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 
 
@@ -47,6 +48,7 @@ class MaskOutsideRange(TabularFilter, registry_name="mask_outside_range"):
 
         self.config = config
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         for column, range in self.config.items():
             min_val, max_val = range

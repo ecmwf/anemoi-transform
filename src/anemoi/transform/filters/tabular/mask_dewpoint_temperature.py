@@ -12,6 +12,7 @@ import logging
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
@@ -55,6 +56,7 @@ class MaskDewpointTemperature(TabularFilter, registry_name="mask_dewpoint_temper
         self.specific_humidity = specific_humidity
         self.mask_specific_humidity = mask_specific_humidity
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         required_cols = [self.temperature, self.dewpoint_temperature]
         if self.mask_specific_humidity:

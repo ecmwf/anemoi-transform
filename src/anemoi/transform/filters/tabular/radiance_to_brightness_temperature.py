@@ -13,6 +13,7 @@ import logging
 import numpy as np
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 
 
@@ -76,6 +77,7 @@ class RadianceToBrightnessTemperature(TabularFilter, registry_name="radiance_to_
         nu[m3] = 2155.0 + 2.500 * (ch[m3] - 1147)
         return nu
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         # Pick columns and parse channel numbers (vectorised)
         cols_mask = obs_df.columns.str.startswith(self.input_prefix)

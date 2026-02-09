@@ -21,6 +21,7 @@ from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger(__name__)
@@ -171,6 +172,7 @@ class RegridFilter(Filter):
             in_grid=in_grid, out_grid=out_grid, method=method, matrix=matrix, mask=mask, check=check
         )
 
+    @expect_gridded
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward regridding transformation.
 

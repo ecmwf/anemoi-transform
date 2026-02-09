@@ -11,6 +11,7 @@
 import pandas as pd
 from scipy.spatial import cKDTree
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 
 
@@ -39,6 +40,7 @@ class AssignToGrid(TabularFilter, registry_name="assign_to_grid"):
             raise ValueError("No grid specified.")
         self.grid = grid
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         from anemoi.transform.filters.tabular.support.superob import define_grid
         from anemoi.transform.filters.tabular.support.superob import define_healpix_grid

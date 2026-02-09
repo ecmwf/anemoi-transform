@@ -16,6 +16,7 @@ import earthkit.data as ekd
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger(__name__)
@@ -134,6 +135,7 @@ class RepeatMembers(Filter):
         self.members = members
         assert isinstance(members, (tuple, list)), f"members must be a list or tuple, got {type(members)}"
 
+    @expect_gridded
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward transformation to replicate fields.
 

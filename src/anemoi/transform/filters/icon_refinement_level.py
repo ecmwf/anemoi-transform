@@ -17,6 +17,7 @@ from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.grids.icon import icon_grid
 
@@ -46,6 +47,7 @@ class IconRefinement(Filter):
         self.latitudes, self.longitudes = icon_grid(self.grid, self.refinement_level_c)
         self.nearest_grid_points = None
 
+    @expect_gridded
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         """Interpolate the input fields to an ICON grid.
 

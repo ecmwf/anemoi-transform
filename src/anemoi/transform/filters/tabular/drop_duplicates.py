@@ -10,6 +10,7 @@
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
@@ -43,6 +44,7 @@ class DropDuplicates(TabularFilter, registry_name="drop_duplicates"):
         self.columns = columns
         self.column_prefix = column_prefix
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         if self.columns:
             subset = list(self.columns)

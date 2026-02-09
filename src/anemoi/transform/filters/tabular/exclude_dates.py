@@ -13,6 +13,7 @@ from collections import defaultdict
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
@@ -73,6 +74,7 @@ class ExcludeDates(TabularFilter, registry_name="exclude_dates"):
 
         self.excluded_dates = excluded_dates
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         required_cols = list(self.excluded_dates.keys()) + ["datetime"]
         raise_if_df_missing_cols(obs_df, required_cols)

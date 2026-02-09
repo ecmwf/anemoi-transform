@@ -17,6 +17,7 @@ from earthkit.data.utils.dates import to_datetime
 from anemoi.transform.fields import new_field_with_valid_datetime
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ class ClearStepFilter(Filter):
     def __init__(self):
         super().__init__()
 
+    @expect_gridded
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Adjusts the valid_datetime of each field by subtracting the step in hours.
 

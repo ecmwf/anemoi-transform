@@ -12,6 +12,7 @@ from typing import Literal
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.sat_view_angles import calc_azimuth
 from anemoi.transform.filters.tabular.support.sat_view_angles import calc_zenith
@@ -64,6 +65,7 @@ class AddMSGAngles(TabularFilter, registry_name="add_msg_angles"):
         self.zenith = zenith
         self.satellite_id = satellite_id
 
+    @expect_tabular
     def forward(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.satellite_id not in df.columns:
             raise ValueError(f"DataFrame must contain a column '{self.satellite_id}' for MSG angles calculation.")

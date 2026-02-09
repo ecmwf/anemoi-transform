@@ -10,6 +10,7 @@ import numpy as np
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 
 
@@ -60,6 +61,7 @@ class AccumToInterval(Filter):
         levelType = f.metadata("levelType", default=None)
         return (param, level, levelType)
 
+    @expect_gridded
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         # Group by identifier (name + level) so it works for sfc and pl/ml variables
         groups: Dict[tuple, List[ekd.Field]] = {}

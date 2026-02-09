@@ -14,6 +14,7 @@ import earthkit.data as ekd
 from anemoi.transform.fields import new_field_with_metadata
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.filters import filter_registry
 
 
@@ -130,6 +131,7 @@ class Rename(Filter):
             else:
                 raise ValueError(f"Invalid value for rename: {key}: {value}")
 
+    @expect_gridded
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
 
         result = []

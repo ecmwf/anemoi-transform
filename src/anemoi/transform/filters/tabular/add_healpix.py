@@ -11,6 +11,7 @@
 import healpy as hp
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 
 
@@ -38,6 +39,7 @@ class AddHealpix(TabularFilter, registry_name="add_healpix"):
             raise ValueError("nside must be a positive integer.")
         self.nside = nside
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         obs_df[f"healpix_idx_{self.nside}"] = hp.ang2pix(
             self.nside,

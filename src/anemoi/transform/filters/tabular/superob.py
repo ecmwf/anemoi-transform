@@ -10,6 +10,7 @@
 
 import pandas as pd
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.superob import assign_nearest_grid
 from anemoi.transform.filters.tabular.support.superob import define_grid
@@ -54,6 +55,7 @@ class SuperOb(TabularFilter, registry_name="superob"):
         self.columns_to_take_nearest = columns_to_take_nearest if columns_to_take_nearest else []
         self.columns_to_groupby = columns_to_groupby if columns_to_groupby else []
 
+    @expect_tabular
     def forward(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.grid == "native" or len(df) == 0:
             return df

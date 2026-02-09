@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import zarr
 
+from anemoi.transform.filter import expect_tabular
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.utils import get_heights
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
@@ -63,6 +64,7 @@ class FillHeights(TabularFilter, registry_name="fill_orography"):
         self.orography_latitude = orography_latitude
         self.orography_longitude = orography_longitude
 
+    @expect_tabular
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         raise_if_df_missing_cols(obs_df, [self.station_altitude])
         stalt_arr = obs_df[self.station_altitude].values

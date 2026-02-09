@@ -24,6 +24,7 @@ import numpy as np
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
+from anemoi.transform.filter import expect_gridded
 from anemoi.transform.grouping import GroupByParam
 from anemoi.transform.grouping import GroupByParamVertical
 
@@ -262,6 +263,7 @@ class MatchingFieldsFilter(Filter):
         if not set(args).issubset(data):
             LOG.warning(msg)
 
+    @expect_gridded
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Transform the data using the forward transformation function.
 
@@ -294,6 +296,7 @@ class MatchingFieldsFilter(Filter):
             *args,
         )
 
+    @expect_gridded
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Transform the data using the backward transformation function.
 

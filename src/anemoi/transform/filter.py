@@ -9,6 +9,7 @@
 
 
 import logging
+import sys
 from abc import abstractmethod
 from collections.abc import Callable
 from typing import Any
@@ -22,6 +23,62 @@ from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.transform import Transform
 
 LOG = logging.getLogger(__name__)
+
+
+class OverloadDispatcher:
+    def __init__(self, name):
+        self.name = name
+        self.registry = {}
+
+    def register(self, arg_type, func):
+        self.registry[arg_type] = func
+
+    def __call__(self, instance, *args, **kwargs):
+        # We assume the first argument (after self) is the one to check
+        if not args:
+            raise TypeError(f"{self.name}() requires at least one argument")
+
+        arg = args[0]
+        arg_type = type(arg)
+
+        for registered_type, func in self.registry.items():
+            if issubclass(arg_type, registered_type):
+                return func(instance, *args, **kwargs)
+
+        raise TypeError(f"No match found for type {arg_type.__name__} in {self.name}()")
+
+    def __get__(self, instance, owner):
+        # This makes the dispatcher work as a method (binding 'self')
+        if instance is None:
+            return self
+        return lambda *args, **kwargs: self.__call__(instance, *args, **kwargs)
+
+
+def _create_overload(target_type, func):
+    func_name = func.__name__
+    # Get the namespace where the function is being defined (the class body)
+    frame = sys._getframe(2)
+    locals_dict = frame.f_locals
+
+    # Get the existing dispatcher or create a new one
+    dispatcher = locals_dict.get(func_name)
+    if not isinstance(dispatcher, OverloadDispatcher):
+        dispatcher = OverloadDispatcher(func_name)
+
+    dispatcher.register(target_type, func)
+    return dispatcher
+
+
+def expect_tabular(func):
+    import pandas as pd
+
+    return _create_overload(pd.DataFrame, func)
+
+
+def expect_gridded(func):
+    import earthkit.data as ekd
+
+    return _create_overload(ekd.FieldList, func)
 
 
 class Filter(Transform):

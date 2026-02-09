@@ -173,12 +173,14 @@ class SingleFieldFilter(Filter):
     def _map_transform(transform_function: Callable, fields: ekd.FieldList) -> ekd.FieldList:
         return new_fieldlist_from_list([transform_function(field) for field in fields])
 
+    @expect_gridded
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         def transform(field: ekd.Field) -> ekd.Field:
             return self.forward_transform(field) if self._forward_selection.match(field) else field
 
         return self._map_transform(transform, data)
 
+    @expect_gridded
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         def transform(field: ekd.Field) -> ekd.Field:
             return self.backward_transform(field) if self._backward_selection.match(field) else field

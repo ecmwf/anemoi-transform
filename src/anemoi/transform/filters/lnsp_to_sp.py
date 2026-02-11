@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from typing import Any
 
 import earthkit.data as ekd
 import numpy as np
@@ -18,22 +19,22 @@ from anemoi.transform.filters import filter_registry
 class LnspToSp(SingleFieldFilter):
     """A filter to convert natural log of surface pressure (lnsp) to surface pressure (sp), and back."""
 
-    optional_inputs = {"lnsp": "lnsp", "sp": "sp"}
+    optional_inputs = {"log_of_surface_pressure": "lnsp", "surface_pressure": "sp"}
 
     def forward_select(self):
-        # select only fields where the param is self.lnsp
-        return {"param": self.lnsp}
+        # select only fields where the param is self.log_of_surface_pressure
+        return {"param": self.log_of_surface_pressure}
 
     def backward_select(self):
-        # select only fields where the param is self.sp
-        return {"param": self.sp}
+        # select only fields where the param is self.surface_pressure
+        return {"param": self.surface_pressure}
 
-    def forward_transform(self, lnsp: ekd.Field) -> ekd.Field:
+    def forward_transform(self, log_of_surface_pressure: ekd.Field) -> ekd.Field:
         """Convert ln(sp) to sp.
 
         Parameters
         ----------
-        lnsp : ekd.Field
+        log_of_surface_pressure : ekd.Field
             The natural log of surface pressure
 
         Returns
@@ -41,15 +42,17 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The surface pressure
         """
-        new_metadata = {"param": self.sp, "levelist": None, "level": None}
-        return self.new_field_from_numpy(np.exp(lnsp.to_numpy()), template=lnsp, **new_metadata)
+        new_metadata = {"param": self.surface_pressure, "levelist": None, "level": None}
+        return self.new_field_from_numpy(
+            np.exp(log_of_surface_pressure.to_numpy()), template=log_of_surface_pressure, **new_metadata
+        )
 
-    def backward_transform(self, sp: ekd.Field) -> ekd.Field:
+    def backward_transform(self, surface_pressure: ekd.Field) -> ekd.Field:
         """Convert surface surface pressure to ln(surface pressure)
 
         Parameters
         ----------
-        sp : ekd.Field
+        surface_pressure : ekd.Field
             The surface pressure.
 
         Returns
@@ -57,8 +60,43 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The natural log of surface pressure.
         """
-        orig_metadata = {"param": self.lnsp}
-        return self.new_field_from_numpy(np.log(sp.to_numpy()), template=sp, **orig_metadata)
+        orig_metadata = {"param": self.log_of_surface_pressure}
+        return self.new_field_from_numpy(
+            np.log(surface_pressure.to_numpy()), template=surface_pressure, **orig_metadata
+        )
+
+    def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
+        """Modify the data request to include the other parameter.
+
+        Parameters
+        ----------
+        data_request : Dict[str, Any]
+            The original data request.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The modified data request.
+        """
+        param = data_request.get("param")
+        if param is None:
+            return data_request
+
+        param = param if isinstance(param, list) else [param]
+        if self.surface_pressure in param and self.log_of_surface_pressure in param:
+            raise ValueError(
+                "Data request cannot contain both surface pressure and log of surface pressure parameters."
+            )
+
+        if self.surface_pressure in param:
+            data_request["param"].remove(self.surface_pressure)
+            data_request["param"].append(self.log_of_surface_pressure)
+
+        elif self.log_of_surface_pressure in param:
+            data_request["param"].remove(self.log_of_surface_pressure)
+            data_request["param"].append(self.surface_pressure)
+
+        return data_request
 
 
 filter_registry.register("lnsp_to_sp", LnspToSp)

@@ -9,6 +9,14 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.16.post1](https://github.com/ecmwf/anemoi-transform/compare/0.1.16...0.1.16.post1) (2026-02-11)
+
+
+### Features
+
+* Add lsnp to sp filter ([#163](https://github.com/ecmwf/anemoi-transform/issues/163)) ([a40afab](https://github.com/ecmwf/anemoi-transform/commit/a40afab35d697376bcb229135716a84688bc0887))
+* Update lnsp to sp filter to version 0.1.23 ([50a673c](https://github.com/ecmwf/anemoi-transform/commit/50a673c211637ef0692566bfd25b51acabe9097a))
+
 ## [0.1.16](https://github.com/ecmwf/anemoi-transform/compare/0.1.15...0.1.16) (2025-08-05)
 
 

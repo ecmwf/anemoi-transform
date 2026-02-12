@@ -32,16 +32,16 @@ class Filter(Transform):
     pass
 
 
-class CombinedFilter(Transform):
+class DispatchingFilter(Transform):
     """A filter transform that processes either tabular or field data."""
 
     @classmethod
     def _ensure_specialist_forward_provided(cls):
-        if cls is CombinedFilter:
+        if cls is DispatchingFilter:
             return
 
         def overridden(name):
-            return getattr(cls, name) is not getattr(CombinedFilter, name)
+            return getattr(cls, name) is not getattr(DispatchingFilter, name)
 
         if not (overridden("forward_fields") or overridden("forward_tabular")):
             raise TypeError(f"{cls.__name__} must override at least one of `forward_fields` or `forward_tabular`")

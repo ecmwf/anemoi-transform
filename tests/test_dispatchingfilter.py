@@ -2,7 +2,7 @@ import earthkit.data as ekd
 import pandas as pd
 import pytest
 
-from anemoi.transform.filter import CombinedFilter
+from anemoi.transform.filter import DispatchingFilter
 
 TEST_CASES = [
     pytest.param(pd.DataFrame(), id="dataframe"),
@@ -32,8 +32,8 @@ class BackwardTabular:
 
 
 @pytest.mark.parametrize("data", TEST_CASES)
-def test_combinedfilter_forward_fields_only(data):
-    class ForwardFieldsOnly(ForwardField, CombinedFilter):
+def test_dispatchingfilter_forward_fields_only(data):
+    class ForwardFieldsOnly(ForwardField, DispatchingFilter):
         pass
 
     filter = ForwardFieldsOnly()
@@ -46,8 +46,8 @@ def test_combinedfilter_forward_fields_only(data):
 
 
 @pytest.mark.parametrize("data", TEST_CASES)
-def test_combinedfilter_forward_tabular_only(data):
-    class ForwardTabularOnly(ForwardTabular, CombinedFilter):
+def test_dispatchingfilter_forward_tabular_only(data):
+    class ForwardTabularOnly(ForwardTabular, DispatchingFilter):
         pass
 
     filter = ForwardTabularOnly()
@@ -60,8 +60,8 @@ def test_combinedfilter_forward_tabular_only(data):
 
 
 @pytest.mark.parametrize("data", TEST_CASES)
-def test_combinedfilter_forward_both(data):
-    class ForwardBoth(ForwardField, ForwardTabular, CombinedFilter):
+def test_dispatchingfilter_forward_both(data):
+    class ForwardBoth(ForwardField, ForwardTabular, DispatchingFilter):
         pass
 
     filter = ForwardBoth()
@@ -75,16 +75,16 @@ def test_combinedfilter_forward_both(data):
                 filter(data)
 
 
-def test_combinedfilter_neither():
+def test_dispatchingfilter_neither():
     with pytest.raises(TypeError):
 
-        class Neither(CombinedFilter):
+        class Neither(DispatchingFilter):
             pass
 
 
 @pytest.mark.parametrize("data", TEST_CASES)
-def test_combinedfilter_backward_fields_only(data):
-    class BackwardFieldsOnly(ForwardField, BackwardField, CombinedFilter):
+def test_dispatchingfilter_backward_fields_only(data):
+    class BackwardFieldsOnly(ForwardField, BackwardField, DispatchingFilter):
         pass
 
     filter = BackwardFieldsOnly().reverse()
@@ -97,8 +97,8 @@ def test_combinedfilter_backward_fields_only(data):
 
 
 @pytest.mark.parametrize("data", TEST_CASES)
-def test_combinedfilter_backward_tabular_only(data):
-    class BackwardTabularOnly(ForwardTabular, BackwardTabular, CombinedFilter):
+def test_dispatchingfilter_backward_tabular_only(data):
+    class BackwardTabularOnly(ForwardTabular, BackwardTabular, DispatchingFilter):
         pass
 
     filter = BackwardTabularOnly().reverse()
@@ -111,8 +111,8 @@ def test_combinedfilter_backward_tabular_only(data):
 
 
 @pytest.mark.parametrize("data", TEST_CASES)
-def test_combinedfilter_backward_both(data):
-    class BackwardBoth(ForwardField, ForwardTabular, BackwardField, BackwardTabular, CombinedFilter):
+def test_dispatchingfilter_backward_both(data):
+    class BackwardBoth(ForwardField, ForwardTabular, BackwardField, BackwardTabular, DispatchingFilter):
         pass
 
     filter = BackwardBoth().reverse()
@@ -127,8 +127,8 @@ def test_combinedfilter_backward_both(data):
 
 
 @pytest.mark.parametrize("data", TEST_CASES)
-def test_combinedfilter_backward_neither(data):
-    class BackwardNeither(ForwardField, ForwardTabular, CombinedFilter):
+def test_dispatchingfilter_backward_neither(data):
+    class BackwardNeither(ForwardField, ForwardTabular, DispatchingFilter):
         pass
 
     filter = BackwardNeither().reverse()
@@ -136,13 +136,13 @@ def test_combinedfilter_backward_neither(data):
         filter(data)
 
 
-def test_combinedfilter_mismatched_transforms():
+def test_dispatchingfilter_mismatched_transforms():
     with pytest.raises(TypeError):
 
-        class MismatchedTransforms1(ForwardField, BackwardTabular, CombinedFilter):
+        class MismatchedTransforms1(ForwardField, BackwardTabular, DispatchingFilter):
             pass
 
     with pytest.raises(TypeError):
 
-        class MismatchedTransform2(ForwardTabular, BackwardField, CombinedFilter):
+        class MismatchedTransform2(ForwardTabular, BackwardField, DispatchingFilter):
             pass

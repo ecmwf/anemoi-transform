@@ -7,18 +7,16 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-from collections.abc import Iterator
 
 import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.filters.matching import MatchingFieldsFilter
-from anemoi.transform.filters.matching import matching
 
 
 @filter_registry.register("clip")
-class Clipper(MatchingFieldsFilter):
+class Clipper(SingleFieldFilter):
     """Clip the values of a single field to a specified range [minimum, maximum].
 
     Values below `minimum` will be set to `minimum`, and values above `maximum` will be set to `maximum`.
@@ -56,32 +54,17 @@ class Clipper(MatchingFieldsFilter):
 
     """
 
-    @matching(select="param", forward=("param",))
-    def __init__(
-        self,
-        *,
-        param: str,
-        minimum: float | None = None,
-        maximum: float | None = None,
-    ):
-        """Initialize the Clipper filter.
+    required_inputs = ("param",)
+    optional_inputs = {"minimum": None, "maximum": None}
 
-        Parameters
-        ----------
-        param : str
-            Name of the field to clip.
-        minimum : float, optional
-            Minimum allowed value. Values below this will be set to minimum.
-        maximum : float, optional
-            Maximum allowed value. Values above this will be set to maximum.
-        """
-        if minimum is None and maximum is None:
+    def prepare_filter(self):
+        if self.minimum is None and self.maximum is None:
             raise ValueError("At least one value for minimum or maximum must be specified.")
-        self.param = param
-        self.minimum = minimum
-        self.maximum = maximum
 
-    def forward_transform(self, param: ekd.Field) -> Iterator[ekd.Field]:
-        data = param.to_numpy()
+    def forward_select(self):
+        return {"param": self.param}
+
+    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+        data = field.to_numpy()
         clipped = np.clip(data, self.minimum, self.maximum)
-        yield self.new_field_from_numpy(clipped, template=param, param=self.param)
+        return self.new_field_from_numpy(clipped, template=field, param=self.param)

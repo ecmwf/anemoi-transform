@@ -47,7 +47,6 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
     fieldlist : ekd.FieldList
         The fieldlist to use for testing.
     """
-    fieldlist = fieldlist.sel(param="sp")
 
     def undo_something(field: Any, a: float) -> Any:
         """Divide field values by a constant.
@@ -66,7 +65,8 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
         """
         return field.clone(values=field.values / a)
 
-    something = filter_registry.create(
+    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
+    filter = filter_registry.create(
         "earthkitfieldlambda",
         fn="tests.test_lambda._do_something",
         param="sp",
@@ -74,8 +74,19 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
         backward_fn=undo_something,
     )
 
-    transformed = something.forward(fieldlist)
-    npt.assert_allclose(transformed[0].to_numpy(), fieldlist[0].to_numpy() * 10)
+    transformed = filter.forward(fieldlist)
+    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in transformed}
 
-    untransformed = something.backward(transformed)
-    npt.assert_allclose(untransformed[0].to_numpy(), fieldlist[0].to_numpy())
+    untransformed = filter.backward(transformed)
+    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in untransformed}
+
+    for param in ("sp", "2t"):
+        # round trip works
+        npt.assert_allclose(before_filter[param], after_backward[param])
+
+        if param == "sp":
+            # sp fields transformed as expected
+            npt.assert_allclose(after_forward[param], before_filter[param] * 10)
+        else:
+            # non-sp fields are unchanged
+            npt.assert_allclose(before_filter[param], after_forward[param])

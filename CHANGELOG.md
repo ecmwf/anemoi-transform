@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.23](https://github.com/ecmwf/anemoi-transform/compare/0.1.22...0.1.23) (2026-02-05)
+
+
+### Features
+
+* **cutout_mask:** Add new optional argument `max_distance_km` to cutout_mask() function ([#214](https://github.com/ecmwf/anemoi-transform/issues/214)) ([b1e015f](https://github.com/ecmwf/anemoi-transform/commit/b1e015f5a4c0b9bd4df53636809e640e748dc7b3))
+
 ## [0.1.22](https://github.com/ecmwf/anemoi-transform/compare/0.1.21...0.1.22) (2026-01-28)
 
 

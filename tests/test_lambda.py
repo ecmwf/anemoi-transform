@@ -9,7 +9,6 @@
 
 import sys
 from pathlib import Path
-from typing import Any
 
 import earthkit.data as ekd
 import numpy.testing as npt
@@ -20,7 +19,7 @@ from anemoi.transform.filters import filter_registry
 sys.path.append(Path(__file__).parents[1].as_posix())
 
 
-def _do_something(field: Any, a: float) -> Any:
+def _do_something(field: ekd.Field, a: float) -> ekd.Field:
     """Multiply field values by a constant.
 
     Parameters
@@ -48,7 +47,7 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
         The fieldlist to use for testing.
     """
 
-    def undo_something(field: Any, a: float) -> Any:
+    def undo_something(field: ekd.Field, a: float) -> ekd.Field:
         """Divide field values by a constant.
 
         Parameters

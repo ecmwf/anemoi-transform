@@ -356,7 +356,7 @@ def cutout_mask(
     if max_distance_km is not None:
         # If max_distance_km is specified, ensure that cropping_mask() will contain
         # only point too far
-        max_distance_degrees = max_distance_km /  L_1_degree_earth_arc_length_km
+        max_distance_degrees = max_distance_km / L_1_degree_earth_arc_length_km
         effective_cropping_distance = max(cropping_distance, 1.1 * max_distance_degrees)
 
     mask = cropping_mask(

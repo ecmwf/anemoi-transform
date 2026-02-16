@@ -22,7 +22,7 @@ __all__ = [
 ]
 
 R_earth_km = R_earth_meter / 1000
-L_1_degree_earth_arc_length_km = R_earth_km / radian
+L_1_degree_earth_arc_length_km = R_earth_km * radian
 
 # A and B-coefficients defining the model levels for different models
 # Only IFS with 137 vertical levels implemented for now

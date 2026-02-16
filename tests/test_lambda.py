@@ -39,7 +39,7 @@ def _do_something(field: Any, a: float) -> Any:
 
 
 @skip_if_offline
-def test_singlefieldlambda(fieldlist: ekd.FieldList) -> None:
+def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
     """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
 
     Parameters

@@ -15,7 +15,7 @@ import earthkit.data as ekd
 import numpy.testing as npt
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
+from anemoi.transform.filters import filter_registry
 
 sys.path.append(Path(__file__).parents[1].as_posix())
 
@@ -66,7 +66,8 @@ def test_singlefieldlambda(fieldlist: ekd.FieldList) -> None:
         """
         return field.clone(values=field.values / a)
 
-    something = EarthkitFieldLambdaFilter(
+    something = filter_registry.create(
+        "earthkitfieldlambda",
         fn="tests.test_lambda._do_something",
         param="sp",
         fn_args=[10],
@@ -78,11 +79,3 @@ def test_singlefieldlambda(fieldlist: ekd.FieldList) -> None:
 
     untransformed = something.backward(transformed)
     npt.assert_allclose(untransformed[0].to_numpy(), fieldlist[0].to_numpy())
-
-
-if __name__ == "__main__":
-    """Run all test functions that start with 'test_'."""
-    for name, obj in list(globals().items()):
-        if name.startswith("test_") and callable(obj):
-            print(f"Running {name}...")
-            obj()

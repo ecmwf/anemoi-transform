@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.24](https://github.com/ecmwf/anemoi-transform/compare/0.1.23...0.1.24) (2026-02-16)
+
+
+### Bug Fixes
+
+* Length of 1deg arc constant ([#222](https://github.com/ecmwf/anemoi-transform/issues/222)) ([a98974c](https://github.com/ecmwf/anemoi-transform/commit/a98974ce08170a15565fbed471c0f2e6dba3d215))
+
 ## [0.1.23](https://github.com/ecmwf/anemoi-transform/compare/0.1.22...0.1.23) (2026-02-05)
 
 

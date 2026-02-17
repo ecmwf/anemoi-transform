@@ -11,10 +11,12 @@
 import logging
 from abc import abstractmethod
 from collections.abc import Callable
+from functools import singledispatchmethod
 from typing import Any
 
 import earthkit.data as ekd
 import numpy as np
+import pandas as pd
 
 from anemoi.transform.fields import FieldSelection
 from anemoi.transform.fields import new_field_from_numpy
@@ -25,9 +27,76 @@ LOG = logging.getLogger(__name__)
 
 
 class Filter(Transform):
-    """A filter transform that processes data."""
+    """A filter transform that processes field data."""
 
     pass
+
+
+class DispatchingFilter(Transform):
+    """A filter transform that processes either tabular or field data."""
+
+    @classmethod
+    def _ensure_specialist_forward_provided(cls):
+        if cls is DispatchingFilter:
+            return
+
+        def overridden(name):
+            return getattr(cls, name) is not getattr(DispatchingFilter, name)
+
+        if not (overridden("forward_fields") or overridden("forward_tabular")):
+            raise TypeError(f"{cls.__name__} must override at least one of `forward_fields` or `forward_tabular`")
+
+        for data_type in ("fields", "tabular"):
+            forward_name = f"forward_{data_type}"
+            backward_name = f"backward_{data_type}"
+            if overridden(backward_name) and not overridden(forward_name):
+                raise TypeError(f"{cls.__name__} overrides `{backward_name}` but not `{forward_name}`")
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._ensure_specialist_forward_provided()
+
+    @singledispatchmethod
+    def forward(self, data: Any) -> Any:
+        return self.forward_fallback(data)
+
+    @forward.register
+    def _(self, data: ekd.FieldList) -> ekd.FieldList:
+        return self.forward_fields(data)
+
+    @forward.register
+    def _(self, data: pd.DataFrame) -> pd.DataFrame:
+        return self.forward_tabular(data)
+
+    def forward_fallback(self, data: Any) -> Any:
+        raise TypeError(f"No forward method for {type(data)}")
+
+    def forward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+        return self.forward_fallback(data)
+
+    def forward_tabular(self, data: pd.DataFrame) -> pd.DataFrame:
+        return self.forward_fallback(data)
+
+    @singledispatchmethod
+    def backward(self, data: Any) -> Any:
+        return self.backward_fallback(data)
+
+    @backward.register
+    def _(self, data: ekd.FieldList) -> ekd.FieldList:
+        return self.backward_fields(data)
+
+    @backward.register
+    def _(self, data: pd.DataFrame) -> pd.DataFrame:
+        return self.backward_tabular(data)
+
+    def backward_fallback(self, data: Any) -> Any:
+        raise NotImplementedError(f"No backward method for {type(data)}")
+
+    def backward_tabular(self, data: pd.DataFrame) -> pd.DataFrame:
+        return self.backward_fallback(data)
+
+    def backward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+        return self.backward_fallback(data)
 
 
 class SingleFieldFilter(Filter):

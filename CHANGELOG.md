@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.25](https://github.com/ecmwf/anemoi-transform/compare/0.1.24...0.1.25) (2026-02-17)
+
+
+### Bug Fixes
+
+* Compute length of 1deg arc based on data points ([#229](https://github.com/ecmwf/anemoi-transform/issues/229)) ([5ab1db3](https://github.com/ecmwf/anemoi-transform/commit/5ab1db33cd503d6fa23b6428a2ce1842a8efbf26))
+
 ## [0.1.24](https://github.com/ecmwf/anemoi-transform/compare/0.1.23...0.1.24) (2026-02-16)
 
 

@@ -14,7 +14,8 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from anemoi.transform.constants import R_earth_km, radian
+from anemoi.transform.constants import R_earth_km
+from anemoi.transform.constants import radian
 
 LOG = logging.getLogger(__name__)
 
@@ -355,12 +356,12 @@ def cutout_mask(
     if max_distance_km is not None:
         # If max_distance_km is specified, ensure that cropping_mask() will contain
         # only point too far
-        # 1. Compute the latitude of the furthest point to the equator
+        # 1. Compute the latitude of the furthest point to the equator
         max_lat = max(abs(north), abs(south))
         # 2. Compute the radius of the latitude circle at this latitude
         R_earth_at_lat = R_earth_km * np.cos(np.deg2rad(max_lat))
         # 2. Compute the length of 1 degree at this latitude circle
-        L_1_degree_arc_length_km = R_earth_at_lat * radian # equivalent to (R_earth_at_lat * 2pi) / 360
+        L_1_degree_arc_length_km = R_earth_at_lat * radian  # equivalent to (R_earth_at_lat * 2pi) / 360
         max_distance_degrees = max_distance_km / L_1_degree_arc_length_km
         effective_cropping_distance = max(cropping_distance, 1.1 * max_distance_degrees)
 

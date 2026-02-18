@@ -9,6 +9,14 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.26](https://github.com/ecmwf/anemoi-transform/compare/0.1.25...0.1.26) (2026-02-18)
+
+
+### Features
+
+* Add `num_neighbours_to_return` parameter to nearest_grid_points ([#233](https://github.com/ecmwf/anemoi-transform/issues/233)) ([be82c69](https://github.com/ecmwf/anemoi-transform/commit/be82c692319dfeef818f62698fa740281e5e2034))
+* Add DispatchingFilter class ([#218](https://github.com/ecmwf/anemoi-transform/issues/218)) ([f0d877a](https://github.com/ecmwf/anemoi-transform/commit/f0d877a0f2ed9b8537788238e12bf8318b626051))
+
 ## [0.1.25](https://github.com/ecmwf/anemoi-transform/compare/0.1.24...0.1.25) (2026-02-17)
 
 

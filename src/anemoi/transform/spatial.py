@@ -590,6 +590,7 @@ def nearest_grid_points(
     target_latitudes: NDArray[Any],
     target_longitudes: NDArray[Any],
     max_distance: float = None,
+    num_neighbours_to_return: int = 1,
 ) -> NDArray[Any]:
     """Find the nearest grid points from source to target coordinates.
 
@@ -606,7 +607,8 @@ def nearest_grid_points(
     max_distance: float, optional
         Maximum distance between nearest point and point to interpolate. Defaults to None.
         For example, 1e-3 is 1 km.
-
+    num_neighbours_to_return : int, optional
+        Number of nearest neighbours to return. Defaults to 1.
     Returns
     -------
     NDArray[Any]
@@ -620,7 +622,9 @@ def nearest_grid_points(
     target_xyz = latlon_to_xyz(target_latitudes, target_longitudes)
     target_points = np.array(target_xyz).transpose()
     if max_distance is None:
-        _, indices = cKDTree(source_points).query(target_points, k=1)
+        _, indices = cKDTree(source_points).query(target_points, k=num_neighbours_to_return)
     else:
-        _, indices = cKDTree(source_points).query(target_points, k=1, distance_upper_bound=max_distance)
+        _, indices = cKDTree(source_points).query(
+            target_points, k=num_neighbours_to_return, distance_upper_bound=max_distance
+        )
     return indices

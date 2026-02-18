@@ -19,7 +19,7 @@ from anemoi.transform.filters import filter_registry
 sys.path.append(Path(__file__).parents[1].as_posix())
 
 
-def _do_something(field: ekd.Field, a: float) -> ekd.Field:
+def do_something(field: ekd.Field, a: float) -> ekd.Field:
     """Multiply field values by a constant.
 
     Parameters
@@ -37,6 +37,24 @@ def _do_something(field: ekd.Field, a: float) -> ekd.Field:
     return field.clone(values=field.values * a)
 
 
+def undo_something(field: ekd.Field, a: float) -> ekd.Field:
+    """Divide field values by a constant.
+
+    Parameters
+    ----------
+    field : Any
+        The field to modify.
+    a : float
+        The constant to divide by.
+
+    Returns
+    -------
+    Any
+        The modified field.
+    """
+    return field.clone(values=field.values / a)
+
+
 @skip_if_offline
 def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
     """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
@@ -47,30 +65,13 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
         The fieldlist to use for testing.
     """
 
-    def undo_something(field: ekd.Field, a: float) -> ekd.Field:
-        """Divide field values by a constant.
-
-        Parameters
-        ----------
-        field : Any
-            The field to modify.
-        a : float
-            The constant to divide by.
-
-        Returns
-        -------
-        Any
-            The modified field.
-        """
-        return field.clone(values=field.values / a)
-
     before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
     filter = filter_registry.create(
         "earthkitfieldlambda",
-        fn="tests.test_lambda._do_something",
+        fn="tests.test_lambda.do_something",
         param="sp",
         fn_args=[10],
-        backward_fn=undo_something,
+        backward_fn="tests.test_lambda.undo_something",
     )
 
     transformed = filter.forward(fieldlist)

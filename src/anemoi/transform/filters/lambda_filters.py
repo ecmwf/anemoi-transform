@@ -20,13 +20,12 @@ from anemoi.transform.filters import filter_registry
 class EarthkitFieldLambdaFilter(SingleFieldFilter):
     """A filter to apply an arbitrary function to individual fields.
 
-    This filter allows you to apply an arbitrary
-    Python function (either provided inline as a lambda or imported from a
-    module) to fields selected by parameter name. This enables advanced and
+    This filter allows you to apply an arbitrary Python function (imported from
+    a module) to fields selected by parameter name. This enables advanced and
     flexible transformations that aren't covered by built-in filters. This
     filter must follow a source or filter that provides the necessary
-    parameter(s) as input. No assumptions are made about physical
-    quantities, it is entirely user-defined.
+    parameter(s) as input. No assumptions are made about physical quantities, it
+    is entirely user-defined.
 
     Notes
     -----
@@ -53,7 +52,7 @@ class EarthkitFieldLambdaFilter(SingleFieldFilter):
 
             - earthkitfieldlambda:
                 param: "2t" # Name of variable (input) to be transformed
-                fn: "lambda x, s: x.clone(values=x.values - s)"
+                fn: "package.module.function"
                 fn_args: [273.15]
 
     """
@@ -72,11 +71,13 @@ class EarthkitFieldLambdaFilter(SingleFieldFilter):
         if not isinstance(self.fn_kwargs, dict):
             raise ValueError("Expected 'fn_kwargs' to be a dictionary. " f"Got {self.fn_kwargs} instead.")
 
-        if isinstance(self.fn, str):
-            self.fn = self._import_fn(self.fn)
+        if not isinstance(self.fn, str):
+            raise ValueError("Expected 'fn' to be a string. " f"Got {self.fn} instead.")
+        if not isinstance(self.backward_fn, str):
+            raise ValueError("Expected 'backward_fn' to be a string. " f"Got {self.backward_fn} instead.")
 
-        if isinstance(self.backward_fn, str):
-            self.backward_fn = self._import_fn(self.backward_fn)
+        self.fn = self._import_fn(self.fn)
+        self.backward_fn = self._import_fn(self.backward_fn)
 
     def forward_select(self):
         return {"param": self.param}

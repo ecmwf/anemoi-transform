@@ -11,10 +11,8 @@ import earthkit.data as ekd
 import numpy.testing as npt
 import pytest
 from anemoi.utils.testing import skip_if_offline
-from pytest import approx
 
-from anemoi.transform.filters.rescale import Convert
-from anemoi.transform.filters.rescale import Rescale
+from anemoi.transform.filters import filter_registry
 
 
 def skip_missing_udunits2():
@@ -40,15 +38,24 @@ def test_rescale(fieldlist: ekd.FieldList) -> None:
         The fieldlist to use for testing.
     """
 
-    fieldlist = fieldlist.sel(param="2t")
-    # rescale from K to °C
-    k_to_deg = Rescale(scale=1.0, offset=-273.15, param="2t")
-    rescaled = k_to_deg.forward(fieldlist)
+    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
 
-    npt.assert_allclose(rescaled[0].to_numpy(), fieldlist[0].to_numpy() - 273.15)
+    # rescale from K to °C
+    k_to_deg = filter_registry.create("rescale", scale=1.0, offset=-273.15, param="2t")
+    rescaled = k_to_deg.forward(fieldlist)
+    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled}
+
     # and back
     rescaled_back = k_to_deg.backward(rescaled)
-    npt.assert_allclose(rescaled_back[0].to_numpy(), fieldlist[0].to_numpy())
+    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled_back}
+
+    for param in ("2t", "sp"):
+        npt.assert_allclose(before_filter[param], after_backward[param])
+
+        if param == "2t":
+            npt.assert_allclose(before_filter[param] - 273.15, after_forward[param])
+        else:
+            npt.assert_allclose(before_filter[param], after_forward[param])
 
 
 @skip_missing_udunits2()
@@ -61,21 +68,20 @@ def test_convert(fieldlist: ekd.FieldList) -> None:
     fieldlist : ekd.FieldList
         The fieldlist to use for testing.
     """
+    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
     # rescale from K to °C
-    fieldlist = fieldlist.sel(param="2t")
-    k_to_deg = Convert(unit_in="K", unit_out="degC", param="2t")
+    k_to_deg = filter_registry.create("convert", unit_in="K", unit_out="degC", param="2t")
     rescaled = k_to_deg.forward(fieldlist)
-    assert rescaled[0].values.min() == fieldlist.values.min() - 273.15
-    assert rescaled[0].values.std() == approx(fieldlist.values.std())
+    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled}
+
     # and back
     rescaled_back = k_to_deg.backward(rescaled)
-    assert rescaled_back[0].values.min() == fieldlist.values.min()
-    assert rescaled_back[0].values.std() == approx(fieldlist.values.std())
+    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled_back}
 
+    for param in ("2t", "sp"):
+        npt.assert_allclose(before_filter[param], after_backward[param])
 
-if __name__ == "__main__":
-    """Run all test functions that start with 'test_'."""
-    for name, obj in list(globals().items()):
-        if name.startswith("test_") and callable(obj):
-            print(f"Running {name}...")
-            obj()
+        if param == "2t":
+            npt.assert_allclose(before_filter[param] - 273.15, after_forward[param])
+        else:
+            npt.assert_allclose(before_filter[param], after_forward[param])

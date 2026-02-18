@@ -9,18 +9,17 @@
 
 import sys
 from pathlib import Path
-from typing import Any
 
 import earthkit.data as ekd
 import numpy.testing as npt
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters.lambda_filters import EarthkitFieldLambdaFilter
+from anemoi.transform.filters import filter_registry
 
 sys.path.append(Path(__file__).parents[1].as_posix())
 
 
-def _do_something(field: Any, a: float) -> Any:
+def do_something(field: ekd.Field, a: float) -> ekd.Field:
     """Multiply field values by a constant.
 
     Parameters
@@ -38,8 +37,26 @@ def _do_something(field: Any, a: float) -> Any:
     return field.clone(values=field.values * a)
 
 
+def undo_something(field: ekd.Field, a: float) -> ekd.Field:
+    """Divide field values by a constant.
+
+    Parameters
+    ----------
+    field : Any
+        The field to modify.
+    a : float
+        The constant to divide by.
+
+    Returns
+    -------
+    Any
+        The modified field.
+    """
+    return field.clone(values=field.values / a)
+
+
 @skip_if_offline
-def test_singlefieldlambda(fieldlist: ekd.FieldList) -> None:
+def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
     """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
 
     Parameters
@@ -47,42 +64,29 @@ def test_singlefieldlambda(fieldlist: ekd.FieldList) -> None:
     fieldlist : ekd.FieldList
         The fieldlist to use for testing.
     """
-    fieldlist = fieldlist.sel(param="sp")
 
-    def undo_something(field: Any, a: float) -> Any:
-        """Divide field values by a constant.
-
-        Parameters
-        ----------
-        field : Any
-            The field to modify.
-        a : float
-            The constant to divide by.
-
-        Returns
-        -------
-        Any
-            The modified field.
-        """
-        return field.clone(values=field.values / a)
-
-    something = EarthkitFieldLambdaFilter(
-        fn="tests.test_lambda._do_something",
+    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
+    filter = filter_registry.create(
+        "earthkitfieldlambda",
+        fn="tests.test_lambda.do_something",
         param="sp",
         fn_args=[10],
-        backward_fn=undo_something,
+        backward_fn="tests.test_lambda.undo_something",
     )
 
-    transformed = something.forward(fieldlist)
-    npt.assert_allclose(transformed[0].to_numpy(), fieldlist[0].to_numpy() * 10)
+    transformed = filter.forward(fieldlist)
+    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in transformed}
 
-    untransformed = something.backward(transformed)
-    npt.assert_allclose(untransformed[0].to_numpy(), fieldlist[0].to_numpy())
+    untransformed = filter.backward(transformed)
+    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in untransformed}
 
+    for param in ("sp", "2t"):
+        # round trip works
+        npt.assert_allclose(before_filter[param], after_backward[param])
 
-if __name__ == "__main__":
-    """Run all test functions that start with 'test_'."""
-    for name, obj in list(globals().items()):
-        if name.startswith("test_") and callable(obj):
-            print(f"Running {name}...")
-            obj()
+        if param == "sp":
+            # sp fields transformed as expected
+            npt.assert_allclose(after_forward[param], before_filter[param] * 10)
+        else:
+            # non-sp fields are unchanged
+            npt.assert_allclose(before_filter[param], after_forward[param])

@@ -13,7 +13,8 @@ from typing import Literal
 import earthkit.data as ekd
 
 from anemoi.transform.filters import filter_registry
-from anemoi.transform.filters.matching import MatchingFieldsFilter, matching
+from anemoi.transform.filters.matching import MatchingFieldsFilter
+from anemoi.transform.filters.matching import matching
 
 
 @filter_registry.register("difference")
@@ -24,11 +25,7 @@ class DifferenceFilter(MatchingFieldsFilter):
 
     """
 
-    @matching(
-        select="param",
-        forward=("x", "y"),
-        backward=("diff",)
-    )
+    @matching(select="param", forward=("x", "y"), backward=("diff",))
     def __init__(
         self,
         *,
@@ -54,7 +51,6 @@ class DifferenceFilter(MatchingFieldsFilter):
         self.diff = diff
         self.return_inputs = return_inputs
 
-
     def forward_transform(self, x: ekd.Field, y: ekd.Field) -> ekd.Field:
         """Compute the difference between two fields (X - Y).
 
@@ -76,5 +72,3 @@ class DifferenceFilter(MatchingFieldsFilter):
 
     def backward(self, diff: ekd.FieldList) -> ekd.FieldList:
         raise NotImplementedError("Difference filter is not reversible")
-
-

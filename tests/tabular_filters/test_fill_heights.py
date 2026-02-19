@@ -20,13 +20,13 @@ from tests.utils import create_tabular_filter as create_filter
 
 def mock_dataset(lat_spec, lon_spec, z_spec):
     return xr.Dataset(
-        data_vars = {
+        data_vars={
             z_spec[0]: (["latitude", "longitude"], z_spec[1]),
         },
-        coords = {
+        coords={
             lat_spec[0]: lat_spec[1],
             lon_spec[0]: lon_spec[1],
-        }
+        },
     )
 
 

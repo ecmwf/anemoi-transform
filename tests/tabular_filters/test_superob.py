@@ -6,13 +6,17 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-
+import os
 
 import pandas as pd
+import pytest
 
 from tests.utils import create_tabular_filter as create_filter
 
+NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 
+
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_superob():
     config = {
         "grid": "o96",
@@ -60,6 +64,7 @@ def test_superob():
     )
 
 
+@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_superob_groupby():
     config = {
         "grid": "o96",

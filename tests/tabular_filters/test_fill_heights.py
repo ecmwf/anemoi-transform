@@ -13,9 +13,21 @@ from unittest import mock
 import numpy as np
 import pandas as pd
 import pytest
+import xarray as xr
 
 from tests.utils import create_tabular_filter as create_filter
-from tests.utils import mock_zarr_dataset
+
+
+def mock_dataset(lat_spec, lon_spec, z_spec):
+    return xr.Dataset(
+        data_vars = {
+            z_spec[0]: (["latitude", "longitude"], z_spec[1]),
+        },
+        coords = {
+            lat_spec[0]: lat_spec[1],
+            lon_spec[0]: lon_spec[1],
+        }
+    )
 
 
 def test_fill_heights_defaults():
@@ -30,19 +42,17 @@ def test_fill_heights_defaults():
         }
     )
 
-    with mock.patch("anemoi.transform.filters.tabular.fill_heights.zarr.open") as open_zarr:
-        zarr_dataset = mock_zarr_dataset(
-            {
-                "latitude": [-45.0, 45.0],
-                "longitude": [0.0, 180.0],
-                "z": [[1.0, 2.0], [3.0, 4.0]],
-            }
+    with mock.patch("anemoi.transform.filters.tabular.fill_heights.xr.open_dataset") as open_dataset:
+        orog_dataset = mock_dataset(
+            lat_spec=("latitude", [-45.0, 45.0]),
+            lon_spec=("longitude", [0.0, 180.0]),
+            z_spec=("z", [[1.0, 2.0], [3.0, 4.0]]),
         )
-        open_zarr.return_value = zarr_dataset
+        open_dataset.return_value = orog_dataset
 
         fill_heights = create_filter("fill_orography", **config)
         result = fill_heights(df.copy())
-        open_zarr.assert_called_once_with(config["orography_file"], mode="r")
+        open_dataset.assert_called_once_with(config["orography_file"])
 
         assert isinstance(result, pd.DataFrame)
         assert tuple(result.columns) == tuple(df.columns)
@@ -64,19 +74,17 @@ def test_fill_heights_station_altitude():
         }
     )
 
-    with mock.patch("anemoi.transform.filters.tabular.fill_heights.zarr.open") as open_zarr:
-        zarr_dataset = mock_zarr_dataset(
-            {
-                "latitude": [-45.0, 45.0],
-                "longitude": [0.0, 180.0],
-                "z": [[1.0, 2.0], [3.0, 4.0]],
-            }
+    with mock.patch("anemoi.transform.filters.tabular.fill_heights.xr.open_dataset") as open_dataset:
+        orog_dataset = mock_dataset(
+            lat_spec=("latitude", [-45.0, 45.0]),
+            lon_spec=("longitude", [0.0, 180.0]),
+            z_spec=("z", [[1.0, 2.0], [3.0, 4.0]]),
         )
-        open_zarr.return_value = zarr_dataset
+        open_dataset.return_value = orog_dataset
 
         fill_heights = create_filter("fill_orography", **config)
         result = fill_heights(df.copy())
-        open_zarr.assert_called_once_with(config["orography_file"], mode="r")
+        open_dataset.assert_called_once_with(config["orography_file"])
 
         assert isinstance(result, pd.DataFrame)
         assert tuple(result.columns) == tuple(df.columns)
@@ -103,19 +111,17 @@ def test_fill_heights_orog_file_varnames():
         }
     )
 
-    with mock.patch("anemoi.transform.filters.tabular.fill_heights.zarr.open") as open_zarr:
-        zarr_dataset = mock_zarr_dataset(
-            {
-                "lat": [-45.0, 45.0],
-                "lon": [0.0, 180.0],
-                "orog": [[1.0, 2.0], [3.0, 4.0]],
-            }
+    with mock.patch("anemoi.transform.filters.tabular.fill_heights.xr.open_dataset") as open_dataset:
+        orog_dataset = mock_dataset(
+            lat_spec=("lat", [-45.0, 45.0]),
+            lon_spec=("lon", [0.0, 180.0]),
+            z_spec=("orog", [[1.0, 2.0], [3.0, 4.0]]),
         )
-        open_zarr.return_value = zarr_dataset
+        open_dataset.return_value = orog_dataset
 
         fill_heights = create_filter("fill_orography", **config)
         result = fill_heights(df.copy())
-        open_zarr.assert_called_once_with(config["orography_file"], mode="r")
+        open_dataset.assert_called_once_with(config["orography_file"])
 
         assert isinstance(result, pd.DataFrame)
         assert tuple(result.columns) == tuple(df.columns)
@@ -137,15 +143,13 @@ def test_fill_heights_missing_station_altitude():
         }
     )
 
-    with mock.patch("anemoi.transform.filters.tabular.fill_heights.zarr.open") as open_zarr:
-        zarr_dataset = mock_zarr_dataset(
-            {
-                "lat": [-45.0, 45.0],
-                "lon": [0.0, 180.0],
-                "orog": [[1.0, 2.0], [3.0, 4.0]],
-            }
+    with mock.patch("anemoi.transform.filters.tabular.fill_heights.xr.open_dataset") as open_dataset:
+        orog_dataset = mock_dataset(
+            lat_spec=("lat", [-45.0, 45.0]),
+            lon_spec=("lon", [0.0, 180.0]),
+            z_spec=("orog", [[1.0, 2.0], [3.0, 4.0]]),
         )
-        open_zarr.return_value = zarr_dataset
+        open_dataset.return_value = orog_dataset
 
         fill_heights = create_filter("fill_orography", **config)
         with pytest.raises(ValueError):

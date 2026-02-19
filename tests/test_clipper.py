@@ -10,40 +10,77 @@
 import earthkit.data as ekd
 import numpy as np
 import numpy.testing as npt
+import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters.clipper import Clipper
+from anemoi.transform.filters import filter_registry
+
+
+def calc_stats(fieldlist):
+    stats = {}
+    for param in ("2t", "sp"):
+        fields = fieldlist.sel(param=param)
+        assert len(fields) == 1
+        data = fields[0].to_numpy()
+        stats[param] = {"min": np.min(data), "max": np.max(data)}
+    return stats
 
 
 @skip_if_offline
-def test_clipper_1(fieldlist: ekd.FieldList) -> None:
-    fieldlist = fieldlist.sel(param="2t")
+def test_clipper_minimum(fieldlist: ekd.FieldList) -> None:
+    before_stats = calc_stats(fieldlist)
+    clipper = filter_registry.create("clip", minimum=300.0, param="2t")
+    clipped = clipper(fieldlist)
+    after_stats = calc_stats(clipped)
 
-    clipper = Clipper(minimum=1.0, param="2t")
-    clipped = clipper.forward(fieldlist)
+    data = fieldlist.sel(param="2t").to_numpy()
+    ref = np.clip(data, 300.0, None)
 
-    data = fieldlist[0].to_numpy()
-    ref = np.clip(data, 1.0, None)
+    npt.assert_allclose(clipped.sel(param="2t").to_numpy(), ref)
+    npt.assert_allclose(clipped.sel(param="sp").to_numpy(), fieldlist.sel(param="sp").to_numpy())
 
-    npt.assert_allclose(clipped[0].to_numpy(), ref)
+    assert after_stats["sp"]["min"] == before_stats["sp"]["min"]
+    assert after_stats["sp"]["max"] == before_stats["sp"]["max"]
+
+    assert after_stats["2t"]["min"] == pytest.approx(300.0)
+    assert after_stats["2t"]["max"] == before_stats["2t"]["max"]
 
 
 @skip_if_offline
-def test_clipper_2(fieldlist: ekd.FieldList) -> None:
-    fieldlist = fieldlist.sel(param="2t")
+def test_clipper_maximum(fieldlist: ekd.FieldList) -> None:
+    before_stats = calc_stats(fieldlist)
+    clipper = filter_registry.create("clip", maximum=300.0, param="2t")
+    clipped = clipper(fieldlist)
+    after_stats = calc_stats(clipped)
 
-    clipper = Clipper(maximum=200.0, param="2t")
-    clipped = clipper.forward(fieldlist)
+    data = fieldlist.sel(param="2t").to_numpy()
+    ref = np.clip(data, None, 300.0)
 
-    data = fieldlist[0].to_numpy()
-    ref = np.clip(data, None, 200.0)
+    npt.assert_allclose(clipped.sel(param="2t").to_numpy(), ref)
+    npt.assert_allclose(clipped.sel(param="sp").to_numpy(), fieldlist.sel(param="sp").to_numpy())
 
-    npt.assert_allclose(clipped[0].to_numpy(), ref)
+    assert after_stats["sp"]["min"] == before_stats["sp"]["min"]
+    assert after_stats["sp"]["max"] == before_stats["sp"]["max"]
+
+    assert after_stats["2t"]["min"] == before_stats["2t"]["min"]
+    assert after_stats["2t"]["max"] == pytest.approx(300.0)
 
 
-if __name__ == "__main__":
-    """Run all test functions that start with 'test_'."""
-    for name, obj in list(globals().items()):
-        if name.startswith("test_") and callable(obj):
-            print(f"Running {name}...")
-            obj()
+@skip_if_offline
+def test_clipper_both(fieldlist: ekd.FieldList) -> None:
+    before_stats = calc_stats(fieldlist)
+    clipper = filter_registry.create("clip", minimum=300.0, maximum=305.0, param="2t")
+    clipped = clipper(fieldlist)
+    after_stats = calc_stats(clipped)
+
+    data = fieldlist.sel(param="2t").to_numpy()
+    ref = np.clip(data, 300.0, 305.0)
+
+    npt.assert_allclose(clipped.sel(param="2t").to_numpy(), ref)
+    npt.assert_allclose(clipped.sel(param="sp").to_numpy(), fieldlist.sel(param="sp").to_numpy())
+
+    assert after_stats["sp"]["min"] == before_stats["sp"]["min"]
+    assert after_stats["sp"]["max"] == before_stats["sp"]["max"]
+
+    assert after_stats["2t"]["min"] == pytest.approx(300.0)
+    assert after_stats["2t"]["max"] == pytest.approx(305.0)

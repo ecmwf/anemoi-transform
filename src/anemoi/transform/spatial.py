@@ -14,8 +14,8 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from anemoi.transform.constants import L_1_degree_earth_arc_length_km
 from anemoi.transform.constants import R_earth_km
+from anemoi.transform.constants import radian
 
 LOG = logging.getLogger(__name__)
 
@@ -356,8 +356,14 @@ def cutout_mask(
     if max_distance_km is not None:
         # If max_distance_km is specified, ensure that cropping_mask() will contain
         # only point too far
-        max_distance_degrees = max_distance_km / (1.1 * L_1_degree_earth_arc_length_km)
-        effective_cropping_distance = max(cropping_distance, max_distance_degrees)
+        # 1. Compute the latitude of the furthest point to the equator
+        max_lat = max(abs(north), abs(south))
+        # 2. Compute the radius of the latitude circle at this latitude
+        R_earth_at_lat = R_earth_km * np.cos(np.deg2rad(max_lat))
+        # 2. Compute the length of 1 degree at this latitude circle
+        L_1_degree_arc_length_km = R_earth_at_lat * radian  # equivalent to (R_earth_at_lat * 2pi) / 360
+        max_distance_degrees = max_distance_km / L_1_degree_arc_length_km
+        effective_cropping_distance = max(cropping_distance, 1.1 * max_distance_degrees)
 
     mask = cropping_mask(
         global_lats,
@@ -584,6 +590,7 @@ def nearest_grid_points(
     target_latitudes: NDArray[Any],
     target_longitudes: NDArray[Any],
     max_distance: float = None,
+    num_neighbours_to_return: int = 1,
 ) -> NDArray[Any]:
     """Find the nearest grid points from source to target coordinates.
 
@@ -600,7 +607,8 @@ def nearest_grid_points(
     max_distance: float, optional
         Maximum distance between nearest point and point to interpolate. Defaults to None.
         For example, 1e-3 is 1 km.
-
+    num_neighbours_to_return : int, optional
+        Number of nearest neighbours to return. Defaults to 1.
     Returns
     -------
     NDArray[Any]
@@ -614,7 +622,9 @@ def nearest_grid_points(
     target_xyz = latlon_to_xyz(target_latitudes, target_longitudes)
     target_points = np.array(target_xyz).transpose()
     if max_distance is None:
-        _, indices = cKDTree(source_points).query(target_points, k=1)
+        _, indices = cKDTree(source_points).query(target_points, k=num_neighbours_to_return)
     else:
-        _, indices = cKDTree(source_points).query(target_points, k=1, distance_upper_bound=max_distance)
+        _, indices = cKDTree(source_points).query(
+            target_points, k=num_neighbours_to_return, distance_upper_bound=max_distance
+        )
     return indices

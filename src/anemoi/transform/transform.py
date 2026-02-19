@@ -13,11 +13,15 @@ from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
 from typing import Callable
+from typing import TypeAlias
 from typing import TypeVar
 
 import earthkit.data as ekd
+import pandas as pd
 
 T = TypeVar("T", bound="Transform")
+
+DataContainer: TypeAlias = ekd.FieldList | pd.DataFrame
 
 
 class _TransformMetaClass(ABCMeta):
@@ -53,48 +57,48 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         """
         return f"{self.__class__.__name__}()"
 
-    def __call__(self, data: ekd.Field = None) -> ekd.Field:
+    def __call__(self, data: DataContainer) -> DataContainer:
         """Applies the forward transformation to the data.
 
         Parameters
         ----------
-        data : ekd.Field, optional
+        data : DataContainer
             The input data to be transformed.
 
         Returns
         -------
-        Any
+        DataContainer
             The transformed data.
         """
         return self.forward(data)
 
     @abstractmethod
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, data: DataContainer) -> DataContainer:
         """Applies the forward transformation to the data.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : DataContainer
             The input data to be transformed.
 
         Returns
         -------
-        ekd.FieldList
+        DataContainer
             The transformed data.
         """
         pass
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def backward(self, data: DataContainer) -> DataContainer:
         """Applies the backward transformation to the data.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : DataContainer
             The input data to be transformed.
 
         Returns
         -------
-        ekd.FieldList
+        DataContainer
             The transformed data.
         """
         raise NotImplementedError(f"{self} is not reversible.")
@@ -126,17 +130,17 @@ class Transform(ABC, metaclass=_TransformMetaClass):
 
         return workflow_registry.create("pipeline", filters=[self, other])
 
-    def patch_data_request(self, data_request: Any) -> Any:
+    def patch_data_request(self, data_request: dict) -> dict:
         """Patch the data request with additional information.
 
         Parameters
         ----------
-        data_request : Any
+        data_request : dict
             The data request to patch.
 
         Returns
         -------
-        Any
+        dict
             The patched data request.
         """
         return data_request
@@ -187,47 +191,47 @@ class ReversedTransform(Transform):
         """
         return f"Reversed({self.filter})"
 
-    def forward(self, x: Any) -> Any:
+    def forward(self, x: DataContainer) -> DataContainer:
         """Applies the backward transformation to the data.
 
         Parameters
         ----------
-        x : Any
+        x : DataContainer
             The input data to be transformed.
 
         Returns
         -------
-        Any
+        DataContainer
             The transformed data.
         """
         return self.filter.backward(x)
 
-    def backward(self, x: Any) -> Any:
+    def backward(self, x: DataContainer) -> DataContainer:
         """Applies the forward transformation to the data.
 
         Parameters
         ----------
-        x : Any
+        x : DataContainer
             The input data to be transformed.
 
         Returns
         -------
-        Any
+        DataContainer
             The transformed data.
         """
         return self.filter.forward(x)
 
-    def patch_data_request(self, data_request: Any) -> Any:
+    def patch_data_request(self, data_request: dict) -> dict:
         """Patch the data request with additional information.
 
         Parameters
         ----------
-        data_request : Any
+        data_request : dict
             The data request to patch.
 
         Returns
         -------
-        Any
+        dict
             The patched data request.
         """
         return self.filter.patch_data_request(data_request)

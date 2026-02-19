@@ -12,7 +12,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-import zarr
+import xarray as xr
 
 from anemoi.transform.filters.tabular import TabularFilter
 from anemoi.transform.filters.tabular.support.utils import get_heights
@@ -69,7 +69,7 @@ class FillHeights(TabularFilter, registry_name="fill_orography"):
         lats = obs_df["latitude"].values
         lons = obs_df["longitude"].values
 
-        ds_orog = zarr.open(self.orography_file, mode="r")
+        ds_orog = xr.open_dataset(self.orography_file)
         lats_orog = np.array(ds_orog[self.orography_latitude])
         lons_orog = np.array(ds_orog[self.orography_longitude])
         heights = np.array(ds_orog[self.orography_altitude])

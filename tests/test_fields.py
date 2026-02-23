@@ -13,14 +13,12 @@ import pytest
 from anemoi.transform.fields import new_field_with_metadata
 from src.anemoi.transform.fields import FieldSelection
 
+from .utils import mock_field
+
 
 @pytest.fixture
 def sample_field():
     return ekd.from_source("sample", "test.grib")[0]
-
-
-def mock_field(**metadata):
-    return ekd.from_source("list-of-dicts", [dict(values=[1]) | metadata])[0]
 
 
 def test_field_new_metadata(sample_field):

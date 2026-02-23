@@ -10,28 +10,13 @@
 
 from collections.abc import Iterator
 
-import numpy as np
+import earthkit.data as ekd
 import pytest
 
 from anemoi.transform.filters.matching import MatchingFieldsFilter
 from anemoi.transform.filters.matching import matching
 
-
-class MockField:
-    def __init__(self, param, **meta):
-        self._param = param
-        self._meta = meta
-        self.values = np.array([1.0])  # dummy data
-
-    def metadata(self, namespace=None):
-        if namespace == "mars":
-            return dict(self._meta, param=self._param)
-        return self._param
-
-
-class MockFieldList(list):
-    def metadata(self, name):
-        return [getattr(f, "metadata")("mars")[name] for f in self]
+from .utils import mock_field
 
 
 class AddFields(MatchingFieldsFilter):
@@ -41,15 +26,13 @@ class AddFields(MatchingFieldsFilter):
         self.b = b
         self.return_inputs = return_inputs
 
-    def forward_transform(self, a: MockField, b: MockField) -> Iterator[MockField]:
+    def forward_transform(self, a: ekd.Field, b: ekd.Field) -> Iterator[ekd.Field]:
         result = a.values + b.values
         yield self.new_field_from_numpy(result, template=a, param="c")
 
     def new_field_from_numpy(self, array, *, template, param):
-        return MockField(param, **template._meta)
-
-    def new_fieldlist_from_list(self, fields):
-        return MockFieldList(fields)
+        metadata = dict(template.metadata()) | {"param": param}
+        return mock_field(**metadata)
 
 
 def test_matching_decorator_initializes_correctly():
@@ -59,43 +42,43 @@ def test_matching_decorator_initializes_correctly():
 
 
 def test_forward_transform_adds_fields():
-    a = MockField("a", step=0, level=850)
-    b = MockField("b", step=0, level=850)
-    data = MockFieldList([a, b])
+    a = mock_field(param="a", step=0, level=850)
+    b = mock_field(param="b", step=0, level=850)
+    data = ekd.SimpleFieldList([a, b])
 
     f = AddFields(a="a", b="b")
     result = f.forward(data)
     assert len(result) == 1
-    assert isinstance(result[0], MockField)
-    assert result[0]._param == "c"
+    assert isinstance(result[0], ekd.Field)
+    assert result[0].metadata("param") == "c"
 
 
 def test_return_inputs():
-    a = MockField("a", step=0, level=850)
-    b = MockField("b", step=0, level=850)
-    data = MockFieldList([a, b])
+    a = mock_field(param="a", step=0, level=850)
+    b = mock_field(param="b", step=0, level=850)
+    data = ekd.SimpleFieldList([a, b])
 
     f = AddFields(a="a", b="b", return_inputs="all")
     result = f.forward(data)
     assert len(result) == 3
     for i in range(3):
-        assert isinstance(result[i], MockField)
-    assert {result[i]._param for i in range(2)} == {"a", "b"}
-    assert result[2]._param == "c"
+        assert isinstance(result[i], ekd.Field)
+    assert {result[i].metadata("param") for i in range(2)} == {"a", "b"}
+    assert result[2].metadata("param") == "c"
 
     f = AddFields(a="a", b="b", return_inputs=["a"])
     result = f.forward(data)
     assert len(result) == 2
     for i in range(2):
-        assert isinstance(result[i], MockField)
-    assert result[0]._param == "a"
-    assert result[1]._param == "c"
+        assert isinstance(result[i], ekd.Field)
+    assert result[0].metadata("param") == "a"
+    assert result[1].metadata("param") == "c"
 
 
 def test_missing_component_raises():
-    a = MockField("a", step=0, level=850)
+    a = mock_field(param="a", step=0, level=850)
     # Missing 'b'
-    data = MockFieldList([a])
+    data = ekd.SimpleFieldList([a])
     f = AddFields(a="a", b="b")
 
     with pytest.raises(ValueError):
@@ -113,9 +96,9 @@ def test_uninitialised_filter_raises():
 
 
 def test_metadata_mismatch_warning(caplog):
-    c = MockField("c", step=0, level=850)
-    d = MockField("d", step=0, level=850)
-    data = MockFieldList([c, d])
+    c = mock_field(param="c", step=0, level=850)
+    d = mock_field(param="d", step=0, level=850)
+    data = ekd.SimpleFieldList([c, d])
 
     f = AddFields(a="a", b="b")
 

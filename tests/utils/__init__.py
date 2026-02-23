@@ -9,6 +9,8 @@
 from collections import defaultdict
 
 import numpy as np
+from earthkit import data as ekd
+from earthkit.data import ArrayField
 
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.source import Source
@@ -101,3 +103,13 @@ def compare_npz_files(file1, file2):
 
     for key in data1.keys():
         assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"
+
+
+def mock_field(**metadata):
+    class MetadataOverride(ekd.core.metadata.RawMetadata):
+        def as_namespace(self, namespace):
+            if namespace != "mars":
+                raise ValueError(f"Unknown namespace {namespace}")
+            return dict(self)
+
+    return ArrayField(array=[1], metadata=MetadataOverride(**metadata))

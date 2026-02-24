@@ -9,8 +9,8 @@
 
 
 import earthkit.data as ekd
-from earthkit.data.core.metadata import WrappedMetadata
 
+from anemoi.transform.fields import HiddenMetadataField
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters import filter_registry
 
@@ -35,5 +35,5 @@ class RemoveMetadata(SingleFieldFilter):
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
         """Create a new field with wrapped metadata which hides keys of the original field's metadata."""
-        new_metadata = WrappedMetadata(field.metadata(), hidden=self.keys)
-        return field.clone(metadata=new_metadata)
+        # TODO: ideally should be field.clone(metadata=...) - but wrappers prevent this for now
+        return HiddenMetadataField(field, hidden=self.keys)

@@ -14,14 +14,14 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import get_heights
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
 @filter_registry.register("fill_orography")
-class FillHeights(TabularFilter):
+class FillHeights(Filter):
     """Fills missing values in the station altitude column by matching indices
     of missing station values with heights from a high-resolution orography
     file.

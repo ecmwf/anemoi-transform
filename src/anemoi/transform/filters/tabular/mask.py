@@ -13,13 +13,13 @@ import logging
 import numpy as np
 import pandas as pd
 
-from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
 @filter_registry.register("mask")
-class MaskValues(TabularFilter):
+class MaskValues(Filter):
     """Mask the columns of a DataFrame based on a condition.
 
     The configuration should be a dictionary with column names as keys and

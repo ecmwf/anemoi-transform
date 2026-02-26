@@ -12,13 +12,13 @@ import logging
 
 import pandas as pd
 
-from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
 @filter_registry.register("sort_by")
-class SortBy(TabularFilter):
+class SortBy(Filter):
     """Sort a DataFrame by the list of columns supplied in the config.
 
     The configuration should contain a list of column names to sort by under

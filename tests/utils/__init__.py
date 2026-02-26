@@ -13,6 +13,7 @@ from earthkit import data as ekd
 from earthkit.data import ArrayField
 
 from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.filters.tabular import create_filter
 from anemoi.transform.source import Source
 
 
@@ -113,3 +114,7 @@ def mock_field(**metadata):
             return dict(self)
 
     return ArrayField(array=[1], metadata=MetadataOverride(**metadata))
+
+
+def create_tabular_filter(name, **kwargs):
+    return create_filter(name, **kwargs)

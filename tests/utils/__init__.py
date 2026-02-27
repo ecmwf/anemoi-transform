@@ -8,9 +8,11 @@
 # nor does it submit to any jurisdiction.
 from collections import defaultdict
 
+import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.filters.tabular import create_filter
 from anemoi.transform.source import Source
 
 
@@ -101,3 +103,17 @@ def compare_npz_files(file1, file2):
 
     for key in data1.keys():
         assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"
+
+
+def mock_field(**metadata):
+    class MetadataOverride(ekd.core.metadata.RawMetadata):
+        def as_namespace(self, namespace):
+            if namespace != "mars":
+                raise ValueError(f"Unknown namespace {namespace}")
+            return dict(self)
+
+    return ekd.ArrayField(array=[1], metadata=MetadataOverride(**metadata))
+
+
+def create_tabular_filter(name, **kwargs):
+    return create_filter(name, **kwargs)

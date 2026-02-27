@@ -591,7 +591,8 @@ def nearest_grid_points(
     target_longitudes: NDArray[Any],
     max_distance: float = None,
     num_neighbours_to_return: int = 1,
-) -> NDArray[Any]:
+    return_distances: bool = False,
+) -> NDArray[Any] | tuple[NDArray[Any], NDArray[Any]]:
     """Find the nearest grid points from source to target coordinates.
 
     Parameters
@@ -609,10 +610,12 @@ def nearest_grid_points(
         For example, 1e-3 is 1 km.
     num_neighbours_to_return : int, optional
         Number of nearest neighbours to return. Defaults to 1.
+    return_distances : bool, optional
+        Whether to return distances along with indices. Defaults to False.
     Returns
     -------
-    NDArray[Any]
-        Indices of the nearest grid points.
+    NDArray[Any] | tuple[NDArray[Any], NDArray[Any]]
+        Indices of the nearest grid points, or a tuple of indices and distances.
     """
     from scipy.spatial import cKDTree
 
@@ -622,9 +625,11 @@ def nearest_grid_points(
     target_xyz = latlon_to_xyz(target_latitudes, target_longitudes)
     target_points = np.array(target_xyz).transpose()
     if max_distance is None:
-        _, indices = cKDTree(source_points).query(target_points, k=num_neighbours_to_return)
+        distances, indices = cKDTree(source_points).query(target_points, k=num_neighbours_to_return)
     else:
-        _, indices = cKDTree(source_points).query(
+        distances, indices = cKDTree(source_points).query(
             target_points, k=num_neighbours_to_return, distance_upper_bound=max_distance
         )
+    if return_distances:
+        return indices, distances
     return indices

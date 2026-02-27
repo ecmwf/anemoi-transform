@@ -1,41 +1,9 @@
+import earthkit.data as ekd
 import pytest
 
 from anemoi.transform.grouping import GroupByParam
 
-
-class MockField:
-    def __init__(self, **metadata):
-        self._metadata = metadata
-
-    def metadata(self, key=None, namespace=None, **kwargs):
-        MARS_KEYS = [
-            "domain",
-            "levtype",
-            "levelist",
-            "date",
-            "time",
-            "step",
-            "param",
-            "class",
-            "type",
-            "stream",
-            "expver",
-        ]
-        if namespace and (key or kwargs):
-            raise ValueError("Cannot specify both namespace and key, or namespace and kwargs")
-        if key and kwargs:
-            raise ValueError("Cannot specify both key and kwargs")
-
-        if namespace == "mars":
-            return {k: self._metadata[k] for k in MARS_KEYS if k in self._metadata}
-        elif namespace:
-            raise ValueError(f"Unknown namespace {namespace}")
-        if key:
-            return self._metadata[key]
-        return {k: self._metadata[k] for k in kwargs}
-
-    def __repr__(self):
-        return f"MockField({self._metadata})"
+from .utils import mock_field
 
 
 def field_generator(**metadata_values):
@@ -58,7 +26,7 @@ def field_generator(**metadata_values):
     combinations = itertools.product(*metadata_values.values())
     for values in combinations:
         metadata = MOCK_MARS_METADATA | dict(zip(metadata_values.keys(), values))
-        fields.append(MockField(**metadata))
+        fields.append(mock_field(**metadata))
     return fields
 
 
@@ -112,7 +80,7 @@ def test_group_by_param_vertical(sample_fields_vertical):
     from anemoi.transform.grouping import GroupByParamVertical
 
     def get_param(f):
-        if isinstance(f, MockField):
+        if isinstance(f, ekd.Field):
             f = [f]
 
         param = [x.metadata("param") for x in f]
@@ -131,7 +99,7 @@ def test_group_by_param_vertical(sample_fields_vertical):
         assert [get_param(field) for field in group] == match_params
         metadata = []
         for fields in group:
-            if isinstance(fields, MockField):
+            if isinstance(fields, ekd.Field):
                 fields = [fields]
             for field in fields:
                 num_matching += 1

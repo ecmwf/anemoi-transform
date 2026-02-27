@@ -98,7 +98,7 @@ class GroupByParam:
                 other(f)
                 continue
 
-            key = tuple(key.items())
+            key = frozenset(key.items())
 
             if param in self.groups[key]:
                 raise ValueError(f"Duplicate component {param} for {key}")
@@ -148,7 +148,7 @@ class GroupByParamVertical(GroupByParam):
                 other(f)
                 continue
 
-            key = tuple(sorted(tuple(key.items())))
+            key = frozenset(key.items())
 
             if level is None:
                 if param in self.groups[key]:

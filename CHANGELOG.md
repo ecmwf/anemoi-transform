@@ -9,6 +9,19 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.27](https://github.com/ecmwf/anemoi-transform/compare/0.1.26...0.1.27) (2026-02-26)
+
+
+### Features
+
+* Add `return_distances` option to nearest grid point lookup function ([#237](https://github.com/ecmwf/anemoi-transform/issues/237)) ([c1d3133](https://github.com/ecmwf/anemoi-transform/commit/c1d3133e2dc2daf5d6f660c17b0f9f4ecab67d55))
+* Import tabular filters ([#216](https://github.com/ecmwf/anemoi-transform/issues/216)) ([548e2fa](https://github.com/ecmwf/anemoi-transform/commit/548e2fabf18a2ed1197b03969ce7eb179c3e8608))
+
+
+### Bug Fixes
+
+* Grouping key changed to frozenset ([#239](https://github.com/ecmwf/anemoi-transform/issues/239)) ([7a5b427](https://github.com/ecmwf/anemoi-transform/commit/7a5b427eee0bb37e9407a45d13277ae853801f26))
+
 ## [0.1.26](https://github.com/ecmwf/anemoi-transform/compare/0.1.25...0.1.26) (2026-02-18)
 
 

@@ -8,8 +8,8 @@
 # nor does it submit to any jurisdiction.
 from collections import defaultdict
 
-import numpy as np
 import earthkit.data as ekd
+import numpy as np
 from earthkit.data import ArrayField
 
 from anemoi.transform.fields import new_fieldlist_from_list

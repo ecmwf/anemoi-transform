@@ -11,10 +11,12 @@
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-class EncodeStatids(TabularFilter, registry_name="encode_statids"):
+@filter_registry.register("encode_statids")
+class EncodeStatids(TabularFilter):
     """Encode the station ID column of a DataFrame as an integer using hash as a
     fallback.
 

@@ -9,7 +9,7 @@
 from collections import defaultdict
 
 import numpy as np
-from earthkit import data as ekd
+import earthkit.data as ekd
 from earthkit.data import ArrayField
 
 from anemoi.transform.fields import new_fieldlist_from_list

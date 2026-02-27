@@ -568,6 +568,75 @@ class NewMetadataField(_NewMetadataField):
         return f"(metadata={self.kwargs})"
 
 
+# TODO: remove alongside earthkit data wrappers
+class HiddenMetadataField(WrappedField):
+    """A field which hides specified keys from its metadata."""
+
+    def __init__(self, field: ekd.Field, hidden: list[str]):
+        super().__init__(field)
+        self._hidden = hidden
+
+    def metadata(self, *args: Any, **kwargs: Any) -> Any:
+        """Get the metadata of the field.
+
+        Parameters
+        ----------
+        *args : Any
+            Additional arguments.
+        **kwargs : Any
+            Additional keyword arguments.
+
+        Returns
+        -------
+        Any
+            The metadata of the field.
+        """
+        this = self
+
+        if len(args) == 0 and len(kwargs) == 0:
+
+            class MD:
+
+                geography = this._field.metadata().geography
+
+                def get(self, key, default=None):
+                    if key in this._hidden:
+                        return default
+                    return this._field.metadata().get(key, default)
+
+                def keys(self):
+                    return [k for k in this._field.metadata().keys() if k not in this._hidden]
+
+                def __getitem__(self, key):
+                    if key in this._hidden:
+                        raise KeyError(f"Key '{key}' is hidden and cannot be accessed.")
+                    return this._field.metadata()[key]
+
+                def override(self, *args, **kwargs):
+                    return this._field.metadata().override(*args, **kwargs)
+
+            return MD()
+
+        if kwargs.get("namespace"):
+            assert len(args) == 0, (args, kwargs)
+            mars = self._field.metadata(**kwargs).copy()
+            for k in list(mars.keys()):
+                if k in this._hidden:
+                    del mars[k]
+            return mars
+
+        def _val(a):
+            if a in this._hidden:
+                raise KeyError(f"Key '{a}' is hidden and cannot be accessed.")
+            return self._field.metadata(a, **kwargs)
+
+        result = tuple(_val(a) for a in args)
+        if len(result) == 1:
+            return result[0]
+
+        return result
+
+
 class NewFlavouredField(_NewMetadataField):
     def __init__(self, field: Any, flavour: Flavour) -> None:
         super().__init__(field)

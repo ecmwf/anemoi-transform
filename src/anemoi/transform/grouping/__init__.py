@@ -66,20 +66,33 @@ class GroupByParam:
             params = [params]
         self.params = _flatten(params)
 
+    @staticmethod
+    def _get_grouping_key(field, extract_keys: list[str] | None = None, remove_from_key: list[str] | None = None):
+        key = field.metadata(namespace="mars")
+        if not key:
+            keys = [k for k in field.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
+            key = {k: field.metadata(k) for k in keys}
+            if not keys:
+                raise NotImplementedError(f"GroupByParam: {field} has no sufficient metadata")
+
+        extract = {}
+        for k in extract_keys:
+            extract[k] = key.pop(k, field.metadata().get(k, default=None))
+
+        for k in remove_from_key:
+            key.pop(k, None)
+
+        if len(extract) != len(extract_keys):
+            raise ValueError(f"Expected {extract_keys} keys to extract, got {extract}")
+        return key, extract
+
     def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
         self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
         for f in data:
-            key = f.metadata(namespace="mars")
-            if not key:
-                keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
-                key = {k: f.metadata(k) for k in keys}
-                if not keys:
-                    raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
-
-            param = key.pop("param", f.metadata("param"))
-            key.pop("variable", f.metadata("param"))
+            key, extras = self._get_grouping_key(f, extract_keys=["param"], remove_from_key=["variable"])
+            param = extras["param"]
 
             if param not in self.params:
                 other(f)
@@ -125,18 +138,11 @@ class GroupByParamVertical(GroupByParam):
         self.groups_params = set()
         levels: dict[str, Any] = defaultdict(list)
         for f in data:
-            key = f.metadata(namespace="mars")
-            if not key:
-                keys = [k for k in f.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
-                key = {k: f.metadata(k) for k in keys}
-                if not keys:
-                    raise NotImplementedError(f"GroupByParam: {f} has no sufficient metadata")
-
-            param = key.pop("param", f.metadata("param"))
-            key.pop("variable", None)
-
-            _ = key.pop("levtype", None)
-            level = key.pop("levelist", None)
+            key, extras = self._get_grouping_key(
+                f, extract_keys=["param", "levelist"], remove_from_key=["variable", "levtype"]
+            )
+            param = extras["param"]
+            level = extras["levelist"]
 
             if param not in self.params:
                 other(f)

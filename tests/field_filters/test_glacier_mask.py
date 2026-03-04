@@ -11,14 +11,15 @@ from unittest import mock
 import earthkit.data as ekd
 import numpy as np
 import pytest
+from utils import group_component_dict
 
 from ..utils import collect_fields_by_param
 from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 SNOW_DEPTH_VALUES = np.array([[100.0, 200.0], [300.0, 400.0], [500.0, 600.0]])
@@ -27,13 +28,14 @@ GLACIER_MASK = np.array([[0, 0], [0, 1], [1, 1]])
 
 @pytest.fixture
 def snow_depth_source(test_source):
-    SNOW_DEPTH_SPEC = [{"param": "sd", "values": SNOW_DEPTH_VALUES.copy(), **MOCK_FIELD_METADATA}]
+    SNOW_DEPTH_SPEC = [{"parameter.variable": "sd", "data.values": SNOW_DEPTH_VALUES.copy(), **MOCK_FIELD_METADATA}]
     return test_source(SNOW_DEPTH_SPEC)
 
 
 @pytest.fixture
 def mock_mask():
-    field = {"param": "glacier_mask", "values": GLACIER_MASK.copy(), **MOCK_FIELD_METADATA}
+    field = {"parameter.variable": "glacier_mask", "data.values": GLACIER_MASK.copy(), **MOCK_FIELD_METADATA}
+    field = group_component_dict(field)
     return ekd.from_source("list-of-dicts", [field])
 
 

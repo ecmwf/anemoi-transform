@@ -127,7 +127,7 @@ class MaskVariable(SingleFieldFilter):
 
     def forward_select(self):
         if self.param is not None:
-            return {"param": self.param}
+            return {"parameter.variable": self.param}
         return {}
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
@@ -148,7 +148,7 @@ class MaskVariable(SingleFieldFilter):
         values[self.mask] = np.nan
 
         if self.rename is not None:
-            param = field.metadata("param")
+            param = field.parameter.variable()
             name = f"{param}_{self.rename}"
             metadata["param"] = name
 

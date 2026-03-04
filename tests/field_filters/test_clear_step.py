@@ -14,12 +14,13 @@ import pytest
 from earthkit.data.utils.dates import to_datetime
 
 from ..utils import collect_fields_by_param
+from ..utils import group_component_dict
 from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T12:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T12:00:00Z",
 }
 
 MOCK_VALUES = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
@@ -28,11 +29,11 @@ MOCK_VALUES = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
 @pytest.fixture
 def source(test_source):
     FIELD_SPECS = [
-        {"param": "t", "step": 0, "values": MOCK_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t", "step": 6, "values": MOCK_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t", "step": 12, "values": MOCK_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "time.step": 0, "data.values": MOCK_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "time.step": 6, "data.values": MOCK_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "time.step": 12, "data.values": MOCK_VALUES, **MOCK_FIELD_METADATA},
     ]
-    return test_source(FIELD_SPECS)
+    return test_source([group_component_dict(s) for s in FIELD_SPECS])
 
 
 def test_clear_step(source):
@@ -49,13 +50,13 @@ def test_clear_step(source):
     assert len(output_fields[param]) == 3
 
     for input_field, output_field in zip(input_fields[param], output_fields[param]):
-        input_validtime = to_datetime(input_field.metadata("valid_datetime"))
-        output_validtime = to_datetime(output_field.metadata("valid_datetime"))
-        input_step = input_field.metadata("step")
+        input_validtime = to_datetime(input_field.time.valid_datetime())
+        output_validtime = to_datetime(output_field.time.valid_datetime())
+        input_step = input_field.time.step()
 
-        expected_validtime = input_validtime - datetime.timedelta(hours=input_step)
+        expected_validtime = input_validtime - input_step
         assert output_validtime == expected_validtime
-        assert output_field.metadata("step") == 0
+        assert output_field.time.step() == datetime.timedelta(hours=0)
 
         assert np.array_equal(input_field.to_numpy(), output_field.to_numpy())
 

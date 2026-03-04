@@ -14,9 +14,7 @@ from typing import Any
 import earthkit.data as ekd
 import numpy as np
 import tqdm
-from earthkit.data.core.fieldlist import Field
 
-from anemoi.transform.fields import NewLatLonField
 from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
@@ -48,12 +46,12 @@ def as_gridspec(grid: str | dict[str, Any] | None) -> dict[str, Any] | None:
     return grid
 
 
-def as_griddata(grid: str | Field | dict[str, Any] | None) -> dict[str, Any] | None:
+def as_griddata(grid: str | ekd.Field | dict[str, Any] | None) -> dict[str, Any] | None:
     """Convert grid data to a dictionary format.
 
     Parameters
     ----------
-    grid : str | Field | dict[str, Any] | None
+    grid : str | ekd.Field | dict[str, Any] | None
         The grid data.
 
     Returns
@@ -64,8 +62,8 @@ def as_griddata(grid: str | Field | dict[str, Any] | None) -> dict[str, Any] | N
     if grid is None:
         return None
 
-    if isinstance(grid, Field):
-        lat, lon = grid.grid_points()
+    if isinstance(grid, ekd.Field):
+        lat, lon = grid.geography.latlons()
         return dict(latitudes=lat, longitudes=lon)
 
     if isinstance(grid, dict) and "latitudes" in grid and "longitudes" in grid:
@@ -91,11 +89,11 @@ class RegridFilter(Filter):
     When building a dataset for a specific model, it is possible that the
     source grid or resolution does not fit the needs. In that case, it is
     possible to add a filter to interpolate the data to a target grid. It
-    will call the ``interpolate`` function from `earthkit-regrid
-    <https://earthkit-regrid.readthedocs.io/en/latest/interpolate.html>`_ if
+    will call the ``regrid`` function from `earthkit-geo
+    <https://earthkit-geo.readthedocs.io/en/latest/interpolate.html>`_ if
     the keys ``method``, ``in_grid`` and ``out_grid`` are provided and if a
     `pre-generated matrix
-    <https://earthkit-regrid.readthedocs.io/en/latest/inventory/index.html>`_
+    <https://earthkit-geo.readthedocs.io/en/latest/inventory/index.html>`_
     exists for this transformation. Otherwise, it is possible to provide a
     ``regrid matrix`` previously generated with :ref:`make-regrid-matrix`.
     The generated matrix is an NPZ file containing the
@@ -230,7 +228,7 @@ class EarthkitRegrid:
         if check:
             LOG.warning("Check is not supported by EarthkitRegrid")
 
-    def __call__(self, field: Any) -> NewLatLonField:
+    def __call__(self, field: Any) -> ekd.Field:
         """Interpolate the field data.
 
         Parameters
@@ -240,14 +238,14 @@ class EarthkitRegrid:
 
         Returns
         -------
-        NewLatLonField
+        ekd.Field
             The interpolated field.
         """
-        from earthkit.regrid import interpolate
+        from earthkit.geo import regrid
 
         return new_field_from_latitudes_longitudes(
             new_field_from_numpy(
-                interpolate(
+                regrid(
                     field.to_numpy(flatten=True),
                     in_grid=self.in_grid,
                     out_grid=self.out_grid,
@@ -289,17 +287,17 @@ class MIRMatrix:
             latitudes=loaded["out_latitudes"], longitudes=loaded["out_longitudes"]
         )
 
-    def __call__(self, field: Field) -> NewLatLonField:
+    def __call__(self, field: ekd.Field) -> ekd.Field:
         """Interpolate the field data using the regrid matrix.
 
         Parameters
         ----------
-        field : Field
+        field : ekd.Field
             The field to be interpolated.
 
         Returns
         -------
-        NewLatLonField
+        ekd.Field
             The interpolated field.
         """
         if self.check:
@@ -343,7 +341,7 @@ class ScipyKDTreeNearestNeighbours:
         if check:
             LOG.warning("Check is not supported by ScipyKDTreeNearestNeighbours")
 
-    def __call__(self, field: Any) -> NewLatLonField:
+    def __call__(self, field: Any) -> ekd.Field:
         """Interpolate the field data using nearest neighbours.
 
         Parameters
@@ -353,7 +351,7 @@ class ScipyKDTreeNearestNeighbours:
 
         Returns
         -------
-        NewLatLonField
+        ekd.Field
             The interpolated field.
         """
         if self.in_grid is None:
@@ -401,7 +399,7 @@ class MaskedRegrid:
 
         self.mask = np.load(mask)["mask"]
 
-    def __call__(self, field: Field) -> NewLatLonField:
+    def __call__(self, field: ekd.Field) -> ekd.Field:
         """Regrid the field data using the mask.
 
         Parameters
@@ -411,7 +409,7 @@ class MaskedRegrid:
 
         Returns
         -------
-        NewLatLonField
+        ekd.Field
             The regridded field.
         """
 
@@ -420,7 +418,7 @@ class MaskedRegrid:
         data = data[..., self.mask]
 
         if self.out_latitudes is None or self.out_longitudes is None:
-            in_latitudes, in_longitudes = field.grid_points()
+            in_latitudes, in_longitudes = field.geography.latlons()
             self.out_latitudes = in_latitudes[self.mask]
             self.out_longitudes = in_longitudes[self.mask]
 

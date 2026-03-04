@@ -69,8 +69,8 @@ class RotateWinds(MatchingFieldsFilter):
         Iterator[ekd.Field]
             The rotated wind component fields.
         """
-        lats, lons = x_wind.grid_points()
-        proj_string = str(x_wind.projection())
+        lats, lons = x_wind.geography.latlons()
+        proj_string = x_wind.geography.projection().to_proj_string()
 
         x_new, y_new = rotate_vector(
             lats,
@@ -81,8 +81,8 @@ class RotateWinds(MatchingFieldsFilter):
             self.target_projection,
         )
 
-        yield self.new_field_from_numpy(x_new, template=x_wind, param=x_wind.metadata("param"))
-        yield self.new_field_from_numpy(y_new, template=y_wind, param=y_wind.metadata("param"))
+        yield self.new_field_from_numpy(x_new, template=x_wind, param=x_wind.parameter.variable())
+        yield self.new_field_from_numpy(y_new, template=y_wind, param=y_wind.parameter.variable())
 
     def backward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
         """Rotate wind components from target projection back to source projection.
@@ -99,7 +99,7 @@ class RotateWinds(MatchingFieldsFilter):
         Iterator[ekd.Field]
             The rotated wind component fields.
         """
-        lats, lons = x_wind.grid_points()
+        lats, lons = x_wind.geography.latlons()
 
         assert self.source_projection is not None, "source_projection cannot be None when unrotating winds!"
 
@@ -112,8 +112,8 @@ class RotateWinds(MatchingFieldsFilter):
             self.source_projection,
         )
 
-        yield self.new_field_from_numpy(x_unrotated, template=x_wind, param=x_wind.metadata("param"))
-        yield self.new_field_from_numpy(y_unrotated, template=y_wind, param=y_wind.metadata("param"))
+        yield self.new_field_from_numpy(x_unrotated, template=x_wind, param=x_wind.parameter.variable())
+        yield self.new_field_from_numpy(y_unrotated, template=y_wind, param=y_wind.parameter.variable())
 
 
 filter_registry.register("rotate_winds", RotateWinds)

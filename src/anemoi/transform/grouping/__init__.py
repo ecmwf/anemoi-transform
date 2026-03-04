@@ -52,6 +52,19 @@ def _flatten(params: list[Any] | tuple[Any, ...]) -> list[str]:
     return flat
 
 
+def grouping_dict_all(field):
+    # replacement for field.metadata(namespace='mars') non-specific grouping
+    KEYS = (
+        "parameter.variable",
+        "time.valid_datetime",
+        "time.step",
+        "ensemble.member",
+        "vertical.level",
+        "vertical.level_type",
+    )
+    return dict(zip(KEYS, field.get(KEYS, default=None)))
+
+
 class GroupByParam:
     """Group matching fields by parameters name.
 
@@ -67,22 +80,12 @@ class GroupByParam:
         self.params = _flatten(params)
 
     @staticmethod
-    def _get_grouping_key(
-        field, extract_from_grouping_key: list[str] | None = None, remove_from_grouping_key: list[str] | None = None
-    ):
-        grouping_key = field.metadata(namespace="mars")
-        if not grouping_key:
-            meta_keys = [k for k in field.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
-            grouping_key = {k: field.metadata(k) for k in meta_keys}
-            if not meta_keys:
-                raise NotImplementedError(f"GroupByParam: {field} has no sufficient metadata")
+    def _get_grouping_key(field, extract_from_grouping_key: list[str] | None = None):
+        grouping_key = grouping_dict_all(field)
 
         extracted_keys = {}
         for key in extract_from_grouping_key:
-            extracted_keys[key] = grouping_key.pop(key, field.metadata().get(key, default=None))
-
-        for key in remove_from_grouping_key:
-            grouping_key.pop(key, None)
+            extracted_keys[key] = grouping_key.pop(key)
 
         if len(extracted_keys) != len(extract_from_grouping_key):
             raise ValueError(f"Expected {extract_from_grouping_key} keys to extract, got {extracted_keys}")
@@ -93,10 +96,8 @@ class GroupByParam:
         self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
         for f in data:
-            key, extras = self._get_grouping_key(
-                f, extract_from_grouping_key=["param"], remove_from_grouping_key=["variable"]
-            )
-            param = extras["param"]
+            key, extras = self._get_grouping_key(f, extract_from_grouping_key=["parameter.variable"])
+            param = extras["parameter.variable"]
 
             if param not in self.params:
                 other(f)
@@ -142,11 +143,9 @@ class GroupByParamVertical(GroupByParam):
         self.groups_params = set()
         levels: dict[str, Any] = defaultdict(list)
         for f in data:
-            key, extras = self._get_grouping_key(
-                f, extract_from_grouping_key=["param", "levelist"], remove_from_grouping_key=["variable", "levtype"]
-            )
-            param = extras["param"]
-            level = extras["levelist"]
+            key, extras = self._get_grouping_key(f, extract_from_grouping_key=["parameter.variable", "vertical.level"])
+            param = extras["parameter.variable"]
+            level = extras["vertical.level"]
 
             if param not in self.params:
                 other(f)

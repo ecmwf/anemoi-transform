@@ -20,7 +20,7 @@ from ..utils import create_dispatching_filter as create_filter
 def calc_stats(fieldlist):
     stats = {}
     for param in ("2t", "sp"):
-        fields = fieldlist.sel(param=param)
+        fields = fieldlist.sel(**{"parameter.variable": param})
         assert len(fields) == 1
         data = fields[0].to_numpy()
         stats[param] = {"min": np.min(data), "max": np.max(data)}

@@ -14,9 +14,9 @@ from ..utils import collect_fields_by_param
 from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 RAD_VALUES = np.array([[2.67687254, 2.59108576], [1.83746659, 1.73104875], [1.1348185, 2.23051268]])
@@ -29,7 +29,7 @@ SIN_RAD_VALUES = np.array([[0.44817262, 0.52311930], [0.96465370, 0.98718704], [
 @pytest.fixture
 def RAD_source(test_source):
     RAD_SPEC = [
-        {"param": "RAD", "values": RAD_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "RAD", "data.values": RAD_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(RAD_SPEC)
 
@@ -37,7 +37,7 @@ def RAD_source(test_source):
 @pytest.fixture
 def DEG_source(test_source):
     DEG_SPEC = [
-        {"param": "DEG", "values": np.rad2deg(RAD_VALUES), **MOCK_FIELD_METADATA},
+        {"parameter.variable": "DEG", "data.values": np.rad2deg(RAD_VALUES), **MOCK_FIELD_METADATA},
     ]
     return test_source(DEG_SPEC)
 
@@ -45,8 +45,8 @@ def DEG_source(test_source):
 @pytest.fixture
 def cos_sin_RAD_source(test_source):
     COS_SIN_RAD = [
-        {"param": "cos_RAD", "values": COS_RAD_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "sin_RAD", "values": SIN_RAD_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "cos_RAD", "data.values": COS_RAD_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "sin_RAD", "data.values": SIN_RAD_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(COS_SIN_RAD)
 

@@ -8,10 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 
+import earthkit.data as ekd
 import pandas as pd
 import pytest
-
-from anemoi.transform.fields import WrappedField
 
 from ..utils import create_dispatching_filter as create_filter
 
@@ -46,10 +45,10 @@ def test_rename_field(grib_source):
     pipeline = grib_source | rename
 
     for original, result in zip(grib_source, pipeline):
-        assert isinstance(result, WrappedField)
-        if original.metadata("param") == "z":
-            assert result.metadata("param") == "geopotential"
-        elif original.metadata("param") == "t":
-            assert result.metadata("param") == "temperature"
+        assert isinstance(result, ekd.Field)
+        if original.parameter.variable() == "z":
+            assert result.parameter.variable() == "geopotential"
+        elif original.parameter.variable() == "t":
+            assert result.parameter.variable() == "temperature"
         else:
             raise RuntimeError(f"Unexpected param: {original.metadata('param')}")

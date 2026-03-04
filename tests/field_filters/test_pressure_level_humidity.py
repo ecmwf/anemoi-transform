@@ -18,9 +18,9 @@ from ..utils import collect_fields_by_param
 from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 T_VALUES = {
@@ -42,10 +42,10 @@ R_VALUES = {
 @pytest.fixture
 def relative_humidity_source(test_source):
     PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC = [
-        {"param": "r", "levelist": 850, "values": R_VALUES[850], **MOCK_FIELD_METADATA},
-        {"param": "t", "levelist": 850, "values": T_VALUES[850], **MOCK_FIELD_METADATA},
-        {"param": "r", "levelist": 1000, "values": R_VALUES[1000], **MOCK_FIELD_METADATA},
-        {"param": "t", "levelist": 1000, "values": T_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "r", "vertical.level": 850, "data.values": R_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "vertical.level": 850, "data.values": T_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "r", "vertical.level": 1000, "data.values": R_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "vertical.level": 1000, "data.values": T_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
     return test_source(PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
 
@@ -53,10 +53,10 @@ def relative_humidity_source(test_source):
 @pytest.fixture
 def specific_humidity_source(test_source):
     PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC = [
-        {"param": "q", "levelist": 850, "values": Q_VALUES[850], **MOCK_FIELD_METADATA},
-        {"param": "t", "levelist": 850, "values": T_VALUES[850], **MOCK_FIELD_METADATA},
-        {"param": "q", "levelist": 1000, "values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
-        {"param": "t", "levelist": 1000, "values": T_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "q", "vertical.level": 850, "data.values": Q_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "vertical.level": 850, "data.values": T_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "q", "vertical.level": 1000, "data.values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "vertical.level": 1000, "data.values": T_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
     return test_source(PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC)
 
@@ -78,7 +78,7 @@ def test_pressure_level_specific_humidity_to_relative_humidity(specific_humidity
             assert_fields_equal(input_field, output_field)
 
     # test new output matches expected values
-    results_by_level = {field.metadata("levelist"): field.to_numpy() for field in output_fields["r"]}
+    results_by_level = {field.vertical.level(): field.to_numpy() for field in output_fields["r"]}
     assert set(results_by_level) == {850, 1000}
 
     for level, result in results_by_level.items():
@@ -132,11 +132,13 @@ def test_pressure_level_specific_humidity_to_relative_humidity_from_file(test_so
             assert_fields_equal(input_field, output_field)
 
     # test pipeline output matches known good output
-    fields = sorted(output_fields["r"], key=lambda f: f.metadata("levelist"))
+    fields = sorted(output_fields["r"], key=lambda f: f.vertical.level())
     fields = map(lambda f: f.to_numpy(), fields)
     result = np.stack(list(fields)).flatten()
 
-    expected_relative_humidity = test_source("anemoi-transform/filters/era_r.npy").ds.to_numpy().flatten()
+    expected_relative_humidity = (
+        test_source("anemoi-transform/filters/era_r.npy").ds.to_fieldlist().to_numpy().flatten()
+    )
     assert np.allclose(result, expected_relative_humidity)
 
 
@@ -156,7 +158,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity(relative_humidity
             assert_fields_equal(input_field, output_field)
 
     # test new output matches expected values
-    results_by_level = {field.metadata("levelist"): field.to_numpy() for field in output_fields["q"]}
+    results_by_level = {field.vertical.level(): field.to_numpy() for field in output_fields["q"]}
     assert set(results_by_level) == {850, 1000}
 
     for level, result in results_by_level.items():
@@ -209,7 +211,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity_from_file_arome(t
             assert_fields_equal(input_field, output_field)
 
     # test pipeline output matches known good output
-    fields = sorted(output_fields["q"], key=lambda f: f.metadata("levelist"))
+    fields = sorted(output_fields["q"], key=lambda f: f.vertical.level())
     fields = map(lambda f: f.to_numpy(), fields)
     result = np.stack(list(fields))
     result = result.flatten()
@@ -240,7 +242,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity_from_file(test_so
             assert_fields_equal(input_field, output_field)
 
     # test pipeline output matches known good output
-    fields = sorted(output_fields["q"], key=lambda f: f.metadata("levelist"))
+    fields = sorted(output_fields["q"], key=lambda f: f.vertical.level())
     fields = map(lambda f: f.to_numpy(), fields)
     result = np.stack(list(fields)).flatten()
 

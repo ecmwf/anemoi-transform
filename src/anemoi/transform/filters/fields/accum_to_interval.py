@@ -55,9 +55,9 @@ class AccumToInterval(Filter):
 
     def _identifier(self, f):
         # Build a unique key for time series: (name, level)
-        param = f.metadata("param")
-        level = f.metadata("level", default=None)
-        levelType = f.metadata("levelType", default=None)
+        param = f.parameter.variable()
+        level = f.vertical.level()
+        levelType = f.vertical.level_type()
         return (param, level, levelType)
 
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
@@ -68,7 +68,7 @@ class AccumToInterval(Filter):
 
         # Sort each group by valid time
         for k, fl in groups.items():
-            groups[k] = sorted(fl, key=lambda x: x.metadata("valid_datetime"))
+            groups[k] = sorted(fl, key=lambda x: x.time.valid_datetime())
 
         out: List[ekd.Field] = []
         for (param_name, level, level_type), fl in groups.items():

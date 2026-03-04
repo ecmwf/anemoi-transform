@@ -16,9 +16,9 @@ from ..utils import create_fields_filter as create_filter
 MAX_TP = 12.5
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 expected_tp_values = np.array(
@@ -56,8 +56,8 @@ def rodeo_opera_source(test_source):
     )
 
     SPEC = [
-        {"param": "tp", "values": tp_values, **MOCK_FIELD_METADATA},
-        {"param": "qi", "values": qi_values, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "tp", "data.values": tp_values, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "qi", "data.values": qi_values, **MOCK_FIELD_METADATA},
     ]
     return test_source(SPEC)
 

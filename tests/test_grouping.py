@@ -55,7 +55,7 @@ def test_group_by_param(sample_fields):
     for group in grouper.iterate(sample_fields, other=other.append):
         assert len(group) == len(match_params)
         # ensure order is the same
-        assert [field.metadata("param") for field in group] == match_params
+        assert [field.parameter.variable() for field in group] == match_params
         metadata = []
         for field in group:
             num_matching += 1
@@ -71,7 +71,7 @@ def test_group_by_param(sample_fields):
 
     assert num_matching + len(other) == len(sample_fields)
     for field in other:
-        assert field.metadata("param") not in match_params
+        assert field.parameter.variable() not in match_params
         assert field in sample_fields
 
 
@@ -83,7 +83,7 @@ def test_group_by_param_vertical(sample_fields_vertical):
         if isinstance(f, ekd.Field):
             f = [f]
 
-        param = [x.metadata("param") for x in f]
+        param = [x.parameter.variable() for x in f]
         assert len(set(param)) == 1
         return param[0]
 
@@ -117,5 +117,5 @@ def test_group_by_param_vertical(sample_fields_vertical):
 
     assert num_matching + len(other) == len(sample_fields_vertical)
     for field in other:
-        assert field.metadata("param") not in match_params
+        assert field.parameter.variable() not in match_params
         assert field in sample_fields_vertical

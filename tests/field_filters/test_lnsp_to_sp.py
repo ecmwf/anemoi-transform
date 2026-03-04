@@ -15,9 +15,9 @@ from ..utils import collect_fields_by_param
 from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 LNSP_VALUES = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
@@ -27,13 +27,13 @@ SP_VALUES = np.exp(LNSP_VALUES)
 
 @pytest.fixture
 def lnsp_source(test_source):
-    LNSP_SPEC = [{"param": "lnsp", "values": LNSP_VALUES, **MOCK_FIELD_METADATA}]
+    LNSP_SPEC = [{"parameter.variable": "lnsp", "data.values": LNSP_VALUES, **MOCK_FIELD_METADATA}]
     return test_source(LNSP_SPEC)
 
 
 @pytest.fixture
 def sp_source(test_source):
-    SP_SPEC = [{"param": "sp", "values": SP_VALUES, **MOCK_FIELD_METADATA}]
+    SP_SPEC = [{"parameter.variable": "sp", "data.values": SP_VALUES, **MOCK_FIELD_METADATA}]
     return test_source(SP_SPEC)
 
 

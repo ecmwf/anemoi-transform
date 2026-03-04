@@ -41,7 +41,7 @@ class RescaleMixin(ABC):
         raise NotImplementedError("prepare_filter must be implemented by subclasses.")
 
     def forward_select(self):
-        return {"param": self.param}
+        return {"parameter.variable": self.param}
 
     def forward_transform(self, param: ekd.Field) -> ekd.Field:
         """Apply the forward transformation (x to ax+b)."""

@@ -17,9 +17,9 @@ from ..utils import collect_fields_by_param
 from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 R_VALUES = np.array([[78.13834333, 71.28598853], [99.17328572, 44.52144788], [56.49667261, 86.10495618]])
 
@@ -31,8 +31,8 @@ D_VALUES = np.array([[294.34245300, 292.02214050], [278.56315613, 281.47135925],
 @pytest.fixture
 def relative_humidity_source(test_source):
     RELATIVE_HUMIDITY_SPEC = [
-        {"param": "r", "values": R_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t", "values": T_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "r", "data.values": R_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "data.values": T_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(RELATIVE_HUMIDITY_SPEC)
 
@@ -40,8 +40,8 @@ def relative_humidity_source(test_source):
 @pytest.fixture
 def dewpoint_source(test_source):
     DEWPOINT_SPEC = [
-        {"param": "d", "values": D_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t", "values": T_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "d", "data.values": D_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "data.values": T_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(DEWPOINT_SPEC)
 

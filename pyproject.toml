@@ -12,18 +12,14 @@ requires = [ "setuptools>=60", "setuptools-scm>=8" ]
 
 [project]
 name = "anemoi-transform"
-
 description = "A package to hold various data transformation functions to support training of ML models on ECMWF data."
 readme = "README.md"
 keywords = [ "ai", "tools" ]
-
 license = { file = "LICENSE" }
 authors = [
   { name = "European Centre for Medium-Range Weather Forecasts (ECMWF)", email = "software.support@ecmwf.int" },
 ]
-
 requires-python = ">=3.11,<3.14"
-
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -36,7 +32,6 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-
 dynamic = [ "version" ]
 dependencies = [
   "anemoi-utils>=0.4.36",
@@ -48,10 +43,8 @@ dependencies = [
   "healpy",
   "pandas<3",
 ]
-
 optional-dependencies.all = [ "anemoi-transform[plots]" ]
 optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]
-
 optional-dependencies.docs = [
   "nbsphinx",
   "numpydoc",
@@ -63,16 +56,12 @@ optional-dependencies.docs = [
   "sphinx-rtd-theme",
   "termcolor",
 ]
-
 optional-dependencies.plots = [ "matplotlib" ]
-
 optional-dependencies.tests = [ "pytest", "pytest-skip-slow" ]
-
 urls.Documentation = "https://anemoi-transform.readthedocs.io/"
 urls.Homepage = "https://github.com/ecmwf/anemoi-transform/"
 urls.Issues = "https://github.com/ecmwf/anemoi-transform/issues"
 urls.Repository = "https://github.com/ecmwf/anemoi-transform/"
-
 scripts.anemoi-transform = "anemoi.transform.__main__:main"
 
 [tool.setuptools_scm]

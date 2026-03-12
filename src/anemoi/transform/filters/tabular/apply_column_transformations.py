@@ -11,7 +11,7 @@
 import numpy as np
 import pandas as pd
 
-from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 
 
@@ -65,7 +65,7 @@ class ColumnTransformation:
 
 
 @filter_registry.register("apply_column_transformations")
-class ApplyColumnTransformations(TabularFilter):
+class ApplyColumnTransformations(Filter):
     """Apply mathematical transformations to DataFrame columns (including
     multiple columns).
 

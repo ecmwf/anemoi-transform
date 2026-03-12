@@ -6,29 +6,12 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-from abc import ABC
-from abc import abstractmethod
-
-import pandas as pd
 from anemoi.utils.registry import Registry
 
 filter_registry = Registry(__name__)
 
-__all__ = ["create_filter", "filter_registry", "TabularFilter"]
+__all__ = ["create_filter", "filter_registry"]
 
 
 def create_filter(name: str, **kwargs):
     return filter_registry.create(name, **kwargs)
-
-
-class TabularFilter(ABC):
-    def __repr__(self):
-        dict_str = ", ".join(f"{k}={v!r}" for k, v in self.__dict__.items())
-        return f"{self.__class__.__name__}({dict_str})"
-
-    def __call__(self, df: pd.DataFrame) -> pd.DataFrame:
-        return self.forward(df)
-
-    @abstractmethod
-    def forward(self, df: pd.DataFrame) -> pd.DataFrame:
-        raise NotImplementedError()

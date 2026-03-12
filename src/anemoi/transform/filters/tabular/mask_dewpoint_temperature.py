@@ -12,13 +12,13 @@ import logging
 
 import pandas as pd
 
-from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
 @filter_registry.register("mask_dewpoint_temperature")
-class MaskDewpointTemperature(TabularFilter):
+class MaskDewpointTemperature(Filter):
     """Mask the dewpoint temperature column (and optionally the specific
     humidity column) of a DataFrame if the temperature is less than the dewpoint
     temperature.

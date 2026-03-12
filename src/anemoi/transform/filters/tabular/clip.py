@@ -12,13 +12,13 @@ import logging
 
 import pandas as pd
 
-from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
 @filter_registry.register("clip")
-class Clip(TabularFilter):
+class Clip(Filter):
     """Clips columns of a DataFrame to the specified range.
 
     The configuration should be a dictionary of column names and clip ranges,

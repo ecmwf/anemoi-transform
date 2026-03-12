@@ -12,7 +12,7 @@ from typing import Literal
 
 import pandas as pd
 
-from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.sat_view_angles import calc_azimuth
 from anemoi.transform.filters.tabular.support.sat_view_angles import calc_zenith
@@ -20,7 +20,7 @@ from anemoi.transform.filters.tabular.support.sat_view_angles import get_meteosa
 
 
 @filter_registry.register("add_msg_angles")
-class AddMSGAngles(TabularFilter):
+class AddMSGAngles(Filter):
     """Adds columns representing the Meteosat angles to the DataFrame which are
     calculated from the sub-satellite latitude, longitude and observed latitude,
     longitude.

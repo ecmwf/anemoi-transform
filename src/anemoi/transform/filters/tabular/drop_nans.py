@@ -14,10 +14,12 @@ from typing import Literal
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-class DropNaNs(TabularFilter, registry_name="drop_nans"):
+@filter_registry.register("drop_nans")
+class DropNaNs(TabularFilter):
     """Drop rows from a DataFrame where any/all selected columns are NaN.
 
     The configuration can contain either a list of column names to be

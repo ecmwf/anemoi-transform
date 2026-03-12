@@ -11,12 +11,14 @@
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.superob import assign_nearest_grid
 from anemoi.transform.filters.tabular.support.superob import define_grid
 from anemoi.transform.filters.tabular.support.superob import define_healpix_grid
 
 
-class SuperOb(TabularFilter, registry_name="superob"):
+@filter_registry.register("superob")
+class SuperOb(TabularFilter):
     """SuperOb filter for aggregating observations into grid cells.
 
     The configuration should be a dictionary with the following keys:

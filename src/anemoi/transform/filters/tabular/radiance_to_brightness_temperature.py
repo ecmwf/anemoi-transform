@@ -14,9 +14,11 @@ import numpy as np
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 
 
-class RadianceToBrightnessTemperature(TabularFilter, registry_name="radiance_to_brightness_temperature"):
+@filter_registry.register("radiance_to_brightness_temperature")
+class RadianceToBrightnessTemperature(TabularFilter):
     """Convert CrIS NSR/FSR radiances (mW/(m^2·sr·cm^-1)) to brightness temperatures [K].
 
     The config should contain the following keys:

@@ -14,10 +14,12 @@ import numpy as np
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-class MaskInfs(TabularFilter, registry_name="mask_infs"):
+@filter_registry.register("mask_infs")
+class MaskInfs(TabularFilter):
     """Mask values in a DataFrame where columns (defined via configuration)
     contain infinite values.
 

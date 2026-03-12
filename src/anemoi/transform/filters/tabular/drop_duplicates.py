@@ -11,10 +11,12 @@
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-class DropDuplicates(TabularFilter, registry_name="drop_duplicates"):
+@filter_registry.register("drop_duplicates")
+class DropDuplicates(TabularFilter):
     """Drop duplicate rows from a DataFrame.
 
     The configuration can contain either a list of column names to be

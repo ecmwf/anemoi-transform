@@ -14,10 +14,12 @@ from typing import Literal
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-class RemoveExtremeValues(TabularFilter, registry_name="remove_extreme_values"):
+@filter_registry.register("remove_extreme_values")
+class RemoveExtremeValues(TabularFilter):
     """Remove extreme values from a DataFrame, either by dropping rows where any
     column contains an extreme value (beyond ±threshold), or by masking extreme
     values.

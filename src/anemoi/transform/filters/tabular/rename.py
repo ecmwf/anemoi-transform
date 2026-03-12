@@ -11,10 +11,12 @@
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-class Rename(TabularFilter, registry_name="rename"):
+@filter_registry.register("rename")
+class Rename(TabularFilter):
     """Rename one or more columns in the DataFrame.
 
     The configuration should be a dictionary with the key 'columns' containing a

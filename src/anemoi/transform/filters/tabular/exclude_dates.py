@@ -14,10 +14,12 @@ from collections import defaultdict
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-class ExcludeDates(TabularFilter, registry_name="exclude_dates"):
+@filter_registry.register("exclude_dates")
+class ExcludeDates(TabularFilter):
     """Masks values in specified columns of a DataFrame if the 'datetime' column
     falls within any of the date ranges provided (inclusive).
 

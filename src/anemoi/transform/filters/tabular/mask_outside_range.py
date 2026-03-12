@@ -13,9 +13,11 @@ import logging
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 
 
-class MaskOutsideRange(TabularFilter, registry_name="mask_outside_range"):
+@filter_registry.register("mask_outside_range")
+class MaskOutsideRange(TabularFilter):
     """Mask values outside of specified ranges in a DataFrame.
 
     The configuration should be a dictionary of column names and ranges, where a

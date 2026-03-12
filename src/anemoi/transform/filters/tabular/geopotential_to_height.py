@@ -13,10 +13,12 @@ import logging
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-class GeopotentialToHeight(TabularFilter, registry_name="geopotential_to_height"):
+@filter_registry.register("geopotential_to_height")
+class GeopotentialToHeight(TabularFilter):
     """Converts geopotential height to height.
 
     The `geopotential` config key defines the name of the column containing

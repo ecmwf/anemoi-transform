@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from anemoi.transform.filters.tabular import TabularFilter
+from anemoi.transform.filters.tabular import filter_registry
 
 
 def safe_log(x):
@@ -63,7 +64,8 @@ class ColumnTransformation:
         df[self.target] = self.transform(*inputs)
 
 
-class ApplyColumnTransformations(TabularFilter, registry_name="apply_column_transformations"):
+@filter_registry.register("apply_column_transformations")
+class ApplyColumnTransformations(TabularFilter):
     """Apply mathematical transformations to DataFrame columns (including
     multiple columns).
 

@@ -15,7 +15,7 @@ import numpy as np
 
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
-from anemoi.transform.filter import Filter
+from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger(__name__)
@@ -36,8 +36,7 @@ OPERATORS = {
 }
 
 
-@filter_registry.register("apply_mask")
-class MaskVariable(Filter):
+class ApplyMaskMixin:
     """A filter to mask variables using an external file.
 
     The values of every filtered fields are set to NaN when they are either:
@@ -96,7 +95,7 @@ class MaskVariable(Filter):
         ----------
         path : str
             Path to the external file containing the mask.
-        mask_value : int, optional
+        mask_value : float, optional
             Value to be used for masking, by default 1.
         threshold : float, optional
             Threshold value for masking, by default None.
@@ -121,31 +120,75 @@ class MaskVariable(Filter):
 
         self._rename = rename
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def mask(self, data: ekd.Field) -> ekd.Field:
         """Apply the forward transformation to the data.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : ekd.Field
             Input data to be transformed.
 
         Returns
         -------
-        ekd.FieldList
+        ekd.Field
             Transformed data.
         """
-        result = []
         extra = {}
+
+        values = data.to_numpy(flatten=True)
+        values[self._mask] = np.nan
+
+        if self._rename is not None:
+            param = data.metadata("param")
+            name = f"{param}_{self._rename}"
+            extra["param"] = name
+
+        return new_field_from_numpy(values, template=data, **extra)
+
+
+@filter_registry.register("apply_mask")
+class MaskAllVariables(ApplyMaskMixin):
+    """A filter to mask all variables using an external file."""
+
+    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        result = []
         for field in data:
-
-            values = field.to_numpy(flatten=True)
-            values[self._mask] = np.nan
-
-            if self._rename is not None:
-                param = field.metadata("param")
-                name = f"{param}_{self._rename}"
-                extra["param"] = name
-
-            result.append(new_field_from_numpy(values, template=field, **extra))
-
+            masked_field = self.mask(field)
+            result.append(masked_field)
         return new_fieldlist_from_list(result)
+
+
+@filter_registry.register("apply_mask_to_param")
+class ApplyMaskToParam(ApplyMaskMixin, SingleFieldFilter):
+    """A filter to mask a specific variable using an external file."""
+
+    required_inputs = ["param"]
+
+    def __init__(
+        self,
+        *,
+        param: str,
+        path: str,
+        mask_value: float | None = None,
+        threshold: float | None = None,
+        threshold_operator: (
+            Literal["<"] | Literal["<="] | Literal[">"] | Literal[">="] | Literal["=="] | Literal["!="]
+        ) = ">",
+        rename: str | None = None,
+    ):
+        SingleFieldFilter.__init__(self, param=param)
+        ApplyMaskMixin.__init__(
+            self,
+            path=path,
+            mask_value=mask_value,
+            threshold=threshold,
+            threshold_operator=threshold_operator,
+            rename=rename,
+        )
+        self.param = param
+
+    def forward_select(self):
+        return {"param": self.param}
+
+    def forward_transform(self, param: ekd.Field) -> ekd.Field:
+        return self.mask(param)

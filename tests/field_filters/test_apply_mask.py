@@ -106,9 +106,70 @@ def test_apply_mask(source, ekd_from_source, mask_name, rename, threshold_option
             assert np.sum(np.isnan(result)) == expected_mask_count
 
 
-if __name__ == "__main__":
-    """Run all test functions that start with 'test_'."""
-    for name, obj in list(globals().items()):
-        if name.startswith("test_") and callable(obj):
-            print(f"Running {name}...")
-            obj()
+@pytest.mark.parametrize(
+    "threshold_options",
+    [
+        {"mask_value": 0.5},
+        {"mask_value": 1},
+        {"threshold": 0.5, "threshold_operator": ">"},
+        {"threshold": 0.5, "threshold_operator": "<"},
+    ],
+)
+@pytest.mark.parametrize("rename", [None, "renamed"])
+@pytest.mark.parametrize("mask_name", MASK_VALUES.keys())
+@pytest.mark.parametrize("target_param", DATA_VALUES.keys())
+def test_apply_mask_to_param(source, ekd_from_source, target_param, mask_name, rename, threshold_options):
+    apply_mask = filter_registry.create(
+        "apply_mask_to_param", param=target_param, path=mask_name, rename=rename, **threshold_options
+    )
+    ekd_from_source.assert_called_once_with("file", mask_name)
+
+    pipeline = source | apply_mask
+
+    input_fields = collect_fields_by_param(source)
+    output_fields = collect_fields_by_param(pipeline)
+
+    expected_mask = MASK_VALUES[mask_name].copy().flatten()
+    if "mask_value" in threshold_options:
+        expected_mask = expected_mask == threshold_options["mask_value"]
+    else:
+        operator = {"<": np.less, ">": np.greater}[threshold_options["threshold_operator"]]
+        expected_mask = operator(expected_mask, threshold_options["threshold"])
+    expected_mask_count = np.sum(expected_mask)
+
+    result_param = f"{target_param}_{rename}" if rename else target_param
+
+    # The target param should be masked (and possibly renamed)
+    assert result_param in output_fields
+    for input_field, output_field in zip(input_fields[target_param], output_fields[result_param]):
+        expected_values = input_field.to_numpy(flatten=True).copy()
+        expected_values[expected_mask] = np.nan
+        result = output_field.to_numpy(flatten=True)
+        np.array_equal(expected_values, result, equal_nan=True)
+        assert np.sum(np.isnan(result)) == expected_mask_count
+
+    # When renamed, the original param name must not appear in the output
+    if rename:
+        assert target_param not in output_fields
+
+    # All other params should pass through unchanged
+    for other_param in DATA_VALUES.keys():
+        if other_param == target_param:
+            continue
+        assert other_param in output_fields
+        for input_field, output_field in zip(input_fields[other_param], output_fields[other_param]):
+            np.testing.assert_array_equal(
+                input_field.to_numpy(flatten=True),
+                output_field.to_numpy(flatten=True),
+            )
+
+
+def test_apply_mask_to_param_fails_without_param(ekd_from_source):
+    with pytest.raises((ValueError, TypeError)):
+        filter_registry.create("apply_mask_to_param", path="all_zeros", mask_value=1)
+
+
+def test_apply_mask_to_param_fails_without_mask_options(ekd_from_source):
+    with pytest.raises(ValueError):
+        filter_registry.create("apply_mask_to_param", param="t", path="all_zeros")
+        ekd_from_source.assert_called_once_with("file", "all_zeros")

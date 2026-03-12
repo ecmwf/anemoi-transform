@@ -10,9 +10,9 @@
 
 from typing import Any
 
-from anemoi.utils.registry import Registry
+from anemoi.transform.filters.fields import filter_registry as fields_filter_registry
 
-filter_registry = Registry(__name__)
+filter_registry = fields_filter_registry
 
 
 def create_filter(context: Any, config: Any) -> Any:
@@ -33,3 +33,6 @@ def create_filter(context: Any, config: Any) -> Any:
     filter = filter_registry.from_config(config)
     filter.context = context
     return filter
+
+
+__all__ = ["filter_registry", "create_filter"]

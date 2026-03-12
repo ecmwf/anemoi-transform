@@ -13,8 +13,8 @@ from collections.abc import Iterator
 import earthkit.data as ekd
 import pytest
 
-from anemoi.transform.filters.matching import MatchingFieldsFilter
-from anemoi.transform.filters.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
+from anemoi.transform.filters.fields.matching import matching
 
 from .utils import mock_field
 

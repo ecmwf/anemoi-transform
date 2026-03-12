@@ -11,7 +11,7 @@
 import earthkit.data as ekd
 
 from anemoi.transform.filter import Filter
-from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.fields import filter_registry
 
 
 @filter_registry.register("noop")

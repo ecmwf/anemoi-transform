@@ -13,7 +13,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filter import SingleFieldFilter
-from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.fields import filter_registry
 
 LOG = logging.getLogger(__name__)
 

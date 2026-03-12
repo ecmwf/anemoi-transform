@@ -9,9 +9,10 @@
 import numpy as np
 import pytest
 from anemoi.utils.testing import skip_if_offline
-from utils import collect_fields_by_param
 
 from anemoi.transform.filters import filter_registry
+
+from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],

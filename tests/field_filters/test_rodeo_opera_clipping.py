@@ -9,9 +9,10 @@
 
 import numpy as np
 import pytest
-from utils import collect_fields_by_param
 
 from anemoi.transform.filters import filter_registry
+
+from ..utils import collect_fields_by_param
 
 MAX_TP = 12.5
 

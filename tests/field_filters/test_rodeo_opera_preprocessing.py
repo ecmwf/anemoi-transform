@@ -9,12 +9,13 @@
 
 import numpy as np
 import pytest
-from utils import collect_fields_by_param
 
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _INF
 from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _NODATA
 from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _UNDETECTED
+
+from ..utils import collect_fields_by_param
 
 MAX_TP = 12.5
 

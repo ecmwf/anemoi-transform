@@ -9,10 +9,11 @@
 
 import numpy as np
 import pytest
-from utils import assert_fields_equal
-from utils import collect_fields_by_param
 
 from anemoi.transform.filters import filter_registry
+
+from ..utils import assert_fields_equal
+from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],

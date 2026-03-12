@@ -8,9 +8,10 @@
 # nor does it submit to any jurisdiction.
 
 import numpy as np
-from utils import collect_fields_by_param
 
 from anemoi.transform.filters import filter_registry
+
+from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],

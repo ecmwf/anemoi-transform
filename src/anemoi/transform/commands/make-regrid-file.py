@@ -123,7 +123,7 @@ class MakeMIRMatrix:
         args : argparse.Namespace
             The arguments to run the command with.
         """
-        mir_kwargs = dict(args.mir_kwargs) if args.mir_kwargs is not None else {}
+        mir_kwargs = dict(args.mir_args) if args.mir_args is not None else {}
         source_lat, source_lon = _path_to_lat_lon(args.source_grid)
         target_lat, target_lon = _path_to_lat_lon(args.target_grid)
 

@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.28](https://github.com/ecmwf/anemoi-transform/compare/0.1.27...0.1.28) (2026-03-13)
+
+
+### Features
+
+* Ability for apply-mask to work on a single param ([#251](https://github.com/ecmwf/anemoi-transform/issues/251)) ([8f4ed7c](https://github.com/ecmwf/anemoi-transform/commit/8f4ed7ce3788787d0e25cd2d75b78934c7760604))
+
 ## [0.1.27](https://github.com/ecmwf/anemoi-transform/compare/0.1.26...0.1.27) (2026-02-26)
 
 

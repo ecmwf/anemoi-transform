@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.29](https://github.com/ecmwf/anemoi-transform/compare/0.1.28...0.1.29) (2026-03-13)
+
+
+### Features
+
+* Allow masking from numpy ([#254](https://github.com/ecmwf/anemoi-transform/issues/254)) ([ece1a88](https://github.com/ecmwf/anemoi-transform/commit/ece1a8876959df450ca5219f2bb0a42904bfff4f))
+
 ## [0.1.28](https://github.com/ecmwf/anemoi-transform/compare/0.1.27...0.1.28) (2026-03-13)
 
 

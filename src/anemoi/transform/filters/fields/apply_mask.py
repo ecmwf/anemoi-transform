@@ -107,7 +107,10 @@ class MaskVariable(SingleFieldFilter):
             New name for the masked variable, by default None.
         """
 
-        mask = ekd.from_source("file", self.path)[0].to_numpy(flatten=True)
+        if self.path.endswith(".npy"):
+            mask = np.load(self.path)
+        else:
+            mask = ekd.from_source("file", self.path)[0].to_numpy(flatten=True)
 
         if self.mask_value is None and self.threshold is None:
             raise ValueError("Either `mask_value` or `threshold` must be provided.")

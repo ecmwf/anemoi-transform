@@ -177,6 +177,10 @@ class SingleFieldFilter(Filter):
         if leftover_keys:
             raise ValueError(f"Unknown input(s): '{leftover_keys}'.")
 
+    @property
+    def config(self):
+        return self._config
+
     def __getattr__(self, name: str) -> Any:
         # Allow access to kwargs passed into constructor as attributes
         return self._config[name]

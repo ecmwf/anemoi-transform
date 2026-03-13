@@ -84,11 +84,13 @@ class MaskVariable(SingleFieldFilter):
     # threshold: float | None,
     # threshold_operator: Literal["<", "<=", ">", ">=", "==", "!="],
     # rename: str | None,
+    # param: str | None,
     optional_inputs = {
         "mask_value": None,
         "threshold": None,
         "threshold_operator": ">",
         "rename": None,
+        "param": None,
     }
 
     def prepare_filter(self):
@@ -119,6 +121,11 @@ class MaskVariable(SingleFieldFilter):
             self.mask = OPERATORS[self.threshold_operator](mask, self.threshold)
         else:
             self.mask = mask == self.mask_value
+
+    def forward_select(self):
+        if self.param is not None:
+            return {"param": self.param}
+        return {}
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
         """Apply the forward transformation to the field.

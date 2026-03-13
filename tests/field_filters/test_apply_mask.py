@@ -102,8 +102,41 @@ def test_apply_mask(source, ekd_from_source, mask_name, rename, threshold_option
             expected_values = input_field.to_numpy(flatten=True).copy()
             expected_values[expected_mask] = np.nan
             result = output_field.to_numpy(flatten=True)
-            np.array_equal(expected_values, result, equal_nan=True)
+            assert np.array_equal(expected_values, result, equal_nan=True)
             assert np.sum(np.isnan(result)) == expected_mask_count
+
+
+def test_apply_mask_only_single_param(source, ekd_from_source):
+    apply_mask = filter_registry.create(
+        "apply_mask",
+        path="mixed_floats",
+        threshold=0.5,
+        threshold_operator=">",
+        param="t",
+    )
+    ekd_from_source.assert_called_once_with("file", "mixed_floats")
+
+    pipeline = source | apply_mask
+
+    input_fields = collect_fields_by_param(source)
+    output_fields = collect_fields_by_param(pipeline)
+
+    expected_mask = MASK_VALUES["mixed_floats"].copy().flatten()
+    expected_mask = np.greater(expected_mask, 0.5)
+    expected_mask_count = np.sum(expected_mask)
+
+    for param in DATA_VALUES.keys():
+        assert param in output_fields
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            if param == "t":
+                # only mask t
+                expected_values = input_field.to_numpy(flatten=True).copy()
+                expected_values[expected_mask] = np.nan
+                result = output_field.to_numpy(flatten=True)
+                assert np.array_equal(expected_values, result, equal_nan=True)
+                assert np.sum(np.isnan(result)) == expected_mask_count
+            else:
+                assert np.array_equal(input_field.to_numpy(flatten=True), output_field.to_numpy(flatten=True))
 
 
 if __name__ == "__main__":

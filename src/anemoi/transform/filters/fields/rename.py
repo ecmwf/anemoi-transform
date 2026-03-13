@@ -12,8 +12,7 @@ import re
 import earthkit.data as ekd
 
 from anemoi.transform.fields import new_field_with_metadata
-from anemoi.transform.fields import new_fieldlist_from_list
-from anemoi.transform.filter import Filter
+from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters import filter_registry
 
 
@@ -66,7 +65,7 @@ class DictRename:
 
 
 @filter_registry.register("rename")
-class Rename(Filter):
+class Rename(SingleFieldFilter):
     """A filter to rename fields based on their metadata.
 
     When combining several sources, it is common to have different values
@@ -119,23 +118,18 @@ class Rename(Filter):
 
     """
 
-    def __init__(self, **kwargs):
-
-        self._rename = {}
-        for key, value in kwargs.items():
+    def prepare_filter(self):
+        renamers = {}
+        for key, value in self.config.items():
             if isinstance(value, str):
-                self._rename[key] = FormatRename(key, value)
+                renamers[key] = FormatRename(key, value)
             elif isinstance(value, dict):
-                self._rename[key] = DictRename(key, value)
+                renamers[key] = DictRename(key, value)
             else:
                 raise ValueError(f"Invalid value for rename: {key}: {value}")
+        self.renamers = tuple(renamers.values())
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-
-        result = []
-        for field in data:
-            for _, renamer in self._rename.items():
-                field = renamer.rename(field)
-            result.append(field)
-
-        return new_fieldlist_from_list(result)
+    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+        for renamer in self.renamers:
+            field = renamer.rename(field)
+        return field

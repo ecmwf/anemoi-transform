@@ -107,6 +107,11 @@ class VariableFromMarsVocabulary(Variable):
         return as_timedelta(period[1]) - as_timedelta(period[0])
 
     @property
+    def units(self):
+        return self.data["units"]
+        return self.data.get("units", None)
+
+    @property
     def grib_keys(self) -> dict[str, Any]:
         """Get the GRIB keys of the variable."""
         return self.data.get("mars", {}).copy()

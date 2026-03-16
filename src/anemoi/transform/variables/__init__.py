@@ -191,6 +191,12 @@ class Variable(ABC):
         """Check if the variable is from input."""
         pass
 
+    @property
+    @abstractmethod
+    def units(self):
+        """Get the units of the variable."""
+        pass
+
     def similarity(self, other: Any) -> int:
         """Compute the similarity between two variables. This is used when
         encoding a variable in GRIB and we do not have a template for it.
@@ -207,3 +213,52 @@ class Variable(ABC):
             The similarity score.
         """
         return 0
+
+    def compatible(self, other: Any, options: dict | None = None, return_reason: bool = False) -> bool:
+        if options is None:
+            options = {}
+
+        def _compare():
+
+            if self.units != other.units:
+
+                return f"Units are not compatible: {self.units} vs {other.units}"
+
+            if self.time_processing != other.time_processing:
+                return f"Time processinging types are not compatible: {self.time_processing} vs {other.time_processing}"
+
+            if self.period != other.period:
+                return f"Periods are not compatible: {self.period} vs {other.period}"
+
+            if self.is_pressure_level != other.is_pressure_level:
+                return f"Pressure level status is not compatible: {self.is_pressure_level} vs {other.is_pressure_level}"
+
+            if self.is_model_level != other.is_model_level:
+                return f"Model level status is not compatible: {self.is_model_level} vs {other.is_model_level}"
+
+            if self.is_surface_level != other.is_surface_level:
+                return f"Surface level status is not compatible: {self.is_surface_level} vs {other.is_surface_level}"
+
+        reason = _compare()
+        if reason:
+            return False, reason if return_reason else False
+
+        return True, None if return_reason else True
+
+    @classmethod
+    def check_compatibility(cls, variables1: dict, variables2: dict, options: dict | None = None) -> bool:
+        if options is None:
+            options = {}
+        keys1 = set(variables1.keys())
+        keys2 = set(variables2.keys())
+        if keys1 != keys2:
+            raise ValueError(f"Variable keys have changed between loads: missing={keys1-keys2}, added={keys2-keys1}")
+
+        reasons = []
+        for k in keys1:
+            compatible, reason = variables1[k].compatible(variables2[k], options=options, return_reason=True)
+            if not compatible:
+                reasons.append(f"{k}: {reason}")
+
+        if reasons:
+            raise ValueError(f"Variables are not compatible: {'; '.join(reasons)}")

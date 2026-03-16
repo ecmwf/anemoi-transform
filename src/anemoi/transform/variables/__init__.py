@@ -252,7 +252,7 @@ class Variable(ABC):
         keys1 = set(variables1.keys())
         keys2 = set(variables2.keys())
         if keys1 != keys2:
-            raise ValueError(f"Variable keys have changed between loads: missing={keys1-keys2}, added={keys2-keys1}")
+            raise ValueError(f"Variable compatibility: missing={keys1-keys2}, added={keys2-keys1}")
 
         reasons = []
         for k in keys1:

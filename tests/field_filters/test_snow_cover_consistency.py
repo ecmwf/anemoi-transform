@@ -64,18 +64,18 @@ def test_snow_cover_consistency(source):
 @pytest.mark.parametrize(
     "sd, sc_in, sc_out",
     [
-        # Threshold rule: sd <= 1/1000  →  sc = 0
-        (0.0, 50.0, 0.0),
-        (0.001, 0.5, 0.0),  # exactly at threshold (0.001 <= 1/1000)
+        # Threshold rule: sd <= 1/1000  →  sc zeroed; min-cover rule then fires (sc==0)
+        (0.0, 50.0, 0.0),  # sd=0: zeroed, then min cover = 0, stays 0
+        (0.001, 0.5, (0.001 / 1000) / 15),  # at threshold: zeroed then min-cover applied
         (0.0, 0.0, 0.0),  # both zero
         # Minimum cover rule (only when sc == 0): sc = (sd/1000)/15
         (0.002, 0.0, (0.002 / 1000) / 15),  # just above threshold, sc set to min cover
         (0.3, 0.0, (0.3 / 1000) / 15),  # sc set to min cover
-        (15.0, 0.0, 1.0),  # min cover = (15/1000)/15 = 1.0, clips at 1
+        (15000.0, 0.0, 1.0),  # min cover = (15000/1000)/15 = 1.0, clips at 1
         # sc != 0 — min cover rule does NOT apply, sc is kept as-is
         (0.3, 0.5, 0.5),
         (0.01, 0.8, 0.8),
-        (15.0, 0.5, 0.5),  # min cover would be 1.0, but sc!=0 so kept at 0.5
+        (15000.0, 0.5, 0.5),  # min cover would be 1.0, but sc!=0 so kept at 0.5
         # Clipping enforced independently
         (0.3, 2.0, 1.0),  # sc > 1, clipped to 1
     ],

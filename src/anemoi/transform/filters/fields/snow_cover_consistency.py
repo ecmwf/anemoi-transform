@@ -27,17 +27,21 @@ class SnowCoverConsistency(MatchingFieldsFilter):
 
     .. math::
 
-        \\text{If } sc > 0 \text{ and } sd = 0, \\quad sc = 0
+        \\text{If } sd \\leq \\frac{1}{1000}, \\quad sc = 0
 
-        \\text{If } sd > 5 \\text{ and } sc = 0, \\quad sc = \\min(sd \\times 0.15,\\, 1)
+        sc = \\begin{cases} \\dfrac{sd}{15000} & \\text{if } sc = 0 \\\\ sc & \\text{otherwise} \\end{cases}
 
-        sc = \text{clip}(sc, 0, 1)
+        sc = \\text{clip}(sc, 0, 1)
 
     Where:
-        - ``sc`` is the snow cover value
-        - ``sd`` is the snow depth value
+        - ``sc`` is the snow cover value (fraction, [0, 1])
+        - ``sd`` is the snow depth in metres of water equivalent
 
-    These rules ensure that snow cover is only present when there is snow depth, that a minimum snow cover is assigned when snow depth exceeds a threshold but cover is absent, and that snow cover is always bounded to the valid range ``[0, 1]``.
+    The first rule zeros snow cover when snow depth is negligible (less than 1 mm).
+    The second rule assigns a minimum snow cover derived from the ERA-Interim relationship
+    (snow depth in kg m⁻² divided by 15, where 1/1000 converts metres to kg m⁻²), but
+    only when snow cover is exactly zero — existing non-zero values are left unchanged.
+    The final step clips snow cover to the valid range [0, 1].
     """
 
     @matching(
@@ -82,10 +86,16 @@ class SnowCoverConsistency(MatchingFieldsFilter):
         snow_cover_np = snow_cover.to_numpy()
         snow_depth_np = snow_depth.to_numpy()
 
-        snow_cover_where_sd_zero = np.where(snow_depth_np == 0, 0, snow_cover_np)
+        # If sd is less than 1mm, set snow cover to 0
+        snow_cover_where_sd_zero = np.where(snow_depth_np <= 1 / 1000, 0, snow_cover_np)
+
+        # If snowc is equal to 0, then set to snow depth divided by 15 (converted to kg m⁻²)
+        # Otherwise, keep the original snow cover value
         snow_cover_consistent = np.where(
-            (snow_depth_np > 5) & (snow_cover_where_sd_zero == 0), snow_depth_np * 0.15, snow_cover_where_sd_zero
+            snow_cover_where_sd_zero == 0, (snow_depth_np / 1000) / 15, snow_cover_where_sd_zero
         )
+
+        # Clip snow cover to the range [0, 1]
         snow_cover_consistent = np.clip(snow_cover_consistent, 0, 1)
 
         yield self.new_field_from_numpy(snow_cover_consistent, template=snow_depth, param=self.snow_cover)

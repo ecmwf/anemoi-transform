@@ -21,15 +21,21 @@ MOCK_FIELD_METADATA = {
 }
 
 # Each cell exercises a specific rule or no-change case (snowc clipped to [0, 1]):
-#   [0,0]: sd=0,  sc=50   → rule 1 (sc>0 & sd=0):  sc=0
-#   [0,1]: sd=10, sc=0    → rule 2 (sd>5 & sc=0):  sc=10*0.15=1.5, clipped→1.0
-#   [1,0]: sd=3,  sc=0    → no rule (sd<=5, sc=0): sc=0
-#   [1,1]: sd=10, sc=0.8  → no rule (sd>5, sc>0):  sc=0.8
-#   [2,0]: sd=0,  sc=0    → no rule (both 0):      sc=0
-#   [2,1]: sd=3,  sc=2.0  → clipped to 1.0
-SD_VALUES = np.array([[0.0, 10.0], [3.0, 10.0], [0.0, 3.0]])
+#   [0,0]: sd=0,    sc=50  → threshold rule (sd≤1mm):              sc=0
+#   [0,1]: sd=0.01, sc=0   → min cover rule (sc==0):               sc=(0.01/1000)/15≈6.67e-7
+#   [1,0]: sd=0.3,  sc=0   → min cover rule (sc==0):               sc=(0.3/1000)/15≈2e-5
+#   [1,1]: sd=0.01, sc=0.8 → no change (sc!=0, kept as-is):        sc=0.8
+#   [2,0]: sd=0,    sc=0   → threshold rule (sd≤1mm):              sc=0
+#   [2,1]: sd=0.3,  sc=2.0 → no change from min cover (sc!=0), clipped to 1.0
+SD_VALUES = np.array([[0.0, 0.01], [0.3, 0.01], [0.0, 0.3]])
 SC_VALUES = np.array([[50.0, 0.0], [0.0, 0.8], [0.0, 2.0]])
-SC_EXPECTED = np.array([[0.0, 1.0], [0.0, 0.8], [0.0, 1.0]])
+SC_EXPECTED = np.array(
+    [
+        [0.0, (0.01 / 1000) / 15],
+        [(0.3 / 1000) / 15, 0.8],
+        [0.0, 1.0],
+    ]
+)
 
 
 @pytest.fixture
@@ -58,17 +64,20 @@ def test_snow_cover_consistency(source):
 @pytest.mark.parametrize(
     "sd, sc_in, sc_out",
     [
-        # Rule 1: sc > 0 and sd = 0  →  sc = 0
+        # Threshold rule: sd <= 1/1000  →  sc = 0
         (0.0, 50.0, 0.0),
-        (0.0, 0.001, 0.0),
-        # Rule 2: sd > 5 and sc = 0  →  sc = sd * 0.15, clipped at 1
-        (10.0, 0.0, 1.0),  # sd*0.15=1.5, clipped to 1
-        (6.0, 0.0, 0.9),
-        # No rule applies, clipping still enforced
-        (5.0, 0.0, 0.0),  # sd not strictly > 5
-        (10.0, 2.0, 1.0),  # sc > 1, clipped to 1
-        (3.0, 0.5, 0.5),  # sd > 0 and sc > 0, sd <= 5
+        (0.001, 0.5, 0.0),  # exactly at threshold (0.001 <= 1/1000)
         (0.0, 0.0, 0.0),  # both zero
+        # Minimum cover rule (only when sc == 0): sc = (sd/1000)/15
+        (0.002, 0.0, (0.002 / 1000) / 15),  # just above threshold, sc set to min cover
+        (0.3, 0.0, (0.3 / 1000) / 15),  # sc set to min cover
+        (15.0, 0.0, 1.0),  # min cover = (15/1000)/15 = 1.0, clips at 1
+        # sc != 0 — min cover rule does NOT apply, sc is kept as-is
+        (0.3, 0.5, 0.5),
+        (0.01, 0.8, 0.8),
+        (15.0, 0.5, 0.5),  # min cover would be 1.0, but sc!=0 so kept at 0.5
+        # Clipping enforced independently
+        (0.3, 2.0, 1.0),  # sc > 1, clipped to 1
     ],
 )
 def test_snow_cover_consistency_scalar(test_source, sd, sc_in, sc_out):

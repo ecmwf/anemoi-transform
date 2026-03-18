@@ -9,6 +9,18 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.16](https://github.com/ecmwf/anemoi-transform/compare/0.1.16...0.1.16) (2026-03-18)
+
+
+### Features
+
+* Copy changes to apply_mask from [#250](https://github.com/ecmwf/anemoi-transform/issues/250), [#251](https://github.com/ecmwf/anemoi-transform/issues/251), [#254](https://github.com/ecmwf/anemoi-transform/issues/254) ([4788188](https://github.com/ecmwf/anemoi-transform/commit/47881880489ef5735ac74b0595deb7ac9ce35eac))
+
+
+### Miscellaneous Chores
+
+* Release-as: 0.1.16.post2 ([d823293](https://github.com/ecmwf/anemoi-transform/commit/d823293aea488fcc0fa1640ed99b580ab20dc45b))
+
 ## [0.1.16.post1](https://github.com/ecmwf/anemoi-transform/compare/0.1.16...0.1.16.post1) (2026-02-11)
 
 

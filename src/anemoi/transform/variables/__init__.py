@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import logging
 from abc import ABC
 from abc import abstractmethod
 from typing import TYPE_CHECKING
@@ -15,6 +16,8 @@ from typing import Union
 
 if TYPE_CHECKING:
     from datetime import timedelta
+
+LOG = logging.getLogger(__name__)
 
 
 class Variable(ABC):
@@ -214,15 +217,19 @@ class Variable(ABC):
         """
         return 0
 
-    def compatible(self, other: Any, options: dict | None = None, return_reason: bool = False) -> bool:
+    def compatible(self, other: Any, return_reason: bool = False, **options) -> bool:
         if options is None:
             options = {}
 
         def _compare():
 
             if self.units != other.units:
-
-                return f"Units are not compatible: {self.units} vs {other.units}"
+                if self.units is None or other.units is None:
+                    LOG.warning(
+                        f"{self}: one of the variables has missing units: {self.units} vs {other.units}. Assuming they are compatible."
+                    )
+                else:
+                    return f"Units are not compatible: {self.units} vs {other.units}"
 
             if self.time_processing != other.time_processing:
                 return f"Time processinging types are not compatible: {self.time_processing} vs {other.time_processing}"
@@ -246,17 +253,19 @@ class Variable(ABC):
         return True, None if return_reason else True
 
     @classmethod
-    def check_compatibility(cls, variables1: dict, variables2: dict, options: dict | None = None) -> bool:
+    def check_compatibility(cls, variables1: dict, variables2: dict, **options) -> bool:
         if options is None:
             options = {}
+
         keys1 = set(variables1.keys())
         keys2 = set(variables2.keys())
+
         if keys1 != keys2:
             raise ValueError(f"Variable compatibility: missing={keys1-keys2}, added={keys2-keys1}")
 
         reasons = []
         for k in keys1:
-            compatible, reason = variables1[k].compatible(variables2[k], options=options, return_reason=True)
+            compatible, reason = variables1[k].compatible(variables2[k], return_reason=True, **options)
             if not compatible:
                 reasons.append(f"{k}: {reason}")
 

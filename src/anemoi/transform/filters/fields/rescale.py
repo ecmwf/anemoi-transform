@@ -36,6 +36,9 @@ class RescaleMixin(ABC):
     # intended to be inherited from SingleFieldFilter
     new_field_from_numpy: Callable
 
+    forward_units = None
+    backward_units = None
+
     @abstractmethod
     def prepare_filter(self):
         raise NotImplementedError("prepare_filter must be implemented by subclasses.")
@@ -46,7 +49,7 @@ class RescaleMixin(ABC):
     def forward_transform(self, param: ekd.Field) -> ekd.Field:
         """Apply the forward transformation (x to ax+b)."""
         rescaled = self.rescaler.forward(param.to_numpy())
-        return self.new_field_from_numpy(rescaled, template=param, param=self.param)
+        return self.new_field_from_numpy(rescaled, template=param, param=self.param, units=self.forward_units)
 
     def backward_transform(self, param: ekd.Field) -> ekd.Field:
         """Apply the backward transformation (ax+b to x)."""
@@ -66,8 +69,7 @@ class Rescale(RescaleMixin, SingleFieldFilter):
 class Convert(RescaleMixin, SingleFieldFilter):
     """A filter to convert a parameter in a given unit to another unit, and back.
 
-    This filter uses :mod:`cfunits` (see the `cfunits documentation <https://ncas-cms.github.io/cfunits/>`_)
-    to compute the scale and offset.
+    This filter uses :mod:`pint` to compute the scale and offset.
 
     Examples
     --------
@@ -89,12 +91,16 @@ class Convert(RescaleMixin, SingleFieldFilter):
     required_inputs = ("unit_in", "unit_out", "param")
 
     def prepare_filter(self):
-        from cfunits import Units
+        import pint
 
-        u0 = Units(self.unit_in)
-        u1 = Units(self.unit_out)
+        ureg = pint.UnitRegistry()
+
+        self.forward_units = self.unit_out
+        self.backward_units = self.unit_in
+
         x1, x2 = 0.0, 1.0
-        y1, y2 = Units.conform([x1, x2], u0, u1)
+        y1 = ureg.Quantity(x1, self.unit_in).to(self.unit_out).magnitude
+        y2 = ureg.Quantity(x2, self.unit_in).to(self.unit_out).magnitude
         scale = (y2 - y1) / (x2 - x1)
         offset = y1 - scale * x1
 

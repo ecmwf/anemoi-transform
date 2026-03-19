@@ -9,23 +9,9 @@
 
 import earthkit.data as ekd
 import numpy.testing as npt
-import pytest
 from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import filter_registry
-
-
-def skip_missing_udunits2():
-    """Skip tests if udunits2 package is not available."""
-    # Can't use utils.testing.skip_missing_packages because it only fails
-    # when cfunits.Units is imported...
-    # NB: cfunits depends on udunits2 which is a system library and not installed with pip
-    try:
-        from cfunits import Units  # noqa: F401
-
-        return lambda f: f
-    except FileNotFoundError:
-        return pytest.mark.skip(reason="udunits2 not found")
 
 
 @skip_if_offline
@@ -58,7 +44,6 @@ def test_rescale(fieldlist: ekd.FieldList) -> None:
             npt.assert_allclose(before_filter[param], after_forward[param])
 
 
-@skip_missing_udunits2()
 @skip_if_offline
 def test_convert(fieldlist: ekd.FieldList) -> None:
     """Test converting temperature from Kelvin to Celsius and back.

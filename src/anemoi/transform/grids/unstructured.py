@@ -13,8 +13,8 @@ from typing import Any
 from urllib.parse import urlparse
 
 import numpy as np
-from earthkit.data import from_source
 from earthkit.data import SimpleFieldList
+from earthkit.data import from_source
 
 LOG = logging.getLogger(__name__)
 

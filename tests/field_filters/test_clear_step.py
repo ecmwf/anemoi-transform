@@ -14,8 +14,8 @@ import pytest
 from earthkit.data.utils.dates import to_datetime
 
 from ..utils import collect_fields_by_param
-from ..utils import group_component_dict
 from ..utils import create_fields_filter as create_filter
+from ..utils import group_component_dict
 
 MOCK_FIELD_METADATA = {
     "geography.distinct_latitudes": [10.0, 0.0, -10.0],

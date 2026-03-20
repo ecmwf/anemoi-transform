@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 from earthkit.data.utils.dates import to_datetime
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 from ..utils import collect_fields_by_param
 
@@ -37,7 +37,7 @@ def source(test_source):
 
 
 def test_clear_step(source):
-    clear_step = filter_registry.create("clear_step")
+    clear_step = create_filter("clear_step")
     pipeline = source | clear_step
 
     input_fields = collect_fields_by_param(source)

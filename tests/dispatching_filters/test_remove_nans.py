@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from anemoi.transform.filters import dispatching_filter_registry as filter_registry
+from tests.utils import create_dispatching_filter as create_filter
 
 from ..utils import collect_fields_by_param
 
@@ -54,7 +54,7 @@ def source(test_source):
 
 
 def test_remove_nans_fields(source):
-    remove_nans = filter_registry.create("remove_nans")
+    remove_nans = create_filter("remove_nans")
     pipeline = source | remove_nans
 
     input_fields = collect_fields_by_param(source)
@@ -88,7 +88,7 @@ def test_drop_nans_tabular():
             "z": [0.0, 1.0, 2.0, 3.0, np.nan],
         }
     )
-    drop_nans = filter_registry.create("drop_nans", **config)
+    drop_nans = create_filter("drop_nans", **config)
     result = drop_nans(df.copy())
 
     assert isinstance(result, pd.DataFrame)

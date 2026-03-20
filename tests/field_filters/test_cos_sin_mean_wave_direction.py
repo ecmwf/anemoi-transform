@@ -9,7 +9,7 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
@@ -45,7 +45,7 @@ def cos_sin_mwd_source(test_source):
 
 def test_cos_sin_mean_wave_direction(mwd_source):
     """Test the cos_sin_mean_wave_direction filter."""
-    filter = filter_registry.create(
+    filter = create_filter(
         "cos_sin_mean_wave_direction",
         mean_wave_direction="mwd",
         cos_mean_wave_direction="cos_mwd",
@@ -65,7 +65,7 @@ def test_cos_sin_mean_wave_direction(mwd_source):
 
 def test_cos_sin_mean_wave_direction_reverse(cos_sin_mwd_source):
     """Test the cos_sin_mean_wave_direction filter in reverse."""
-    filter = filter_registry.create(
+    filter = create_filter(
         "cos_sin_mean_wave_direction",
         mean_wave_direction="mwd",
         cos_mean_wave_direction="cos_mwd",
@@ -83,7 +83,7 @@ def test_cos_sin_mean_wave_direction_reverse(cos_sin_mwd_source):
 
 def test_cos_sin_mean_wave_direction_round_trip(mwd_source):
     """Test the cos_sin_mean_wave_direction filter reproduces inputs on a round trip."""
-    filter = filter_registry.create(
+    filter = create_filter(
         "cos_sin_mean_wave_direction",
         mean_wave_direction="mwd",
         cos_mean_wave_direction="cos_mwd",

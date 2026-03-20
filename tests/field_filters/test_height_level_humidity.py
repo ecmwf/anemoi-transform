@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 from ..utils import SelectAndAddFieldSource
 from ..utils import assert_fields_equal
@@ -128,7 +128,7 @@ def dewpoint_temperature_source(test_source):
 @skip_if_offline
 def test_height_level_specific_humidity_to_relative_humidity_from_file(test_source):
     source = test_source("anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib")
-    q_to_r_height = filter_registry.create(
+    q_to_r_height = create_filter(
         "q_to_r_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -163,7 +163,7 @@ def test_height_level_specific_humidity_to_relative_humidity_from_file(test_sour
 
 
 def test_specific_humidity_to_relative_humidity(specific_humidity_source):
-    q_to_r_height = filter_registry.create(
+    q_to_r_height = create_filter(
         "q_to_r_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -195,7 +195,7 @@ def test_specific_humidity_to_relative_humidity(specific_humidity_source):
 
 
 def test_height_level_specific_humidity_to_relative_humidity_round_trip(specific_humidity_source):
-    q_to_r_height = filter_registry.create(
+    q_to_r_height = create_filter(
         "q_to_r_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -207,7 +207,7 @@ def test_height_level_specific_humidity_to_relative_humidity_round_trip(specific
         model_level_AB=AB_coefficients,
     )
 
-    r_to_q_height = filter_registry.create(
+    r_to_q_height = create_filter(
         "r_to_q_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -257,7 +257,7 @@ def test_relative_humidity_to_specific_humidity_from_file(test_source):
 
     source.ds += ekd.FieldList.from_array(input_relative_humidity, md)
 
-    r_to_q_height = filter_registry.create(
+    r_to_q_height = create_filter(
         "r_to_q_height",
         height=2,
         specific_humidity_at_height_level="2q",
@@ -290,7 +290,7 @@ def test_relative_humidity_to_specific_humidity_from_file(test_source):
 
 
 def test_relative_humidity_to_specific_humidity(relative_humidity_source):
-    r_to_q_height = filter_registry.create(
+    r_to_q_height = create_filter(
         "r_to_q_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -322,7 +322,7 @@ def test_relative_humidity_to_specific_humidity(relative_humidity_source):
 
 
 def test_height_level_relative_humidity_to_specific_humidity_round_trip(relative_humidity_source):
-    r_to_q_height = filter_registry.create(
+    r_to_q_height = create_filter(
         "r_to_q_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -334,7 +334,7 @@ def test_height_level_relative_humidity_to_specific_humidity_round_trip(relative
         model_level_AB=AB_coefficients,
     )
 
-    q_to_r_height = filter_registry.create(
+    q_to_r_height = create_filter(
         "q_to_r_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -379,7 +379,7 @@ def test_height_level_relative_humidity_to_specific_humidity_round_trip(relative
 def test_specific_humidity_to_dewpoint_from_file(test_source):
     source = test_source("anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib")
 
-    q_to_d_height = filter_registry.create(
+    q_to_d_height = create_filter(
         "q_to_d_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -413,7 +413,7 @@ def test_specific_humidity_to_dewpoint_from_file(test_source):
 
 
 def test_specific_humidity_to_dewpoint_temperature(specific_humidity_source):
-    q_to_d_height = filter_registry.create(
+    q_to_d_height = create_filter(
         "q_to_d_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -444,7 +444,7 @@ def test_specific_humidity_to_dewpoint_temperature(specific_humidity_source):
 
 
 def test_height_level_specific_humidity_to_dewpoint_temperature_round_trip(specific_humidity_source):
-    q_to_d_height = filter_registry.create(
+    q_to_d_height = create_filter(
         "q_to_d_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -455,7 +455,7 @@ def test_height_level_specific_humidity_to_dewpoint_temperature_round_trip(speci
         model_level_AB=AB_coefficients,
     )
 
-    d_to_q_height = filter_registry.create(
+    d_to_q_height = create_filter(
         "d_to_q_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -506,7 +506,7 @@ def test_dewpoint_to_specific_humidity_from_file(test_source):
     ds += ekd.FieldList.from_array(input_dewpoint_temperature, md)
     source.ds = ds
 
-    d_to_q_height = filter_registry.create(
+    d_to_q_height = create_filter(
         "d_to_q_height",
         height=2,
         specific_humidity_at_height_level="2q",
@@ -538,7 +538,7 @@ def test_dewpoint_to_specific_humidity_from_file(test_source):
 
 
 def test_dewpoint_temperature_to_specific_humidity(dewpoint_temperature_source):
-    d_to_q_height = filter_registry.create(
+    d_to_q_height = create_filter(
         "d_to_q_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -569,7 +569,7 @@ def test_dewpoint_temperature_to_specific_humidity(dewpoint_temperature_source):
 
 
 def test_height_level_dewpoint_temperature_to_specific_humidity_round_trip(dewpoint_temperature_source):
-    d_to_q_height = filter_registry.create(
+    d_to_q_height = create_filter(
         "d_to_q_height",
         height=2,
         specific_humidity_at_height_level="2sh",
@@ -580,7 +580,7 @@ def test_height_level_dewpoint_temperature_to_specific_humidity_round_trip(dewpo
         model_level_AB=AB_coefficients,
     )
 
-    q_to_d_height = filter_registry.create(
+    q_to_d_height = create_filter(
         "q_to_d_height",
         height=2,
         specific_humidity_at_height_level="2sh",

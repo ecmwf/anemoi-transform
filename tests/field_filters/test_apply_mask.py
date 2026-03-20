@@ -12,7 +12,7 @@ from unittest import mock
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 from ..utils import collect_fields_by_param
 
@@ -62,7 +62,7 @@ def ekd_from_source():
 
 def test_apply_mask_fails_without_arguments(ekd_from_source):
     with pytest.raises(ValueError):
-        filter_registry.create("apply_mask", path="all_zeros")
+        create_filter("apply_mask", path="all_zeros")
         ekd_from_source.assert_called_once_with("file", "all_zeros")
 
 
@@ -78,7 +78,7 @@ def test_apply_mask_fails_without_arguments(ekd_from_source):
 @pytest.mark.parametrize("rename", [None, "renamed"])
 @pytest.mark.parametrize("mask_name", MASK_VALUES.keys())
 def test_apply_mask(source, ekd_from_source, mask_name, rename, threshold_options):
-    apply_mask = filter_registry.create("apply_mask", path=mask_name, rename=rename, **threshold_options)
+    apply_mask = create_filter("apply_mask", path=mask_name, rename=rename, **threshold_options)
     ekd_from_source.assert_called_once_with("file", mask_name)
 
     pipeline = source | apply_mask
@@ -107,7 +107,7 @@ def test_apply_mask(source, ekd_from_source, mask_name, rename, threshold_option
 
 
 def test_apply_mask_only_single_param(source, ekd_from_source):
-    apply_mask = filter_registry.create(
+    apply_mask = create_filter(
         "apply_mask",
         path="mixed_floats",
         threshold=0.5,

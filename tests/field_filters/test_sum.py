@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 from ..utils import collect_fields_by_param
 
@@ -43,7 +43,7 @@ def sum_input_source(test_source):
 @skip_if_offline
 def test_sum_fields(sum_input_source):
 
-    sum_filter = filter_registry.create("sum", params=["r", "t"], output="sum")
+    sum_filter = create_filter("sum", params=["r", "t"], output="sum")
     pipeline = sum_input_source | sum_filter
     output_fields = collect_fields_by_param(pipeline)
 
@@ -60,7 +60,7 @@ def test_sum_fields(sum_input_source):
 
 
 def test_sum_filter_backward_not_implemented(sum_input_source):
-    sum_filter = filter_registry.create("sum", params=["r", "t"], output="sum")
+    sum_filter = create_filter("sum", params=["r", "t"], output="sum")
 
     pipeline = sum_input_source | sum_filter
     reverse = pipeline | sum_filter

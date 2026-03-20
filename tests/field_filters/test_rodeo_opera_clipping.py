@@ -10,7 +10,7 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 from ..utils import collect_fields_by_param
 
@@ -64,7 +64,7 @@ def rodeo_opera_source(test_source):
 
 
 def test_rodeo_opera_clipping(rodeo_opera_source):
-    preprocessing = filter_registry.create("rodeo_opera_clipping", max_total_precipitation=MAX_TP)
+    preprocessing = create_filter("rodeo_opera_clipping", max_total_precipitation=MAX_TP)
     pipeline = rodeo_opera_source | preprocessing
 
     output_fields = collect_fields_by_param(pipeline)

@@ -12,7 +12,6 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.fields import new_fieldlist_from_list
-from anemoi.transform.filters.tabular import create_filter
 from anemoi.transform.source import Source
 
 
@@ -116,4 +115,18 @@ def mock_field(**metadata):
 
 
 def create_tabular_filter(name, **kwargs):
-    return create_filter(name, **kwargs)
+    from anemoi.transform.filters.tabular import filter_registry
+
+    return filter_registry.create(name, **kwargs)
+
+
+def create_fields_filter(name, **kwargs):
+    from anemoi.transform.filters.fields import filter_registry
+
+    return filter_registry.create(name, **kwargs)
+
+
+def create_dispatching_filter(name, **kwargs):
+    from anemoi.transform.filters import dispatching_filter_registry as filter_registry
+
+    return filter_registry.create(name, **kwargs)

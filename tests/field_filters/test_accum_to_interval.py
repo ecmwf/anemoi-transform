@@ -9,7 +9,7 @@
 
 import numpy as np
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 from ..utils import collect_fields_by_param
 
@@ -74,7 +74,7 @@ def test_accum_to_interval_zero_left_true(test_source):
     ]
 
     source = test_source(FIELD_SPECS)
-    accum_to_interval = filter_registry.create("accum_to_interval", variables=["tp"], zero_left=True)
+    accum_to_interval = create_filter("accum_to_interval", variables=["tp"], zero_left=True)
     pipeline = source | accum_to_interval
 
     output_fields = collect_fields_by_param(pipeline)
@@ -135,7 +135,7 @@ def test_accum_to_interval_zero_left_false(test_source):
     ]
 
     source = test_source(FIELD_SPECS)
-    accum_to_interval = filter_registry.create("accum_to_interval", variables=["tp"], zero_left=False)
+    accum_to_interval = create_filter("accum_to_interval", variables=["tp"], zero_left=False)
     pipeline = source | accum_to_interval
 
     output_fields = collect_fields_by_param(pipeline)

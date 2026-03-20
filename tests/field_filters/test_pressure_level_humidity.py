@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 from ..utils import SelectFieldSource
 from ..utils import assert_fields_equal
@@ -63,7 +63,7 @@ def specific_humidity_source(test_source):
 
 
 def test_pressure_level_specific_humidity_to_relative_humidity(specific_humidity_source):
-    q_to_r = filter_registry.create("q_to_r")
+    q_to_r = create_filter("q_to_r")
     pipeline = specific_humidity_source | q_to_r
 
     input_fields = collect_fields_by_param(specific_humidity_source)
@@ -88,8 +88,8 @@ def test_pressure_level_specific_humidity_to_relative_humidity(specific_humidity
 
 
 def test_pressure_level_specific_humidity_to_relative_humidity_round_trip(specific_humidity_source):
-    q_to_r = filter_registry.create("q_to_r")
-    r_to_q = filter_registry.create("r_to_q")
+    q_to_r = create_filter("q_to_r")
+    r_to_q = create_filter("r_to_q")
 
     relative_humidity_source = SelectFieldSource(specific_humidity_source | q_to_r, params=["r", "t"])
     pipeline = relative_humidity_source | r_to_q
@@ -117,7 +117,7 @@ def test_pressure_level_specific_humidity_to_relative_humidity_round_trip(specif
 @skip_if_offline
 def test_pressure_level_specific_humidity_to_relative_humidity_from_file(test_source):
     source = test_source("anemoi-transform/filters/era_20240601_pressure_level_specific_humidity.grib")
-    q_to_r = filter_registry.create("q_to_r")
+    q_to_r = create_filter("q_to_r")
     pipeline = source | q_to_r
 
     input_fields = collect_fields_by_param(source)
@@ -142,7 +142,7 @@ def test_pressure_level_specific_humidity_to_relative_humidity_from_file(test_so
 
 
 def test_pressure_level_relative_humidity_to_specific_humidity(relative_humidity_source):
-    r_to_q = filter_registry.create("r_to_q")
+    r_to_q = create_filter("r_to_q")
     pipeline = relative_humidity_source | r_to_q
 
     input_fields = collect_fields_by_param(relative_humidity_source)
@@ -166,8 +166,8 @@ def test_pressure_level_relative_humidity_to_specific_humidity(relative_humidity
 
 
 def test_pressure_level_relative_humidity_to_specific_humidity_round_trip(relative_humidity_source):
-    r_to_q = filter_registry.create("r_to_q")
-    q_to_r = filter_registry.create("q_to_r")
+    r_to_q = create_filter("r_to_q")
+    q_to_r = create_filter("q_to_r")
     specific_humidity_source = SelectFieldSource(relative_humidity_source | r_to_q, params=["q", "t"])
     pipeline = specific_humidity_source | q_to_r
 
@@ -194,7 +194,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity_round_trip(relati
 @skip_if_offline
 def test_pressure_level_relative_humidity_to_specific_humidity_from_file_arome(test_source):
     source = test_source("anemoi-transform/filters/r_t_PAAROME_1S40_ECH0_ISOBARE.grib")
-    r_to_q = filter_registry.create("r_to_q")
+    r_to_q = create_filter("r_to_q")
     pipeline = source | r_to_q
 
     input_fields = collect_fields_by_param(source)
@@ -225,7 +225,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity_from_file_arome(t
 @skip_if_offline
 def test_pressure_level_relative_humidity_to_specific_humidity_from_file(test_source):
     source = test_source("anemoi-transform/filters/cerra_20240601_pressure_levels.grib")
-    r_to_q = filter_registry.create("r_to_q")
+    r_to_q = create_filter("r_to_q")
     pipeline = source | r_to_q
 
     input_fields = collect_fields_by_param(source)

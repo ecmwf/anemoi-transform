@@ -14,7 +14,7 @@ import earthkit.data as ekd
 import numpy as np
 import pytest
 
-from anemoi.transform.filters.fields.repeat_members import RepeatMembers
+from tests.utils import create_fields_filter as create_filter
 
 NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 
@@ -34,7 +34,7 @@ def _get_template() -> tuple[Any, np.ndarray, Any]:
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_1() -> None:
-    """Test RepeatMembers filter using a list of numbers.
+    """Test create_filter("repeat_members",  filter using a list of numbers.
 
     Tests:
     - Repeating members using a list of numbers [1, 2, 3].
@@ -42,7 +42,7 @@ def test_repeat_members_using_numbers_1() -> None:
     """
     fieldlist, values, metadata = _get_template()
 
-    repeat = RepeatMembers(numbers=[1, 2, 3])
+    repeat = create_filter("repeat_members", numbers=[1, 2, 3])
     repeated = repeat.forward(fieldlist)
     assert len(repeated) == 3
     for i, f in enumerate(repeated):
@@ -54,7 +54,7 @@ def test_repeat_members_using_numbers_1() -> None:
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_2() -> None:
-    """Test RepeatMembers filter using a range of numbers.
+    """Test create_filter("repeat_members",  filter using a range of numbers.
 
     Tests:
     - Repeating members using a range of numbers "1/to/3".
@@ -62,7 +62,7 @@ def test_repeat_members_using_numbers_2() -> None:
     """
     fieldlist, values, metadata = _get_template()
 
-    repeat = RepeatMembers(numbers="1/to/3")
+    repeat = create_filter("repeat_members", numbers="1/to/3")
     repeated = repeat.forward(fieldlist)
     assert len(repeated) == 3
     for i, f in enumerate(repeated):
@@ -74,7 +74,7 @@ def test_repeat_members_using_numbers_2() -> None:
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_members() -> None:
-    """Test RepeatMembers filter using a list of members.
+    """Test create_filter("repeat_members",  filter using a list of members.
 
     Tests:
     - Repeating members using a list of members [0, 1, 2].
@@ -82,7 +82,7 @@ def test_repeat_members_using_members() -> None:
     """
     fieldlist, values, metadata = _get_template()
 
-    repeat = RepeatMembers(members=[0, 1, 2])
+    repeat = create_filter("repeat_members", members=[0, 1, 2])
     repeated = repeat.forward(fieldlist)
     assert len(repeated) == 3
     for i, f in enumerate(repeated):
@@ -94,7 +94,7 @@ def test_repeat_members_using_members() -> None:
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_count() -> None:
-    """Test RepeatMembers filter using a count.
+    """Test create_filter("repeat_members",  filter using a count.
 
     Tests:
     - Repeating members using a count of 3.
@@ -102,7 +102,7 @@ def test_repeat_members_using_count() -> None:
     """
     fieldlist, values, metadata = _get_template()
 
-    repeat = RepeatMembers(count=3)
+    repeat = create_filter("repeat_members", count=3)
     repeated = repeat.forward(fieldlist)
     assert len(repeated) == 3
     for i, f in enumerate(repeated):

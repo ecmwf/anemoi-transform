@@ -14,7 +14,7 @@ import earthkit.data as ekd
 import numpy.testing as npt
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 sys.path.append(Path(__file__).parents[1].as_posix())
 
@@ -66,7 +66,7 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
     """
 
     before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
-    filter = filter_registry.create(
+    filter = create_filter(
         "earthkitfieldlambda",
         fn="tests.field_filters.test_lambda.do_something",
         param="sp",

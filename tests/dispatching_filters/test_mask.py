@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from anemoi.transform.filters import dispatching_filter_registry as filter_registry
+from tests.utils import create_dispatching_filter as create_filter
 
 from ..utils import collect_fields_by_param
 
@@ -73,7 +73,7 @@ def ekd_from_source():
 @pytest.mark.parametrize("rename", [None, "renamed"])
 @pytest.mark.parametrize("mask_name", MASK_VALUES.keys())
 def test_apply_mask_fields(field_source, ekd_from_source, mask_name, rename, threshold_options):
-    apply_mask = filter_registry.create("apply_mask", path=mask_name, rename=rename, **threshold_options)
+    apply_mask = create_filter("apply_mask", path=mask_name, rename=rename, **threshold_options)
     ekd_from_source.assert_called_once_with("file", mask_name)
 
     pipeline = field_source | apply_mask
@@ -106,7 +106,7 @@ def test_mask_tabular():
         "col1": "lambda x: x >= 2",
     }
     df = pd.DataFrame({"col1": [0, 1, 2, 3], "col2": [3, 4, 5, 6]})
-    mask = filter_registry.create("mask", **config)
+    mask = create_filter("mask", **config)
     result = mask(df.copy())
 
     assert isinstance(result, pd.DataFrame)

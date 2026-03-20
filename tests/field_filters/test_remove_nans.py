@@ -10,7 +10,7 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
+from tests.utils import create_fields_filter as create_filter
 
 from ..utils import collect_fields_by_param
 
@@ -68,14 +68,14 @@ def source_multiple_params(test_source):
 
     output_fields = {}
     for param in ["a", "t", None]:
-        remove_nans = filter_registry.create("remove_nans", param=param)
+        remove_nans = create_filter("remove_nans", param=param)
         pipeline = source | remove_nans
         output_fields[f"param={param}"] = collect_fields_by_param(pipeline)
     return output_fields, first_param
 
 
 def test_remove_nans(source):
-    remove_nans = filter_registry.create("remove_nans")
+    remove_nans = create_filter("remove_nans")
     pipeline = source | remove_nans
 
     input_fields = collect_fields_by_param(source)
@@ -99,12 +99,12 @@ def test_remove_nans(source):
 
 def test_remove_nans_invalid_method():
     with pytest.raises(AssertionError, match="Method invalid_method not implemented"):
-        filter_registry.create("remove_nans", method="invalid_method")
+        create_filter("remove_nans", method="invalid_method")
 
 
 def test_remove_nans_with_check():
     with pytest.raises(AssertionError, match="Check not implemented"):
-        filter_registry.create("remove_nans", check=True)
+        create_filter("remove_nans", check=True)
 
 
 class Test_remove_nans_param:

@@ -11,10 +11,10 @@ import numpy as np
 import pytest
 
 from anemoi.transform.constants import g_gravitational_acceleration
-from tests.utils import create_fields_filter as create_filter
 
 from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],

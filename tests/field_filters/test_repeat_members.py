@@ -14,7 +14,7 @@ import earthkit.data as ekd
 import numpy as np
 import pytest
 
-from tests.utils import create_fields_filter as create_filter
+from ..utils import create_fields_filter as create_filter
 
 NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
 

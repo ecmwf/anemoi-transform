@@ -13,9 +13,8 @@ import numpy as np
 import pytest
 from earthkit.data.utils.dates import to_datetime
 
-from tests.utils import create_fields_filter as create_filter
-
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],

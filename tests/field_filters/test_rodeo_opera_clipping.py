@@ -10,9 +10,8 @@
 import numpy as np
 import pytest
 
-from tests.utils import create_fields_filter as create_filter
-
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MAX_TP = 12.5
 

@@ -14,7 +14,7 @@ import earthkit.data as ekd
 import numpy.testing as npt
 from anemoi.utils.testing import skip_if_offline
 
-from tests.utils import create_fields_filter as create_filter
+from ..utils import create_fields_filter as create_filter
 
 sys.path.append(Path(__file__).parents[1].as_posix())
 

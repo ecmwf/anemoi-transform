@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tests.utils import create_tabular_filter as create_filter
+from ..utils import create_tabular_filter as create_filter
 
 
 def test_mask_dewpoint_temperature_only():

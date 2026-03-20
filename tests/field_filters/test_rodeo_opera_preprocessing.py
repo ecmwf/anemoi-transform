@@ -13,9 +13,9 @@ import pytest
 from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _INF
 from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _NODATA
 from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _UNDETECTED
-from tests.utils import create_fields_filter as create_filter
 
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MAX_TP = 12.5
 

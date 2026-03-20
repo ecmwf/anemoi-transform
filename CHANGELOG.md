@@ -9,6 +9,20 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.1.29](https://github.com/ecmwf/anemoi-transform/compare/0.1.28...0.1.29) (2026-03-20)
+
+
+### Features
+
+* Add dispatching filters for filters which work on both tabular/field data ([#265](https://github.com/ecmwf/anemoi-transform/issues/265)) ([4839cd3](https://github.com/ecmwf/anemoi-transform/commit/4839cd3aa49d9675a64426c55ca4de662bfa69f9))
+* Add the ability to merge filter registries ([#267](https://github.com/ecmwf/anemoi-transform/issues/267)) ([064745f](https://github.com/ecmwf/anemoi-transform/commit/064745fa8fe0daf3a915c4c512a372da4d122eb5))
+* Allow masking from numpy ([#254](https://github.com/ecmwf/anemoi-transform/issues/254)) ([ece1a88](https://github.com/ecmwf/anemoi-transform/commit/ece1a8876959df450ca5219f2bb0a42904bfff4f))
+
+
+### Bug Fixes
+
+* Argument reference from mir_kwargs to mir_args ([#256](https://github.com/ecmwf/anemoi-transform/issues/256)) ([83d1118](https://github.com/ecmwf/anemoi-transform/commit/83d11183f9e8d1b8a0ab12321034890ba3e95fe6))
+
 ## [0.1.28](https://github.com/ecmwf/anemoi-transform/compare/0.1.27...0.1.28) (2026-03-13)
 
 

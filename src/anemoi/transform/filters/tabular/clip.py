@@ -17,7 +17,7 @@ from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-@filter_registry.register("clip")
+@filter_registry.register("clip_tabular")
 class Clip(Filter):
     """Clips columns of a DataFrame to the specified range.
 

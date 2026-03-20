@@ -33,7 +33,7 @@ OPERATORS = {
 }
 
 
-@filter_registry.register("apply_mask")
+@filter_registry.register("apply_mask_fields")
 class MaskVariable(SingleFieldFilter):
     """A filter to mask variables using an external file.
 

@@ -12,7 +12,7 @@ import numpy.testing as npt
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from ..utils import create_fields_filter as create_filter
+from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 def skip_missing_udunits2():

@@ -15,7 +15,7 @@ from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
 
-@filter_registry.register("clip")
+@filter_registry.register("clip_fields")
 class Clipper(SingleFieldFilter):
     """Clip the values of a single field to a specified range [minimum, maximum].
 

@@ -34,7 +34,7 @@ def _get_template() -> tuple[Any, np.ndarray, Any]:
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_1() -> None:
-    """Test create_filter("repeat_members",  filter using a list of numbers.
+    """Test repeat_members filter using a list of numbers.
 
     Tests:
     - Repeating members using a list of numbers [1, 2, 3].
@@ -54,7 +54,7 @@ def test_repeat_members_using_numbers_1() -> None:
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_numbers_2() -> None:
-    """Test create_filter("repeat_members",  filter using a range of numbers.
+    """Test repeat_members filter using a range of numbers.
 
     Tests:
     - Repeating members using a range of numbers "1/to/3".
@@ -74,7 +74,7 @@ def test_repeat_members_using_numbers_2() -> None:
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_members() -> None:
-    """Test create_filter("repeat_members",  filter using a list of members.
+    """Test repeat_members filter using a list of members.
 
     Tests:
     - Repeating members using a list of members [0, 1, 2].
@@ -94,7 +94,7 @@ def test_repeat_members_using_members() -> None:
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
 def test_repeat_members_using_count() -> None:
-    """Test create_filter("repeat_members",  filter using a count.
+    """Test repeat_members filter using a count.
 
     Tests:
     - Repeating members using a count of 3.

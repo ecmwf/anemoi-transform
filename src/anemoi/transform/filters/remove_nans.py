@@ -11,7 +11,7 @@ import earthkit.data as ekd
 import pandas as pd
 
 from anemoi.transform.filter import DispatchingFilter
-from anemoi.transform.filters import dispatching_filter_registry as filter_registry
+from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.fields.remove_nans import RemoveNaNs as RemoveNaNsFields
 from anemoi.transform.filters.tabular.drop_nans import DropNaNs as DropNaNsTabular
 

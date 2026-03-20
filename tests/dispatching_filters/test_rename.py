@@ -12,8 +12,7 @@ import pandas as pd
 import pytest
 
 from anemoi.transform.fields import WrappedField
-
-from ..utils import create_dispatching_filter as create_filter
+from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 @pytest.fixture

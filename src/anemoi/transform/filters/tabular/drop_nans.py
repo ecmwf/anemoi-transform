@@ -18,7 +18,7 @@ from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-@filter_registry.register("drop_nans")
+@filter_registry.register("drop_nans_tabular")
 class DropNaNs(Filter):
     """Drop rows from a DataFrame where any/all selected columns are NaN.
 

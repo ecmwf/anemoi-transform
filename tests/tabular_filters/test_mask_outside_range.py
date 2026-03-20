@@ -11,7 +11,7 @@
 import numpy as np
 import pandas as pd
 
-from ..utils import create_tabular_filter as create_filter
+from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 def test_mask_outside_range():

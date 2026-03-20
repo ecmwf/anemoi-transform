@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from ..utils import create_dispatching_filter as create_filter
+from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 def calc_stats(fieldlist):

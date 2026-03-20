@@ -22,7 +22,7 @@ from anemoi.transform.filters.fields import filter_registry
 LOG = logging.getLogger(__name__)
 
 
-@filter_registry.register("remove_nans")
+@filter_registry.register("remove_nans_fields")
 class RemoveNaNs(Filter):
     """A filter to mask out NaNs.
 

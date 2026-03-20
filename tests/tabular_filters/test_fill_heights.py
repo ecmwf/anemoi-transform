@@ -15,7 +15,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from ..utils import create_tabular_filter as create_filter
+from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 def mock_dataset(lat_spec, lon_spec, z_spec):

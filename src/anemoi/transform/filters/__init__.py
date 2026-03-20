@@ -42,14 +42,14 @@ def create_filter_by_name(name: str, *, context: Any = None, **config) -> Filter
     return filter
 
 
-def create_filter(context: Any, config: dict[str, dict]) -> Filter:
+def create_filter(context: Any, config: Any) -> Filter:
     """Create a filter from the given configuration.
 
     Parameters
     ----------
     context : Any
         The context in which the filter is created.
-    config : dict[str, dict]
+    config : Any
         The configuration for the filter.
 
     Returns
@@ -57,19 +57,9 @@ def create_filter(context: Any, config: dict[str, dict]) -> Filter:
     Filter
         The created filter.
     """
-
-    if not isinstance(config, dict):
-        raise ValueError(f"Invalid filter config, should be a dict: {config}")
-
-    if len(config) != 1:
-        raise ValueError(f"Invalid filter config, should contain one key, value pair: {config}")
-
-    key, value = next(iter(config.items()))
-
-    if not isinstance(value, dict):
-        raise ValueError(f"Invalid filter config, value should be a dict: {config}")
-
-    return create_filter_by_name(key, context=context, **value)
+    filter = filter_registry.from_config(config)
+    filter.context = context
+    return filter
 
 
 __all__ = ["filter_registry", "create_filter", "create_filter_by_name", "dispatching_filter_registry"]

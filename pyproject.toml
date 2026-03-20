@@ -36,10 +36,11 @@ dynamic = [ "version" ]
 dependencies = [
   "anemoi-utils>=0.5.1",
   "cfunits",
-  "earthkit-data>=0.12.4,<1",
-  "earthkit-geo>=0.3",
-  "earthkit-meteo>=0.4.1",
-  "earthkit-regrid>=0.4",
+  "earthkit-data @ git+https://github.com/ecmwf/earthkit-data.git@release/1.0.0rc0",
+  "earthkit-geo @ git+https://github.com/ecmwf/earthkit-geo.git@release/1.0.0rc0",
+  "earthkit-meteo @ git+https://github.com/ecmwf/earthkit-meteo.git@release/1.0.0rc0",
+  # temporarily manually pin earthkit-utils to ensure using pre-release 1.0
+  # "earthkit-utils @ git+https://github.com/ecmwf/earthkit-utils.git@release/1.0.0rc0",
   "healpy",
   "pandas<3",
 ]

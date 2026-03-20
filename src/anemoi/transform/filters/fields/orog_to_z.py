@@ -35,11 +35,11 @@ class Orography(SingleFieldFilter):
 
     def forward_select(self):
         # select only fields where the param is self.orography
-        return {"param": self.orography}
+        return {"parameter.variable": self.orography}
 
     def backward_select(self):
         # select only fields where the param is self.geopotential
-        return {"param": self.geopotential}
+        return {"parameter.variable": self.geopotential}
 
     def forward_transform(self, orography: ekd.Field) -> ekd.Field:
         """Convert orography in m to surface geopotential in m²/s².

@@ -17,9 +17,9 @@ from ..utils import collect_fields_by_param
 from ..utils import create_dispatching_filter as create_filter
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 MASK_VALUES = {
@@ -39,7 +39,8 @@ DATA_VALUES = {
 @pytest.fixture()
 def field_source(test_source):
     FIELD_SPECS = [
-        {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA} for param, values in DATA_VALUES.items()
+        {"parameter.variable": param, "data.values": values.copy(), **MOCK_FIELD_METADATA}
+        for param, values in DATA_VALUES.items()
     ]
     return test_source(FIELD_SPECS)
 

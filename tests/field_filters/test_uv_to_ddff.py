@@ -15,9 +15,9 @@ from ..utils import collect_fields_by_param
 from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 U_VALUES = {
@@ -44,10 +44,10 @@ FF_VALUES = {
 @pytest.fixture
 def uv_source(test_source):
     UV_SPEC = [
-        {"param": "u", "levelist": 500, "values": U_VALUES[500], **MOCK_FIELD_METADATA},
-        {"param": "v", "levelist": 500, "values": V_VALUES[500], **MOCK_FIELD_METADATA},
-        {"param": "u", "levelist": 850, "values": U_VALUES[850], **MOCK_FIELD_METADATA},
-        {"param": "v", "levelist": 850, "values": V_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "u", "vertical.level": 500, "data.values": U_VALUES[500], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "v", "vertical.level": 500, "data.values": V_VALUES[500], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "u", "vertical.level": 850, "data.values": U_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "v", "vertical.level": 850, "data.values": V_VALUES[850], **MOCK_FIELD_METADATA},
     ]
     return test_source(UV_SPEC)
 
@@ -55,10 +55,10 @@ def uv_source(test_source):
 @pytest.fixture
 def ddff_source(test_source):
     DDFF_SPEC = [
-        {"param": "ws", "levelist": 500, "values": DD_VALUES[500], **MOCK_FIELD_METADATA},
-        {"param": "wdir", "levelist": 500, "values": FF_VALUES[500], **MOCK_FIELD_METADATA},
-        {"param": "ws", "levelist": 850, "values": DD_VALUES[850], **MOCK_FIELD_METADATA},
-        {"param": "wdir", "levelist": 850, "values": FF_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "ws", "vertical.level": 500, "data.values": DD_VALUES[500], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "wdir", "vertical.level": 500, "data.values": FF_VALUES[500], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "ws", "vertical.level": 850, "data.values": DD_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "wdir", "vertical.level": 850, "data.values": FF_VALUES[850], **MOCK_FIELD_METADATA},
     ]
     return test_source(DDFF_SPEC)
 
@@ -74,8 +74,8 @@ def test_uv_to_ddff(uv_source):
     for i, level in enumerate([500, 850]):
         assert np.allclose(output_fields["ws"][i].to_numpy(), DD_VALUES[level])
         assert np.allclose(output_fields["wdir"][i].to_numpy(), FF_VALUES[level])
-        assert output_fields["ws"][i].metadata("levelist") == level
-        assert output_fields["wdir"][i].metadata("levelist") == level
+        assert output_fields["ws"][i].vertical.level() == level
+        assert output_fields["wdir"][i].vertical.level() == level
 
 
 def test_uv_to_ddff_round_trip(uv_source):
@@ -108,8 +108,8 @@ def test_ddff_to_uv(ddff_source):
     for i, level in enumerate([500, 850]):
         assert np.allclose(output_fields["u"][i].to_numpy(), U_VALUES[level])
         assert np.allclose(output_fields["v"][i].to_numpy(), V_VALUES[level])
-        assert output_fields["u"][i].metadata("levelist") == level
-        assert output_fields["v"][i].metadata("levelist") == level
+        assert output_fields["u"][i].vertical.level() == level
+        assert output_fields["v"][i].vertical.level() == level
 
 
 def test_ddff_to_uv_round_trip(ddff_source):

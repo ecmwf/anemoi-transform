@@ -14,9 +14,9 @@ from ..utils import collect_fields_by_param
 from ..utils import create_fields_filter as create_filter
 
 INPUT_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20.0, 30.0, 40.0],
-    "valid_datetime": "2018-08-01T12:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20.0, 30.0, 40.0],
+    "time.valid_datetime": "2018-08-01T12:00:00Z",
 }
 
 INPUT_VALUES = [
@@ -36,17 +36,18 @@ EXPECTED_VALUES = [
 
 EXPECTED_METADATA = {
     # take the original (flattened) versions and remove where there were NaNs in the first field
-    # "latitudes": [10.0, ---, 10.0, ---, 0.0, ---, -10.0, -10.0, ---],
-    "latitudes": [10.0, 10.0, 0.0, -10.0, -10.0],
-    # "longitudes": [20.0, ---, 40.0, ---, 30.0, ---, 20.0, 30.0, ---],
-    "longitudes": [20.0, 40.0, 30.0, 20.0, 30.0],
+    # "geography.distinct_latitudes": [10.0, ---, 10.0, ---, 0.0, ---, -10.0, -10.0, ---],
+    "geography.distinct_latitudes": [10.0, 10.0, 0.0, -10.0, -10.0],
+    # "geography.distinct_longitudes": [20.0, ---, 40.0, ---, 30.0, ---, 20.0, 30.0, ---],
+    "geography.distinct_longitudes": [20.0, 40.0, 30.0, 20.0, 30.0],
 }
 
 
 @pytest.fixture
 def source(test_source):
     FIELD_SPECS = [
-        {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA} for i, values in enumerate(INPUT_VALUES)
+        {"parameter.variable": "t", "time.step": i, "data.values": values.copy(), **INPUT_METADATA}
+        for i, values in enumerate(INPUT_VALUES)
     ]
     return test_source(FIELD_SPECS)
 
@@ -54,10 +55,11 @@ def source(test_source):
 @pytest.fixture
 def source_multiple_params(test_source):
     FIELD_SPECS = [
-        {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA} for i, values in enumerate(INPUT_VALUES)
+        {"parameter.variable": "t", "time.step": i, "data.values": values.copy(), **INPUT_METADATA}
+        for i, values in enumerate(INPUT_VALUES)
     ] + [
         # first step of "a" has more NaNs than "t"
-        {"param": "a", "step": i, "values": values.copy(), **INPUT_METADATA}
+        {"parameter.variable": "a", "time.step": i, "data.values": values.copy(), **INPUT_METADATA}
         for i, values in enumerate(INPUT_VALUES[::-1])
     ]
     source = test_source(FIELD_SPECS)
@@ -91,7 +93,7 @@ def test_remove_nans(source):
         assert np.array_equal(input_field.to_numpy(flatten=True), INPUT_VALUES[i].flatten(), equal_nan=True)
         assert np.array_equal(output_field.to_numpy(flatten=True), EXPECTED_VALUES[i], equal_nan=True)
 
-        output_lats, output_lons = output_field.grid_points()
+        output_lats, output_lons = output_field.geography.latlons()
         assert np.array_equal(output_lats, EXPECTED_METADATA["latitudes"], equal_nan=True)
         assert np.array_equal(output_lons, EXPECTED_METADATA["longitudes"], equal_nan=True)
 

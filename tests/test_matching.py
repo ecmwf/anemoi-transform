@@ -42,20 +42,28 @@ def test_matching_decorator_initializes_correctly():
 
 
 def test_forward_transform_adds_fields():
-    a = mock_field(param="a", step=0, level=850)
-    b = mock_field(param="b", step=0, level=850)
+    a = mock_field(
+        **{"parameter.variable": "a", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
+    )
+    b = mock_field(
+        **{"parameter.variable": "b", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
+    )
     data = ekd.SimpleFieldList([a, b])
 
     f = AddFields(a="a", b="b")
     result = f.forward(data)
     assert len(result) == 1
     assert isinstance(result[0], ekd.Field)
-    assert result[0].metadata("param") == "c"
+    assert result[0].parameter.variable() == "c"
 
 
 def test_return_inputs():
-    a = mock_field(param="a", step=0, level=850)
-    b = mock_field(param="b", step=0, level=850)
+    a = mock_field(
+        **{"parameter.variable": "a", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
+    )
+    b = mock_field(
+        **{"parameter.variable": "b", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
+    )
     data = ekd.SimpleFieldList([a, b])
 
     f = AddFields(a="a", b="b", return_inputs="all")
@@ -63,20 +71,22 @@ def test_return_inputs():
     assert len(result) == 3
     for i in range(3):
         assert isinstance(result[i], ekd.Field)
-    assert {result[i].metadata("param") for i in range(2)} == {"a", "b"}
-    assert result[2].metadata("param") == "c"
+    assert {result[i].parameter.variable() for i in range(2)} == {"a", "b"}
+    assert result[2].parameter.variable() == "c"
 
     f = AddFields(a="a", b="b", return_inputs=["a"])
     result = f.forward(data)
     assert len(result) == 2
     for i in range(2):
         assert isinstance(result[i], ekd.Field)
-    assert result[0].metadata("param") == "a"
-    assert result[1].metadata("param") == "c"
+    assert result[0].parameter.variable() == "a"
+    assert result[1].parameter.variable() == "c"
 
 
 def test_missing_component_raises():
-    a = mock_field(param="a", step=0, level=850)
+    a = mock_field(
+        **{"parameter.variable": "a", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
+    )
     # Missing 'b'
     data = ekd.SimpleFieldList([a])
     f = AddFields(a="a", b="b")
@@ -96,8 +106,12 @@ def test_uninitialised_filter_raises():
 
 
 def test_metadata_mismatch_warning(caplog):
-    c = mock_field(param="c", step=0, level=850)
-    d = mock_field(param="d", step=0, level=850)
+    c = mock_field(
+        **{"parameter.variable": "c", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
+    )
+    d = mock_field(
+        **{"parameter.variable": "d", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
+    )
     data = ekd.SimpleFieldList([c, d])
 
     f = AddFields(a="a", b="b")

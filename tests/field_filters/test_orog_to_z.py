@@ -17,9 +17,9 @@ from ..utils import collect_fields_by_param
 from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 OROG_VALUES = np.array([[243.87788459, 1892.45371246], [427.80215359, 156.92873391], [2167.93458212, 338.15794671]])
@@ -29,13 +29,13 @@ Z_VALUES = OROG_VALUES * g_gravitational_acceleration
 
 @pytest.fixture
 def orog_source(test_source):
-    OROG_SPEC = [{"param": "orog", "values": OROG_VALUES, **MOCK_FIELD_METADATA}]
+    OROG_SPEC = [{"parameter.variable": "orog", "data.values": OROG_VALUES, **MOCK_FIELD_METADATA}]
     return test_source(OROG_SPEC)
 
 
 @pytest.fixture
 def z_source(test_source):
-    Z_SPEC = [{"param": "z", "values": Z_VALUES, **MOCK_FIELD_METADATA}]
+    Z_SPEC = [{"parameter.variable": "z", "data.values": Z_VALUES, **MOCK_FIELD_METADATA}]
     return test_source(Z_SPEC)
 
 

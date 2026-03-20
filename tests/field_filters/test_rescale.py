@@ -38,16 +38,16 @@ def test_rescale(fieldlist: ekd.FieldList) -> None:
         The fieldlist to use for testing.
     """
 
-    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
+    before_filter = {field.parameter.variable(): field.to_numpy().copy() for field in fieldlist}
 
     # rescale from K to °C
     k_to_deg = create_filter("rescale", scale=1.0, offset=-273.15, param="2t")
     rescaled = k_to_deg.forward(fieldlist)
-    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled}
+    after_forward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled}
 
     # and back
     rescaled_back = k_to_deg.backward(rescaled)
-    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled_back}
+    after_backward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled_back}
 
     for param in ("2t", "sp"):
         npt.assert_allclose(before_filter[param], after_backward[param])
@@ -68,15 +68,15 @@ def test_convert(fieldlist: ekd.FieldList) -> None:
     fieldlist : ekd.FieldList
         The fieldlist to use for testing.
     """
-    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
+    before_filter = {field.parameter.variable(): field.to_numpy().copy() for field in fieldlist}
     # rescale from K to °C
     k_to_deg = create_filter("convert", unit_in="K", unit_out="degC", param="2t")
     rescaled = k_to_deg.forward(fieldlist)
-    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled}
+    after_forward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled}
 
     # and back
     rescaled_back = k_to_deg.backward(rescaled)
-    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled_back}
+    after_backward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled_back}
 
     for param in ("2t", "sp"):
         npt.assert_allclose(before_filter[param], after_backward[param])

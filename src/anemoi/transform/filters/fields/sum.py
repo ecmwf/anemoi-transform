@@ -17,6 +17,7 @@ from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
+from anemoi.transform.grouping import grouping_dict_all
 
 
 @filter_registry.register("sum")
@@ -80,12 +81,10 @@ class Sum(Filter):
         needed_fields: dict[tuple[Hashable, ...], dict[str, ekd.Field]] = defaultdict(dict)
 
         for f in fields:
-            key = f.metadata(namespace="mars")
-            param = key.pop("param", None)
-            if param is None:
-                param = f.metadata("param")
+            key = grouping_dict_all(f)
+            param = key.pop("parameter.variable")
             if param in self.params:
-                key = tuple(key.items())
+                key = frozenset(key.items())
 
                 if param in needed_fields[key]:
                     raise ValueError(f"Duplicate field {param} for {key}")

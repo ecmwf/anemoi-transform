@@ -10,9 +10,8 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
-
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -46,7 +45,7 @@ def rotated_wind_source(test_source):
 
 
 def test_rotate_winds(wind_source, rotated_wind_source):
-    rotate_winds = filter_registry.create("rotate_winds", x_wind="10u", y_wind="10v")
+    rotate_winds = create_filter("rotate_winds", x_wind="10u", y_wind="10v")
 
     pipeline = wind_source | rotate_winds
 
@@ -67,7 +66,7 @@ def test_rotate_winds(wind_source, rotated_wind_source):
 
 
 def test_unrotate_winds(rotated_wind_source, wind_source):
-    unrotate_winds = filter_registry.create(
+    unrotate_winds = create_filter(
         "unrotate_winds",
         x_wind="10u",
         y_wind="10v",
@@ -93,8 +92,8 @@ def test_unrotate_winds(rotated_wind_source, wind_source):
 
 
 def test_rotate_winds_roundtrip(wind_source):
-    rotate_winds = filter_registry.create("rotate_winds", x_wind="10u", y_wind="10v")
-    unrotate_winds = filter_registry.create(
+    rotate_winds = create_filter("rotate_winds", x_wind="10u", y_wind="10v")
+    unrotate_winds = create_filter(
         "unrotate_winds",
         x_wind="10u",
         y_wind="10v",

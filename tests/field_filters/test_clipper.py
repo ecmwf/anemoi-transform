@@ -13,7 +13,7 @@ import numpy.testing as npt
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import filter_registry
+from ..utils import create_fields_filter as create_filter
 
 
 def calc_stats(fieldlist):
@@ -29,7 +29,7 @@ def calc_stats(fieldlist):
 @skip_if_offline
 def test_clipper_minimum(fieldlist: ekd.FieldList) -> None:
     before_stats = calc_stats(fieldlist)
-    clipper = filter_registry.create("clip", minimum=300.0, param="2t")
+    clipper = create_filter("clip", minimum=300.0, param="2t")
     clipped = clipper(fieldlist)
     after_stats = calc_stats(clipped)
 
@@ -49,7 +49,7 @@ def test_clipper_minimum(fieldlist: ekd.FieldList) -> None:
 @skip_if_offline
 def test_clipper_maximum(fieldlist: ekd.FieldList) -> None:
     before_stats = calc_stats(fieldlist)
-    clipper = filter_registry.create("clip", maximum=300.0, param="2t")
+    clipper = create_filter("clip", maximum=300.0, param="2t")
     clipped = clipper(fieldlist)
     after_stats = calc_stats(clipped)
 
@@ -69,7 +69,7 @@ def test_clipper_maximum(fieldlist: ekd.FieldList) -> None:
 @skip_if_offline
 def test_clipper_both(fieldlist: ekd.FieldList) -> None:
     before_stats = calc_stats(fieldlist)
-    clipper = filter_registry.create("clip", minimum=300.0, maximum=305.0, param="2t")
+    clipper = create_filter("clip", minimum=300.0, maximum=305.0, param="2t")
     clipped = clipper(fieldlist)
     after_stats = calc_stats(clipped)
 

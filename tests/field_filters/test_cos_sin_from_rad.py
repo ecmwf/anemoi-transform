@@ -9,10 +9,9 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
-
 from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -54,7 +53,7 @@ def cos_sin_RAD_source(test_source):
 
 def test_forward(RAD_source):
     """Test the cos_sin_from_rad filter."""
-    filter = filter_registry.create(
+    filter = create_filter(
         "cos_sin_from_rad",
         param="RAD",
     )
@@ -72,7 +71,7 @@ def test_forward(RAD_source):
 
 def test_reverse(cos_sin_RAD_source):
     """Test the cos_sin_from_rad filter in reverse."""
-    filter = filter_registry.create(
+    filter = create_filter(
         "cos_sin_from_rad",
         param="some_rad",
         cos_param="cos_RAD",
@@ -90,7 +89,7 @@ def test_reverse(cos_sin_RAD_source):
 
 def test_round_trip(RAD_source):
     """Test the cos_sin_from_rad filter reproduces inputs on a round trip."""
-    filter = filter_registry.create(
+    filter = create_filter(
         "cos_sin_from_rad",
         param="RAD",
     )
@@ -114,7 +113,7 @@ def test_exception(DEG_source):
 
     Inpupt data in degrees.
     """
-    filter = filter_registry.create(
+    filter = create_filter(
         "cos_sin_from_rad",
         param="DEG",
     )

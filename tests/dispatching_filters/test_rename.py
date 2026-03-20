@@ -12,7 +12,8 @@ import pandas as pd
 import pytest
 
 from anemoi.transform.fields import WrappedField
-from anemoi.transform.filters import dispatching_filter_registry as filter_registry
+
+from ..utils import create_dispatching_filter as create_filter
 
 
 @pytest.fixture
@@ -32,13 +33,13 @@ def test_rename_tabular():
             "y": [3, 4, 5],
         }
     )
-    rename = filter_registry.create("rename", **config)
+    rename = create_filter("rename", **config)
     result = rename(df.copy())
     assert isinstance(result, pd.DataFrame)
 
 
 def test_rename_field(grib_source):
-    rename = filter_registry.create(
+    rename = create_filter(
         "rename",
         param={"z": "geopotential", "t": "temperature"},
     )

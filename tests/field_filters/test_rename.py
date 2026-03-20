@@ -9,7 +9,7 @@
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import filter_registry
+from ..utils import create_fields_filter as create_filter
 
 
 @pytest.fixture
@@ -24,7 +24,7 @@ def netcdf_source(test_source):
 
 @skip_if_offline
 def test_rename_grib_dict_rename(grib_source):
-    rename = filter_registry.create(
+    rename = create_filter(
         "rename",
         param={"z": "geopotential", "t": "temperature"},
     )
@@ -41,7 +41,7 @@ def test_rename_grib_dict_rename(grib_source):
 
 @skip_if_offline
 def test_rename_grib_format_rename(grib_source):
-    rename = filter_registry.create(
+    rename = create_filter(
         "rename",
         param="{param}_{levelist}_{levtype}_{levelist:d}",
     )
@@ -58,7 +58,7 @@ def test_rename_grib_format_rename(grib_source):
 
 @skip_if_offline
 def test_rename_grib_dict_multiple(grib_source):
-    rename = filter_registry.create(
+    rename = create_filter(
         "rename",
         param={"z": "geopotential", "t": "temperature"},
         levelist={1000: "1000hPa", 850: "850hPa", 700: "700hPa", 500: "500hPa", 400: "400hPa", 300: "300hPa"},
@@ -77,7 +77,7 @@ def test_rename_grib_dict_multiple(grib_source):
 
 @skip_if_offline
 def test_rename_netcdf(netcdf_source):
-    rename = filter_registry.create(
+    rename = create_filter(
         "rename",
         param={"t2m": "2m temperature", "msl": "mean sea level pressure"},
     )

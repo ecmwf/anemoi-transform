@@ -11,10 +11,10 @@ import numpy as np
 import pytest
 
 from anemoi.transform.constants import g_gravitational_acceleration
-from anemoi.transform.filters import filter_registry
 
 from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -40,7 +40,7 @@ def z_source(test_source):
 
 
 def test_orog_to_z(orog_source):
-    orog_to_z = filter_registry.create("orog_to_z")
+    orog_to_z = create_filter("orog_to_z")
     pipeline = orog_source | orog_to_z
 
     output_fields = collect_fields_by_param(pipeline)
@@ -50,8 +50,8 @@ def test_orog_to_z(orog_source):
 
 
 def test_orog_to_z_round_trip(orog_source):
-    orog_to_z = filter_registry.create("orog_to_z")
-    z_to_orog = filter_registry.create("z_to_orog")
+    orog_to_z = create_filter("orog_to_z")
+    z_to_orog = create_filter("z_to_orog")
     z_source = orog_source | orog_to_z
     pipeline = z_source | z_to_orog
 
@@ -69,7 +69,7 @@ def test_orog_to_z_round_trip(orog_source):
 
 
 def test_z_to_orog(z_source):
-    z_to_orog = filter_registry.create("z_to_orog")
+    z_to_orog = create_filter("z_to_orog")
     pipeline = z_source | z_to_orog
 
     output_fields = collect_fields_by_param(pipeline)
@@ -79,8 +79,8 @@ def test_z_to_orog(z_source):
 
 
 def test_z_to_orog_round_trip(z_source):
-    z_to_orog = filter_registry.create("z_to_orog")
-    orog_to_z = filter_registry.create("orog_to_z")
+    z_to_orog = create_filter("z_to_orog")
+    orog_to_z = create_filter("orog_to_z")
     orog_source = z_source | z_to_orog
     pipeline = orog_source | orog_to_z
 

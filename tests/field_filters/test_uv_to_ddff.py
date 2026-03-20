@@ -10,10 +10,9 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
-
 from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -65,7 +64,7 @@ def ddff_source(test_source):
 
 
 def test_uv_to_ddff(uv_source):
-    uv_to_ddff = filter_registry.create("uv_to_ddff")
+    uv_to_ddff = create_filter("uv_to_ddff")
     pipeline = uv_source | uv_to_ddff
 
     output_fields = collect_fields_by_param(pipeline)
@@ -80,8 +79,8 @@ def test_uv_to_ddff(uv_source):
 
 
 def test_uv_to_ddff_round_trip(uv_source):
-    uv_to_ddff = filter_registry.create("uv_to_ddff")
-    ddff_to_uv = filter_registry.create("ddff_to_uv")
+    uv_to_ddff = create_filter("uv_to_ddff")
+    ddff_to_uv = create_filter("ddff_to_uv")
     ddff_source = uv_source | uv_to_ddff
     pipeline = ddff_source | ddff_to_uv
 
@@ -99,7 +98,7 @@ def test_uv_to_ddff_round_trip(uv_source):
 
 
 def test_ddff_to_uv(ddff_source):
-    ddff_to_uv = filter_registry.create("ddff_to_uv")
+    ddff_to_uv = create_filter("ddff_to_uv")
     pipeline = ddff_source | ddff_to_uv
 
     output_fields = collect_fields_by_param(pipeline)
@@ -114,8 +113,8 @@ def test_ddff_to_uv(ddff_source):
 
 
 def test_ddff_to_uv_round_trip(ddff_source):
-    ddff_to_uv = filter_registry.create("ddff_to_uv")
-    uv_to_ddff = filter_registry.create("uv_to_ddff")
+    ddff_to_uv = create_filter("ddff_to_uv")
+    uv_to_ddff = create_filter("uv_to_ddff")
     uv_source = ddff_source | ddff_to_uv
     pipeline = uv_source | uv_to_ddff
 

@@ -20,9 +20,8 @@ from anemoi.utils.testing import cli_testing
 from anemoi.utils.testing import skip_if_missing_command
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import filter_registry
-
 from ..utils import compare_npz_files
+from ..utils import create_fields_filter as create_filter
 
 
 @skip_if_offline
@@ -53,7 +52,7 @@ def test_regrid_matrix(get_test_data, test_source):
     matrix = get_test_data("anemoi-transform/filters/regrid/ea-to-rr-matrix.npz")
 
     era5 = test_source("anemoi-transform/filters/regrid/2t-ea.grib")
-    regrid = filter_registry.create("regrid", matrix=matrix)
+    regrid = create_filter("regrid", matrix=matrix)
     for _ in era5 | regrid:
         pass
 
@@ -83,7 +82,7 @@ def test_make_regrid_mask(get_test_data):
 @skip_if_offline
 def test_regrid_ekd(test_source):
     era5 = test_source("anemoi-transform/filters/regrid/2t-ea.grib")
-    regrid = filter_registry.create("regrid", in_grid="N320", out_grid=[0.25, 0.25])
+    regrid = create_filter("regrid", in_grid="N320", out_grid=[0.25, 0.25])
     for _ in era5 | regrid:
         pass
 
@@ -91,7 +90,7 @@ def test_regrid_ekd(test_source):
 @skip_if_offline
 def test_regrid_nearest(test_source):
     era5 = test_source("anemoi-transform/filters/regrid/2t-ea.grib")
-    regrid = filter_registry.create("regrid", in_grid="N320", out_grid="O96", method="nearest")
+    regrid = create_filter("regrid", in_grid="N320", out_grid="O96", method="nearest")
     for _ in era5 | regrid:
         pass
 
@@ -101,7 +100,7 @@ def test_regrid_mask(get_test_data, test_source):
     mask = get_test_data("anemoi-transform/filters/regrid/ea-over-rr-mask.npz")
 
     era5 = test_source("anemoi-transform/filters/regrid/2t-ea.grib")
-    regrid = filter_registry.create("regrid", mask=mask)
+    regrid = create_filter("regrid", mask=mask)
     for _ in era5 | regrid:
         pass
 

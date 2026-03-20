@@ -10,10 +10,9 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
-
 from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -39,7 +38,7 @@ def sp_source(test_source):
 
 
 def test_lnsp_to_sp(lnsp_source):
-    lnsp_to_sp = filter_registry.create("lnsp_to_sp")
+    lnsp_to_sp = create_filter("lnsp_to_sp")
     pipeline = lnsp_source | lnsp_to_sp
 
     output_fields = collect_fields_by_param(pipeline)
@@ -49,8 +48,8 @@ def test_lnsp_to_sp(lnsp_source):
 
 
 def test_lnsp_to_sp_round_trip(lnsp_source):
-    lnsp_to_sp = filter_registry.create("lnsp_to_sp")
-    sp_to_lnsp = filter_registry.create("sp_to_lnsp")
+    lnsp_to_sp = create_filter("lnsp_to_sp")
+    sp_to_lnsp = create_filter("sp_to_lnsp")
     sp_source = lnsp_source | lnsp_to_sp
     pipeline = sp_source | sp_to_lnsp
 
@@ -68,7 +67,7 @@ def test_lnsp_to_sp_round_trip(lnsp_source):
 
 
 def test_sp_to_lnsp(sp_source):
-    sp_to_lnsp = filter_registry.create("sp_to_lnsp")
+    sp_to_lnsp = create_filter("sp_to_lnsp")
     pipeline = sp_source | sp_to_lnsp
 
     output_fields = collect_fields_by_param(pipeline)
@@ -78,8 +77,8 @@ def test_sp_to_lnsp(sp_source):
 
 
 def test_sp_to_lnsp_round_trip(sp_source):
-    sp_to_lnsp = filter_registry.create("sp_to_lnsp")
-    lnsp_to_sp = filter_registry.create("lnsp_to_sp")
+    sp_to_lnsp = create_filter("sp_to_lnsp")
+    lnsp_to_sp = create_filter("lnsp_to_sp")
     lnsp_source = sp_source | sp_to_lnsp
     pipeline = lnsp_source | lnsp_to_sp
 

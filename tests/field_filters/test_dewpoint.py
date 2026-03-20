@@ -11,11 +11,10 @@ import numpy as np
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import filter_registry
-
 from ..utils import SelectFieldSource
 from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -48,7 +47,7 @@ def dewpoint_source(test_source):
 
 
 def test_relative_humidity_to_dewpoint(relative_humidity_source):
-    r_to_d = filter_registry.create("r_to_d")
+    r_to_d = create_filter("r_to_d")
     pipeline = relative_humidity_source | r_to_d
 
     input_fields = collect_fields_by_param(relative_humidity_source)
@@ -71,8 +70,8 @@ def test_relative_humidity_to_dewpoint(relative_humidity_source):
 
 
 def test_relative_humidity_to_dewpoint_round_trip(relative_humidity_source):
-    r_to_d = filter_registry.create("r_to_d")
-    d_to_r = filter_registry.create("d_to_r")
+    r_to_d = create_filter("r_to_d")
+    d_to_r = create_filter("d_to_r")
     # drop r to be sure it is reconstructed properly
     dewpoint_source = SelectFieldSource(relative_humidity_source | r_to_d, params=["t", "d"])
     pipeline = dewpoint_source | d_to_r
@@ -101,7 +100,7 @@ def test_relative_humidity_to_dewpoint_round_trip(relative_humidity_source):
 def test_relative_humidity_to_dewpoint_from_file(test_source):
     # this grib file is CERRA data that contains 2t and 2r
     source = test_source("anemoi-transform/filters/cerra_20240601_single_level.grib")
-    r_to_d = filter_registry.create("r_to_d", relative_humidity="2r", temperature="2t", dewpoint="2d")
+    r_to_d = create_filter("r_to_d", relative_humidity="2r", temperature="2t", dewpoint="2d")
     pipeline = source | r_to_d
 
     input_fields = collect_fields_by_param(source)
@@ -124,7 +123,7 @@ def test_relative_humidity_to_dewpoint_from_file(test_source):
 
 
 def test_dewpoint_to_relative_humidity(dewpoint_source):
-    d_to_r = filter_registry.create("d_to_r")
+    d_to_r = create_filter("d_to_r")
     pipeline = dewpoint_source | d_to_r
 
     input_fields = collect_fields_by_param(dewpoint_source)
@@ -147,8 +146,8 @@ def test_dewpoint_to_relative_humidity(dewpoint_source):
 
 
 def test_dewpoint_to_relative_humidity_round_trip(dewpoint_source):
-    d_to_r = filter_registry.create("d_to_r")
-    r_to_d = filter_registry.create("r_to_d")
+    d_to_r = create_filter("d_to_r")
+    r_to_d = create_filter("r_to_d")
     # drop d to be sure it is reconstructed properly
     relative_humidity_source = SelectFieldSource(dewpoint_source | d_to_r, params=["t", "r"])
     pipeline = relative_humidity_source | r_to_d
@@ -176,7 +175,7 @@ def test_dewpoint_to_relative_humidity_round_trip(dewpoint_source):
 @skip_if_offline
 def test_dewpoint_to_relative_humidity_from_file(test_source):
     dewpoint_source = test_source("anemoi-transform/filters/era_20240601_single_level_dewpoint.grib")
-    d_to_r = filter_registry.create("d_to_r", relative_humidity="2r", temperature="2t", dewpoint="2d")
+    d_to_r = create_filter("d_to_r", relative_humidity="2r", temperature="2t", dewpoint="2d")
     pipeline = dewpoint_source | d_to_r
 
     input_fields = collect_fields_by_param(dewpoint_source)

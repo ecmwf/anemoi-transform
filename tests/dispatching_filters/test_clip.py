@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import dispatching_filter_registry as filter_registry
+from ..utils import create_dispatching_filter as create_filter
 
 
 def calc_stats(fieldlist):
@@ -30,7 +30,7 @@ def calc_stats(fieldlist):
 @skip_if_offline
 def test_clipper_fields(fieldlist: ekd.FieldList) -> None:
     before_stats = calc_stats(fieldlist)
-    clipper = filter_registry.create("clipper", minimum=300.0, maximum=305.0, param="2t")
+    clipper = create_filter("clipper", minimum=300.0, maximum=305.0, param="2t")
     clipped = clipper(fieldlist)
     after_stats = calc_stats(clipped)
 
@@ -52,7 +52,7 @@ def test_clip_tabular():
         "col1": (1, 2),
     }
     df = pd.DataFrame({"col1": [0, 1, 2, 3], "col2": [3, 4, 5, 6]})
-    clip = filter_registry.create("clip", **config)
+    clip = create_filter("clip", **config)
     result = clip(df.copy())
 
     assert isinstance(result, pd.DataFrame)

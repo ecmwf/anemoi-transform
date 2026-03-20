@@ -12,9 +12,8 @@ import earthkit.data as ekd
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
-
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -42,7 +41,7 @@ def test_glacier_mask(snow_depth_source, mock_mask):
     with mock.patch("anemoi.transform.filters.fields.glacier_mask.ekd.from_source") as mock_earthkit:
         mock_earthkit.return_value = mock_mask
 
-        glacier_mask = filter_registry.create("glacier_mask", glacier_mask="glacier_mask.grib")
+        glacier_mask = create_filter("glacier_mask", glacier_mask="glacier_mask.grib")
         mock_earthkit.assert_called_once_with("file", "glacier_mask.grib")
 
     pipeline = snow_depth_source | glacier_mask

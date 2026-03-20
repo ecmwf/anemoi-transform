@@ -11,10 +11,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from anemoi.transform.filters import dispatching_filter_registry as filter_registry
-
 from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
+from ..utils import create_dispatching_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -32,8 +31,8 @@ def orog_source(test_source):
 
 
 def test_orog_to_z_fields(orog_source):
-    orog_to_z = filter_registry.create("orog_to_z")
-    z_to_orog = filter_registry.create("z_to_orog")
+    orog_to_z = create_filter("orog_to_z")
+    z_to_orog = create_filter("z_to_orog")
     z_source = orog_source | orog_to_z
     pipeline = z_source | z_to_orog
 
@@ -60,7 +59,7 @@ def test_geopotential_to_height_tabular():
             "z": [1.0, 2.0, 3.0, 4.0],
         }
     )
-    geopotential_to_height = filter_registry.create("geopotential_to_height", **config)
+    geopotential_to_height = create_filter("geopotential_to_height", **config)
     result = geopotential_to_height(df.copy())
     assert isinstance(result, pd.DataFrame)
     assert tuple(result.columns) == tuple(df.columns) + ("height",)

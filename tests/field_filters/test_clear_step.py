@@ -13,9 +13,8 @@ import numpy as np
 import pytest
 from earthkit.data.utils.dates import to_datetime
 
-from anemoi.transform.filters import filter_registry
-
 from ..utils import collect_fields_by_param
+from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -37,7 +36,7 @@ def source(test_source):
 
 
 def test_clear_step(source):
-    clear_step = filter_registry.create("clear_step")
+    clear_step = create_filter("clear_step")
     pipeline = source | clear_step
 
     input_fields = collect_fields_by_param(source)

@@ -10,8 +10,4 @@ from anemoi.utils.registry import Registry
 
 filter_registry = Registry(__name__)
 
-__all__ = ["create_filter", "filter_registry"]
-
-
-def create_filter(name: str, **kwargs):
-    return filter_registry.create(name, **kwargs)
+__all__ = ["filter_registry"]

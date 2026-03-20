@@ -12,31 +12,64 @@ from typing import Any
 
 from anemoi.utils.registry import Registry
 
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry as fields_filter_registry
+from anemoi.transform.filters.tabular import filter_registry as tabular_filter_registry
 
 dispatching_filter_registry = Registry(__name__)
 
 filter_registry = fields_filter_registry
 
 
-def create_filter(context: Any, config: Any) -> Any:
+def _merge_registries():
+    target = filter_registry
+    # force loading of the main registry
+    _ = target.factories
+
+    SOURCES = (fields_filter_registry, tabular_filter_registry)
+    for source in SOURCES:
+        for name, factory in source.factories.items():
+            try:
+                target.register(name, factory, aliases=source.aliases().get(name, None))
+            except AssertionError as e:
+                raise AssertionError(f"Duplicate filter name: {name} in {source.package} registry") from e
+
+
+def create_filter_by_name(name: str, *, context: Any = None, **config) -> Filter:
+    """Create a filter from the given key and config."""
+    filter = filter_registry.create(name, **config)
+    filter.context = context
+    return filter
+
+
+def create_filter(context: Any, config: dict[str, dict]) -> Filter:
     """Create a filter from the given configuration.
 
     Parameters
     ----------
     context : Any
         The context in which the filter is created.
-    config : Any
+    config : dict[str, dict]
         The configuration for the filter.
 
     Returns
     -------
-    Any
+    Filter
         The created filter.
     """
-    filter = filter_registry.from_config(config)
-    filter.context = context
-    return filter
+
+    if not isinstance(config, dict):
+        raise ValueError(f"Invalid filter config, should be a dict: {config}")
+
+    if len(config) != 1:
+        raise ValueError(f"Invalid filter config, should contain one key, value pair: {config}")
+
+    key, value = next(iter(config.items()))
+
+    if not isinstance(value, dict):
+        raise ValueError(f"Invalid filter config, value should be a dict: {config}")
+
+    return create_filter_by_name(key, context=context, **value)
 
 
-__all__ = ["filter_registry", "create_filter", "dispatching_filter_registry"]
+__all__ = ["filter_registry", "create_filter", "create_filter_by_name", "dispatching_filter_registry"]

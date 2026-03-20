@@ -13,7 +13,7 @@ from collections.abc import Callable
 from earthkit.data.core.fieldlist import Field
 
 from anemoi.transform.filter import SingleFieldFilter
-from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.fields import filter_registry
 
 
 @filter_registry.register("earthkitfieldlambda")

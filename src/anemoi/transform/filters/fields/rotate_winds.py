@@ -13,7 +13,7 @@ import earthkit.data as ekd
 from earthkit.geo.rotate import rotate_vector
 from pyproj import CRS
 
-from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import matching
 

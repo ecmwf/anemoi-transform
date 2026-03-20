@@ -1,4 +1,4 @@
-# (C) Copyright 2024 Anemoi contributors.
+# (C) Copyright 2024- Anemoi contributors.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -12,7 +12,7 @@ from collections.abc import Iterator
 import earthkit.data as ekd
 import numpy as np
 
-from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import matching
 

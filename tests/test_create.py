@@ -14,10 +14,11 @@ LOG = logging.getLogger(__name__)
 
 def test_create_filters() -> None:
     """Test the creation of filters."""
+    from anemoi.transform.filters import dispatching_filter_registry
     from anemoi.transform.filters.fields import filter_registry as fields_filter_registry
     from anemoi.transform.filters.tabular import filter_registry as tabular_filter_registry
 
-    for reg in (fields_filter_registry, tabular_filter_registry):
+    for reg in (dispatching_filter_registry, fields_filter_registry, tabular_filter_registry):
         for n in reg.registered:
             try:
                 reg.create(n)

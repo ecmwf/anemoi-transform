@@ -9,6 +9,17 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.2.0](https://github.com/ecmwf/anemoi-transform/compare/0.1.29...0.2.0) (2026-04-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add ability to call tabular filters from `anemoi-datasets` ([#268](https://github.com/ecmwf/anemoi-transform/issues/268))
+
+### Features
+
+* Add ability to call tabular filters from `anemoi-datasets` ([#268](https://github.com/ecmwf/anemoi-transform/issues/268)) ([a8e8b50](https://github.com/ecmwf/anemoi-transform/commit/a8e8b509ae011c5c0213d68df4429b20822d60b9))
+
 ## [0.1.29](https://github.com/ecmwf/anemoi-transform/compare/0.1.28...0.1.29) (2026-03-20)
 
 

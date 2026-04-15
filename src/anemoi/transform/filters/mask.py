@@ -20,7 +20,7 @@ class Mask(DispatchingFilter):
     """Mask field or tabular datasets."""
 
     def __init__(self, **config):
-        if "path" in config:
+        if "path" in config or "mask_param" in config:
             self.filter = MaskVariableFields(**config)
         else:
             self.filter = MaskValuesTabular(**config)

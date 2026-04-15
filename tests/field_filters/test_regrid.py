@@ -20,8 +20,9 @@ from anemoi.utils.testing import cli_testing
 from anemoi.utils.testing import skip_if_missing_command
 from anemoi.utils.testing import skip_if_offline
 
+from anemoi.transform.filters import create_filter_by_name as create_filter
+
 from ..utils import compare_npz_files
-from ..utils import create_fields_filter as create_filter
 
 
 @skip_if_offline

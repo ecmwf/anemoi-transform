@@ -11,7 +11,7 @@ import earthkit.data as ekd
 import pandas as pd
 
 from anemoi.transform.filter import DispatchingFilter
-from anemoi.transform.filters import dispatching_filter_registry as filter_registry
+from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.fields.orog_to_z import Orography as OrographyFields
 from anemoi.transform.filters.tabular.geopotential_to_height import GeopotentialToHeight as GeopotentialToHeightTabular
 

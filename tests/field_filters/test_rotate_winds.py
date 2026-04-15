@@ -10,8 +10,9 @@
 import numpy as np
 import pytest
 
+from anemoi.transform.filters import create_filter_by_name as create_filter
+
 from ..utils import collect_fields_by_param
-from ..utils import create_fields_filter as create_filter
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],

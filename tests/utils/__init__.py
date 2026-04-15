@@ -112,21 +112,3 @@ def mock_field(**metadata):
             return dict(self)
 
     return ekd.ArrayField(array=[1], metadata=MetadataOverride(**metadata))
-
-
-def create_tabular_filter(name, **kwargs):
-    from anemoi.transform.filters.tabular import filter_registry
-
-    return filter_registry.create(name, **kwargs)
-
-
-def create_fields_filter(name, **kwargs):
-    from anemoi.transform.filters.fields import filter_registry
-
-    return filter_registry.create(name, **kwargs)
-
-
-def create_dispatching_filter(name, **kwargs):
-    from anemoi.transform.filters import dispatching_filter_registry as filter_registry
-
-    return filter_registry.create(name, **kwargs)

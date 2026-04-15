@@ -94,5 +94,5 @@ class Orography(SingleFieldFilter):
         return data_request
 
 
-filter_registry.register("orog_to_z", Orography)
-filter_registry.register("z_to_orog", Orography.reversed)
+filter_registry.register("orog_to_z_fields", Orography)
+filter_registry.register("z_to_orog_fields", Orography.reversed)

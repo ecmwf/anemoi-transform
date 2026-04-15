@@ -16,9 +16,7 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry as fields_filter_registry
 from anemoi.transform.filters.tabular import filter_registry as tabular_filter_registry
 
-dispatching_filter_registry = Registry(__name__)
-
-filter_registry = fields_filter_registry
+filter_registry = Registry(__name__)
 
 
 def _merge_registries():
@@ -62,4 +60,5 @@ def create_filter(context: Any, config: Any) -> Filter:
     return filter
 
 
-__all__ = ["filter_registry", "create_filter", "create_filter_by_name", "dispatching_filter_registry"]
+_merge_registries()
+__all__ = ["filter_registry", "create_filter", "create_filter_by_name"]

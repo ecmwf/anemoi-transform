@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..utils import create_tabular_filter as create_filter
+from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 def test_sort_by():

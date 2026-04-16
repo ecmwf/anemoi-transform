@@ -187,6 +187,9 @@ class RegridFilter(Filter):
 
         return self._interpolate(data)
 
+    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+        return self.forward(data)
+
     def _interpolate(self, data: Any) -> Any:
         """Interpolate the data from one grid to another.
 

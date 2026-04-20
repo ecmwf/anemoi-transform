@@ -175,7 +175,7 @@ class FieldMaskVariable(SingleFieldFilter):
         pipe:
           - source: # Can be `mars`, `netcdf`, etc.
               param: [lsm, sst, ...]
-          - apply_mask_field:
+          - apply_mask_from_field:
               param: [sst] # Variable that needs to be masked
               mask_param: lsm # The variable that will be used for determining the mask E.g. a land-sea mask
               mask_value: 1 # Will set to NaN all values where mask == 1 (i.e. land points)
@@ -189,7 +189,7 @@ class FieldMaskVariable(SingleFieldFilter):
           pipe:
             - source: # Can be `mars`, `netcdf`, etc.
                param: [lsm, sst, ...]
-            - apply_mask_field:
+            - apply_mask_from_field:
                 mask_param: lsm
                 param: [sst]
                 threshold_operator: ">=" # Operator to use for thresholding

@@ -127,11 +127,6 @@ class MaskVariable(Filter):
         self.prepare_filter()
         self._forward_selection = FieldSelection(**self.forward_select())
 
-    def _compute_mask(self, mask_values: np.ndarray) -> np.ndarray:
-        if self.threshold is not None:
-            return OPERATORS[self.threshold_operator](mask_values, self.threshold)
-        return mask_values == self.mask_value
-
     def prepare_filter(self):
         """Set up the MaskVariable filter."""
 
@@ -155,10 +150,39 @@ class MaskVariable(Filter):
                 mask = ekd.from_source("file", self.path)[0].to_numpy(flatten=True)
             self.mask = self._compute_mask(mask)
 
+    def _compute_mask(self, mask_values: np.ndarray) -> np.ndarray:
+        if self.threshold is not None:
+            return OPERATORS[self.threshold_operator](mask_values, self.threshold)
+        return mask_values == self.mask_value
+
     def forward_select(self):
         if self.param is not None:
             return {"param": self.param}
         return {}
+
+    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+        """Apply the forward transformation to the field.
+
+        Parameters
+        ----------
+        field : ekd.Field
+            Input field to be transformed.
+
+        Returns
+        -------
+        ekd.Field
+            Transformed field.
+        """
+        metadata = {}
+        values = field.to_numpy(flatten=True)
+        values[self.mask] = np.nan
+
+        if self.rename is not None:
+            param = field.metadata("param")
+            name = f"{param}_{self.rename}"
+            metadata["param"] = name
+
+        return new_field_from_numpy(values, template=field, **metadata)
 
     def _separate_mask_and_fields(self, fields: ekd.FieldList) -> ekd.FieldList:
         if self.mask_param is None:
@@ -207,27 +231,3 @@ class MaskVariable(Filter):
             result.append(field)
 
         return new_fieldlist_from_list(result)
-
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
-        """Apply the forward transformation to the field.
-
-        Parameters
-        ----------
-        field : ekd.Field
-            Input field to be transformed.
-
-        Returns
-        -------
-        ekd.Field
-            Transformed field.
-        """
-        metadata = {}
-        values = field.to_numpy(flatten=True)
-        values[self.mask] = np.nan
-
-        if self.rename is not None:
-            param = field.metadata("param")
-            name = f"{param}_{self.rename}"
-            metadata["param"] = name
-
-        return new_field_from_numpy(values, template=field, **metadata)

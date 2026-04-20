@@ -139,6 +139,104 @@ def test_apply_mask_only_single_param(source, ekd_from_source):
                 assert np.array_equal(input_field.to_numpy(flatten=True), output_field.to_numpy(flatten=True))
 
 
+@pytest.fixture()
+def field_source(test_source):
+    def _source(mask_name):
+        field_specs = [
+            {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA}
+            for param, values in DATA_VALUES.items()
+        ]
+        field_specs.append(
+            {"param": "lsm", "values": MASK_VALUES[mask_name].copy(), **MOCK_FIELD_METADATA}
+        )
+        return test_source(field_specs)
+
+    return _source
+
+
+def test_apply_mask_from_field_fails_without_threshold_or_mask_value():
+    with pytest.raises(ValueError, match="Either `mask_value` or `threshold` must be provided"):
+        create_filter("apply_mask_from_field", param=["t"], mask_param="lsm")
+
+
+def test_apply_mask_from_field_fails_when_mask_param_missing(field_source):
+    source = field_source("mixed_ints")
+    apply_mask = create_filter("apply_mask_from_field", param=["t"], mask_param="nonexistent", mask_value=1)
+    with pytest.raises(ValueError, match="mask_param 'nonexistent' not found"):
+        collect_fields_by_param(source | apply_mask)
+
+
+@pytest.mark.parametrize(
+    "threshold_options",
+    [
+        {"mask_value": 1},
+        {"mask_value": 0},
+        {"threshold": 0.5, "threshold_operator": ">"},
+        {"threshold": 0.5, "threshold_operator": "<="},
+    ],
+)
+@pytest.mark.parametrize("rename", [None, "masked"])
+@pytest.mark.parametrize("mask_name", MASK_VALUES.keys())
+def test_apply_mask_from_field(field_source, mask_name, rename, threshold_options):
+    source = field_source(mask_name)
+    apply_mask = create_filter(
+        "apply_mask_from_field", param=["t"], mask_param="lsm", rename=rename, **threshold_options
+    )
+    pipeline = source | apply_mask
+
+    input_fields = collect_fields_by_param(source)
+    output_fields = collect_fields_by_param(pipeline)
+
+    # derive the expected mask from the lsm field itself, just like the filter does
+    lsm_values = input_fields["lsm"][0].to_numpy(flatten=True)
+    if "mask_value" in threshold_options:
+        expected_mask = lsm_values == threshold_options["mask_value"]
+    else:
+        operator = {"<": np.less, ">": np.greater, "<=": np.less_equal, ">=": np.greater_equal}[
+            threshold_options["threshold_operator"]
+        ]
+        expected_mask = operator(lsm_values, threshold_options["threshold"])
+
+    # t should be masked (and optionally renamed)
+    result_param = f"t_{rename}" if rename else "t"
+    assert result_param in output_fields
+    for input_field, output_field in zip(input_fields["t"], output_fields[result_param]):
+        expected_values = input_field.to_numpy(flatten=True).copy()
+        expected_values[expected_mask] = np.nan
+        assert np.array_equal(expected_values, output_field.to_numpy(flatten=True), equal_nan=True)
+
+    # q, r, and lsm should pass through unchanged
+    for param in ("q", "r", "lsm"):
+        assert param in output_fields
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert np.array_equal(input_field.to_numpy(flatten=True), output_field.to_numpy(flatten=True))
+
+
+def test_apply_mask_from_field_multiple_params(field_source):
+    source = field_source("mixed_ints")
+    apply_mask = create_filter("apply_mask_from_field", param=["t", "q"], mask_param="lsm", mask_value=1)
+    pipeline = source | apply_mask
+
+    input_fields = collect_fields_by_param(source)
+    output_fields = collect_fields_by_param(pipeline)
+
+    lsm_values = input_fields["lsm"][0].to_numpy(flatten=True)
+    expected_mask = lsm_values == 1
+
+    for param in ("t", "q"):
+        assert param in output_fields
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            expected_values = input_field.to_numpy(flatten=True).copy()
+            expected_values[expected_mask] = np.nan
+            assert np.array_equal(expected_values, output_field.to_numpy(flatten=True), equal_nan=True)
+
+    # r and lsm pass through unchanged
+    for param in ("r", "lsm"):
+        assert param in output_fields
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert np.array_equal(input_field.to_numpy(flatten=True), output_field.to_numpy(flatten=True))
+
+
 if __name__ == "__main__":
     """Run all test functions that start with 'test_'."""
     for name, obj in list(globals().items()):

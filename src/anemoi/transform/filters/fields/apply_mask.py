@@ -57,8 +57,8 @@ class MaskVariable(Filter):
     or a list of variables.
 
     The ``return_mask`` keyword can be used to control whether the mask is returned
-    or consumed (not returned) by the filter (default: True) – only used when
-    the mask is provided through the ``mask_param`` keyword.
+    or consumed (not returned) by the filter (default: False, i.e. consumed).
+    This is only used when the mask is provided through the ``mask_param`` keyword.
 
     Examples
     --------
@@ -87,9 +87,9 @@ class MaskVariable(Filter):
               - sd
               - lsm
           - apply_mask:
-              mask_param: lsm # Use the lsm field from the pipeline as mask
-              mask_value: 0   # Will set to NaN all values where lsm == 0
-              return_mask: false # The mask will not be returned by the filter
+              mask_param: lsm   # Use the lsm field from the pipeline as mask
+              mask_value: 0     # Will set to NaN all values where lsm == 0
+              return_mask: true # The mask will be returned by the filter
 
     And with a threshold:
 
@@ -121,7 +121,7 @@ class MaskVariable(Filter):
         threshold_operator: str = ">",
         rename: str | None = None,
         param: str | list[str] | None = None,
-        return_mask: bool = True,
+        return_mask: bool = False,
     ) -> None:
         self.path = path
         self.mask_param = mask_param

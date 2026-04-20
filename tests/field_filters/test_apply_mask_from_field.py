@@ -39,7 +39,7 @@ def source(test_source):
 
 def test_apply_mask_from_field_mask_value(source):
     """Test masking using a field from the pipeline with mask_value."""
-    apply_mask = create_filter("apply_mask", mask_param="lsm", mask_value=0, return_mask=False)
+    apply_mask = create_filter("apply_mask", mask_param="lsm", mask_value=0)
 
     pipeline = source | apply_mask
     output_fields = collect_fields_by_param(pipeline)

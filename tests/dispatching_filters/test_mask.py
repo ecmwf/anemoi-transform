@@ -101,10 +101,18 @@ def test_apply_mask_fields(field_source, ekd_from_source, mask_name, rename, thr
             assert np.sum(np.isnan(result)) == expected_mask_count
 
 
-def test_mask_tabular():
-    config = {
-        "col1": "lambda x: x >= 2",
-    }
+@pytest.mark.parametrize(
+    "config, expected_col1",
+    [
+        ({"col1": {"value": 2}}, [0, 1, np.nan, 3]),
+        ({"col1": {"value": 2, "operator": ">"}}, [0, 1, 2, np.nan]),
+        ({"col1": {"value": 2, "operator": "<"}}, [np.nan, np.nan, 2, 3]),
+        ({"col1": {"value": 1, "operator": "ge"}}, [0, np.nan, np.nan, np.nan]),
+        ({"col1": {"value": 2, "operator": "le"}}, [np.nan, np.nan, np.nan, 3]),
+        ({"col1": {"value": 2, "operator": "!="}}, [np.nan, np.nan, 2, np.nan]),
+    ],
+)
+def test_mask_tabular(config, expected_col1):
     df = pd.DataFrame({"col1": [0, 1, 2, 3], "col2": [3, 4, 5, 6]})
     mask = create_filter("mask", **config)
     result = mask(df.copy())
@@ -114,5 +122,5 @@ def test_mask_tabular():
     assert result.shape == df.shape
 
     assert result["col2"].equals(df["col2"])
-    expected_result = pd.Series([0, 1, np.nan, np.nan], name="col1")
+    expected_result = pd.Series(expected_col1, name="col1")
     assert result["col1"].equals(expected_result)

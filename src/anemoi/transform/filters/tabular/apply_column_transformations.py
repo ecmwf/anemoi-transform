@@ -47,12 +47,9 @@ class ColumnTransformation:
         self.transform = self._to_callable(transformation)
 
     def _to_callable(self, transformation: str):
-        if transformation in self.TRANSFORMATIONS:
-            return self.TRANSFORMATIONS[transformation]
         try:
-            # TODO: replace eval with safer method
-            return eval(transformation)
-        except Exception as e:
+            return self.TRANSFORMATIONS[transformation]
+        except KeyError as e:
             raise ValueError(f"Invalid transformation: {transformation}") from e
 
     def apply(self, df: pd.DataFrame) -> None:
@@ -93,8 +90,6 @@ class ApplyColumnTransformations(Filter):
                 function: log
               precipitation:
                 function: abs
-              temperature:
-                function: "lambda t: t + 273.15"
 
         Creating a new column from existing columns.
         .. code-block:: yaml
@@ -104,9 +99,9 @@ class ApplyColumnTransformations(Filter):
               - source:
                   ...
               - apply_column_transformations:
-                  temperature_in_kelvin:
-                    function: "lambda t: t + 273.15"
-                    source_column: temperature_in_celsius
+                  lnsp:
+                    function: safe_log
+                    source_column: sp
 
     """
 

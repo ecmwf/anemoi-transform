@@ -12,6 +12,7 @@ import logging
 import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform.fields import FieldSelection
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
@@ -124,6 +125,7 @@ class MaskVariable(Filter):
         self.rename = rename
         self.param = param if not isinstance(param, str) else [param]
         self.prepare_filter()
+        self._forward_selection = FieldSelection(**self.forward_select())
 
     def _compute_mask(self, mask_values: np.ndarray) -> np.ndarray:
         if self.threshold is not None:
@@ -152,6 +154,11 @@ class MaskVariable(Filter):
             else:
                 mask = ekd.from_source("file", self.path)[0].to_numpy(flatten=True)
             self.mask = self._compute_mask(mask)
+
+    def forward_select(self):
+        if self.param is not None:
+            return {"param": self.param}
+        return {}
 
     def _separate_mask_and_fields(self, fields: ekd.FieldList) -> ekd.FieldList:
         if self.mask_param is None:
@@ -195,9 +202,7 @@ class MaskVariable(Filter):
 
         result = []
         for field in fields:
-            apply_mask = self.param is None or field.metadata("param") in self.param
-
-            if apply_mask:
+            if self._forward_selection.match(field):
                 field = self.forward_transform(field)
             result.append(field)
 

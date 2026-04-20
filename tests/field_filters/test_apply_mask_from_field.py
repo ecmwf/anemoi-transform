@@ -1,4 +1,4 @@
-# (C) Copyright 2025 Anemoi contributors.
+# (C) Copyright 2026- Anemoi contributors.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -113,11 +113,11 @@ def test_apply_mask_from_field_missing_param(source):
 
 def test_apply_mask_fails_without_path_or_mask_param():
     """Test that an error is raised when neither path nor mask_param is provided."""
-    with pytest.raises(ValueError, match="Either `path` or `mask_param`"):
+    with pytest.raises(ValueError, match="Exactly one of `path` or `mask_param`"):
         create_filter("apply_mask_fields", mask_value=0)
 
 
 def test_apply_mask_fails_with_both_path_and_mask_param():
     """Test that an error is raised when both path and mask_param are provided."""
-    with pytest.raises(ValueError, match="Only one of"):
+    with pytest.raises(ValueError, match="Exactly one of `path` or `mask_param`"):
         create_filter("apply_mask", path="some_file", mask_param="lsm", mask_value=0)

@@ -12,8 +12,9 @@ import logging
 import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
-from anemoi.transform.filter import SingleFieldFilter
+from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
 LOG = logging.getLogger(__name__)
@@ -35,20 +36,24 @@ OPERATORS = {
 
 
 @filter_registry.register("apply_mask_fields")
-class MaskVariable(SingleFieldFilter):
+class MaskVariable(Filter):
     """A filter to mask variables using a mask from a file or from a field in the pipeline.
 
-    The values of every filtered fields are set to NaN when they are either:
+    The values of every filtered field are set to NaN when they are either:
 
-    - equal to `mask_value` if provided, or
-    - meeting a `threshold` condition if provided.
+    - equal to ``mask_value`` if provided, or
+    - meeting a ``threshold`` condition if provided.
 
-    The variable can then optionally be renamed by appending `_{rename}`` to the original name.
+    The variable can then optionally be renamed by appending ``_{rename}`` to the original name.
 
     The mask can be provided either as an external file via ``path``, or as a
     parameter name already present in the pipeline via ``mask_param``. When
     ``mask_param`` is used, the mask field is consumed and removed from the
     output.
+
+    The ``param`` keyword can be used to specify which variables to mask. If
+    not provided, all variables will be masked. It can be a single variable
+    or a list of variables.
 
     Examples
     --------
@@ -100,33 +105,39 @@ class MaskVariable(SingleFieldFilter):
 
     """
 
-    required_inputs = None
-    optional_inputs = {
-        "path": None,
-        "mask_param": None,
-        "mask_value": None,
-        "threshold": None,
-        "threshold_operator": ">",
-        "rename": None,
-        "param": None,
-    }
+    def __init__(
+        self,
+        *,
+        path: str | None = None,
+        mask_param: str | None = None,
+        mask_value: float | None = None,
+        threshold: float | None = None,
+        threshold_operator: str = ">",
+        rename: str | None = None,
+        param: str | list[str] | None = None,
+    ) -> None:
+        self.path = path
+        self.mask_param = mask_param
+        self.mask_value = mask_value
+        self.threshold = threshold
+        self.threshold_operator = threshold_operator
+        self.rename = rename
+        self.param = param if not isinstance(param, str) else [param]
+        self.prepare_filter()
 
-    def _compute_mask(self, mask_values):
+    def _compute_mask(self, mask_values: np.ndarray) -> np.ndarray:
         if self.threshold is not None:
             return OPERATORS[self.threshold_operator](mask_values, self.threshold)
         return mask_values == self.mask_value
 
     def prepare_filter(self):
-        """Setup the MaskVariable filter."""
+        """Set up the MaskVariable filter."""
 
-        if self.path is None and self.mask_param is None:
-            raise ValueError("Either `path` or `mask_param` must be provided.")
+        if (self.path is None) == (self.mask_param is None):
+            raise ValueError("Exactly one of `path` or `mask_param` must be provided.")
 
-        if self.path is not None and self.mask_param is not None:
-            raise ValueError("Only one of `path` or `mask_param` can be provided.")
-
-        if self.mask_value is None and self.threshold is None:
-            raise ValueError("Either `mask_value` or `threshold` must be provided.")
+        if (self.mask_value is None) == (self.threshold is None):
+            raise ValueError("Exactly one of `mask_value` or `threshold` must be provided.")
 
         if self.threshold is not None:
             if self.threshold_operator not in OPERATORS:
@@ -142,12 +153,28 @@ class MaskVariable(SingleFieldFilter):
                 mask = ekd.from_source("file", self.path)[0].to_numpy(flatten=True)
             self.mask = self._compute_mask(mask)
 
-    def forward_select(self):
-        if self.param is not None:
-            return {"param": self.param}
-        return {}
+    def _separate_mask_and_fields(self, fields: ekd.FieldList) -> ekd.FieldList:
+        if self.mask_param is None:
+            return self.mask, fields
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+        mask_field = None
+        remaining = []
+        for field in fields:
+            if field.metadata("param") == self.mask_param:
+                if mask_field is None:
+                    mask_field = field
+                # Drop all occurrences of the mask field
+                continue
+            remaining.append(field)
+
+        if mask_field is None:
+            raise ValueError(f"Mask parameter '{self.mask_param}' not found in input data.")
+
+        mask = self._compute_mask(mask_field.to_numpy(flatten=True))
+        fields = new_fieldlist_from_list(remaining)
+        return mask, fields
+
+    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         """Apply the mask to the data.
 
         When ``mask_param`` is set, the mask field is extracted from the
@@ -155,7 +182,7 @@ class MaskVariable(SingleFieldFilter):
 
         Parameters
         ----------
-        data : ekd.FieldList
+        fields : ekd.FieldList
             Input data to be transformed.
 
         Returns
@@ -163,24 +190,18 @@ class MaskVariable(SingleFieldFilter):
         ekd.FieldList
             Transformed data with mask applied.
         """
-        if self.mask_param is not None:
-            mask_field = None
-            remaining = []
-            for field in data:
-                if field.metadata("param") == self.mask_param:
-                    if mask_field is None:
-                        mask_field = field
-                    # Drop all occurrences of the mask field
-                else:
-                    remaining.append(field)
 
-            if mask_field is None:
-                raise ValueError(f"Mask parameter '{self.mask_param}' not found in input data.")
+        self.mask, fields = self._separate_mask_and_fields(fields)
 
-            self.mask = self._compute_mask(mask_field.to_numpy(flatten=True))
-            data = new_fieldlist_from_list(remaining)
+        result = []
+        for field in fields:
+            apply_mask = self.param is None or field.metadata("param") in self.param
 
-        return super().forward(data)
+            if apply_mask:
+                field = self.forward_transform(field)
+            result.append(field)
+
+        return new_fieldlist_from_list(result)
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
         """Apply the forward transformation to the field.
@@ -204,4 +225,4 @@ class MaskVariable(SingleFieldFilter):
             name = f"{param}_{self.rename}"
             metadata["param"] = name
 
-        return self.new_field_from_numpy(values, template=field, **metadata)
+        return new_field_from_numpy(values, template=field, **metadata)

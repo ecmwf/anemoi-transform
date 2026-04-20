@@ -24,7 +24,6 @@ def test_apply_column_transformations():
         "col5": {"function": "abs"},
         "col6": {"function": "sin"},
         "col7": {"function": "cos"},
-        "col8": {"function": "lambda x: x + 1"},
     }
     df = pd.DataFrame(
         {
@@ -35,7 +34,6 @@ def test_apply_column_transformations():
             "col5": [0.0, 1.0, 2.0, 3.0, 4.0],
             "col6": [0.0, 1.0, 2.0, 3.0, 4.0],
             "col7": [0.0, 1.0, 2.0, 3.0, 4.0],
-            "col8": [0.0, 1.0, 2.0, 3.0, 4.0],
         }
     )
     apply_column_transformations = create_filter("apply_column_transformations", **config)
@@ -47,10 +45,7 @@ def test_apply_column_transformations():
 
     for col_name, spec in config.items():
         func_str = spec["function"]
-        if "lambda" in func_str:
-            oper = eval(func_str)
-        else:
-            oper = getattr(np, func_str)
+        oper = getattr(np, func_str)
         expected = oper(df[col_name].to_numpy())
         assert np.allclose(result[col_name].to_numpy(), expected, equal_nan=True)
 
@@ -101,55 +96,6 @@ def test_add_cosine():
 
     expected_values = np.array([1.0, 0.0, -1.0, 0.0, 1.0])
     assert np.allclose(result["cos_col1"].to_numpy(), expected_values)
-
-
-def test_apply_column_transformations_one_source_column_new_column():
-    config = {
-        "col2": {
-            "function": "lambda x: x + 1",
-            "source_column": "col1",
-        },
-    }
-    df = pd.DataFrame(
-        {
-            "col1": [1.0, 2.0, 3.0, 4.0, 5.0],
-        }
-    )
-    apply_column_transformations = create_filter("apply_column_transformations", **config)
-    result = apply_column_transformations(df.copy())
-
-    assert isinstance(result, pd.DataFrame)
-    assert tuple(result.columns) == tuple(df.columns) + ("col2",)
-    assert result.shape == (df.shape[0], df.shape[1] + 1)
-
-    expected = df["col1"].to_numpy() + 1
-    assert np.allclose(result["col2"].to_numpy(), expected, equal_nan=True)
-    assert result["col1"].equals(df["col1"])
-
-
-def test_apply_column_transformations_two_source_columns():
-    config = {
-        "col2": {
-            "function": "lambda x, y: (x + 1)*y",
-            "source_column": ["col2", "col1"],
-        },
-    }
-    df = pd.DataFrame(
-        {
-            "col1": [1.0, 2.0, 3.0, 4.0, 5.0],
-            "col2": [0.0, 1.0, 2.0, 3.0, 4.0],
-        }
-    )
-    apply_column_transformations = create_filter("apply_column_transformations", **config)
-    result = apply_column_transformations(df.copy())
-
-    assert isinstance(result, pd.DataFrame)
-    assert tuple(result.columns) == tuple(df.columns)
-    assert result.shape == df.shape
-
-    expected = (df["col2"].to_numpy() + 1) * df["col1"].to_numpy()
-    assert np.allclose(result["col2"].to_numpy(), expected, equal_nan=True)
-    assert result["col1"].equals(df["col1"])
 
 
 def test_apply_column_transformations_safe_log():

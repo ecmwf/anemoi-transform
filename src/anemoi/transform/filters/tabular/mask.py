@@ -17,14 +17,28 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+OPERATORS = {
+    ">": np.greater,
+    "<": np.less,
+    "==": np.equal,
+    "!=": np.not_equal,
+    ">=": np.greater_equal,
+    "<=": np.less_equal,
+    "gt": np.greater,
+    "lt": np.less,
+    "eq": np.equal,
+    "ne": np.not_equal,
+    "ge": np.greater_equal,
+    "le": np.less_equal,
+}
+
 
 @filter_registry.register("mask_tabular")
 class MaskValues(Filter):
     """Mask the columns of a DataFrame based on a condition.
 
     The configuration should be a dictionary with column names as keys and
-    the mask condition (a string) as a value. This string can contain "inf" to
-    represent infinity.
+    the mask condition as a dictionary with "value" and optionally "operator" keys.
 
     Examples
     --------
@@ -35,21 +49,39 @@ class MaskValues(Filter):
           - source:
               ...
           - mask:
-              foo: "lambda x: x >= 2"
+              foo:
+                value: 2
+              bar:
+                value: 0.5
+                operator: ">"
 
     """
 
     def __init__(self, **config):
         if not config:
             raise ValueError("No columns to mask were specified.")
-        self.config = config
+        self.config = {}
+        for col, condition in config.items():
+            if not isinstance(condition, dict):
+                raise ValueError(f"Mask condition for column {col} must be a dictionary, ")
+
+            if "value" not in condition:
+                raise ValueError(f"Mask condition for column {col} must contain a 'value' key.")
+
+            operator_str = condition.get("operator", "==")
+            if operator_str not in OPERATORS:
+                raise ValueError(
+                    f"Invalid operator '{operator_str}' for column {col}. "
+                    f"Valid operators are: {', '.join(OPERATORS.keys())}."
+                )
+            self.config[col] = {"value": condition["value"], "operator": OPERATORS[operator_str]}
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         raise_if_df_missing_cols(obs_df, self.config.keys())
 
-        for col, mask_condition in self.config.items():
-            logging.info(f"Masking {col} with condition: {mask_condition}")
-            namespace = {"inf": np.inf}
-            mask_condition = eval(mask_condition, namespace)
-            obs_df[col] = obs_df[col].mask(mask_condition)
+        for col, condition in self.config.items():
+            mask_value = condition["value"]
+            operator = condition["operator"]
+            logging.info(f"Masking {col} where values {operator.__name__} {mask_value}")
+            obs_df[col] = obs_df[col].mask(operator(obs_df[col], mask_value))
         return obs_df

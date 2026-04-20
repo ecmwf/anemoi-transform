@@ -56,6 +56,10 @@ class MaskVariable(Filter):
     not provided, all variables will be masked. It can be a single variable
     or a list of variables.
 
+    The ``return_mask`` keyword can be used to control whether the mask is returned
+    or consumed (not returned) by the filter (default: True) – only used when
+    the mask is provided through the ``mask_param`` keyword.
+
     Examples
     --------
 
@@ -85,6 +89,7 @@ class MaskVariable(Filter):
           - apply_mask:
               mask_param: lsm # Use the lsm field from the pipeline as mask
               mask_value: 0   # Will set to NaN all values where lsm == 0
+              return_mask: false # The mask will not be returned by the filter
 
     And with a threshold:
 
@@ -116,6 +121,7 @@ class MaskVariable(Filter):
         threshold_operator: str = ">",
         rename: str | None = None,
         param: str | list[str] | None = None,
+        return_mask: bool = True,
     ) -> None:
         self.path = path
         self.mask_param = mask_param
@@ -124,6 +130,7 @@ class MaskVariable(Filter):
         self.threshold_operator = threshold_operator
         self.rename = rename
         self.param = param if not isinstance(param, str) else [param]
+        self.return_mask = return_mask
         self.prepare_filter()
         self._forward_selection = FieldSelection(**self.forward_select())
 
@@ -184,24 +191,29 @@ class MaskVariable(Filter):
 
         return new_field_from_numpy(values, template=field, **metadata)
 
-    def _separate_mask_and_fields(self, fields: ekd.FieldList) -> ekd.FieldList:
+    def _separate_mask_and_fields(self, fields: ekd.FieldList) -> tuple[np.ndarray, ekd.FieldList]:
         if self.mask_param is None:
             return self.mask, fields
 
         mask_field = None
         remaining = []
         for field in fields:
-            if field.metadata("param") == self.mask_param:
+            is_mask_field = field.metadata("param") == self.mask_param
+            if is_mask_field:
                 if mask_field is None:
+                    # store first instance of mask field
                     mask_field = field
-                # Drop all occurrences of the mask field
-                continue
+
+                # drop mask if not returning
+                if not self.return_mask:
+                    continue
             remaining.append(field)
 
         if mask_field is None:
             raise ValueError(f"Mask parameter '{self.mask_param}' not found in input data.")
 
         mask = self._compute_mask(mask_field.to_numpy(flatten=True))
+
         fields = new_fieldlist_from_list(remaining)
         return mask, fields
 

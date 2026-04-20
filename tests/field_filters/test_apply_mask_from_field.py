@@ -39,7 +39,7 @@ def source(test_source):
 
 def test_apply_mask_from_field_mask_value(source):
     """Test masking using a field from the pipeline with mask_value."""
-    apply_mask = create_filter("apply_mask", mask_param="lsm", mask_value=0)
+    apply_mask = create_filter("apply_mask", mask_param="lsm", mask_value=0, return_mask=False)
 
     pipeline = source | apply_mask
     output_fields = collect_fields_by_param(pipeline)
@@ -60,7 +60,7 @@ def test_apply_mask_from_field_mask_value(source):
 
 def test_apply_mask_from_field_threshold(source):
     """Test masking using a field from the pipeline with threshold."""
-    apply_mask = create_filter("apply_mask", mask_param="lsm", threshold=0.5, threshold_operator="<")
+    apply_mask = create_filter("apply_mask", mask_param="lsm", threshold=0.5, threshold_operator="<", return_mask=False)
 
     pipeline = source | apply_mask
     output_fields = collect_fields_by_param(pipeline)
@@ -80,7 +80,7 @@ def test_apply_mask_from_field_threshold(source):
 
 def test_apply_mask_from_field_single_param(source):
     """Test masking only a single param using mask_param."""
-    apply_mask = create_filter("apply_mask", mask_param="lsm", mask_value=0, param="sd")
+    apply_mask = create_filter("apply_mask", mask_param="lsm", mask_value=0, param="sd", return_mask=False)
 
     pipeline = source | apply_mask
     output_fields = collect_fields_by_param(pipeline)
@@ -109,6 +109,29 @@ def test_apply_mask_from_field_missing_param(source):
 
     with pytest.raises(ValueError, match="not found in input data"):
         list(source | apply_mask)
+
+
+def test_apply_mask_return_mask(source):
+    """Test that mask is returned when return_mask=True."""
+    apply_mask = create_filter("apply_mask", mask_param="lsm", mask_value=0, return_mask=True, param=["sd", "2t"])
+
+    pipeline = source | apply_mask
+    output_fields = collect_fields_by_param(pipeline)
+
+    # lsm should be present in output
+    assert "lsm" in output_fields
+    assert len(output_fields["lsm"]) == 1
+    assert np.array_equal(output_fields["lsm"][0].to_numpy(flatten=True), LSM_VALUES.flatten())
+
+    # sd and 2t should be present and masked
+    expected_mask = LSM_VALUES.flatten() == 0
+    for param in ("sd", "2t"):
+        assert param in output_fields
+        for field in output_fields[param]:
+            values = field.to_numpy(flatten=True)
+            expected = DATA_VALUES[param].flatten().copy()
+            expected[expected_mask] = np.nan
+            assert np.array_equal(values, expected, equal_nan=True)
 
 
 def test_apply_mask_fails_without_path_or_mask_param():

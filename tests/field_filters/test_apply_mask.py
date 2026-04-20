@@ -143,12 +143,9 @@ def test_apply_mask_only_single_param(source, ekd_from_source):
 def field_source(test_source):
     def _source(mask_name):
         field_specs = [
-            {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA}
-            for param, values in DATA_VALUES.items()
+            {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA} for param, values in DATA_VALUES.items()
         ]
-        field_specs.append(
-            {"param": "lsm", "values": MASK_VALUES[mask_name].copy(), **MOCK_FIELD_METADATA}
-        )
+        field_specs.append({"param": "lsm", "values": MASK_VALUES[mask_name].copy(), **MOCK_FIELD_METADATA})
         return test_source(field_specs)
 
     return _source

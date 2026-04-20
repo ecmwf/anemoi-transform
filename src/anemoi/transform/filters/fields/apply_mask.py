@@ -154,6 +154,7 @@ class MaskVariable(SingleFieldFilter):
 
         return self.new_field_from_numpy(values, template=field, **metadata)
 
+
 @filter_registry.register("apply_mask_from_field")
 class FieldMaskVariable(SingleFieldFilter):
     """A filter to mask variables using another field in the dataset.

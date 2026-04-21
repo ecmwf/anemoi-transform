@@ -82,6 +82,7 @@ class Sum(Filter):
         for f in fields:
             key = f.metadata(namespace="mars")
             param = key.pop("param", None)
+            _ = key.pop("levelist", None)
             if param is None:
                 param = f.metadata("param")
             if param in self.params:

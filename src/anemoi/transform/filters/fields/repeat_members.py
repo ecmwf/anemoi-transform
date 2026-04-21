@@ -1,4 +1,4 @@
-# (C) Copyright 2024 Anemoi contributors.
+# (C) Copyright 2024-2026 Anemoi contributors.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -9,9 +9,10 @@
 
 
 import logging
-from typing import Any
 
 import earthkit.data as ekd
+
+from anemoi.utils.humanize import make_list_int
 
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
@@ -19,40 +20,6 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger(__name__)
-
-
-def make_list_int(value: Any) -> list[int]:
-    """Convert a value to a list of integers.
-
-    Parameters
-    ----------
-    value : Any
-        The value to convert.
-
-    Returns
-    -------
-    list
-        The converted list of integers.
-    """
-    if isinstance(value, str):
-        if "/" not in value:
-            return [int(value)]
-        bits = value.split("/")
-        if len(bits) == 3 and bits[1].lower() == "to":
-            value = list(range(int(bits[0]), int(bits[2]) + 1, 1))
-
-        elif len(bits) == 5 and bits[1].lower() == "to" and bits[3].lower() == "by":
-            value = list(range(int(bits[0]), int(bits[2]) + int(bits[4]), int(bits[4])))
-
-    if isinstance(value, list):
-        return value
-    if isinstance(value, tuple):
-        return list(value)
-    if isinstance(value, int):
-        return [value]
-
-    raise ValueError(f"Cannot make list from {value}")
-
 
 @filter_registry.register("repeat_members")
 class RepeatMembers(Filter):

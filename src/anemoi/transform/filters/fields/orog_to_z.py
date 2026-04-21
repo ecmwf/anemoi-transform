@@ -13,7 +13,7 @@ import earthkit.data as ekd
 
 from anemoi.transform.constants import g_gravitational_acceleration
 from anemoi.transform.filter import SingleFieldFilter
-from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.fields import filter_registry
 
 
 class Orography(SingleFieldFilter):
@@ -94,5 +94,5 @@ class Orography(SingleFieldFilter):
         return data_request
 
 
-filter_registry.register("orog_to_z", Orography)
-filter_registry.register("z_to_orog", Orography.reversed)
+filter_registry.register("orog_to_z_fields", Orography)
+filter_registry.register("z_to_orog_fields", Orography.reversed)

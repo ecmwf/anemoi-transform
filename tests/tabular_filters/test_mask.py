@@ -12,12 +12,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tests.utils import create_tabular_filter as create_filter
+from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 def test_mask():
     config = {
-        "col1": "lambda x: x >= 2",
+        "col1": {
+            "value": 2,
+            "operator": ">=",
+        },
     }
     df = pd.DataFrame({"col1": [0, 1, 2, 3], "col2": [3, 4, 5, 6]})
     mask = create_filter("mask", **config)
@@ -34,7 +37,10 @@ def test_mask():
 
 def test_mask_missing_column():
     config = {
-        "col1": "lambda x: x >= 2",
+        "col1": {
+            "value": 2,
+            "operator": ">=",
+        },
     }
     # col1 missing
     df = pd.DataFrame({"col2": [3, 4, 5, 6]})

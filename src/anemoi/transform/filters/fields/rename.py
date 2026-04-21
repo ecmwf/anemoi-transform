@@ -13,7 +13,7 @@ import earthkit.data as ekd
 
 from anemoi.transform.fields import new_field_with_metadata
 from anemoi.transform.filter import SingleFieldFilter
-from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters.fields import filter_registry
 
 
 class FormatRename:
@@ -64,7 +64,7 @@ class DictRename:
         return new_field_with_metadata(template=field, **kwargs)
 
 
-@filter_registry.register("rename")
+@filter_registry.register("rename_fields")
 class Rename(SingleFieldFilter):
     """A filter to rename fields based on their metadata.
 

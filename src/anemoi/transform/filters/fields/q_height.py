@@ -54,6 +54,102 @@ def _check_consistency(A: NDArray, B: NDArray, model_level_fields: dict[str, ekd
         ), f"model level AB-coefficients should have one more vertical level than {name}"
 
 
+class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
+    """A filter to convert specific humidity (kg/kg) to relative humidity (%)
+    at a specified height level (in meters) with standard thermodynamical formulas
+    """
+
+    @matching(
+        select="param",
+        forward=("specific_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"),
+        backward=("relative_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"),
+        vertical=False,
+    )
+    def __init__(
+        self,
+        *,
+        specific_humidity_at_height_level: str = "q",
+        relative_humidity_at_height_level: str = "r",
+        pressure_at_height_level: str = "pres",
+        temperature_at_height_level: str = "t",
+        return_inputs: Literal["all", "none"] | list[str] = [
+            "specific_humidity_at_height_level",
+            "relative_humidity_at_height_level",
+            "temperature_at_height_level",
+            "pressure_at_height_level",
+        ],
+    ):
+        """Initializes the filter for converting specific humidity (kg/kg) to relative humidity (%) at a specified height.
+
+        Parameters:
+        -----------
+        specific_humidity_at_height_level : str, optional
+            Name of the variable for specific humidity at the given height, by default "q".
+        relative_humidity_at_height_level : str, optional
+            Name of the variable for relative humidity at the given height, by default "r".
+        temperature_at_height_level : str, optional
+            Name of the variable for temperature at the given height, by default "t".
+        pressure_at_height_level : str, optional
+            Name of the variable for pressure at the given height, by default "pres".
+        return_inputs : Literal["all", "none"] | list[str], optional
+            List of which filter inputs should be returned, by default ["specific_humidity_at_height_level", "relative_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"]
+        """
+
+        self.return_inputs = return_inputs
+        self.specific_humidity_at_height_level = specific_humidity_at_height_level
+        self.relative_humidity_at_height_level = relative_humidity_at_height_level
+        self.temperature_at_height_level = temperature_at_height_level
+        self.pressure_at_height_level = pressure_at_height_level
+
+    def forward_transform(
+        self,
+        specific_humidity_at_height_level: ekd.Field,
+        temperature_at_height_level: ekd.Field,
+        pressure_at_height_level: ekd.Field,
+    ) -> Iterator[ekd.Field]:
+        """This will return the relative humidity along with temperature from specific humidity and temperature"""
+
+        # If we want to take into account the mixed / ice phase when T ~ 0C / T < 0C
+        # Then it is best to go through td: q --> td --> rh. (see https://github.com/ecmwf/earthkit-meteo/issues/15)
+        # However, going straight to relative humidity seems to be a closer match to the RH values calculated by IFS
+        relative_humidity_at_height_level = thermo.relative_humidity_from_specific_humidity(
+            t=temperature_at_height_level.to_numpy(),
+            q=specific_humidity_at_height_level.to_numpy(),
+            p=pressure_at_height_level.to_numpy(),
+        )
+
+        # Return the fields
+        yield self.new_field_from_numpy(
+            relative_humidity_at_height_level,
+            template=specific_humidity_at_height_level,
+            param=self.relative_humidity_at_height_level,
+        )
+
+    def backward_transform(
+        self,
+        relative_humidity_at_height_level: ekd.Field,
+        temperature_at_height_level: ekd.Field,
+        pressure_at_height_level: ekd.Field,
+    ) -> Iterator[ekd.Field]:
+        """This will return the specific humidity along with temperature from relative humidity and temperature"""
+
+        specific_humidity_at_height_level = thermo.specific_humidity_from_relative_humidity(
+            t=temperature_at_height_level.to_numpy(),
+            r=relative_humidity_at_height_level.to_numpy(),
+            p=pressure_at_height_level.to_numpy(),
+        )
+
+        yield self.new_field_from_numpy(
+            specific_humidity_at_height_level,
+            template=relative_humidity_at_height_level,
+            param=self.specific_humidity_at_height_level,
+        )
+
+
+filter_registry.register("q_to_r_height_with_p", SpecificToRelativeAtHeightLevelWithP)
+filter_registry.register("r_to_q_height_with_p", SpecificToRelativeAtHeightLevelWithP.reversed)
+
+
 class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
     """A filter to convert specific humidity (kg/kg) to relative humidity (%)
     at a specified height level (in meters) with standard thermodynamical formulas

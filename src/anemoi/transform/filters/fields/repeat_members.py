@@ -11,7 +11,6 @@
 import logging
 
 import earthkit.data as ekd
-
 from anemoi.utils.humanize import make_list_int
 
 from anemoi.transform.fields import new_field_from_numpy
@@ -20,6 +19,7 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
 LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("repeat_members")
 class RepeatMembers(Filter):

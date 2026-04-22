@@ -6,7 +6,6 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-
 [build-system]
 requires = [ "setuptools>=60", "setuptools-scm>=8" ]
 
@@ -34,7 +33,7 @@ classifiers = [
 ]
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.4.36",
+  "anemoi-utils>=0.5.1",
   "cfunits",
   "earthkit-data>=0.12.4,<1",
   "earthkit-geo>=0.3",

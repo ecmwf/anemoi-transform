@@ -11,7 +11,7 @@ import earthkit.data as ekd
 import numpy.testing as npt
 from anemoi.utils.testing import skip_if_offline
 
-from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 @skip_if_offline
@@ -27,7 +27,7 @@ def test_rescale(fieldlist: ekd.FieldList) -> None:
     before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
 
     # rescale from K to °C
-    k_to_deg = filter_registry.create("rescale", scale=1.0, offset=-273.15, param="2t")
+    k_to_deg = create_filter("rescale", scale=1.0, offset=-273.15, param="2t")
     rescaled = k_to_deg.forward(fieldlist)
     after_forward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled}
 
@@ -55,7 +55,7 @@ def test_convert(fieldlist: ekd.FieldList) -> None:
     """
     before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
     # rescale from K to °C
-    k_to_deg = filter_registry.create("convert", unit_in="K", unit_out="degC", param="2t")
+    k_to_deg = create_filter("convert", unit_in="K", unit_out="degC", param="2t")
     rescaled = k_to_deg.forward(fieldlist)
     after_forward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled}
 

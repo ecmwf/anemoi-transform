@@ -10,7 +10,7 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters import filter_registry
+from anemoi.transform.filters import create_filter_by_name as create_filter
 from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _INF
 from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _NODATA
 from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _UNDETECTED
@@ -75,7 +75,7 @@ def rodeo_opera_source(test_source):
 
 
 def test_rodeo_opera_preprocessing(rodeo_opera_source):
-    preprocessing = filter_registry.create("rodeo_opera_preprocessing", max_total_precipitation=MAX_TP)
+    preprocessing = create_filter("rodeo_opera_preprocessing", max_total_precipitation=MAX_TP)
     pipeline = rodeo_opera_source | preprocessing
 
     output_fields = collect_fields_by_param(pipeline)
@@ -99,7 +99,7 @@ def test_rodeo_opera_preprocessing(rodeo_opera_source):
 
 
 def test_rodeo_opera_preprocessing_return_mask(rodeo_opera_source):
-    preprocessing = filter_registry.create("rodeo_opera_preprocessing", return_mask=True)
+    preprocessing = create_filter("rodeo_opera_preprocessing", return_mask=True)
     pipeline = rodeo_opera_source | preprocessing
 
     output_fields = collect_fields_by_param(pipeline)

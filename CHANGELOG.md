@@ -9,6 +9,20 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.3.0](https://github.com/ecmwf/anemoi-transform/compare/0.2.0...0.3.0) (2026-04-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove use of eval in tabular filters ([#278](https://github.com/ecmwf/anemoi-transform/issues/278))
+
+### Features
+
+* `apply-mask` (field) filter allows using another field as the mask ([#277](https://github.com/ecmwf/anemoi-transform/issues/277)) ([76074d4](https://github.com/ecmwf/anemoi-transform/commit/76074d4cba3065fffad3e6931a4f53d12e6c0f01))
+* Add support for units compatibility ([#258](https://github.com/ecmwf/anemoi-transform/issues/258)) ([709dc72](https://github.com/ecmwf/anemoi-transform/commit/709dc72ab9dd42fcd88bcff928d4c717696ed788))
+* Deduplicate and reuse code from anemoi utils ([#281](https://github.com/ecmwf/anemoi-transform/issues/281)) ([c97ac48](https://github.com/ecmwf/anemoi-transform/commit/c97ac484c02b3dc527776eedcb9840acaa1c8a35))
+* Remove use of eval in tabular filters ([#278](https://github.com/ecmwf/anemoi-transform/issues/278)) ([b330a6d](https://github.com/ecmwf/anemoi-transform/commit/b330a6d1fdbe5dc4e740f0a2cc0ce69a541bd40e))
+
 ## [0.2.0](https://github.com/ecmwf/anemoi-transform/compare/0.1.29...0.2.0) (2026-04-15)
 
 

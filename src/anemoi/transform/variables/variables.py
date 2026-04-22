@@ -15,6 +15,7 @@ from typing import Union
 
 from anemoi.utils.dates import as_timedelta
 
+from anemoi.transform.units import Units
 from anemoi.transform.variables import Variable
 
 if TYPE_CHECKING:
@@ -105,6 +106,11 @@ class VariableFromMarsVocabulary(Variable):
             return None
 
         return as_timedelta(period[1]) - as_timedelta(period[0])
+
+    @property
+    def units(self):
+        units = self.data.get("units", None)
+        return Units(units) if units else None
 
     @property
     def grib_keys(self) -> dict[str, Any]:

@@ -360,7 +360,7 @@ class MatchingFieldsFilter(Filter):
                 result.append(f)
         return self.new_fieldlist_from_list(result)
 
-    def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, param: str) -> ekd.Field:
+    def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, **kwargs) -> ekd.Field:
         """Create a new field from a numpy array.
 
         Parameters
@@ -369,15 +369,15 @@ class MatchingFieldsFilter(Filter):
             Numpy array containing the field data.
         template : ekd.Field
             Template field to use for metadata.
-        param : str
-            Parameter name for the new field.
+        **kwargs : Any
+            Additional keyword arguments for the new field.
 
         Returns
         -------
         ekd.Field
             New field created from the numpy array.
         """
-        return new_field_from_numpy(array, template=template, param=param)
+        return new_field_from_numpy(array, template=template, **kwargs)
 
     def new_fieldlist_from_list(self, fields: list[ekd.Field]) -> ekd.FieldList:
         """Create a new field list from a list of fields.

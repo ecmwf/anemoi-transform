@@ -53,12 +53,12 @@ class Timeseries(MatchingFieldsFilter):
 
         self.template_param = template_param
 
-    def forward_transform(self, template: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, template_param: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.
 
         Parameters
         ----------
-        template : ekd.Field
+        template_param : ekd.Field
             Template field to transform.
 
         Returns
@@ -66,12 +66,12 @@ class Timeseries(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        dt = template.metadata("valid_datetime")
-        template_array = template.to_numpy()
+        dt = template_param.metadata("valid_datetime")
+        template_array = template_param.to_numpy()
 
         sel = self.ds.sel(time=dt)
 
         for name in self.ds.data_vars:
             value = sel[name].values
             data = np.full_like(template_array, value)
-            yield self.new_field_from_numpy(data, template=template, param=name)
+            yield self.new_field_from_numpy(data, template=template_param, param=name)

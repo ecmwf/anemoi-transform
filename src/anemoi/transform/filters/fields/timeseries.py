@@ -52,6 +52,7 @@ class Timeseries(MatchingFieldsFilter):
         LOG.warning("Using the timeseries filter will be deprecated in the future. Please do not rely on it.")
 
         self.template_param = template_param
+        super().__init__()
 
     def forward_transform(self, template_param: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.

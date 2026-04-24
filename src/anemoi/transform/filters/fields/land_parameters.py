@@ -107,6 +107,7 @@ class LandParameters(MatchingFieldsFilter):
         self.lveg_z0m = lveg_z0m
         self.theta_pwp = theta_pwp
         self.theta_cap = theta_cap
+        super().__init__()
 
     def forward_transform(
         self,

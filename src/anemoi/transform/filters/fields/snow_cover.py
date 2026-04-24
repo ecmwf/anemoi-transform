@@ -101,6 +101,7 @@ class SnowCover(MatchingFieldsFilter):
         self.snow_depth = snow_depth
         self.snow_density = snow_density
         self.snow_cover = snow_cover
+        super().__init__()
 
     def forward_transform(self, snow_depth: ekd.Field, snow_density: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.

@@ -53,6 +53,7 @@ class RotateWinds(MatchingFieldsFilter):
         self.y_wind = y_wind
         self.source_projection = source_projection
         self.target_projection = target_projection
+        super().__init__()
 
     def forward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
         """Rotate wind components from source projection to target projection.

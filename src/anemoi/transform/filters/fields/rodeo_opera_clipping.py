@@ -67,11 +67,12 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         self.total_precipitation = total_precipitation
         self.max_total_precipitation = max_total_precipitation
         self.quality = quality
+        super().__init__()
 
     def forward_transform(
         self,
         total_precipitation: ekd.Field,
-        quality,
+        quality: ekd.Field,
     ) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 

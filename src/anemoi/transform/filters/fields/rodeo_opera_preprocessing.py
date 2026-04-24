@@ -159,6 +159,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         self.mask = mask
         self.max_total_precipitation = max_total_precipitation
         self.return_mask = return_mask
+        super().__init__()
 
     def forward_transform(
         self,

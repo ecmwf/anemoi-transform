@@ -71,6 +71,7 @@ class WindComponents(MatchingFieldsFilter):
         self.radians = radians
 
         assert not self.radians, "Radians not (yet) supported"
+        super().__init__()
 
     def forward_transform(self, u_component: ekd.Field, v_component: ekd.Field) -> Iterator[ekd.Field]:
         """Convert U and V wind components to wind speed and direction.

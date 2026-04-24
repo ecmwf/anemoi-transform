@@ -30,6 +30,7 @@ class CosSinFromRad(MatchingFieldsFilter):
     )
     def __init__(
         self,
+        *,
         param: str,
         cos_param: str | None = None,
         sin_param: str | None = None,
@@ -49,6 +50,7 @@ class CosSinFromRad(MatchingFieldsFilter):
         self.param = param
         self.cos_param = cos_param if cos_param is not None else f"cos_{param}"
         self.sin_param = sin_param if sin_param is not None else f"sin_{param}"
+        super().__init__()
 
     def forward_transform(
         self,

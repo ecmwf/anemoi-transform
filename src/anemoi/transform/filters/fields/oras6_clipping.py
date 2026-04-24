@@ -111,6 +111,7 @@ class Oras6Clipping(MatchingFieldsFilter):
         self.sialb = sialb
         self.vasit = vasit
         self.tos = tos
+        super().__init__()
 
     def forward_transform(
         self,

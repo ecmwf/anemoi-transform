@@ -113,7 +113,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             Name of the variable for specific humidity at model levels, by default "q".
         temperature_at_model_levels : str, optional
             Name of the variable for temperature at model levels, by default "t".
-        AB : str | dict[str, NDArray]
+        model_level_AB : str | dict[str, NDArray]
             A string key for predefined A and B coefficients or a dictionary with "A" and "B" arrays for vertical interpolation.
             Possible predefined keys are: "IFS_137".
         return_inputs : Literal["all", "none"] | list[str], optional
@@ -130,6 +130,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         self.temperature_at_model_levels = temperature_at_model_levels
 
         self.A, self.B = _set_AB(model_level_AB)
+        super().__init__()
 
     def _get_pressure_at_height_level(
         self,
@@ -295,15 +296,13 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             Name of the variable for specific humidity at the given height, by default "2q".
         dewpoint_temperature_at_height_level : str, optional
             Name of the variable representing dewpoint temperature at the given height, by default "2d".
-        temperature_at_height_level : str, optional
-            Name of the variable for temperature at the given height, by default "2t".
         surface_pressure : str, optional
             Name of the variable for surface pressure, by default "sp".
         specific_humidity_at_model_levels : str, optional
             Name of the variable for specific humidity at model levels, by default "q".
         temperature_at_model_levels : str, optional
             Name of the variable for temperature at model levels, by default "t".
-        AB : str | dict[str, NDArray]
+        model_level_AB : str | dict[str, NDArray]
             A string key for predefined A and B coefficients or a dictionary with "A" and "B" arrays for vertical interpolation.
             Possible predefined keys are: "IFS_137".
         return_inputs : Literal["all", "none"] | list[str], optional
@@ -319,6 +318,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         self.temperature_at_model_levels = temperature_at_model_levels
 
         self.A, self.B = _set_AB(model_level_AB)
+        super().__init__()
 
     def _get_pressure_at_height_level(
         self,

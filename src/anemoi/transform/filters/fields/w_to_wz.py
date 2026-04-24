@@ -67,6 +67,7 @@ class VerticalVelocity(MatchingFieldsFilter):
         self.geometric_vertical_velocity = geometric_vertical_velocity
         self.temperature = temperature
         self.humidity = humidity
+        super().__init__()
 
     def forward_transform(
         self,

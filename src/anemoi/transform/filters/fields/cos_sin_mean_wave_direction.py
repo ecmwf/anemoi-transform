@@ -30,6 +30,7 @@ class CosSinWaveDirection(MatchingFieldsFilter):
     )
     def __init__(
         self,
+        *,
         mean_wave_direction: str = "mwd",
         cos_mean_wave_direction: str = "cos_mwd",
         sin_mean_wave_direction: str = "sin_mwd",
@@ -49,6 +50,7 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         self.mean_wave_direction = mean_wave_direction
         self.cos_mean_wave_direction = cos_mean_wave_direction
         self.sin_mean_wave_direction = sin_mean_wave_direction
+        super().__init__()
 
     def forward_transform(
         self,

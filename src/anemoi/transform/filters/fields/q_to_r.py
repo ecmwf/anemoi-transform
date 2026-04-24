@@ -63,6 +63,7 @@ class HumidityConversion(MatchingFieldsFilter):
         self.relative_humidity = relative_humidity
         self.temperature = temperature
         self.humidity = humidity
+        super().__init__()
 
     def forward_transform(self, humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""

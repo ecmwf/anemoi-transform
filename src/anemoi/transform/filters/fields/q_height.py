@@ -19,7 +19,7 @@ from anemoi.transform.constants import model_level_AB as predefined_AB
 from anemoi.transform.filters.fields import filter_registry
 
 from .matching import MatchingFieldsFilter
-from .matching import matching
+from .matching import MatchingSpec
 
 # Protection against zero relative or specific humidity when calculating dewpoint temperature
 EPS_SPECIFIC = 1.0e-8
@@ -59,7 +59,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
     at a specified height level (in meters) with standard thermodynamical formulas
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=(
             "specific_humidity_at_height_level",
@@ -77,6 +77,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         ),
         vertical=True,
     )
+
     def __init__(
         self,
         *,
@@ -254,7 +255,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
 
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=(
             "specific_humidity_at_height_level",
@@ -270,6 +271,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         ),
         vertical=True,
     )
+
     def __init__(
         self,
         *,

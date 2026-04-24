@@ -16,7 +16,7 @@ from earthkit.meteo.wind.array import xy_to_polar
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 
 class WindComponents(MatchingFieldsFilter):
@@ -30,11 +30,12 @@ class WindComponents(MatchingFieldsFilter):
 
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("u_component", "v_component"),
         backward=("wind_speed", "wind_direction"),
     )
+
     def __init__(
         self,
         *,

@@ -16,7 +16,7 @@ import earthkit.meteo.thermo.array as thermo
 from anemoi.transform.filters.fields import filter_registry
 
 from .matching import MatchingFieldsFilter
-from .matching import matching
+from .matching import MatchingSpec
 
 
 class HumidityConversion(MatchingFieldsFilter):
@@ -33,11 +33,12 @@ class HumidityConversion(MatchingFieldsFilter):
 
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("humidity", "temperature"),
         backward=("relative_humidity", "temperature"),
     )
+
     def __init__(
         self,
         *,

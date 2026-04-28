@@ -90,7 +90,7 @@ def test_missing_component_raises():
         _ = f.forward(data)
 
 
-def test_filter_argument_mismatch_raises():
+def test_init_missing_params_raises():
     with pytest.raises(ValueError, match="missing parameters"):
 
         class BadFilter(MatchingFieldsFilter):
@@ -99,13 +99,78 @@ def test_filter_argument_mismatch_raises():
                 forward=("a", "b"),
             )
 
-            def __init__(self, a):  # Missing 'b'
+            def __init__(self, a):  # Missing 'b' in __init__
                 self.a = a
 
             def forward_transform(self, a, b):
                 pass
 
             def backward_transform(self):
+                pass
+
+
+def test_missing_matching_attribute_raises():
+    with pytest.raises(TypeError, match="must define a 'MATCHING' attribute"):
+
+        class NoMatchingFilter(MatchingFieldsFilter):
+            def __init__(self):
+                pass
+
+            def forward_transform(self):
+                pass
+
+
+def test_wrong_matching_type_raises():
+    with pytest.raises(TypeError, match="must define a 'MATCHING' attribute"):
+
+        class WrongTypeFilter(MatchingFieldsFilter):
+            MATCHING = "not a MatchingSpec"
+
+            def __init__(self):
+                pass
+
+            def forward_transform(self):
+                pass
+
+
+def test_forward_transform_missing_params_raises():
+    with pytest.raises(ValueError, match="missing parameters"):
+
+        class BadForwardFilter(MatchingFieldsFilter):
+            MATCHING = MatchingSpec(
+                select="param",
+                forward=("a", "b"),
+            )
+
+            def __init__(self, a, b):
+                self.a = a
+                self.b = b
+
+            def forward_transform(self, a):  # Missing 'b'
+                pass
+
+            def backward_transform(self):
+                pass
+
+
+def test_backward_transform_missing_params_raises():
+    with pytest.raises(ValueError, match="missing parameters"):
+
+        class BadBackwardFilter(MatchingFieldsFilter):
+            MATCHING = MatchingSpec(
+                select="param",
+                forward=("a",),
+                backward=("a", "b"),
+            )
+
+            def __init__(self, a, b):
+                self.a = a
+                self.b = b
+
+            def forward_transform(self, a):
+                pass
+
+            def backward_transform(self, a):  # Missing 'b'
                 pass
 
 

@@ -22,7 +22,7 @@ class AddAzimuth(Filter):
     calculated from the latitude, longitude and the spacecraft latitude,
     spacecraft longitude.
 
-    The `azimuth`, `spacecraft_latitude` and `spacecraft_longitude` config keys
+    The ``azimuth``, ``spacecraft_latitude`` and ``spacecraft_longitude`` config keys
     define the names of the associated columns in the input DataFrame.
 
     Examples

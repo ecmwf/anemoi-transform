@@ -20,17 +20,18 @@ from anemoi.transform.filters.tabular.support.compute_forcings import cos_solar_
 class AddForcings(Filter):
     """Adds forcings columns to the DataFrame.
 
-    The configuration should be a dictionary with the key 'columns' containing
+    The configuration should be a dictionary with the key ``columns`` containing
     a list of the requested forcings, which must be selected from:
-      - cos_julian_day
-      - sin_julian_day
-      - cos_sza
-      - sin_local_time
-      - cos_local_time
-      - cos_latitude
-      - sin_latitude
-      - cos_longitude
-      - sin_longitude
+
+    - cos_julian_day
+    - sin_julian_day
+    - cos_sza
+    - sin_local_time
+    - cos_local_time
+    - cos_latitude
+    - sin_latitude
+    - cos_longitude
+    - sin_longitude
 
     Examples
     --------

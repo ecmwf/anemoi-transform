@@ -32,7 +32,7 @@ class RodeoOperaClipping(MatchingFieldsFilter):
     at the configuration level. If no value is passed a default value
     (``MAX_TP``) of 10000 is used. The quality index is also clipped to be
     between ``[0,1]``. Additionally this filter converts the
-    ``total_precipitation`` field from `m` to `mm`.
+    ``total_precipitation`` field from ``m`` to ``mm``.
 
     Notes
     -----

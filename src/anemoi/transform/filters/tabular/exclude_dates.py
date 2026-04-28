@@ -20,7 +20,7 @@ from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_c
 
 @filter_registry.register("exclude_dates")
 class ExcludeDates(Filter):
-    """Masks values in specified columns of a DataFrame if the 'datetime' column
+    """Masks values in specified columns of a DataFrame if the ``datetime`` column
     falls within any of the date ranges provided (inclusive).
 
     Keys of the config dictionary are column names, with values which are lists

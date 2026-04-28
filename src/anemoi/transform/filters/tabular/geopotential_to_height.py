@@ -21,8 +21,8 @@ from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_c
 class GeopotentialToHeight(Filter):
     """Converts geopotential height to height.
 
-    The `geopotential` config key defines the name of the column containing
-    geopotential height (must exist in the DataFrame). The `height` config key
+    The ``geopotential`` config key defines the name of the column containing
+    geopotential height (must exist in the DataFrame). The ``height`` config key
     defines the name of the column containing height following conversion
     (i.e. the result) - if not passed in (or None), this will overwrite the
     geopotential column.

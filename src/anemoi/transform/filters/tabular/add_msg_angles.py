@@ -26,12 +26,12 @@ class AddMSGAngles(Filter):
     longitude.
 
     The input DataFrame must contain a column (denoted by the configuration key
-    `satellite_id`) containing the sub-satellite ID.
+    ``satellite_id``) containing the sub-satellite ID.
 
-    The configuration for this filter can contain keys `azimuth`, `zenith` and
-    `satellite_id` representing the names of these columns.
+    The configuration for this filter can contain keys ``azimuth``, ``zenith`` and
+    ``satellite_id`` representing the names of these columns.
 
-    The `angle` config key can be set to either "azimuth", "zenith" or "both"
+    The ``angle`` config key can be set to either "azimuth", "zenith" or "both"
     which determines which angle columns are added.
 
     Examples

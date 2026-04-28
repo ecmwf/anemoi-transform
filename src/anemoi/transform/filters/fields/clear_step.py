@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("clear_step")
 class ClearStepFilter(Filter):
-    """Set the step of the field to 0."""
+    """Set the ``step`` of the field to 0."""
 
     def __init__(self):
         super().__init__()

@@ -45,7 +45,7 @@ class SnowCover(MatchingFieldsFilter):
 
     Notes
     -----
-    The `snow cover` (``scover``) is computed from `snow depth` (``sd``) and `snow density` (``rsn``) as:
+    The ``snow cover`` (``scover``) is computed from ``snow depth`` (``sd``) and ``snow density`` (``rsn``) as:
 
     .. math::
 

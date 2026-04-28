@@ -19,7 +19,7 @@ from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_c
 class Drop(Filter):
     """Drop one or more columns from a DataFrame.
 
-    The configuration should be a dictionary with the key 'columns' containing
+    The configuration should be a dictionary with the key ``columns`` containing
     a list of column names to drop.
 
     Examples

@@ -17,9 +17,9 @@ from anemoi.transform.filters.tabular import filter_registry
 
 @filter_registry.register("add_healpix")
 class AddHealpix(Filter):
-    """Add a healpix index column 'healpix_idx_{nside}' to the DataFrame.
+    """Add a healpix index column ``healpix_idx_{nside}`` to the DataFrame.
 
-    The configuration key `nside` is an integer representing the number of
+    The configuration key ``nside`` is an integer representing the number of
     pixels per side (must be positive).
 
     Examples

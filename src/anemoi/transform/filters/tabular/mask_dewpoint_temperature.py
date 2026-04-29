@@ -25,7 +25,7 @@ class MaskDewpointTemperature(Filter):
 
     The configuration should contain the column names of the temperature,
     specific humidity and dewpoint temperature columns.
-    The `mask_specific_humidity` (boolean) key can be used to mask the specific
+    The ``mask_specific_humidity`` (boolean) key can be used to mask the specific
     humidity column using the same mask (default false).
 
     Examples

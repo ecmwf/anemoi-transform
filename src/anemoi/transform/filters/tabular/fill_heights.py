@@ -26,11 +26,11 @@ class FillHeights(Filter):
     of missing station values with heights from a high-resolution orography
     file.
 
-    The `station_altitude` (default 'stalt') config key defines the column name
-    of the station altitudes in the DataFrame. The `orography_file` config key
-    defines the path to the orography file. The `orography_altitude` (default
-    'z'), `orography_latitude` (default 'latitude') and `orography_longitude`
-    (default 'longitude') config keys define the names of the associated columns
+    The ``station_altitude`` (default ``stalt``) config key defines the column name
+    of the station altitudes in the DataFrame. The ``orography_file`` config key
+    defines the path to the orography file. The ``orography_altitude`` (default
+    ``z``), ``orography_latitude`` (default ``latitude``) and ``orography_longitude``
+    (default ``longitude``) config keys define the names of the associated columns
     in the orography file.
 
     Examples

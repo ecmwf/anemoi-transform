@@ -24,7 +24,7 @@ class MaskInfs(Filter):
     contain infinite values.
 
     The configuration can contain either a list of column names to be
-    considered or a prefix string (`column_prefix` key), where all columns
+    considered or a prefix string (``column_prefix`` key), where all columns
     starting with this prefix will be considered.
 
     Examples

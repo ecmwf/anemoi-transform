@@ -17,11 +17,11 @@ from anemoi.transform.filters.tabular import filter_registry
 
 @filter_registry.register("assign_to_grid")
 class AssignToGrid(Filter):
-    """Adds a new column ('grid_index_{grid}') to the DataFrame which represents
+    """Adds a new column (``grid_index_{grid}``) to the DataFrame which represents
     the index of the nearest grid point, based on the latitude/longitude
     coordinates.
 
-    The config item `grid` is a string describing the specification of the grid.
+    The config item ``grid`` is a string describing the specification of the grid.
 
     Examples
     --------

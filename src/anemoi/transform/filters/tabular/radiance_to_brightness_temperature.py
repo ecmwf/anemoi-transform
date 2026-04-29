@@ -22,9 +22,10 @@ class RadianceToBrightnessTemperature(Filter):
     """Convert CrIS NSR/FSR radiances (mW/(m^2·sr·cm^-1)) to brightness temperatures [K].
 
     The config should contain the following keys:
-        - input_prefix: prefix of the input column names
-        - output_prefix: prefix of the output column names
-        - mode: 'cris_fsr' or 'cris_nsr'
+
+    - ``input_prefix``: prefix of the input column names
+    - ``output_prefix``: prefix of the output column names
+    - ``mode``: ``cris_fsr`` or ``cris_nsr``
 
     Examples
     --------

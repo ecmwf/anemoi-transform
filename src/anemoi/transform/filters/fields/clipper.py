@@ -19,8 +19,8 @@ from anemoi.transform.filters.fields import filter_registry
 class Clipper(SingleFieldFilter):
     """Clip the values of a single field to a specified range [minimum, maximum].
 
-    Values below `minimum` will be set to `minimum`, and values above `maximum` will be set to `maximum`.
-    At least one of `minimum` or `maximum` must be specified.
+    Values below ``minimum`` will be set to ``minimum``, and values above ``maximum`` will be set to ``maximum``.
+    At least one of ``minimum`` or ``maximum`` must be specified.
 
     Clipping is defined as:
 
@@ -44,7 +44,7 @@ class Clipper(SingleFieldFilter):
 
     Examples
     --------
-    Clip the total precipitation rate (`tp`) to [0, ♾️):
+    Clip the total precipitation rate (``tp``) to [0, ♾️):
 
     .. code-block:: yaml
 

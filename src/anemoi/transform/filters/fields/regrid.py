@@ -97,7 +97,7 @@ class RegridFilter(Filter):
     `pre-generated matrix
     <https://earthkit-regrid.readthedocs.io/en/latest/inventory/index.html>`_
     exists for this transformation. Otherwise, it is possible to provide a
-    ``regrid matrix`` previously generated with :ref:`make-regrid-matrix`.
+    ``regrid matrix`` previously generated with :ref:`make-regrid-file`.
     The generated matrix is an NPZ file containing the
     input/output coordinates, the indices, and the weights of the
     interpolation.
@@ -260,7 +260,7 @@ class EarthkitRegrid:
 
 
 class MIRMatrix:
-    """Assume matrix was created by `anemoi-transform make-regrid-matrix`."""
+    """Assume matrix was created by ``anemoi-transform make-regrid-file``."""
 
     def __init__(self, *, matrix: str, check: bool) -> None:
         """Parameters

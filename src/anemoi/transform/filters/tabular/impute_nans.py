@@ -32,6 +32,7 @@ class ImputeNaNs(Filter):
 
     Examples
     --------
+    Using one value for all columns
     .. code-block:: yaml
 
       input:
@@ -44,8 +45,7 @@ class ImputeNaNs(Filter):
               - obsvalue_0
               - obsvalue_1
 
-    Examples
-    --------
+    Using a dictionary to specify values per column
     .. code-block:: yaml
 
       input:

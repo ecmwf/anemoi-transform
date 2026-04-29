@@ -12,10 +12,11 @@ import logging
 from abc import abstractmethod
 from collections.abc import Callable
 from collections.abc import Iterator
-from functools import wraps
+from dataclasses import dataclass
+from dataclasses import replace
 from inspect import signature
 from itertools import chain
-from typing import Any
+from typing import Iterable
 from typing import Literal
 
 import earthkit.data as ekd
@@ -30,157 +31,57 @@ from anemoi.transform.grouping import GroupByParamVertical
 LOG = logging.getLogger(__name__)
 
 
-def _get_params_and_defaults(method: Callable) -> dict:
-    """Get the list of parameters and their default values from a method.
+@dataclass(frozen=True, slots=True)
+class MatchingSpec:
+    select: Literal["param"] = "param"
+    forward: tuple[str, ...] = ()
+    backward: tuple[str, ...] = ()
+    return_inputs: Literal["all", "none"] | tuple[str] = "none"
+    vertical: bool = False
 
-    Parameters
-    ----------
-    method : Callable
-        The method to inspect.
+    @staticmethod
+    def _to_tuple_of_str(x: str | Iterable[str]) -> tuple[str, ...]:
+        if isinstance(x, str):
+            return (x,)
+        try:
+            return tuple(x)
+        except TypeError as e:
+            raise TypeError(f"Expected str or iterable, got {type(x)}") from e
 
-    Returns
-    -------
-    dict
-        A dictionary with parameter names as keys and their default values as values.
-    """
-    sig = signature(method)
-    return {k: v.default for k, v in sig.parameters.items()}  # if v.default is not v.empty}
+    def __post_init__(self) -> None:
+        if self.select != "param":
+            raise NotImplementedError("Only 'select=param' is supported for now.")
 
+        object.__setattr__(self, "forward", self._to_tuple_of_str(self.forward))
+        object.__setattr__(self, "backward", self._to_tuple_of_str(self.backward))
 
-def _check_arguments(method: Callable) -> tuple[bool, bool, bool]:
-    """Check the types of arguments in the method signature.
+        if self.return_inputs not in ("all", "none"):
+            object.__setattr__(self, "return_inputs", self._to_tuple_of_str(self.return_inputs))
+            all_params = set(self.forward) | set(self.backward)
+            if not set(self.return_inputs).issubset(all_params):
+                raise ValueError(f"Returned input names must subset {all_params}")
 
-    Parameters
-    ----------
-    method : Callable
-        The method to inspect.
+    def update_return_inputs(self, return_inputs: Literal["all", "none"] | Iterable[str]) -> "MatchingSpec":
+        if not isinstance(return_inputs, str):
+            return_inputs = self._to_tuple_of_str(return_inputs)
 
-    Returns
-    -------
-    Tuple[bool, bool, bool]
-        A tuple indicating the presence of positional or keyword arguments,
-        variable positional arguments, and variable keyword arguments.
-    """
-    sig = signature(method)
-    has_params = any(param.kind == param.POSITIONAL_OR_KEYWORD for param in sig.parameters.values())
-    has_args = any(param.kind == param.VAR_POSITIONAL for param in sig.parameters.values())
-    has_kwargs = any(param.kind == param.VAR_KEYWORD for param in sig.parameters.values())
+        if return_inputs == self.return_inputs:
+            return self
 
-    result = (has_params, has_args, has_kwargs)
+        return replace(self, return_inputs=return_inputs)
 
-    if all(a is False for a in result):
-        raise ValueError(f"{method}: no arguments found in method signature.")
-
-    if sum(a is True for a in result) > 1:
-        raise ValueError(f"{method}: cannot mix named parameters and *args and/or **kargs.")
-
-    if has_kwargs:  # For now
-        raise NotImplementedError(f"{method}: cannot have **kwargs.")
-
-    return has_params, has_args, has_kwargs
+    def inputs(self, direction: Literal["forward", "backward"]) -> tuple[str, ...]:
+        if self.return_inputs == "all":
+            return tuple(getattr(self, direction))
+        if self.return_inputs == "none":
+            return ()
+        return self.return_inputs
 
 
-def inputs_generator(input_list: list[str], **kwargs) -> Iterator[ekd.Field]:
+def inputs_generator(input_list: Iterable[str], **kwargs) -> Iterator[ekd.Field]:
     for name in input_list:
         if name in kwargs:
             yield kwargs[name]
-
-
-class matching:
-    """A decorator to decorate the __init__ method of a subclass of MatchingFieldsFilter"""
-
-    def __init__(
-        self,
-        *,
-        select: str,
-        forward: str | list[str] | tuple[str, ...] = [],
-        backward: str | list[str] | tuple[str, ...] = [],
-        return_inputs: Literal["all", "none"] | list[str] = "none",
-        vertical: bool = False,
-    ) -> None:
-        """Initialize the matching decorator.
-
-        Parameters
-        ----------
-        select : str
-            The attribute to select.
-        forward : list, optional
-            List of forward arguments, by default [].
-        backward : list, optional
-            List of backward arguments, by default [].
-        return_inputs: Literal["all", "none"] | List[str], optional
-            Indicate which one of the input values for the filter should be kept, by default "none"
-            "all" will return all inputs, while a List[str] will select the inputs as defined by the user.
-        vertical: bool, optional
-            If True, join grouped data vertically, by default False.
-        """
-        self.select = select
-        self.vertical = vertical
-        if select != "param":
-            raise NotImplementedError("Only 'select=param' is supported for now.")
-
-        if not isinstance(forward, (list, tuple)):
-            forward = [forward]
-
-        if not isinstance(backward, (list, tuple)):
-            backward = [backward]
-
-        self.forward = forward
-        self.backward = backward
-        self.return_inputs = return_inputs
-
-    def __call__(self, method: Callable) -> Callable:
-        """Wrap the method with forward and backward argument initialization.
-
-        Parameters
-        ----------
-        method : Callable
-            The method to wrap.
-
-        Returns
-        -------
-        Callable
-            The wrapped method.
-        """
-        self.params_and_defaults = _get_params_and_defaults(method)
-
-        seen = set()
-        forward = {}
-        for name in self.params_and_defaults.keys():
-            if name in self.forward:
-                forward[name] = name
-                seen.add(name)
-
-        for name in self.forward:
-            if name not in seen:
-                LOG.warning(f"{method}: forward argument `{name}` not found in method signature.")
-
-        seen = set()
-        backward = {}
-        for name in self.params_and_defaults.keys():
-            if name in self.backward:
-                backward[name] = name
-                seen.add(name)
-
-        for name in self.backward:
-            if name not in seen:
-                LOG.warning(f"{method}: backward argument `{name}` not found in method signature.")
-
-        @wraps(method)
-        def wrapped(obj: Any, *args: Any, **kwargs: Any) -> Any:
-
-            obj._forward_arguments_types = _check_arguments(getattr(obj, "forward_transform"))
-            obj._backward_arguments_types = _check_arguments(getattr(obj, "backward_transform"))
-
-            obj._select = self.select
-            obj._forward_arguments = forward
-            obj._backward_arguments = backward
-            obj.return_inputs = self.return_inputs
-            obj._vertical = self.vertical
-            obj._initialised = True
-            return method(obj, *args, **kwargs)
-
-        return wrapped
 
 
 class MatchingFieldsFilter(Filter):
@@ -188,61 +89,47 @@ class MatchingFieldsFilter(Filter):
     The fields are matched by their metadata.
     """
 
-    _initialised = False
-    # to return filter inputs if needed.
-    # strings in the list must be in forward or backward args, otherwise this will fail
-    return_inputs: Literal["all", "none"] | list[str] = "none"
+    MATCHING: MatchingSpec
 
-    def _match_arguments(self, argument_type: Literal["forward", "backward"]) -> list[str]:
+    @staticmethod
+    def _check_expected_method_parameters(method, expected_parameters):
+        method_params = signature(method).parameters
+        missing = set(expected_parameters) - set(method_params)
+        if missing:
+            raise ValueError(f"{method}: missing parameters {missing}")
 
-        arguments = set(self.forward_arguments) | set(self.backward_arguments)
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
 
-        directional = self.forward_arguments if argument_type == "forward" else self.backward_arguments
+        if not hasattr(cls, "MATCHING") or not isinstance(cls.MATCHING, MatchingSpec):
+            raise TypeError(f"Class {cls.__name__} must define a 'MATCHING' attribute of type MatchingSpec.")
 
-        if self.return_inputs == "all":
-            returned_input_list = list(arguments)
-        elif self.return_inputs == "none":
-            returned_input_list = []
-        else:
-            if not isinstance(self.return_inputs, list):
-                raise ValueError(f"Return inputs must be 'all', 'none', or List[str], got {type(self.return_inputs)}")
-            if not set(self.return_inputs) <= (arguments):
-                raise ValueError(f"Returned input names must subset {arguments} (either forward or backward arguments)")
-            if not set(self.return_inputs) <= set(directional):
-                diff = set(self.return_inputs) - set(directional)
-                LOG.warning(f"Some inputs will not be returned because filter direction is {argument_type}: {diff}")
-            returned_input_list = self.return_inputs
-        return returned_input_list
+        forward_required_params = set(cls.MATCHING.forward)
+        backward_required_params = set(cls.MATCHING.backward)
+        constructor_required_params = forward_required_params | backward_required_params
 
-    @property
-    def forward_arguments(self) -> dict:
-        """Get the forward arguments.
+        MatchingFieldsFilter._check_expected_method_parameters(cls.__init__, constructor_required_params)
+        MatchingFieldsFilter._check_expected_method_parameters(cls.forward_transform, forward_required_params)
+        MatchingFieldsFilter._check_expected_method_parameters(cls.backward_transform, backward_required_params)
 
-        Raises
-        ------
-        ValueError
-            If the filter is not initialised.
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        """
-        if not self._initialised:
-            raise ValueError("Filter not initialised.")
+        self._prepare_matching()
 
-        return self._forward_arguments
+    def _prepare_matching(self) -> None:
+        if hasattr(self, "return_inputs"):
+            self.MATCHING = self.MATCHING.update_return_inputs(self.return_inputs)
 
-    @property
-    def backward_arguments(self) -> dict:
-        """Get the backward arguments.
+        for direction in ("forward", "backward"):
+            params = getattr(self.MATCHING, direction)
+            inputs = self.MATCHING.inputs(direction=direction)
 
-        Raises
-        ------
-        ValueError
-            If the filter is not initialised.
-
-        """
-        if not self._initialised:
-            raise ValueError("Filter not initialised.")
-
-        return self._backward_arguments
+            if inputs and params and not set(inputs).issubset(params):
+                diff = set(inputs) - set(params)
+                LOG.warning(
+                    f"Some {direction} inputs will not be returned because they are not in the filter parameters: {diff}"
+                )
 
     def _check_metadata_match(self, data: ekd.FieldList, args: list[str] | tuple[str, ...]) -> None:
         """Checks the parameters names of the data and the groups match
@@ -275,23 +162,19 @@ class MatchingFieldsFilter(Filter):
         ekd.FieldList
             Transformed data.
         """
-        args = []
-        returned_input_list = self._match_arguments("forward")
 
-        for name in self.forward_arguments:
-            args.append(getattr(self, name))
+        # passed into this...
+        def _forward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
+            kwargs = dict(zip(self.MATCHING.forward, fields, strict=True))
+            return chain(
+                inputs_generator(self.MATCHING.inputs(direction="forward"), **kwargs), self.forward_transform(**kwargs)
+            )
 
-        named_args = self._forward_arguments_types[0]
-
-        def forward_transform_named(*fields: ekd.Field) -> Iterator[ekd.Field]:
-            assert len(fields) == len(self.forward_arguments)
-            kwargs = {name: field for field, name in zip(fields, self.forward_arguments)}
-            return chain(inputs_generator(returned_input_list, **kwargs), self.forward_transform(**kwargs))
-
+        group_by = (getattr(self, name) for name in self.MATCHING.forward)
         return self._transform(
             data,
-            forward_transform_named if named_args else self.forward_transform,
-            *args,
+            _forward_transform,
+            *group_by,
         )
 
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
@@ -307,23 +190,20 @@ class MatchingFieldsFilter(Filter):
         ekd.FieldList
             Transformed data.
         """
-        args = []
-        returned_input_list = self._match_arguments("backward")
 
-        for name in self.backward_arguments:
-            args.append(getattr(self, name))
+        # passed into this...
+        def _backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
+            kwargs = dict(zip(self.MATCHING.backward, fields, strict=True))
+            return chain(
+                inputs_generator(self.MATCHING.inputs(direction="backward"), **kwargs),
+                self.backward_transform(**kwargs),
+            )
 
-        named_args = self._backward_arguments_types[0]
-
-        def backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
-            assert len(fields) == len(self.backward_arguments)
-            kwargs = {name: field for field, name in zip(fields, self.backward_arguments)}
-            return chain(inputs_generator(returned_input_list, **kwargs), self.backward_transform(**kwargs))
-
+        group_by = (getattr(self, name) for name in self.MATCHING.backward)
         return self._transform(
             data,
-            backward_transform if named_args else self.backward_transform,
-            *args,
+            _backward_transform,
+            *group_by,
         )
 
     def _transform(
@@ -348,19 +228,21 @@ class MatchingFieldsFilter(Filter):
         ekd.FieldList
             Transformed data.
         """
-        result: list[ekd.Field] = []
-        if self._vertical:
+        if self.MATCHING.vertical:
             grouping = GroupByParamVertical(group_by)
         else:
             grouping = GroupByParam(group_by)
-        input_params = set(data.metadata("param"))
+
+        input_params = set(data.metadata(self.MATCHING.select))
         self._check_metadata_match(input_params, group_by)
+
+        result: list[ekd.Field] = []
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)
         return self.new_fieldlist_from_list(result)
 
-    def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, param: str) -> ekd.Field:
+    def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, **kwargs) -> ekd.Field:
         """Create a new field from a numpy array.
 
         Parameters
@@ -369,15 +251,15 @@ class MatchingFieldsFilter(Filter):
             Numpy array containing the field data.
         template : ekd.Field
             Template field to use for metadata.
-        param : str
-            Parameter name for the new field.
+        **kwargs : Any
+            Additional keyword arguments for the new field.
 
         Returns
         -------
         ekd.Field
             New field created from the numpy array.
         """
-        return new_field_from_numpy(array, template=template, param=param)
+        return new_field_from_numpy(array, template=template, **kwargs)
 
     def new_fieldlist_from_list(self, fields: list[ekd.Field]) -> ekd.FieldList:
         """Create a new field list from a list of fields.

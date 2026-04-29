@@ -16,20 +16,22 @@ import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 
 @filter_registry.register("cos_sin_from_rad")
 class CosSinFromRad(MatchingFieldsFilter):
     """A filter to convert any variable in radians to cos() and sin() and back."""
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("param",),
         backward=("cos_param", "sin_param"),
     )
+
     def __init__(
         self,
+        *,
         param: str,
         cos_param: str | None = None,
         sin_param: str | None = None,
@@ -49,6 +51,7 @@ class CosSinFromRad(MatchingFieldsFilter):
         self.param = param
         self.cos_param = cos_param if cos_param is not None else f"cos_{param}"
         self.sin_param = sin_param if sin_param is not None else f"sin_{param}"
+        super().__init__()
 
     def forward_transform(
         self,

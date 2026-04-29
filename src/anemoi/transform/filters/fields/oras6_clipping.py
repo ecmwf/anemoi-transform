@@ -14,7 +14,7 @@ import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 PUNY = 1e-5
 MINTF = 271.15 - PUNY  # Assuming a minimum ocean temperature of 271.15K
@@ -25,7 +25,7 @@ TF = 273.15
 class Oras6Clipping(MatchingFieldsFilter):
     """A filter to mask ocean and sea ice-related variables when sea ice concentration is low."""
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=(
             "siue",
@@ -44,6 +44,7 @@ class Oras6Clipping(MatchingFieldsFilter):
             "tos",
         ),
     )
+
     def __init__(
         self,
         *,
@@ -111,6 +112,7 @@ class Oras6Clipping(MatchingFieldsFilter):
         self.sialb = sialb
         self.vasit = vasit
         self.tos = tos
+        super().__init__()
 
     def forward_transform(
         self,

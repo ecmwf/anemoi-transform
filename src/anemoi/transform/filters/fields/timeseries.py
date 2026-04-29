@@ -16,7 +16,7 @@ import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 LOG = logging.getLogger(__name__)
 
@@ -25,10 +25,11 @@ LOG = logging.getLogger(__name__)
 class Timeseries(MatchingFieldsFilter):
     """A source to add a timeseries depending on time but not on location."""
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
-        forward="template_param",
+        forward=("template_param",),
     )
+
     def __init__(
         self,
         *,
@@ -52,13 +53,14 @@ class Timeseries(MatchingFieldsFilter):
         LOG.warning("Using the timeseries filter will be deprecated in the future. Please do not rely on it.")
 
         self.template_param = template_param
+        super().__init__()
 
-    def forward_transform(self, template: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, template_param: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.
 
         Parameters
         ----------
-        template : ekd.Field
+        template_param : ekd.Field
             Template field to transform.
 
         Returns
@@ -66,12 +68,12 @@ class Timeseries(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        dt = template.metadata("valid_datetime")
-        template_array = template.to_numpy()
+        dt = template_param.metadata("valid_datetime")
+        template_array = template_param.to_numpy()
 
         sel = self.ds.sel(time=dt)
 
         for name in self.ds.data_vars:
             value = sel[name].values
             data = np.full_like(template_array, value)
-            yield self.new_field_from_numpy(data, template=template, param=name)
+            yield self.new_field_from_numpy(data, template=template_param, param=name)

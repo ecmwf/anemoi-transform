@@ -14,7 +14,7 @@ import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 
 def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.ndarray:
@@ -75,10 +75,11 @@ class SnowCover(MatchingFieldsFilter):
 
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("snow_depth", "snow_density"),
     )
+
     def __init__(
         self,
         *,
@@ -101,6 +102,7 @@ class SnowCover(MatchingFieldsFilter):
         self.snow_depth = snow_depth
         self.snow_density = snow_density
         self.snow_cover = snow_cover
+        super().__init__()
 
     def forward_transform(self, snow_depth: ekd.Field, snow_density: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to snow cover.
@@ -119,4 +121,4 @@ class SnowCover(MatchingFieldsFilter):
         """
         snow_cover = compute_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield self.new_field_from_numpy(snow_cover, template=snow_depth, param=self.snow_cover)
+        yield self.new_field_from_numpy(snow_cover, template=snow_depth, param=self.snow_cover, units="Fraction")

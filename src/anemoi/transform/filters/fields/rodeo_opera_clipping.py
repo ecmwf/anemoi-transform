@@ -13,7 +13,7 @@ import earthkit.data as ekd
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 from .rodeo_opera_preprocessing import clip_opera
 
@@ -42,10 +42,11 @@ class RodeoOperaClipping(MatchingFieldsFilter):
     will be moved into a plugin in the near-future.
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("total_precipitation", "quality"),
     )
+
     def __init__(
         self,
         *,
@@ -67,11 +68,12 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         self.total_precipitation = total_precipitation
         self.max_total_precipitation = max_total_precipitation
         self.quality = quality
+        super().__init__()
 
     def forward_transform(
         self,
         total_precipitation: ekd.Field,
-        quality,
+        quality: ekd.Field,
     ) -> Iterator[ekd.Field]:
         """Pre-process Rodeo Opera data.
 

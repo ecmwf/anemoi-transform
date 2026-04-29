@@ -698,6 +698,24 @@ def new_field_with_metadata(template: WrappedField, **metadata: Any) -> NewMetad
     return NewMetadataField(template, **metadata)
 
 
+def new_field_with_units(template: WrappedField, units: str) -> NewMetadataField:
+    """Create a new field with units.
+
+    Parameters
+    ----------
+    template : WrappedField
+        The template field to use.
+    units : str
+        The units for the new field.
+
+    Returns
+    -------
+    NewMetadataField
+        The new field with the provided units.
+    """
+    return NewMetadataField(template, units=units)
+
+
 def new_field_from_latitudes_longitudes(
     template: WrappedField, latitudes: np.ndarray, longitudes: np.ndarray
 ) -> NewLatLonField:

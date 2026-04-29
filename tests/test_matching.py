@@ -14,17 +14,22 @@ import earthkit.data as ekd
 import pytest
 
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 from .utils import mock_field
 
 
 class AddFields(MatchingFieldsFilter):
-    @matching(select="param", forward=["a", "b"])
-    def __init__(self, a, b, return_inputs="none"):
+    MATCHING = MatchingSpec(
+        select="param",
+        forward=("a", "b"),
+    )
+
+    def __init__(self, *, a, b, return_inputs="none"):
         self.a = a
         self.b = b
         self.return_inputs = return_inputs
+        super().__init__()
 
     def forward_transform(self, a: ekd.Field, b: ekd.Field) -> Iterator[ekd.Field]:
         result = a.values + b.values
@@ -35,10 +40,10 @@ class AddFields(MatchingFieldsFilter):
         return mock_field(**metadata)
 
 
-def test_matching_decorator_initializes_correctly():
-    filter_instance = AddFields("a", "b")
-    assert filter_instance._initialised
-    assert filter_instance.forward_arguments == {"a": "a", "b": "b"}
+def test_matching_spec_initializes_correctly():
+    filter_instance = AddFields(a="a", b="b")
+    assert filter_instance.MATCHING.forward == ("a", "b")
+    assert filter_instance.MATCHING.inputs("forward") == ()
 
 
 def test_forward_transform_adds_fields():
@@ -66,7 +71,7 @@ def test_return_inputs():
     assert {result[i].metadata("param") for i in range(2)} == {"a", "b"}
     assert result[2].metadata("param") == "c"
 
-    f = AddFields(a="a", b="b", return_inputs=["a"])
+    f = AddFields(a="a", b="b", return_inputs=("a",))
     result = f.forward(data)
     assert len(result) == 2
     for i in range(2):
@@ -85,14 +90,88 @@ def test_missing_component_raises():
         _ = f.forward(data)
 
 
-def test_uninitialised_filter_raises():
-    class BadFilter(MatchingFieldsFilter):
-        def forward_transform(self, *args):
-            pass
+def test_init_missing_params_raises():
+    with pytest.raises(ValueError, match="missing parameters"):
 
-    bf = BadFilter()
-    with pytest.raises(ValueError):
-        _ = bf.forward_arguments
+        class BadFilter(MatchingFieldsFilter):
+            MATCHING = MatchingSpec(
+                select="param",
+                forward=("a", "b"),
+            )
+
+            def __init__(self, a):  # Missing 'b' in __init__
+                self.a = a
+
+            def forward_transform(self, a, b):
+                pass
+
+            def backward_transform(self):
+                pass
+
+
+def test_missing_matching_attribute_raises():
+    with pytest.raises(TypeError, match="must define a 'MATCHING' attribute"):
+
+        class NoMatchingFilter(MatchingFieldsFilter):
+            def __init__(self):
+                pass
+
+            def forward_transform(self):
+                pass
+
+
+def test_wrong_matching_type_raises():
+    with pytest.raises(TypeError, match="must define a 'MATCHING' attribute"):
+
+        class WrongTypeFilter(MatchingFieldsFilter):
+            MATCHING = "not a MatchingSpec"
+
+            def __init__(self):
+                pass
+
+            def forward_transform(self):
+                pass
+
+
+def test_forward_transform_missing_params_raises():
+    with pytest.raises(ValueError, match="missing parameters"):
+
+        class BadForwardFilter(MatchingFieldsFilter):
+            MATCHING = MatchingSpec(
+                select="param",
+                forward=("a", "b"),
+            )
+
+            def __init__(self, a, b):
+                self.a = a
+                self.b = b
+
+            def forward_transform(self, a):  # Missing 'b'
+                pass
+
+            def backward_transform(self):
+                pass
+
+
+def test_backward_transform_missing_params_raises():
+    with pytest.raises(ValueError, match="missing parameters"):
+
+        class BadBackwardFilter(MatchingFieldsFilter):
+            MATCHING = MatchingSpec(
+                select="param",
+                forward=("a",),
+                backward=("a", "b"),
+            )
+
+            def __init__(self, a, b):
+                self.a = a
+                self.b = b
+
+            def forward_transform(self, a):
+                pass
+
+            def backward_transform(self, a):  # Missing 'b'
+                pass
 
 
 def test_metadata_mismatch_warning(caplog):

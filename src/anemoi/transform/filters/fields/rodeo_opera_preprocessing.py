@@ -14,7 +14,7 @@ import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 LOG = logging.getLogger(__name__)
 
@@ -126,10 +126,11 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
 
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("total_precipitation", "quality", "mask"),
     )
+
     def __init__(
         self,
         *,
@@ -159,6 +160,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         self.mask = mask
         self.max_total_precipitation = max_total_precipitation
         self.return_mask = return_mask
+        super().__init__()
 
     def forward_transform(
         self,

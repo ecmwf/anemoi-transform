@@ -16,18 +16,19 @@ import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 
 @filter_registry.register("cos_sin_mean_wave_direction")
 class CosSinWaveDirection(MatchingFieldsFilter):
     """A filter to convert mean wave direction to cos() and sin() and back."""
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("mean_wave_direction",),
         backward=("cos_mean_wave_direction", "sin_mean_wave_direction"),
     )
+
     def __init__(
         self,
         *,

@@ -15,17 +15,18 @@ from pyproj import CRS
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 
 class RotateWinds(MatchingFieldsFilter):
     """A filter to rotate wind components from one projection to another."""
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("x_wind", "y_wind"),
         backward=("x_wind", "y_wind"),
     )
+
     def __init__(
         self,
         *,

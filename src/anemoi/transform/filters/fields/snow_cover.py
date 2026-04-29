@@ -14,7 +14,7 @@ import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 
 def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.ndarray:
@@ -75,10 +75,11 @@ class SnowCover(MatchingFieldsFilter):
 
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("snow_depth", "snow_density"),
     )
+
     def __init__(
         self,
         *,

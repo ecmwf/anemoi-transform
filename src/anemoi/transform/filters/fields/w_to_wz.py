@@ -17,7 +17,7 @@ from anemoi.transform.constants import g_gravitational_acceleration
 from anemoi.transform.filters.fields import filter_registry
 
 from .matching import MatchingFieldsFilter
-from .matching import matching
+from .matching import MatchingSpec
 
 
 class VerticalVelocity(MatchingFieldsFilter):
@@ -31,11 +31,12 @@ class VerticalVelocity(MatchingFieldsFilter):
 
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("vertical_velocity", "temperature", "humidity"),
         backward=("geometric_vertical_velocity", "temperature", "humidity"),
     )
+
     def __init__(
         self,
         *,

@@ -15,7 +15,7 @@ import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 SOIL_TYPE_DIC = {
     0: {"theta_pwp": 0.0, "theta_cap": 0.0},
@@ -76,10 +76,11 @@ def read_crosswalking_table(param: Any, param_dic: dict[int, dict[str, float]]) 
 class LandParameters(MatchingFieldsFilter):
     """A filter to add static parameters from table based on soil/vegetation type."""
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("high_veg_type", "low_veg_type", "soil_type"),
     )
+
     def __init__(
         self,
         *,

@@ -16,7 +16,7 @@ import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import matching
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 LOG = logging.getLogger(__name__)
 
@@ -25,10 +25,11 @@ LOG = logging.getLogger(__name__)
 class Timeseries(MatchingFieldsFilter):
     """A source to add a timeseries depending on time but not on location."""
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
-        forward="template_param",
+        forward=("template_param",),
     )
+
     def __init__(
         self,
         *,

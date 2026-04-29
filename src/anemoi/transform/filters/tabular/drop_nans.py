@@ -23,12 +23,12 @@ class DropNaNs(Filter):
     """Drop rows from a DataFrame where any/all selected columns are NaN.
 
     The configuration can contain either a list of column names to be
-    considered or a prefix string (`column_prefix` key), where all columns
+    considered or a prefix string (``column_prefix`` key), where all columns
     starting with this prefix will be considered. If neither are provided, then
     all columns will be considered.
 
-    The criterion for dropping a row can be set with the `how` key, either to
-    'any' (default) or 'all', determining whether any or all selected columns
+    The criterion for dropping a row can be set with the ``how`` key, either to
+    ``any`` (default) or ``all``, determining whether any or all selected columns
     must contain NaN values for a row to be dropped.
 
     Examples

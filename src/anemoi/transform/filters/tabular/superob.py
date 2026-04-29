@@ -22,10 +22,11 @@ class SuperOb(Filter):
     """SuperOb filter for aggregating observations into grid cells.
 
     The configuration should be a dictionary with the following keys:
-    - grid: str, the grid to use for aggregation
-    - timeslot_length: int, the length of the timeslot in seconds
-    - columns_to_take_nearest: list[str], the columns to take the nearest value for
-    - columns_to_groupby: list[str], the columns to group by for aggregation
+
+    - ``grid``: str, the grid to use for aggregation
+    - ``timeslot_length``: int, the length of the timeslot in seconds
+    - ``columns_to_take_nearest``: list[str], the columns to take the nearest value for
+    - ``columns_to_groupby``: list[str], the columns to group by for aggregation
 
     Examples
     --------

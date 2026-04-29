@@ -19,7 +19,7 @@ from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_c
 class Rename(Filter):
     """Rename one or more columns in the DataFrame.
 
-    The configuration should be a dictionary with the key 'columns' containing a
+    The configuration should be a dictionary with the key ``columns`` containing a
     dictionary which maps old column names to new column names.
 
     Examples

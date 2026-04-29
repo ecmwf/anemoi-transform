@@ -20,8 +20,8 @@ class EncodeStatids(Filter):
     """Encode the station ID column of a DataFrame as an integer using hash as a
     fallback.
 
-    The configuration of this filter can contain a `station_id` key to specify
-    the column name to encode. If not provided, defaults to 'statid'.
+    The configuration of this filter can contain a ``station_id`` key to specify
+    the column name to encode. If not provided, defaults to ``statid``.
 
     Examples
     --------

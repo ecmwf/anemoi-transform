@@ -22,7 +22,7 @@ class SortBy(Filter):
     """Sort a DataFrame by the list of columns supplied in the config.
 
     The configuration should contain a list of column names to sort by under
-    the 'columns' key.
+    the ``columns`` key.
 
     Examples
     --------

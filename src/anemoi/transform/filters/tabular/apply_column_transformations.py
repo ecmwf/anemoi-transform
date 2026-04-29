@@ -67,15 +67,15 @@ class ApplyColumnTransformations(Filter):
     multiple columns).
 
     The configuration should contain a dictionary mapping target column names to
-    the desired transformation, which is a dictionary containing a "function"
-    key and optionally a "source_column" key (required for transformations
+    the desired transformation, which is a dictionary containing a ``function``
+    key and optionally a ``source_column`` key (required for transformations
     requiring multiple columns). Note that using a source key which is different
     to the target key can allow for creating new columns from existing ones.
     Without the source key, for a transformation requiring only a single column,
     the column will not be renamed.
 
-    The single-column transformation must be one of: log, log1p, safe_log, sqrt,
-    exp, abs, sin, sin_deg, cos, cos_deg.
+    The single-column transformation must be one of: ``log``, ``log1p``, ``safe_log``, ``sqrt``,
+    ``exp``, ``abs``, ``sin``, ``sin_deg``, ``cos``, ``cos_deg``.
 
     Examples
     --------

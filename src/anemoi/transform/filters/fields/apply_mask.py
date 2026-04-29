@@ -57,7 +57,7 @@ class MaskVariable(Filter):
     or a list of variables.
 
     The ``return_mask`` keyword can be used to control whether the mask is returned
-    or consumed (not returned) by the filter (default: False, i.e. consumed).
+    or consumed (not returned) by the filter (default: ``False``, i.e. consumed).
     This is only used when the mask is provided through the ``mask_param`` keyword.
 
     Examples

@@ -24,7 +24,7 @@ class Orography(SingleFieldFilter):
 
     .. math:: geopotential = g \cdot orography
 
-    where `g` refers to the :data:`gravitational acceleration constant <earthkit.meteo.constants.g>`.
+    where ``g`` refers to the :data:`gravitational acceleration constant <earthkit.meteo.constants.g>`.
 
     This filter must follow a source that provides orography, which is
     replaced by surface geopotential height.

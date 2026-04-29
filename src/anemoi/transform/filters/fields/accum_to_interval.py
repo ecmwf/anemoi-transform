@@ -18,15 +18,16 @@ class AccumToInterval(Filter):
     """Convert accumulated-from-start fields into interval accumulations by time differencing.
 
     This filter:
+
     - Works per variable (grouped by param, level, levelType) along valid_datetime.
     - Sorts inputs by valid_datetime inside each group before differencing.
-    - For the first step, sets zero if `zero_left=True` (default); otherwise keeps the first step unchanged.
+    - For the first step, sets zero if ``zero_left=True`` (default); otherwise keeps the first step unchanged.
     - Passes through non-target variables unchanged.
 
     Notes
     -----
-    - Target variables are matched by their GRIB `param` (e.g. "tp"), not by `param`.
-    - Grouping is done by `(param, level, levelType)`, so both variables are considered unique across surface and model/pressure levels.
+    - Target variables are matched by their GRIB ``param`` (e.g. "tp"), not by ``param``.
+    - Grouping is done by ``(param, level, levelType)``, so both variables are considered unique across surface and model/pressure levels.
 
     Examples
     --------

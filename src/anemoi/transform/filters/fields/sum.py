@@ -30,8 +30,8 @@ class Sum(Filter):
     summed up. These variables are removed by the filter and replaced by a
     single summed variable.
 
-    Example
-    -------
+    Examples
+    --------
 
     .. code-block:: yaml
 

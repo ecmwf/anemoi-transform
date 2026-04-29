@@ -25,14 +25,15 @@ class RemoveExtremeValues(Filter):
     values.
 
     The configuration must contain one of:
-     - a list of column names to be considered (`columns` key); or
-     - a prefix string (`column_prefix` key), where all columns starting with
-       this prefix will be considered.
+
+    - a list of column names to be considered (``columns`` key); or
+    - a prefix string (``column_prefix`` key), where all columns starting with
+      this prefix will be considered.
 
     The threshold corresponding to an extreme value can be configured using the
-    `threshold` key (default: 1e10).
+    ``threshold`` key (default: 1e10).
 
-    The method to remove extreme values can be configured with the `method` key
+    The method to remove extreme values can be configured with the ``method`` key
     (default: "drop").
 
     Examples

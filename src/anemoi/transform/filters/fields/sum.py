@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
+import logging
 from collections import defaultdict
 from collections.abc import Hashable
 
@@ -17,6 +18,8 @@ from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
+
+LOG = logging.getLogger(__name__)
 
 
 @filter_registry.register("sum")
@@ -53,7 +56,7 @@ class Sum(Filter):
 
     """
 
-    def __init__(self, *, params: list[str], output: str):
+    def __init__(self, *, params: list[str], output: str, ignore_level: bool = False):
         """Initialize the Sum filter.
 
         Parameters:
@@ -65,6 +68,7 @@ class Sum(Filter):
         """
         self.params = params
         self.output = output
+        self.ignore_level = ignore_level
 
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         """Computes the sum over a set of variables.
@@ -82,6 +86,10 @@ class Sum(Filter):
         for f in fields:
             key = f.metadata(namespace="mars")
             param = key.pop("param", None)
+            if self.ignore_level:
+                ll = key.pop("levelist", None)
+                LOG.debug(f"Removing levelist ({ll}) from matching key for variable: {param}")
+
             if param is None:
                 param = f.metadata("param")
             if param in self.params:

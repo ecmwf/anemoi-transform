@@ -11,13 +11,30 @@
 from collections.abc import Callable
 
 import earthkit.data as ekd
+import numpy as np
 import pytest
 from anemoi.utils.testing import GetTestData
+from earthkit.data.indexing.fieldlist import SimpleFieldList
+from earthkit.data.sources.array_list import ArrayField
+from earthkit.data.utils.metadata.dict import UserMetadata
 
 from anemoi.transform.source import Source
 from anemoi.transform.sources import source_registry
 
 pytest_plugins = ["anemoi.utils.testing"]
+
+# Create a ekd Metadata Class that mocks the mars metadata namespace
+MARS_KEYS = {"param", "levelist", "type", "step", "date", "time", "number", "expver", "class", "stream", "domain"}
+
+
+class MarsUserMetadata(UserMetadata):
+    def namespaces(self):
+        return ["mars"]
+
+    def as_namespace(self, namespace=None):
+        if namespace == "mars":
+            return {k: v for k, v in self._data.items() if k in MARS_KEYS}
+        return {}
 
 
 @source_registry.register("testing")
@@ -47,5 +64,17 @@ def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Sour
         else:
             raise ValueError("dataset must be a string or a list of dicts")
         return source_registry.create("testing", dataset=ds)
+
+    return _source
+
+
+@pytest.fixture
+def mars_test_source() -> Callable[[list[dict]], Source]:
+    def _source(dataset: list[dict]) -> Source:
+        fields = []
+        for d in dataset:
+            v = np.array(d["values"])
+            fields.append(ArrayField(v, MarsUserMetadata(d, shape=v.shape)))
+        return source_registry.create("testing", dataset=SimpleFieldList(fields=fields))
 
     return _source

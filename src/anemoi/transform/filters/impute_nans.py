@@ -24,7 +24,8 @@ class ImputeNaNs(DispatchingFilter):
             # empty config is valid for both types of filter
             self.tabular_filter = ImputeNaNsTabular()
             self.field_filter = ImputeNaNsFields()
-        elif ("columns" in config) or ("column_prefix" in config:
+        elif ("columns" in config) or ("column_prefix" in config):
+
             # only these columns supported in tabular filter
             self.tabular_filter = ImputeNaNsTabular(**config)
             self.field_filter = None

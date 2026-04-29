@@ -260,7 +260,7 @@ class EarthkitRegrid:
 
 
 class MIRMatrix:
-    """Assume matrix was created by ``anemoi-transform make-regrid-matrix``."""
+    """Assume matrix was created by ``anemoi-transform make-regrid-file``."""
 
     def __init__(self, *, matrix: str, check: bool) -> None:
         """Parameters

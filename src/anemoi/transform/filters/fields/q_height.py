@@ -59,7 +59,7 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
     at a specified height level (in meters) with standard thermodynamical formulas
     """
 
-    @matching(
+    MATCHING = MatchingSpec(
         select="param",
         forward=("specific_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"),
         backward=("relative_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"),

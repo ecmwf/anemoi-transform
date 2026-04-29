@@ -19,9 +19,9 @@ from anemoi.transform.filters.fields import filter_registry
 LOG = logging.getLogger(__name__)
 
 
-@filter_registry.register("replace_nans_fields")
-class ReplaceNaNs(SingleFieldFilter):
-    """A filter to replace NaN values in specified fields with a fixed value.
+@filter_registry.register("impute_nans_fields")
+class ImputeNaNs(SingleFieldFilter):
+    """A filter to impute NaN values in specified fields with a fixed value.
 
     Examples
     --------
@@ -32,8 +32,8 @@ class ReplaceNaNs(SingleFieldFilter):
           pipe:
             - source: # Can be `mars`, `netcdf`, etc.
                 param: ...
-            - replace_nans_fields:
-                param: [t, q]  # Parameters whose NaNs should be replaced
+            - impute_nans:
+                param: [t, q]  # Parameters whose NaNs should be imputed
                 value: 0.0     # Replacement value
 
     Notes

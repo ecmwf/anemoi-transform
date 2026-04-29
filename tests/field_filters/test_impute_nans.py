@@ -36,9 +36,9 @@ def source(test_source):
     )
 
 
-def test_replace_nans_single_param(source):
-    replace_nans = create_filter("replace_nans_fields", param="t", value=0.0)
-    pipeline = source | replace_nans
+def test_impute_nans_single_param(source):
+    impute_nans = create_filter("impute_nans", param="t", value=0.0)
+    pipeline = source | impute_nans
 
     input_fields = collect_fields_by_param(source)
     output_fields = collect_fields_by_param(pipeline)
@@ -59,9 +59,9 @@ def test_replace_nans_single_param(source):
         assert np.array_equal(result, original, equal_nan=True)
 
 
-def test_replace_nans_multiple_params(source):
-    replace_nans = create_filter("replace_nans_fields", param=["t", "q"], value=-1.0)
-    pipeline = source | replace_nans
+def test_impute_nans_multiple_params(source):
+    impute_nans = create_filter("impute_nans", param=["t", "q"], value=-1.0)
+    pipeline = source | impute_nans
 
     input_fields = collect_fields_by_param(source)
     output_fields = collect_fields_by_param(pipeline)
@@ -80,9 +80,9 @@ def test_replace_nans_multiple_params(source):
     assert np.array_equal(result, original, equal_nan=True)
 
 
-def test_replace_nans_no_nans_unchanged(source):
-    replace_nans = create_filter("replace_nans_fields", param="r", value=0.0)
-    pipeline = source | replace_nans
+def test_impute_nans_no_nans_unchanged(source):
+    impute_nans = create_filter("impute_nans", param="r", value=0.0)
+    pipeline = source | impute_nans
 
     input_fields = collect_fields_by_param(source)
     output_fields = collect_fields_by_param(pipeline)
@@ -93,9 +93,9 @@ def test_replace_nans_no_nans_unchanged(source):
     assert np.array_equal(result, original)
 
 
-def test_replace_nans_grid_unchanged(source):
-    replace_nans = create_filter("replace_nans_fields", param="t", value=0.0)
-    pipeline = source | replace_nans
+def test_impute_nans_grid_unchanged(source):
+    impute_nans = create_filter("impute_nans", param="t", value=0.0)
+    pipeline = source | impute_nans
 
     input_fields = collect_fields_by_param(source)
     output_fields = collect_fields_by_param(pipeline)
@@ -105,6 +105,16 @@ def test_replace_nans_grid_unchanged(source):
     output_lats, output_lons = output_fields["t"][0].grid_points()
     assert np.array_equal(input_lats, output_lats)
     assert np.array_equal(input_lons, output_lons)
+
+
+def test_impute_nans_replace_nans_alias(source):
+    impute_nans = create_filter("replace_nans", param="t", value=0.0)
+    pipeline = source | impute_nans
+
+    output_fields = collect_fields_by_param(pipeline)
+
+    result = output_fields["t"][0].to_numpy(flatten=True)
+    assert not np.any(np.isnan(result))
 
 
 if __name__ == "__main__":

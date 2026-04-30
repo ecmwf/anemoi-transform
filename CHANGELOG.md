@@ -9,6 +9,25 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.3.1](https://github.com/ecmwf/anemoi-transform/compare/0.3.0...0.3.1) (2026-04-30)
+
+
+### Features
+
+* Add filter that replaces/imputes NaNs ([#285](https://github.com/ecmwf/anemoi-transform/issues/285)) ([2249078](https://github.com/ecmwf/anemoi-transform/commit/2249078ef3048bc2e4a990736897b2bceb0074d0))
+* Allow summing of different levels of an upper air field  ([#283](https://github.com/ecmwf/anemoi-transform/issues/283)) ([4de0738](https://github.com/ecmwf/anemoi-transform/commit/4de0738c1e81a3d2b40577e359732cfa1cac55cb))
+* Humidity conversions on height levels where the pressure is directly available ([#284](https://github.com/ecmwf/anemoi-transform/issues/284)) ([6bafe46](https://github.com/ecmwf/anemoi-transform/commit/6bafe463e366b5ae540cc4a92faf27cc15478a02))
+
+
+### Bug Fixes
+
+* Timeseries filter field matching ([#287](https://github.com/ecmwf/anemoi-transform/issues/287)) ([31290f1](https://github.com/ecmwf/anemoi-transform/commit/31290f136c8df2c754b8a0707162776678a38e7e))
+
+
+### Documentation
+
+* Update docstrings to improve rendering in docs ([#290](https://github.com/ecmwf/anemoi-transform/issues/290)) ([50ef656](https://github.com/ecmwf/anemoi-transform/commit/50ef65620da0d7b35f89b2ce3cbbac80147d6ac1))
+
 ## [0.3.0](https://github.com/ecmwf/anemoi-transform/compare/0.2.0...0.3.0) (2026-04-22)
 
 

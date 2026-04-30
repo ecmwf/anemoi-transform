@@ -101,6 +101,7 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
         self.relative_humidity_at_height_level = relative_humidity_at_height_level
         self.temperature_at_height_level = temperature_at_height_level
         self.pressure_at_height_level = pressure_at_height_level
+        super().__init__()
 
     def forward_transform(
         self,

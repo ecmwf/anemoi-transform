@@ -18,6 +18,7 @@ from inspect import signature
 from itertools import chain
 from typing import Iterable
 from typing import Literal
+from typing import cast
 
 import earthkit.data as ekd
 import numpy as np
@@ -36,7 +37,7 @@ class MatchingSpec:
     select: Literal["param"] = "param"
     forward: tuple[str, ...] = ()
     backward: tuple[str, ...] = ()
-    return_inputs: Literal["all", "none"] | tuple[str] = "none"
+    return_inputs: Literal["all", "none"] | tuple[str, ...] = "none"
     vertical: bool = False
 
     @staticmethod
@@ -62,7 +63,9 @@ class MatchingSpec:
                 raise ValueError(f"Returned input names must subset {all_params}")
 
     def update_return_inputs(self, return_inputs: Literal["all", "none"] | Iterable[str]) -> "MatchingSpec":
-        if not isinstance(return_inputs, str):
+        if return_inputs in ("all", "none"):
+            return_inputs = cast('Literal["all", "none"]', return_inputs)
+        else:
             return_inputs = self._to_tuple_of_str(return_inputs)
 
         if return_inputs == self.return_inputs:

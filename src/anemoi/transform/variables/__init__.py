@@ -217,7 +217,7 @@ class Variable(ABC):
         """
         return 0
 
-    def compatible(self, other: Any, return_reason: bool = False, **options) -> bool:
+    def compatible(self, other: Any, return_reason: bool = False, **options) -> bool | tuple[bool, str | None]:
         if options is None:
             options = {}
 
@@ -248,12 +248,12 @@ class Variable(ABC):
 
         reason = _compare()
         if reason:
-            return False, reason if return_reason else False
+            return (False, reason) if return_reason else False
 
-        return True, None if return_reason else True
+        return (True, None) if return_reason else True
 
     @classmethod
-    def check_compatibility(cls, variables1: dict, variables2: dict, **options) -> bool:
+    def check_compatibility(cls, variables1: dict, variables2: dict, **options) -> None:
         if options is None:
             options = {}
 

@@ -298,9 +298,9 @@ def cutout_mask(
     global_lons: NDArray[Any],
     cropping_distance: float = 2.0,
     neighbours: int = 5,
-    min_distance_km: int | float = None,
-    max_distance_km: int | float = None,
-    plot: str = None,
+    min_distance_km: int | float | None = None,
+    max_distance_km: int | float | None = None,
+    plot: str | None = None,
 ) -> NDArray[Any]:
     """Return a mask for the points in [global_lats, global_lons] to mask out.
 
@@ -417,19 +417,19 @@ def cutout_mask(
 
         close = np.min(distance) <= min_distance
 
-        too_far = False
+        too_far: bool | NDArray[Any] = False
         if max_distance_km is not None:
             too_far = np.min(distance) > (max_distance_km / R_earth_km)
 
         inside_lam.append(inside or close or too_far)
 
     # Apply max_distance_km filter if specified
-    too_far = False
+    too_far_mask: bool | NDArray[Any] = False
     if isinstance(max_distance_km, (int, float)):
-        too_far = ~mask.copy()  # all points outside the cropping area are too far
+        too_far_mask = ~mask.copy()  # all points outside the cropping area are too far
 
     mask[mask] = inside_lam
-    mask[too_far] = True
+    mask[too_far_mask] = True
 
     # Invert the mask, so we have only the points outside the cutout
     mask = ~mask
@@ -508,7 +508,7 @@ def global_on_lam_mask(
     lons: NDArray[Any],
     global_lats: NDArray[Any],
     global_lons: NDArray[Any],
-    distance_km: float = None,
+    distance_km: float | None = None,
 ) -> NDArray[Any]:
     """Return the list of points in [global_lats, global_lons] closest to [lats, lons] ."""
     from scipy.spatial import cKDTree
@@ -589,7 +589,7 @@ def nearest_grid_points(
     source_longitudes: NDArray[Any],
     target_latitudes: NDArray[Any],
     target_longitudes: NDArray[Any],
-    max_distance: float = None,
+    max_distance: float | None = None,
     num_neighbours_to_return: int = 1,
     return_distances: bool = False,
 ) -> NDArray[Any] | tuple[NDArray[Any], NDArray[Any]]:

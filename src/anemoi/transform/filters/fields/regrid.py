@@ -225,7 +225,7 @@ class EarthkitRegrid:
         """
         self.in_grid = as_gridspec(in_grid)
         self.out_grid = as_gridspec(out_grid)
-        self.out_griddata = as_griddata(out_grid)
+        self.out_griddata = as_griddata(out_grid) or {}
         self.method = method
         if check:
             LOG.warning("Check is not supported by EarthkitRegrid")
@@ -431,9 +431,9 @@ class MaskedRegrid:
 
 def _interpolator(
     *,
-    method: str = None,
-    matrix: str = None,
-    mask: str = None,
+    method: str | None = None,
+    matrix: str | None = None,
+    mask: str | None = None,
 ) -> str:
     """Determine the interpolator to use.
 

@@ -9,6 +9,8 @@
 
 import inspect
 import textwrap
+from abc import ABC
+from abc import abstractmethod
 from collections.abc import Iterator
 from io import StringIO
 from typing import Any
@@ -39,7 +41,7 @@ numpydoc_class_order = [
 
 def split_rst_blocks(lines: list[str]) -> list[list[str]]:
     """Split an RST document into paragraphs and directives."""
-    blocks = []
+    blocks: list[list[str]] = []
     i = 0
     while i < len(lines):
         line = lines[i]
@@ -110,8 +112,13 @@ def parse_directive(lines: list[str]) -> tuple[str, dict[str, str], str]:
     return name, options, body
 
 
-class Documenter:
+class Documenter(ABC):
     """Provides utilities for extracting and formatting docstrings and signatures."""
+
+    @abstractmethod
+    def make_examples(self, params: "CommentedMap") -> Iterator["Example"]:
+        """Generates examples for documentation."""
+        ...
 
     def docstring(self, obj: Any) -> str:
         """Returns the docstring of the given object."""
@@ -176,7 +183,7 @@ class Documenter:
 
     def get_signature(self, cls: type) -> inspect.Signature:
         """Returns the signature of the class's __init__ method."""
-        return inspect.signature(cls.__init__)
+        return inspect.signature(cls)
 
     def construct_signature(self, cls: type) -> CommentedMap:
         """Constructs a YAML-compatible signature for the class."""
@@ -194,7 +201,7 @@ class Documenter:
                 params.yaml_add_eol_comment(f"{self.annotation_str(param.annotation)}", name)
         return params
 
-    def find_rubrics(self, lines: list[str]) -> dict[str, list[str]]:
+    def find_rubrics(self, lines: list[str]) -> dict[str | None, list[str]]:
         """Finds the start and end lines of each rubric in the docstring.
 
         Parameters
@@ -207,7 +214,7 @@ class Documenter:
         dict of str to list of str
             A mapping from rubric titles to their corresponding lines.
         """
-        rubrics = {None: []}
+        rubrics: dict[str | None, list[str]] = {None: []}
         current_rubric = rubrics[None]
         for i, line in enumerate(lines):
 
@@ -262,11 +269,11 @@ class Documenter:
                 if name == "code-block":
                     result.extend(self.parse_block(name, options, body))
                 else:
-                    result.append(block)
+                    result.extend(block)
 
         lines[:] = result
 
-    def parse_block(self, name, options, body: list[str]) -> list[str]:
+    def parse_block(self, name: str, options: dict[str, str], body: str) -> list[str]:
         """Parses a block of lines and returns formatted lines."""
 
         lang = options.get("language", options.get("_default", None))
@@ -280,7 +287,7 @@ class Documenter:
 
         return str(format(body, header=options)).splitlines()
 
-    def format_user_example_yaml(self, text: str, header: list[str]) -> list[str]:
+    def format_user_example_yaml(self, text: str, header: list[str]) -> "YAMLExample":
         """Parses a YAML block and returns formatted lines."""
         yaml = YAML()
         data = yaml.load(text)

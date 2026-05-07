@@ -83,6 +83,6 @@ def lookup(name: str | list[float] | tuple[float, ...]) -> dict:
     dict
         The grid data
     """
-    is_npz_file = isinstance(name, str) and name.endswith(".npz")
-    data = name if is_npz_file else BytesIO(_get_grid_data(name))
-    return dict(np.load(data))
+    if isinstance(name, str) and name.endswith(".npz"):
+        return dict(np.load(name))
+    return dict(np.load(BytesIO(_get_grid_data(name))))

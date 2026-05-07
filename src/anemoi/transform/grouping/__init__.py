@@ -68,8 +68,10 @@ class GroupByParam:
 
     @staticmethod
     def _get_grouping_key(
-        field, extract_from_grouping_key: list[str] | None = None, remove_from_grouping_key: list[str] | None = None
+        field, extract_from_grouping_key: list[str], remove_from_grouping_key: list[str] | None = None
     ):
+        remove_from_grouping_key = remove_from_grouping_key or []
+
         grouping_key = field.metadata(namespace="mars")
         if not grouping_key:
             meta_keys = [k for k in field.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
@@ -90,7 +92,7 @@ class GroupByParam:
 
     def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
-        self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
+        self.groups: dict[frozenset[Any], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
         for f in data:
             key, extras = self._get_grouping_key(
@@ -138,7 +140,7 @@ class GroupByParam:
 class GroupByParamVertical(GroupByParam):
     def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
-        self.groups: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = defaultdict(dict)
+        self.groups: dict[frozenset[Any], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
         levels: dict[str, Any] = defaultdict(list)
         for f in data:

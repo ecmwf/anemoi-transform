@@ -14,7 +14,6 @@ from typing import Any
 
 import earthkit.data as ekd
 import numpy as np
-from earthkit.data.field.component.geography import create_geography_from_dict
 
 LOG = logging.getLogger(__name__)
 
@@ -168,15 +167,12 @@ def new_field_from_latitudes_longitudes(
     ekd.Field
         The new field with the provided latitudes and longitudes.
     """
-    geography = create_geography_from_dict(
-        {
-            "latitudes": latitudes,
-            "longitudes": longitudes,
-            # should projTargetString be passed in?
-            #            "projTargetString": template.geography.projection().to_proj_string(),
+    return template.set(
+        **{
+            "geography.latitudes": latitudes,
+            "geography.longitudes": longitudes,
         }
     )
-    return template.set(geography=geography)
 
 
 def new_flavoured_field(field: ekd.Field, flavour: Flavour) -> ekd.Field:

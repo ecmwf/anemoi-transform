@@ -14,7 +14,7 @@ from collections.abc import Callable
 from collections.abc import Iterator
 from typing import Any
 
-from earthkit.data import SimpleFieldList
+import earthkit.data as ekd
 
 LOG = logging.getLogger(__name__)
 
@@ -62,7 +62,11 @@ def grouping_dict_all(field):
         "vertical.level",
         "vertical.level_type",
     )
-    return dict(zip(KEYS, field.get(KEYS, default=None)))
+    result = dict(zip(KEYS, field.get(KEYS, default=None)))
+    # Normalise missing ensemble member to "0" to prevent grouping inconsistencies
+    if result["ensemble.member"] is None:
+        result["ensemble.member"] = "0"
+    return result
 
 
 class GroupByParam:
@@ -143,9 +147,12 @@ class GroupByParamVertical(GroupByParam):
         self.groups_params = set()
         levels: dict[str, Any] = defaultdict(list)
         for f in data:
-            key, extras = self._get_grouping_key(f, extract_from_grouping_key=["parameter.variable", "vertical.level"])
+            key, extras = self._get_grouping_key(
+                f, extract_from_grouping_key=["parameter.variable", "vertical.level", "vertical.level_type"]
+            )
             param = extras["parameter.variable"]
             level = extras["vertical.level"]
+            level_type = extras["vertical.level_type"]
 
             if param not in self.params:
                 other(f)
@@ -153,7 +160,7 @@ class GroupByParamVertical(GroupByParam):
 
             key = frozenset(key.items())
 
-            if level is None:
+            if level is None or level_type != "hybrid":
                 if param in self.groups[key]:
                     raise ValueError(f"Duplicate component {param} for {key}")
                 self.groups[key][param] = f
@@ -164,9 +171,14 @@ class GroupByParamVertical(GroupByParam):
                     else:
                         self.groups[key][param].append(f)
                 else:
-                    ds = SimpleFieldList()
-                    ds.append(f)
-                    self.groups[key][param] = ds
+                    self.groups[key][param] = [f]
                 levels[param].append(level)
             self.groups_params.add(param)
+
+        # Convert accumulated lists to FieldLists
+        for key, group in self.groups.items():
+            for param, value in group.items():
+                if isinstance(value, list):
+                    group[param] = ekd.create_fieldlist(value)
+
         LOG.info(f"Params groups: {self.groups_params}")

@@ -18,9 +18,9 @@ from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20.0, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20.0, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 T_VALUES = np.array([[280.0, 290.0], [295.0, 285.0], [270.0, 300.0]])
@@ -35,9 +35,9 @@ R_VALUES = thermo.relative_humidity_from_specific_humidity(t=T_VALUES, q=Q_VALUE
 def specific_humidity_source(test_source):
     return test_source(
         [
-            {"param": "q", "values": Q_VALUES.copy(), **MOCK_FIELD_METADATA},
-            {"param": "t", "values": T_VALUES.copy(), **MOCK_FIELD_METADATA},
-            {"param": "pres", "values": P_VALUES.copy(), **MOCK_FIELD_METADATA},
+            {"parameter.variable": "q", "data.values": Q_VALUES.copy(), **MOCK_FIELD_METADATA},
+            {"parameter.variable": "t", "data.values": T_VALUES.copy(), **MOCK_FIELD_METADATA},
+            {"parameter.variable": "pres", "data.values": P_VALUES.copy(), **MOCK_FIELD_METADATA},
         ]
     )
 
@@ -46,9 +46,9 @@ def specific_humidity_source(test_source):
 def relative_humidity_source(test_source):
     return test_source(
         [
-            {"param": "r", "values": R_VALUES.copy(), **MOCK_FIELD_METADATA},
-            {"param": "t", "values": T_VALUES.copy(), **MOCK_FIELD_METADATA},
-            {"param": "pres", "values": P_VALUES.copy(), **MOCK_FIELD_METADATA},
+            {"parameter.variable": "r", "data.values": R_VALUES.copy(), **MOCK_FIELD_METADATA},
+            {"parameter.variable": "t", "data.values": T_VALUES.copy(), **MOCK_FIELD_METADATA},
+            {"parameter.variable": "pres", "data.values": P_VALUES.copy(), **MOCK_FIELD_METADATA},
         ]
     )
 

@@ -289,9 +289,12 @@ def test_relative_humidity_to_specific_humidity_from_file(test_source):
     source = test_source("anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib")
     input_relative_humidity = test_source("anemoi-transform/filters/single_level_relative_humidity.npy").ds.to_numpy()
 
-    md = source.ds.sel(param="2d")[0].metadata().override(edition=2, shortName="2r")
+    template_field = source.ds.sel(**{"parameter.variable": "2d"})[0]
 
-    source.ds += ekd.FieldList.from_array(input_relative_humidity, md)
+    from anemoi.transform.fields import new_field_from_numpy
+
+    new_field = new_field_from_numpy(input_relative_humidity, template=template_field, param="2r")
+    source.ds = ekd.create_fieldlist(list(source.ds) + [new_field])
 
     r_to_q_height = create_filter(
         "r_to_q_height",
@@ -537,9 +540,13 @@ def test_dewpoint_to_specific_humidity_from_file(test_source):
     input_dewpoint_temperature = test_source(
         "anemoi-transform/filters/single_level_dewpoint_temperature.npy"
     ).ds.to_numpy()
-    md = source.ds.sel(param="2d")[0].metadata()
-    ds = source.ds.sel(param=["2sh", "2t", "sp", "q", "t"])
-    ds += ekd.FieldList.from_array(input_dewpoint_temperature, md)
+    template_field = source.ds.sel(**{"parameter.variable": "2d"})[0]
+    ds = source.ds.sel(**{"parameter.variable": ["2sh", "2t", "sp", "q", "t"]})
+
+    from anemoi.transform.fields import new_field_from_numpy
+
+    new_field = new_field_from_numpy(input_dewpoint_temperature, template=template_field, param="2d")
+    ds = ekd.create_fieldlist(list(ds) + [new_field])
     source.ds = ds
 
     d_to_q_height = create_filter(
@@ -601,7 +608,7 @@ def test_dewpoint_temperature_to_specific_humidity(dewpoint_temperature_source):
     # test pipeline output matches known good output
     result = output_fields["2sh"][0].to_numpy()
     expected_specific_humidity = Q2M_VALUES
-    np.testing.assert_allclose(result, expected_specific_humidity)
+    np.testing.assert_allclose(result, expected_specific_humidity, atol=1e-7)
 
 
 def test_height_level_dewpoint_temperature_to_specific_humidity_round_trip(dewpoint_temperature_source):

@@ -13,6 +13,7 @@ from collections.abc import Iterator
 import earthkit.data as ekd
 import pytest
 
+from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
 
@@ -33,11 +34,7 @@ class AddFields(MatchingFieldsFilter):
 
     def forward_transform(self, a: ekd.Field, b: ekd.Field) -> Iterator[ekd.Field]:
         result = a.values + b.values
-        yield self.new_field_from_numpy(result, template=a, param="c")
-
-    def new_field_from_numpy(self, array, *, template, param):
-        metadata = dict(template.metadata()) | {"param": param}
-        return mock_field(**metadata)
+        yield new_field_from_numpy(result, template=a, param="c")
 
 
 def test_matching_spec_initializes_correctly():
@@ -53,7 +50,7 @@ def test_forward_transform_adds_fields():
     b = mock_field(
         **{"parameter.variable": "b", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
     )
-    data = ekd.SimpleFieldList([a, b])
+    data = ekd.create_fieldlist([a, b])
 
     f = AddFields(a="a", b="b")
     result = f.forward(data)
@@ -69,7 +66,7 @@ def test_return_inputs():
     b = mock_field(
         **{"parameter.variable": "b", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
     )
-    data = ekd.SimpleFieldList([a, b])
+    data = ekd.create_fieldlist([a, b])
 
     f = AddFields(a="a", b="b", return_inputs="all")
     result = f.forward(data)
@@ -93,7 +90,7 @@ def test_missing_component_raises():
         **{"parameter.variable": "a", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
     )
     # Missing 'b'
-    data = ekd.SimpleFieldList([a])
+    data = ekd.create_fieldlist([a])
     f = AddFields(a="a", b="b")
 
     with pytest.raises(ValueError):
@@ -191,7 +188,7 @@ def test_metadata_mismatch_warning(caplog):
     d = mock_field(
         **{"parameter.variable": "d", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
     )
-    data = ekd.SimpleFieldList([c, d])
+    data = ekd.create_fieldlist([c, d])
 
     f = AddFields(a="a", b="b")
 

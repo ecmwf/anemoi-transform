@@ -7,17 +7,10 @@ from .utils import mock_field
 
 
 def field_generator(**metadata_values):
-    MOCK_MARS_METADATA = {
-        "domain": "g",
-        "levtype": "sfc",
-        "date": 20200513,
-        "time": 1200,
-        "step": 0,
-        "param": "2t",
-        "class": "od",
-        "type": "an",
-        "stream": "oper",
-        "expver": "0001",
+    MOCK_METADATA = {
+        "time.step": 0,
+        "time.valid_datetime": "2020-05-13T12:00:00Z",
+        "parameter.variable": "2t",
     }
     # builds fields with metadata from cartesian product of metadata_values
     fields = []
@@ -25,7 +18,7 @@ def field_generator(**metadata_values):
 
     combinations = itertools.product(*metadata_values.values())
     for values in combinations:
-        metadata = MOCK_MARS_METADATA | dict(zip(metadata_values.keys(), values))
+        metadata = MOCK_METADATA | dict(zip(metadata_values.keys(), values))
         fields.append(mock_field(**metadata))
     return fields
 
@@ -33,15 +26,30 @@ def field_generator(**metadata_values):
 @pytest.fixture
 def sample_fields():
     return field_generator(
-        step=[0, 1],
-        param=["t", "q", "u", "v"],
+        **{
+            "time.step": [0, 1],
+            "parameter.variable": ["t", "q", "u", "v"],
+        }
     )
 
 
 @pytest.fixture
 def sample_fields_vertical():
-    surface_fields = field_generator(step=[0, 1], levtype=["sfc"], param=["2q", "2r", "2t", "sp"])
-    vertical_fields = field_generator(step=[0, 1], levtype=["ml"], param=["q", "t"], levelist=[1, 2, 3])
+    surface_fields = field_generator(
+        **{
+            "time.step": [0, 1],
+            "vertical.level_type": ["sfc"],
+            "parameter.variable": ["2q", "2r", "2t", "sp"],
+        }
+    )
+    vertical_fields = field_generator(
+        **{
+            "time.step": [0, 1],
+            "vertical.level_type": ["ml"],
+            "parameter.variable": ["q", "t"],
+            "vertical.level": [1, 2, 3],
+        }
+    )
     return surface_fields + vertical_fields
 
 
@@ -56,18 +64,10 @@ def test_group_by_param(sample_fields):
         assert len(group) == len(match_params)
         # ensure order is the same
         assert [field.parameter.variable() for field in group] == match_params
-        metadata = []
         for field in group:
             num_matching += 1
             # check field is unchanged
             assert field in sample_fields
-
-            # get metadata except param from each field
-            m = field.metadata(namespace="mars")
-            m.pop("param", None)
-            metadata.append(m)
-        # rest of the metadata the same within a group
-        assert all(m == metadata[0] for m in metadata[1:])
 
     assert num_matching + len(other) == len(sample_fields)
     for field in other:

@@ -54,7 +54,12 @@ def ekd_from_source():
         # mask expected to be flattened
         mask = MASK_VALUES[path].copy().flatten()
         mock_field.to_numpy.return_value = mask
-        return [mock_field]
+        # Return a mock that supports .to_fieldlist()[0]
+        mock_source = mock.Mock()
+        mock_fieldlist = mock.Mock()
+        mock_fieldlist.__getitem__ = mock.Mock(return_value=mock_field)
+        mock_source.to_fieldlist.return_value = mock_fieldlist
+        return mock_source
 
     with mock.patch("anemoi.transform.filters.fields.apply_mask.ekd.from_source", autospec=True) as mock_fn:
         mock_fn.side_effect = side_effect

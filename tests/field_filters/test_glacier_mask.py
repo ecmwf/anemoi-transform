@@ -11,11 +11,11 @@ from unittest import mock
 import earthkit.data as ekd
 import numpy as np
 import pytest
-from utils import group_component_dict
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 from ..utils import collect_fields_by_param
+from ..utils import group_component_dict
 
 MOCK_FIELD_METADATA = {
     "geography.distinct_latitudes": [10.0, 0.0, -10.0],

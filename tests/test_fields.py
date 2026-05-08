@@ -18,7 +18,7 @@ from .utils import mock_field
 
 @pytest.fixture
 def sample_field():
-    return ekd.from_source("sample", "test.grib")[0]
+    return ekd.from_source("sample", "test.grib").to_fieldlist()[0]
 
 
 @pytest.mark.xfail(reason="setting arbitrary metadata not yet supported")

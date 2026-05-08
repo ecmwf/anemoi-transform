@@ -38,10 +38,10 @@ EXPECTED_VALUES = [
 
 EXPECTED_METADATA = {
     # take the original (flattened) versions and remove where there were NaNs in the first field
-    # "geography.distinct_latitudes": [10.0, ---, 10.0, ---, 0.0, ---, -10.0, -10.0, ---],
-    "geography.distinct_latitudes": [10.0, 10.0, 0.0, -10.0, -10.0],
-    # "geography.distinct_longitudes": [20.0, ---, 40.0, ---, 30.0, ---, 20.0, 30.0, ---],
-    "geography.distinct_longitudes": [20.0, 40.0, 30.0, 20.0, 30.0],
+    # "geography.latitudes": [10.0, ---, 10.0, ---, 0.0, ---, -10.0, -10.0, ---],
+    "geography.latitudes": [10.0, 10.0, 0.0, -10.0, -10.0],
+    # "geography.longitudes": [20.0, ---, 40.0, ---, 30.0, ---, 20.0, 30.0, ---],
+    "geography.longitudes": [20.0, 40.0, 30.0, 20.0, 30.0],
 }
 
 
@@ -73,8 +73,8 @@ def test_remove_nans_fields(source):
         assert np.array_equal(output_field.to_numpy(flatten=True), EXPECTED_VALUES[i], equal_nan=True)
 
         output_lats, output_lons = output_field.geography.latlons()
-        assert np.array_equal(output_lats, EXPECTED_METADATA["latitudes"], equal_nan=True)
-        assert np.array_equal(output_lons, EXPECTED_METADATA["longitudes"], equal_nan=True)
+        assert np.array_equal(output_lats, EXPECTED_METADATA["geography.latitudes"], equal_nan=True)
+        assert np.array_equal(output_lons, EXPECTED_METADATA["geography.longitudes"], equal_nan=True)
 
 
 def test_drop_nans_tabular():

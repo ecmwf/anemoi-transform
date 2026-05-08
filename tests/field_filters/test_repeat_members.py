@@ -16,7 +16,20 @@ import pytest
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
-NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
+
+def _mars_available() -> bool:
+    if not os.path.exists(os.path.expanduser("~/.ecmwfapirc")):
+        return False
+
+    try:
+        import ecmwfapi  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
+NO_MARS = not _mars_available()
 
 
 def _get_template() -> tuple[Any, np.ndarray, Any]:

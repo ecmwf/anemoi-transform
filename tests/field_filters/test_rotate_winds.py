@@ -17,6 +17,7 @@ from ..utils import collect_fields_by_param
 MOCK_FIELD_METADATA = {
     "geography.distinct_latitudes": [10.0, 0.0, -10.0],
     "geography.distinct_longitudes": [20, 40.0],
+    "geography.projTargetString": "+proj=eqc +ellps=WGS84 +a=6378137.0 +lon_0=0.0 +to_meter=111319.4907932736 +no_defs +type=crs",
     "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 

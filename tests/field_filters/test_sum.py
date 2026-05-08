@@ -44,9 +44,9 @@ def sum_input_source_one_level(mars_test_source):
 @pytest.fixture
 def sum_input_source_multilevel(mars_test_source):
     MULTILEVEL_TEMP_RELATIVE_HUMIDITY = [
-        {"param": "t_850", "levelist": 850, "values": T_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t_500", "levelist": 500, "values": T_VALUES - 15.0, **MOCK_FIELD_METADATA},
-        {"param": "r", "levelist": 850, "values": R_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t_850", "vertical.level": 850, "data.values": T_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t_500", "vertical.level": 500, "data.values": T_VALUES - 15.0, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "r", "vertical.level": 850, "data.values": R_VALUES, **MOCK_FIELD_METADATA},
     ]
     return mars_test_source(MULTILEVEL_TEMP_RELATIVE_HUMIDITY)
 
@@ -95,8 +95,8 @@ def test_sum_fields_multilevel(sum_input_source_multilevel):
 
     # Validate the sum field
     # arrays are flattened in sum
-    assert output_fields["sum"][0].to_numpy().shape == EXPECTED_SUM_MULTILEVEL.shape
-    assert np.allclose(output_fields["sum"][0].to_numpy(), EXPECTED_SUM_MULTILEVEL)
+    assert output_fields["sum"][0].to_numpy(flatten=True).shape == EXPECTED_SUM_MULTILEVEL.shape
+    assert np.allclose(output_fields["sum"][0].to_numpy(flatten=True), EXPECTED_SUM_MULTILEVEL)
 
 
 def test_sum_multilevel_ignore_level_false(sum_input_source_multilevel):

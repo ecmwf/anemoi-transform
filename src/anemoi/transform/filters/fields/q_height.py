@@ -45,7 +45,7 @@ def _check_consistency(A: NDArray, B: NDArray, model_level_fields: dict[str, ekd
     assert A.shape == B.shape, "A and B coefficients must have same shape"
     for name, field in model_level_fields.items():
         # Assert that model levels are passed
-        assert all(item == "ml" for item in field.metadata("levtype")), "Field {} does not contain model levels".format(
+        assert all(f.vertical.level_type() == "hybrid" for f in field), "Field {} does not contain model levels".format(
             name,
         )
         # Assert that A and B coefficients have one more vertical level than the model level field

@@ -47,7 +47,7 @@ class ImputeNaNs(SingleFieldFilter):
     required_inputs = ("param", "value")
 
     def forward_select(self):
-        return {"param": self.param}
+        return {"parameter.variable": self.param}
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
         values = field.to_numpy(flatten=True).copy()

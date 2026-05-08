@@ -15,6 +15,32 @@ from anemoi.transform.fields import new_field_with_metadata
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
+# Mapping from old metadata keys to component-based accessor paths
+_KEY_MAPPING = {
+    "param": "parameter.variable",
+    "levelist": "vertical.level",
+    "levtype": "vertical.level_type",
+    "step": "time.step",
+    "valid_datetime": "time.valid_datetime",
+    "number": "ensemble.member",
+}
+
+
+def _get_metadata(field, key):
+    """Get metadata value by key, trying original metadata keys first, then component API."""
+    try:
+        return field.metadata(key)
+    except (KeyError, TypeError):
+        pass
+
+    # Try the mapped component key
+    mapped = _KEY_MAPPING.get(key)
+    if mapped is not None:
+        try:
+            return field.get(mapped)
+        except (KeyError, TypeError) as e:
+            raise KeyError(f"Cannot get metadata for key '{key}'") from e
+
 
 class FormatRename:
     def __init__(self, what, format):
@@ -28,18 +54,14 @@ class FormatRename:
         self.format_keys = [b.replace(":", self._delimiter) for b in self.bits]
 
     def rename(self, field):
-        md = field.metadata(self.what, default=None)
+        try:
+            md = _get_metadata(field, self.what)
+        except KeyError:
+            return field
         if md is None:
             return field
 
-        values = field.metadata(*self.bits)
-        values = (
-            [
-                values,
-            ]
-            if isinstance(values, str)
-            else values
-        )
+        values = [_get_metadata(field, b) for b in self.bits]
 
         kwargs = dict(zip(self.format_keys, values))
         kwargs = {self.what: self.format.format(**kwargs)}
@@ -52,7 +74,10 @@ class DictRename:
         self.renaming = renaming
 
     def rename(self, field):
-        md = field.metadata(self.what, default=None)
+        try:
+            md = _get_metadata(field, self.what)
+        except KeyError:
+            return field
         if md is None:
             return field
 

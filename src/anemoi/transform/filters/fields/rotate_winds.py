@@ -72,14 +72,18 @@ class RotateWinds(MatchingFieldsFilter):
             The rotated wind component fields.
         """
         lats, lons = x_wind.geography.latlons()
-        proj_string = x_wind.geography.projection().to_proj_string()
+        if self.source_projection is not None:
+            source_proj = self.source_projection
+        else:
+            projection = x_wind.geography.projection()
+            source_proj = CRS.from_string(projection.to_proj_string())
 
         x_new, y_new = rotate_vector(
             lats,
             lons,
-            x_wind.to_numpy(flatten=True),
-            y_wind.to_numpy(flatten=True),
-            (self.source_projection if self.source_projection is not None else CRS.from_string(proj_string)),
+            x_wind.to_numpy(),
+            y_wind.to_numpy(),
+            source_proj,
             self.target_projection,
         )
 
@@ -108,8 +112,8 @@ class RotateWinds(MatchingFieldsFilter):
         x_unrotated, y_unrotated = rotate_vector(
             lats,
             lons,
-            x_wind.to_numpy(flatten=True),
-            y_wind.to_numpy(flatten=True),
+            x_wind.to_numpy(),
+            y_wind.to_numpy(),
             self.target_projection,
             self.source_projection,
         )

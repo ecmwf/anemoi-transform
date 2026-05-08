@@ -101,8 +101,8 @@ class RemoveNaNs(Filter):
             self._mask = ~np.isnan(data)
 
             latitudes, longitudes = first.geography.latlons()
-            self._latitudes = latitudes[self._mask]
-            self._longitudes = longitudes[self._mask]
+            self._latitudes = latitudes.flatten()[self._mask]
+            self._longitudes = longitudes.flatten()[self._mask]
 
         result = []
         for field in tqdm.tqdm(fields, desc="Remove NaNs"):

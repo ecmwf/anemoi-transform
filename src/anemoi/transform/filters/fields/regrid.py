@@ -241,16 +241,20 @@ class EarthkitRegrid:
         ekd.Field
             The interpolated field.
         """
-        from earthkit.geo import regrid
+        from earthkit.geo.grids.array import regrid
+
+        regrid_result = regrid(
+            field.to_numpy(flatten=True),
+            in_grid=self.in_grid,
+            out_grid=self.out_grid,
+            interpolation=self.method,
+        )
+        # regrid returns (data, grid_spec)
+        regrid_data, _ = regrid_result
 
         return new_field_from_latitudes_longitudes(
             new_field_from_numpy(
-                regrid(
-                    field.to_numpy(flatten=True),
-                    in_grid=self.in_grid,
-                    out_grid=self.out_grid,
-                    method=self.method,
-                ),
+                regrid_data,
                 template=field,
             ),
             **self.out_griddata,

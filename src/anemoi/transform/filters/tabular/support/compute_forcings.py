@@ -11,7 +11,7 @@
 import numpy as np
 
 
-def solar_declination_angle(julian_day: np.ndarray) -> np.ndarray:
+def solar_declination_angle(julian_day: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Vectorized version of Earthkit function:
     https://github.com/ecmwf/earthkit-meteo/blob/develop/earthkit/meteo/solar/__init__.py
 

@@ -242,7 +242,7 @@ class MakeGlobalOnLamMask:
             MakeGlobalOnLamMask._lat_lon_plot(global_lat[mask], global_lon[mask], plot_path)
 
 
-OPTIONS = {
+OPTIONS: dict[str, type] = {
     "mir-matrix": MakeMIRMatrix,
     "global-on-lam-mask": MakeGlobalOnLamMask,
 }

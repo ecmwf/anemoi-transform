@@ -31,7 +31,7 @@ class _TransformMetaClass(ABCMeta):
     # This allows to document the reversed transform in the same way as the original one.
 
     @property
-    def reversed(cls: type[T]) -> Callable[..., "ReversedTransform"]:
+    def reversed(cls: type[T]) -> Callable[..., "ReversedTransform"]:  # type: ignore[misc]
 
         def wrap_reversed(*args: Any, **kwargs: Any) -> "ReversedTransform":
             return ReversedTransform(cls(*args, **kwargs))
@@ -39,7 +39,7 @@ class _TransformMetaClass(ABCMeta):
         def wrap_reversed_str(*args, **kwargs) -> str:
             return cls.documentation(*args, **kwargs)
 
-        wrap_reversed.documentation = wrap_reversed_str
+        wrap_reversed.documentation = wrap_reversed_str  # type: ignore[attr-defined]
 
         return wrap_reversed
 
@@ -145,6 +145,10 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         """
         return data_request
 
+    def repr_rst(self, reversed: bool = False) -> str:
+        """Returns an RST representation of the transform."""
+        return repr(self)
+
     @classmethod
     def documentation(cls, documenter) -> str:
         """Returns the documentation for the transform.
@@ -236,6 +240,5 @@ class ReversedTransform(Transform):
         """
         return self.filter.patch_data_request(data_request)
 
-    @classmethod
-    def repr_rst(cls, reversed: bool = False) -> str:
-        return cls.filter.repr_rst()
+    def repr_rst(self, reversed: bool = False) -> str:
+        return self.filter.repr_rst()

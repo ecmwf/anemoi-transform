@@ -48,7 +48,7 @@ class GetGrid(Command):
             input = args.input
 
         ds = from_source(args.source, input)
-        lat, lon = ds[0].grid_points()
+        lat, lon = ds[0].geography.latlons()
         np.savez(args.output, latitudes=lat, longitudes=lon)
 
 

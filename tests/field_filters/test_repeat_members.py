@@ -25,11 +25,11 @@ def _get_template() -> tuple[Any, np.ndarray, Any]:
     Returns
     -------
     Tuple
-        A tuple containing the fieldlist, values, and metadata.
+        A tuple containing the fieldlist, and values
     """
     temp = ekd.from_source("mars", {"param": "2t", "levtype": "sfc", "dates": ["2023-11-17 00:00:00"]})
     fieldlist = temp.to_fieldlist()
-    return fieldlist, fieldlist[0].values, fieldlist[0].metadata
+    return fieldlist, fieldlist[0].values
 
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
@@ -40,7 +40,7 @@ def test_repeat_members_using_numbers_1() -> None:
     - Repeating members using a list of numbers [1, 2, 3].
     - Asserting the repeated members have correct values and metadata.
     """
-    fieldlist, values, metadata = _get_template()
+    fieldlist, values = _get_template()
 
     repeat = create_filter("repeat_members", numbers=[1, 2, 3])
     repeated = repeat.forward(fieldlist)
@@ -48,8 +48,7 @@ def test_repeat_members_using_numbers_1() -> None:
     for i, f in enumerate(repeated):
         assert f.values.shape == values.shape
         assert np.all(f.values == values)
-        assert f.metadata("number") == i + 1
-        assert f.metadata("name") == metadata("name")
+        assert f.ensemble.member() == str(i + 1)
 
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
@@ -60,7 +59,7 @@ def test_repeat_members_using_numbers_2() -> None:
     - Repeating members using a range of numbers "1/to/3".
     - Asserting the repeated members have correct values and metadata.
     """
-    fieldlist, values, metadata = _get_template()
+    fieldlist, values = _get_template()
 
     repeat = create_filter("repeat_members", numbers="1/to/3")
     repeated = repeat.forward(fieldlist)
@@ -68,8 +67,7 @@ def test_repeat_members_using_numbers_2() -> None:
     for i, f in enumerate(repeated):
         assert f.values.shape == values.shape
         assert np.all(f.values == values)
-        assert f.metadata("number") == i + 1
-        assert f.metadata("name") == metadata("name")
+        assert f.ensemble.member() == str(i + 1)
 
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
@@ -80,7 +78,7 @@ def test_repeat_members_using_members() -> None:
     - Repeating members using a list of members [0, 1, 2].
     - Asserting the repeated members have correct values and metadata.
     """
-    fieldlist, values, metadata = _get_template()
+    fieldlist, values = _get_template()
 
     repeat = create_filter("repeat_members", members=[0, 1, 2])
     repeated = repeat.forward(fieldlist)
@@ -88,8 +86,7 @@ def test_repeat_members_using_members() -> None:
     for i, f in enumerate(repeated):
         assert f.values.shape == values.shape
         assert np.all(f.values == values)
-        assert f.metadata("number") == i + 1
-        assert f.metadata("name") == metadata("name")
+        assert f.ensemble.member() == str(i + 1)
 
 
 @pytest.mark.skipif(NO_MARS, reason="No access to MARS")
@@ -100,7 +97,7 @@ def test_repeat_members_using_count() -> None:
     - Repeating members using a count of 3.
     - Asserting the repeated members have correct values and metadata.
     """
-    fieldlist, values, metadata = _get_template()
+    fieldlist, values = _get_template()
 
     repeat = create_filter("repeat_members", count=3)
     repeated = repeat.forward(fieldlist)
@@ -108,8 +105,7 @@ def test_repeat_members_using_count() -> None:
     for i, f in enumerate(repeated):
         assert f.values.shape == values.shape
         assert np.all(f.values == values)
-        assert f.metadata("number") == i + 1
-        assert f.metadata("name") == metadata("name")
+        assert f.ensemble.member() == str(i + 1)
 
 
 if __name__ == "__main__":

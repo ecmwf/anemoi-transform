@@ -15,9 +15,9 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 T_VALUES = np.array([[293.32301331, 284.21559143], [260.53981018, 291.18824768], [279.88941956, 248.87574768]])
@@ -26,7 +26,7 @@ Q_VALUES = np.array([[0.00657578, 0.00769957], [0.00147607, 0.01088967], [0.0050
 
 R_VALUES = np.array([[37.91091442, 79.51638317], [95.61794567, 71.53396130], [70.03982067, 89.69021130]])
 
-EXPECTED_SUM = (R_VALUES + T_VALUES).flatten()
+EXPECTED_SUM = R_VALUES + T_VALUES
 
 EXPECTED_SUM_MULTILEVEL = (T_VALUES * 2.0 - 15.0).flatten()
 
@@ -34,9 +34,9 @@ EXPECTED_SUM_MULTILEVEL = (T_VALUES * 2.0 - 15.0).flatten()
 @pytest.fixture
 def sum_input_source_one_level(mars_test_source):
     PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC = [
-        {"param": "r", "levelist": 850, "values": R_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t", "levelist": 850, "values": T_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "q", "levelist": 850, "values": Q_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "r", "vertical.level": 850, "data.values": R_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "vertical.level": 850, "data.values": T_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "q", "vertical.level": 850, "data.values": Q_VALUES, **MOCK_FIELD_METADATA},
     ]
     return mars_test_source(PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
 

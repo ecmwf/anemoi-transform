@@ -23,11 +23,11 @@ class LnspToSp(SingleFieldFilter):
 
     def forward_select(self):
         # select only fields where the param is self.log_of_surface_pressure
-        return {"param": self.log_of_surface_pressure}
+        return {"parameter.variable": self.log_of_surface_pressure}
 
     def backward_select(self):
         # select only fields where the param is self.surface_pressure
-        return {"param": self.surface_pressure}
+        return {"parameter.variable": self.surface_pressure}
 
     def forward_transform(self, log_of_surface_pressure: ekd.Field) -> ekd.Field:
         """Convert ln(sp) to sp.
@@ -42,10 +42,11 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The surface pressure
         """
-        new_metadata = {"param": self.surface_pressure, "levelist": None, "level": None}
-        return self.new_field_from_numpy(
+        new_metadata = {"param": self.surface_pressure}
+        field = self.new_field_from_numpy(
             np.exp(log_of_surface_pressure.to_numpy()), template=log_of_surface_pressure, **new_metadata
         )
+        return field.set(vertical={"level": None})
 
     def backward_transform(self, surface_pressure: ekd.Field) -> ekd.Field:
         """Convert surface surface pressure to ln(surface pressure)

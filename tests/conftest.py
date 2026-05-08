@@ -21,6 +21,8 @@ from earthkit.data.utils.metadata.dict import UserMetadata
 from anemoi.transform.source import Source
 from anemoi.transform.sources import source_registry
 
+from .utils import group_component_dict
+
 pytest_plugins = ["anemoi.utils.testing"]
 
 # Create a ekd Metadata Class that mocks the mars metadata namespace
@@ -50,7 +52,7 @@ class TestingSource(Source):
 @pytest.fixture
 def fieldlist(get_test_data: GetTestData) -> ekd.FieldList:
     """Fixture to create a fieldlist for testing."""
-    return ekd.from_source("file", get_test_data("anemoi-filters/2t-sp.grib"))
+    return ekd.from_source("file", get_test_data("anemoi-filters/2t-sp.grib")).to_fieldlist()
 
 
 @pytest.fixture
@@ -58,9 +60,10 @@ def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Sour
     def _source(dataset: str | list[dict]) -> Source:
         """Create a source from a known file or a list of dicts for testing."""
         if isinstance(dataset, str):
-            ds = ekd.from_source("file", get_test_data(dataset))
+            ds = ekd.from_source("file", get_test_data(dataset)).to_fieldlist()
         elif isinstance(dataset, list):
-            ds = ekd.from_source("list-of-dicts", dataset)
+            dataset = [group_component_dict(spec) for spec in dataset]
+            ds = ekd.from_source("list-of-dicts", dataset).to_fieldlist()
         else:
             raise ValueError("dataset must be a string or a list of dicts")
         return source_registry.create("testing", dataset=ds)

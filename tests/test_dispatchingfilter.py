@@ -6,7 +6,7 @@ from anemoi.transform.filter import DispatchingFilter
 
 TEST_CASES = [
     pytest.param(pd.DataFrame(), id="dataframe"),
-    pytest.param(ekd.FieldList(), id="fieldlist"),
+    pytest.param(ekd.create_fieldlist(), id="fieldlist"),
     pytest.param(None, id="other"),
 ]
 

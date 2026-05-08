@@ -33,7 +33,7 @@ def do_not_test_unstructured_from_url() -> None:
 
     assert len(ds) == 1
 
-    lats, lons = ds[0].grid_points()
+    lats, lons = ds[0].geography.latlons()
 
     assert len(lats) == len(lons)
 

@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.3.2](https://github.com/ecmwf/anemoi-transform/compare/0.3.1...0.3.2) (2026-05-12)
+
+
+### Features
+
+* Add snow_depth_m filter to compute snow depth in metres ([#293](https://github.com/ecmwf/anemoi-transform/issues/293)) ([75c744d](https://github.com/ecmwf/anemoi-transform/commit/75c744dc109ff42ee9a8354b04e144694d75eeee))
+
 ## [0.3.1](https://github.com/ecmwf/anemoi-transform/compare/0.3.0...0.3.1) (2026-04-30)
 
 

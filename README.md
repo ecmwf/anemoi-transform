@@ -36,7 +36,7 @@ $ pip install anemoi-transform
 ## License
 
 ```
-Copyright 2024-2025, Anemoi Contributors.
+Copyright 2024-2026, Anemoi Contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

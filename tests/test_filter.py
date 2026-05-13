@@ -171,17 +171,17 @@ def test_singlefieldfilter_forward_select(source):
             return self.new_field_from_numpy(field.to_numpy() + 1, template=field)
 
         def forward_select(self):
-            return {"param": self.temperature}
+            return {"parameter.variable": self.temperature}
 
     # source dataset has 2t and 2r variables
     pipeline = source | TestFilter(temperature="2t")
 
     result_params = []
     for original, result in zip(source, pipeline):
-        result_params.append(result.metadata("param"))
-        assert original.metadata("param") == result.metadata("param")
+        result_params.append(result.parameter.variable())
+        assert original.parameter.variable() == result.parameter.variable()
         # only 2t has transform applied
-        if result.metadata("param") == "2t":
+        if result.parameter.variable() == "2t":
             assert np.allclose(original.to_numpy() + 1, result.to_numpy())
         else:
             assert np.allclose(original.to_numpy(), result.to_numpy())
@@ -202,17 +202,17 @@ def test_singlefieldfilter_backward_select(source):
             return self.new_field_from_numpy(field.to_numpy() - 1, template=field)
 
         def backward_select(self):
-            return {"param": self.temperature}
+            return {"parameter.variable": self.temperature}
 
     # source dataset has 2t and 2r variables
     pipeline = source | TestFilter.reversed(temperature="2t")
 
     result_params = []
     for original, result in zip(source, pipeline):
-        result_params.append(result.metadata("param"))
-        assert original.metadata("param") == result.metadata("param")
+        result_params.append(result.parameter.variable())
+        assert original.parameter.variable() == result.parameter.variable()
         # only 2t has transform applied
-        if result.metadata("param") == "2t":
+        if result.parameter.variable() == "2t":
             assert np.allclose(original.to_numpy() - 1, result.to_numpy())
         else:
             assert np.allclose(original.to_numpy(), result.to_numpy())
@@ -233,16 +233,16 @@ def test_singlefieldfilter_backward_using_forward_select(source):
             return self.new_field_from_numpy(field.to_numpy() - 1, template=field)
 
         def forward_select(self):
-            return {"param": self.temperature}
+            return {"parameter.variable": self.temperature}
 
     # source dataset has 2t and 2r variables
     pipeline = source | TestFilter.reversed(temperature="2t")
 
     result_params = []
     for original, result in zip(source, pipeline):
-        result_params.append(result.metadata("param"))
-        assert original.metadata("param") == result.metadata("param")
-        if result.metadata("param") == "2t":
+        result_params.append(result.parameter.variable())
+        assert original.parameter.variable() == result.parameter.variable()
+        if result.parameter.variable() == "2t":
             assert np.allclose(original.to_numpy() - 1, result.to_numpy())
         else:
             assert np.allclose(original.to_numpy(), result.to_numpy())
@@ -257,10 +257,10 @@ def test_singlefieldfilter_complex_roundtrip(source):
         required_inputs = ("temperature", "renamed_temperature")
 
         def forward_select(self):
-            return {"param": self.temperature}
+            return {"parameter.variable": self.temperature}
 
         def backward_select(self):
-            return {"param": self.renamed_temperature}
+            return {"parameter.variable": self.renamed_temperature}
 
         def forward_transform(self, field):
             new_metadata = {"param": self.renamed_temperature}
@@ -276,15 +276,15 @@ def test_singlefieldfilter_complex_roundtrip(source):
     pipeline = source | forward_filter
     # forward transform
     for original, result in zip(source, pipeline):
-        if original.metadata("param") == "2t":
+        if original.parameter.variable() == "2t":
             assert np.allclose(original.to_numpy() + 1, result.to_numpy())
-            assert result.metadata("param") == "2t_renamed"
+            assert result.parameter.variable() == "2t_renamed"
         else:
             assert np.allclose(original.to_numpy(), result.to_numpy())
-            assert original.metadata("param") == result.metadata("param")
+            assert original.parameter.variable() == result.parameter.variable()
 
     # round trip
     pipeline = source | forward_filter | backward_filter
     for original, result in zip(source, pipeline):
         assert np.allclose(original.to_numpy(), result.to_numpy())
-        assert original.metadata("param") == result.metadata("param")
+        assert original.parameter.variable() == result.parameter.variable()

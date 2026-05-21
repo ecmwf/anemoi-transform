@@ -45,7 +45,7 @@ def sample_fields_vertical():
     vertical_fields = field_generator(
         **{
             "time.step": [0, 1],
-            "vertical.level_type": ["ml"],
+            "vertical.level_type": ["hybrid"],
             "parameter.variable": ["q", "t"],
             "vertical.level": [1, 2, 3],
         }
@@ -75,7 +75,7 @@ def test_group_by_param(sample_fields):
         assert field in sample_fields
 
 
-@pytest.mark.xfail(reason="vertical grouping not yet implemented")
+@pytest.mark.xfail(reason="vertical grouping test to be revisited")
 def test_group_by_param_vertical(sample_fields_vertical):
     from anemoi.transform.grouping import GroupByParamVertical
 
@@ -105,11 +105,11 @@ def test_group_by_param_vertical(sample_fields_vertical):
                 num_matching += 1
                 # check field is unchanged
                 assert field in sample_fields_vertical
-                # get metadata except keys known to be different from each field
-                m = field.metadata(namespace="mars")
-                m.pop("param", None)
-                m.pop("levtype", None)
-                m.pop("levelist", None)
+                # get metadata via component API (namespace="mars" removed in ekd 1.0)
+                m = {
+                    "step": field.time.step(),
+                    "valid_datetime": field.time.valid_datetime(),
+                }
                 metadata.append(m)
 
         # rest of the metadata the same within a group

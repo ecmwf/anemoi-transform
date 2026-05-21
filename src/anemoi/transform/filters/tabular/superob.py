@@ -39,7 +39,7 @@ class SuperOb(Filter):
           - superob:
               grid: o06
               timeslot_length: 3600
-              columns_to_take_nearest: ["datetime"]
+              columns_to_take_nearest: ["date"]
               columns_to_groupby: ["reporttype"]
 
     """
@@ -67,7 +67,7 @@ class SuperOb(Filter):
         else:
             output_grid = define_grid(self.grid)
 
-        df.dropna(subset=["datetime", "latitude", "longitude"], inplace=True)
+        df.dropna(subset=["date", "latitude", "longitude"], inplace=True)
         if len(df) == 0:
             return df
 
@@ -93,5 +93,5 @@ class SuperOb(Filter):
         nearest_df = nearest_df[~nearest_df.index.duplicated(keep="first")]
         gridded_df = pd.concat([averaged_df, nearest_df], axis=1, join="inner").reset_index()
         gridded_df = gridded_df.drop(columns=["grid_index", "distance"], errors="ignore")
-        gridded_df = gridded_df.sort_values("datetime")
+        gridded_df = gridded_df.sort_values("date")
         return gridded_df

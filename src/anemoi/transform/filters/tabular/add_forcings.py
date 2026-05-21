@@ -69,7 +69,7 @@ class AddForcings(Filter):
         # Make a copy to avoid modifying the input DataFrame
         obs_df = obs_df.copy()
 
-        date = pd.DatetimeIndex(obs_df["datetime"].values)
+        date = pd.DatetimeIndex(obs_df["date"].values)
         longitude = obs_df["longitude"].values
         latitude = obs_df["latitude"].values
         for column in self.columns:

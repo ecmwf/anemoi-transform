@@ -72,7 +72,7 @@ class AddMSGAngles(Filter):
 
         df = df.copy()
         latdeg, londeg = df["latitude"].values, df["longitude"].values
-        satids, dts = df[self.satellite_id].values, df["datetime"].values
+        satids, dts = df[self.satellite_id].values, df["date"].values
         satlats, satlons = get_meteosat_loc(satids, dts)
         if "azimuth" in self.angle:
             df[self.azimuth] = calc_azimuth(latdeg, londeg, satlats, satlons)

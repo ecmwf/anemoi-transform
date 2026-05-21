@@ -24,7 +24,7 @@ def test_exclude_dates():
     }
     df = pd.DataFrame(
         {
-            "datetime": [
+            "date": [
                 pd.Timestamp("2025-01-01T00:00"),
                 pd.Timestamp("2025-01-02T00:00"),
                 pd.Timestamp("2025-01-02T06:00"),
@@ -43,7 +43,7 @@ def test_exclude_dates():
     assert tuple(result.columns) == tuple(df.columns)
     assert result.shape == df.shape
 
-    assert result[["datetime", "col2"]].equals(df[["datetime", "col2"]])
+    assert result[["date", "col2"]].equals(df[["date", "col2"]])
 
     expected = (np.array([np.nan, np.nan, np.nan, 3, 4]),)
     assert np.allclose(result["col1"].to_numpy(), expected, equal_nan=True)
@@ -55,7 +55,7 @@ def test_exclude_dates_single_range():
     }
     df = pd.DataFrame(
         {
-            "datetime": [
+            "date": [
                 pd.Timestamp("2025-01-01T00:00"),
                 pd.Timestamp("2025-01-02T00:00"),
                 pd.Timestamp("2025-01-02T06:00"),
@@ -74,7 +74,7 @@ def test_exclude_dates_single_range():
     assert tuple(result.columns) == tuple(df.columns)
     assert result.shape == df.shape
 
-    assert result[["datetime", "col2"]].equals(df[["datetime", "col2"]])
+    assert result[["date", "col2"]].equals(df[["date", "col2"]])
 
     expected = (np.array([np.nan, 1, 2, 3, 4]),)
     assert np.allclose(result["col1"].to_numpy(), expected, equal_nan=True)
@@ -89,7 +89,7 @@ def test_exclude_dates_missing_column():
     }
     df = pd.DataFrame(
         {
-            "datetime": [
+            "date": [
                 pd.Timestamp("2025-01-01T00:00"),
                 pd.Timestamp("2025-01-02T00:00"),
                 pd.Timestamp("2025-01-02T06:00"),

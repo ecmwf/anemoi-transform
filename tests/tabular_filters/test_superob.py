@@ -21,12 +21,12 @@ def test_superob():
     config = {
         "grid": "o96",
         "timeslot_length": 3600,
-        "columns_to_take_nearest": ["datetime"],
+        "columns_to_take_nearest": ["date"],
         "columns_to_groupby": ["reportype"],
     }
     df = pd.DataFrame(
         {
-            "datetime": [
+            "date": [
                 pd.Timestamp("2025-01-01 00:00:00"),
                 pd.Timestamp("2025-01-01 00:00:01"),
                 pd.Timestamp("2025-01-01 02:00:01"),
@@ -42,7 +42,7 @@ def test_superob():
     result = superob(df.copy())
     expect = pd.DataFrame(
         {
-            "datetime": [
+            "date": [
                 pd.Timestamp("2025-01-01 00:00:01"),
                 pd.Timestamp("2025-01-01 02:00:01"),
             ],
@@ -69,12 +69,12 @@ def test_superob_groupby():
     config = {
         "grid": "o96",
         "timeslot_length": 3600,
-        "columns_to_take_nearest": ["datetime"],
+        "columns_to_take_nearest": ["date"],
         "columns_to_groupby": ["reportype"],
     }
     df = pd.DataFrame(
         {
-            "datetime": [
+            "date": [
                 pd.Timestamp("2025-01-01 00:00:00"),
                 pd.Timestamp("2025-01-01 00:00:01"),
                 pd.Timestamp("2025-01-01 02:00:01"),
@@ -91,7 +91,7 @@ def test_superob_groupby():
     result = superob(df.copy())
     expect = pd.DataFrame(
         {
-            "datetime": [
+            "date": [
                 pd.Timestamp("2025-01-01 00:00:00"),
                 pd.Timestamp("2025-01-01 02:00:01"),
                 pd.Timestamp("2025-01-01 02:00:02"),

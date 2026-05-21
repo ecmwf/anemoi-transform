@@ -31,7 +31,7 @@ def test_add_forcings():
     }
     df = pd.DataFrame(
         {
-            "datetime": [
+            "date": [
                 pd.Timestamp("2025-01-01T00:00"),
                 pd.Timestamp("2025-04-01T06:00"),
             ],

@@ -170,6 +170,52 @@ class VariableFromDict(VariableFromMarsVocabulary):
         super().__init__(name, data)
 
 
+class VariableFromEarthkit(VariableFromMarsVocabulary):
+    """A variable that is defined by an EarthKit field."""
+
+    # Mapping from original metadata keys to earthkit component accessors
+    _MARS_KEY_MAPPING = {
+        "param": "parameter.variable",
+        "levtype": "vertical.level_type",
+        "levelist": "vertical.level",
+        "step": "time.step",
+        "number": "ensemble.member",
+    }
+
+    def __init__(self, name: str, field: Any) -> None:
+        """Initialize the variable with a name and field.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        field : Any
+            The EarthKit field defining the variable.
+        """
+        # Build a MARS-like metadata dict from the field's component API
+        mars_data = {}
+        for mars_key, component_key in self._MARS_KEY_MAPPING.items():
+            try:
+                mars_data[mars_key] = field.get(component_key)
+            except (KeyError, TypeError):
+                pass
+        mars_data["param"] = name
+
+        data = {"mars": mars_data}
+        super().__init__(name, data)
+        self.field = field
+
+    @property
+    def is_pressure_level(self) -> bool:
+        """Check if the variable is at a pressure level."""
+        return self.field.is_pressure_level()
+
+    @property
+    def level(self) -> Any:
+        """Get the level of the variable."""
+        return self.field.level()
+
+
 class PostProcessedVariable(VariableFromMarsVocabulary):
     """A variable that is defined by a post-processed dictionary."""
 

@@ -58,15 +58,15 @@ def assign_nearest_grid(df: pd.DataFrame, grid_points: np.ndarray, time_slot_len
     # Make an explicit copy at the start
     df = df.copy()
 
-    time_start = df["datetime"].min()
-    time_end = df["datetime"].max()
+    time_start = df["date"].min()
+    time_end = df["date"].max()
 
     # Create time grid
     time_grid = pd.date_range(time_start, time_end, freq=f"{time_slot_len}s")
 
     # Find nearest time slot for each data point
     # Use side='right' to handle exact matches correctly
-    temporal_indices = np.searchsorted(time_grid, df["datetime"], side="right") - 1
+    temporal_indices = np.searchsorted(time_grid, df["date"], side="right") - 1
     # Clip to ensure no negative indices
     temporal_indices = np.clip(temporal_indices, 0, None)
 

@@ -20,7 +20,7 @@ from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_c
 
 @filter_registry.register("exclude_dates")
 class ExcludeDates(Filter):
-    """Masks values in specified columns of a DataFrame if the ``datetime`` column
+    """Masks values in specified columns of a DataFrame if the ``date`` column
     falls within any of the date ranges provided (inclusive).
 
     Keys of the config dictionary are column names, with values which are lists
@@ -76,15 +76,15 @@ class ExcludeDates(Filter):
         self.excluded_dates = excluded_dates
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
-        required_cols = list(self.excluded_dates.keys()) + ["datetime"]
+        required_cols = list(self.excluded_dates.keys()) + ["date"]
         raise_if_df_missing_cols(obs_df, required_cols)
 
         for column, date_ranges in self.excluded_dates.items():
             for start_dt, end_dt in date_ranges:
-                logging.info(f"Excluding dates for column '{column}' when datetime is between {start_dt} and {end_dt}.")
+                logging.info(f"Excluding dates for column '{column}' when date is between {start_dt} and {end_dt}.")
 
-                # Create a mask based on the 'datetime' column.
-                mask = (obs_df["datetime"] >= start_dt) & (obs_df["datetime"] < end_dt)
+                # Create a mask based on the 'date' column.
+                mask = (obs_df["date"] >= start_dt) & (obs_df["date"] < end_dt)
 
                 # Mask the specified column where the condition is True.
                 obs_df[column] = obs_df[column].mask(mask)

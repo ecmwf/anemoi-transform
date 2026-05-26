@@ -22,7 +22,7 @@ def test_add_msg_angles_azimuth_default_config():
             "latitude": [-10.0, 0.0, 10.0],
             "longitude": [0.0, 90.0, 270.0],
             "satellite_id": [55, 56, 57],
-            "datetime": pd.date_range("2025-01-01", periods=3, freq="1H"),
+            "date": pd.date_range("2025-01-01", periods=3, freq="1H"),
         }
     )
     add_msg_angles = create_filter("add_msg_angles", **config)
@@ -32,8 +32,8 @@ def test_add_msg_angles_azimuth_default_config():
     assert tuple(result.columns) == tuple(df.columns) + ("azimuth",)
     assert result.shape == (len(df), len(df.columns) + 1)
 
-    assert result[["latitude", "longitude", "satellite_id", "datetime"]].equals(
-        df[["latitude", "longitude", "satellite_id", "datetime"]]
+    assert result[["latitude", "longitude", "satellite_id", "date"]].equals(
+        df[["latitude", "longitude", "satellite_id", "date"]]
     )
     expected_azimuth = np.array([78.703325, 0.0, 90.0])
     assert np.allclose(result["azimuth"].to_numpy(), expected_azimuth)
@@ -46,7 +46,7 @@ def test_add_msg_angles_azimuth_with_config():
             "latitude": [-10.0, 0.0, 10.0],
             "longitude": [0.0, 90.0, 270.0],
             "satid": [55, 56, 57],
-            "datetime": pd.date_range("2025-01-01", periods=3, freq="1H"),
+            "date": pd.date_range("2025-01-01", periods=3, freq="1H"),
         }
     )
     add_msg_angles = create_filter("add_msg_angles", **config)
@@ -56,9 +56,7 @@ def test_add_msg_angles_azimuth_with_config():
     assert tuple(result.columns) == tuple(df.columns) + ("a",)
     assert result.shape == (len(df), len(df.columns) + 1)
 
-    assert result[["latitude", "longitude", "satid", "datetime"]].equals(
-        df[["latitude", "longitude", "satid", "datetime"]]
-    )
+    assert result[["latitude", "longitude", "satid", "date"]].equals(df[["latitude", "longitude", "satid", "date"]])
     expected_azimuth = np.array([78.703325, 0.0, 90.0])
     assert np.allclose(result["a"].to_numpy(), expected_azimuth)
 
@@ -70,7 +68,7 @@ def test_add_msg_angles_zenith_default_config():
             "latitude": [-10.0, 0.0, 10.0],
             "longitude": [0.0, 90.0, 270.0],
             "satellite_id": [55, 56, 57],
-            "datetime": pd.date_range("2025-01-01", periods=3, freq="1H"),
+            "date": pd.date_range("2025-01-01", periods=3, freq="1H"),
         }
     )
     add_msg_angles = create_filter("add_msg_angles", **config)
@@ -80,8 +78,8 @@ def test_add_msg_angles_zenith_default_config():
     assert tuple(result.columns) == tuple(df.columns) + ("zenith",)
     assert result.shape == (len(df), len(df.columns) + 1)
 
-    assert result[["latitude", "longitude", "satellite_id", "datetime"]].equals(
-        df[["latitude", "longitude", "satellite_id", "datetime"]]
+    assert result[["latitude", "longitude", "satellite_id", "date"]].equals(
+        df[["latitude", "longitude", "satellite_id", "date"]]
     )
     expected_zenith = np.array([48.49626885, 51.82994258, 98.60173361])
     assert np.allclose(result["zenith"].to_numpy(), expected_zenith)
@@ -94,7 +92,7 @@ def test_add_msg_angles_zenith_with_config():
             "latitude": [-10.0, 0.0, 10.0],
             "longitude": [0.0, 90.0, 270.0],
             "satid": [55, 56, 57],
-            "datetime": pd.date_range("2025-01-01", periods=3, freq="1H"),
+            "date": pd.date_range("2025-01-01", periods=3, freq="1H"),
         }
     )
     add_msg_angles = create_filter("add_msg_angles", **config)
@@ -104,9 +102,7 @@ def test_add_msg_angles_zenith_with_config():
     assert tuple(result.columns) == tuple(df.columns) + ("z",)
     assert result.shape == (len(df), len(df.columns) + 1)
 
-    assert result[["latitude", "longitude", "satid", "datetime"]].equals(
-        df[["latitude", "longitude", "satid", "datetime"]]
-    )
+    assert result[["latitude", "longitude", "satid", "date"]].equals(df[["latitude", "longitude", "satid", "date"]])
     expected_zenith = np.array([48.49626885, 51.82994258, 98.60173361])
     assert np.allclose(result["z"].to_numpy(), expected_zenith)
 
@@ -118,7 +114,7 @@ def test_add_msg_angles_both_default_config():
             "latitude": [-10.0, 0.0, 10.0],
             "longitude": [0.0, 90.0, 270.0],
             "satellite_id": [55, 56, 57],
-            "datetime": pd.date_range("2025-01-01", periods=3, freq="1H"),
+            "date": pd.date_range("2025-01-01", periods=3, freq="1H"),
         }
     )
     add_msg_angles = create_filter("add_msg_angles", **config)
@@ -128,8 +124,8 @@ def test_add_msg_angles_both_default_config():
     assert set(result.columns) == set(list(df.columns) + ["azimuth", "zenith"])
     assert result.shape == (len(df), len(df.columns) + 2)
 
-    assert result[["latitude", "longitude", "satellite_id", "datetime"]].equals(
-        df[["latitude", "longitude", "satellite_id", "datetime"]]
+    assert result[["latitude", "longitude", "satellite_id", "date"]].equals(
+        df[["latitude", "longitude", "satellite_id", "date"]]
     )
     expected_azimuth = np.array([78.703325, 0.0, 90.0])
     assert np.allclose(result["azimuth"].to_numpy(), expected_azimuth)
@@ -142,7 +138,7 @@ def test_add_msg_angles_missing_satellite_id():
         {
             "latitude": [-10.0, 0.0, 10.0],
             "longitude": [0.0, 90.0, 270.0],
-            "datetime": pd.date_range("2025-01-01", periods=3, freq="1H"),
+            "date": pd.date_range("2025-01-01", periods=3, freq="1H"),
         }
     )
     add_msg_angles = create_filter("add_msg_angles")

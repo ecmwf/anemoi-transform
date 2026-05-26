@@ -9,6 +9,17 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.4.0](https://github.com/ecmwf/anemoi-transform/compare/0.3.2...0.4.0) (2026-05-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename `datetime` column to `date` in tabular filters ([#296](https://github.com/ecmwf/anemoi-transform/issues/296))
+
+### Bug Fixes
+
+* Rename `datetime` column to `date` in tabular filters ([#296](https://github.com/ecmwf/anemoi-transform/issues/296)) ([95a1e05](https://github.com/ecmwf/anemoi-transform/commit/95a1e05f7e7298ddb6ee675ea8c5561219ffc64a))
+
 ## [0.3.2](https://github.com/ecmwf/anemoi-transform/compare/0.3.1...0.3.2) (2026-05-12)
 
 

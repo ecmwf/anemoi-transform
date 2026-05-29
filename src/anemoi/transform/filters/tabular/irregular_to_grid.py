@@ -176,13 +176,14 @@ class IrregularToGrid(Filter):
         t_idx: int,
     ):
         # Note: mutates grids in-place
-        # Fill in the grids (spatial_index is used directly as array index)
-        for _, row in df_nearest.iterrows():
-            x_pos = int(row["spatial_index"])
-            if 0 <= x_pos < n_spatial_total:  # Bounds check
-                # Fill all columns
-                for col in columns:
-                    grids[col][t_idx, x_pos] = row[col]
+        # Fill in the grids (spatial_index is used directly as array index
+        spatial_indices = df_nearest["spatial_index"].values.astype(np.intp)
+        valid_mask = (spatial_indices >= 0) & (spatial_indices < n_spatial_total)
+        valid_indices = spatial_indices[valid_mask]
+
+        for col in columns:
+            col_values = df_nearest[col].values[valid_mask]
+            grids[col][t_idx, valid_indices] = col_values
 
     @staticmethod
     def select_window(df: pd.DataFrame, target_time: datetime, time_freq: str, columns: list[str]) -> pd.DataFrame:

@@ -11,32 +11,18 @@
 import healpy as hp
 import numpy as np
 import pandas as pd
-from earthkit import data as ekd
 from scipy.spatial import cKDTree
+
+from anemoi.transform.grids.named import lookup
 
 
 def define_grid(grid: str) -> np.ndarray:
-    _class = "od"
-    expver = "1"
-    if grid in ["N2560", "O2560"]:
-        _class = "rd"
-        expver = "i4ql"
-
-    ds = ekd.from_source(
-        "mars",
-        {
-            "levtype": "sfc",
-            "param": "2t",
-            "grid": grid,
-            "class": _class,
-            "expver": expver,
-            "type": "fc",
-            "time": "0",
-        },
-    ).to_xarray()
-    lat, lon = ds.latitude.values, ds.longitude.values
+    """Return grid points as an (N, 2) array of [lat, lon] pairs."""
+    data = lookup(grid)
+    lat = data["latitudes"]
+    lon = data["longitudes"]
     lon = np.where(lon > 180, lon - 360, lon)
-    return np.array([*zip(lat, lon)])
+    return np.column_stack([lat, lon])
 
 
 def define_healpix_grid(nside: int) -> np.ndarray:

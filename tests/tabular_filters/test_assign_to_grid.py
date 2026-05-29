@@ -49,7 +49,6 @@ def test_assign_to_grid_healpix():
         assert np.allclose(result[col_name].to_numpy(), expected_values)
 
 
-@pytest.mark.skip(reason="update to use anemoi grid definition")
 def test_assign_to_grid_o96():
     config = {
         "grid": "o96",

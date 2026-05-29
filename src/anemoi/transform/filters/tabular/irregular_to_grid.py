@@ -14,11 +14,7 @@ import earthkit.data as ekd
 import numpy as np
 import pandas as pd
 
-from anemoi.transform.fields import new_field_from_latitudes_longitudes
-from anemoi.transform.fields import new_field_with_valid_datetime
-from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
-from anemoi.transform.filter import new_field_from_numpy
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 from anemoi.transform.filters.tabular.support.window import Window
@@ -39,8 +35,6 @@ class IrregularToGrid(Filter):
 
     Parameters
     ----------
-    template : str
-        Path to a template file used to construct output fields.
     start_time : datetime
         Start of the time range.
     end_time : datetime
@@ -81,7 +75,6 @@ class IrregularToGrid(Filter):
           - source:
               ...
           - irregular_to_grid:
-              template: "path/to/template.grib"
               start_time: "2020-01-01"
               end_time: "2020-01-31"
               columns: [t, q, u, v]
@@ -93,7 +86,6 @@ class IrregularToGrid(Filter):
 
     def __init__(
         self,
-        template: str,
         start_time: datetime,
         end_time: datetime,
         columns: list[str],
@@ -102,7 +94,6 @@ class IrregularToGrid(Filter):
         window: str | None = None,
         nan_score_weight: float = 0.0,
     ):
-        self.template = template
         self.start_time = start_time
         self.end_time = end_time
         self.columns = columns
@@ -133,9 +124,6 @@ class IrregularToGrid(Filter):
         ekd.FieldList
             The gridded fields computed from the DataFrame.
         """
-        # Read template field
-        template_field = ekd.from_source("file", self.template)
-
         # Ensure date column is datetime-like
         df = df.copy()
         df["date"] = pd.to_datetime(df["date"])
@@ -174,24 +162,29 @@ class IrregularToGrid(Filter):
             )
             self._fill_grids(grids, df_nearest, self.columns, n_spatial_total, t_idx)
 
-        return self._build_output_fieldlist(template_field, target_times, grid_lats, grid_lons, grids)
+        return self._build_output_fieldlist(target_times, grid_lats, grid_lons, grids)
 
     @staticmethod
     def _build_output_fieldlist(
-        template: ekd.Field,
         times: pd.DatetimeIndex,
         latitudes: np.ndarray,
         longitudes: np.ndarray,
         grids: dict[str, np.ndarray],
     ) -> ekd.FieldList:
-        fields = []
+        field_dicts = []
         for t, time in enumerate(times):
+            valid_dt = pd.Timestamp(time).to_pydatetime()
             for param, arr in grids.items():
-                field = new_field_from_numpy(arr[t], template=template, param=param)
-                field = new_field_with_valid_datetime(field, time)
-                field = new_field_from_latitudes_longitudes(field, latitudes, longitudes)
-                fields.append(field)
-        return new_fieldlist_from_list(fields)
+                field_dicts.append(
+                    {
+                        "param": param,
+                        "values": arr[t],
+                        "latitudes": latitudes,
+                        "longitudes": longitudes,
+                        "valid_datetime": valid_dt,
+                    }
+                )
+        return ekd.from_source("list-of-dicts", field_dicts)
 
     @staticmethod
     def _fill_grids(

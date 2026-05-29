@@ -10,7 +10,6 @@
 from datetime import datetime
 from unittest.mock import patch
 
-import earthkit.data as ekd
 import numpy as np
 import pandas as pd
 import pytest
@@ -33,31 +32,11 @@ def mock_define_grid(small_grid):
         yield
 
 
-@pytest.fixture
-def mock_ekd_template(small_grid):
-    lats, lons = small_grid
-    template_fl = ekd.from_source(
-        "list-of-dicts",
-        [
-            {
-                "param": "t",
-                "values": np.zeros(len(lats)),
-                "latitudes": lats.tolist(),
-                "longitudes": lons.tolist(),
-                "valid_datetime": "2023-01-01T00:00:00Z",
-            }
-        ],
-    )
-    with patch("earthkit.data.from_source", return_value=template_fl) as mock_from_source:
-        yield mock_from_source
-
-
 @pytest.mark.parametrize(
     "config, df, expected_arrays",
     [
         pytest.param(
             {
-                "template": "dummy.grib",
                 "start_time": datetime(2023, 1, 1, 6, 0, 0),
                 "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
@@ -103,7 +82,6 @@ def mock_ekd_template(small_grid):
             # window for target 06:00 is (00:00 exclusive, 06:00 inclusive]; all three obs fall in it
             # nearest to 06:00 is 05:50 (10 min away), so 200.0 is selected over 300.0 (60 min) and 100.0 (180 min)
             {
-                "template": "dummy.grib",
                 "start_time": datetime(2023, 1, 1, 6, 0, 0),
                 "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
@@ -138,7 +116,6 @@ def mock_ekd_template(small_grid):
             # rows where ALL columns are NaN are dropped entirely; rows where only SOME columns are NaN
             # are kept – the NaN value is written to the grid for that column
             {
-                "template": "dummy.grib",
                 "start_time": datetime(2023, 1, 1, 6, 0, 0),
                 "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
@@ -181,7 +158,6 @@ def mock_ekd_template(small_grid):
         pytest.param(
             # spatial indices outside [0, n_grid) are silently ignored — both over-bound and negative
             {
-                "template": "dummy.grib",
                 "start_time": datetime(2023, 1, 1, 6, 0, 0),
                 "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
@@ -214,7 +190,6 @@ def mock_ekd_template(small_grid):
         ),
         pytest.param(
             {
-                "template": "dummy.grib",
                 "start_time": datetime(2023, 1, 1, 6, 0, 0),
                 "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
@@ -238,7 +213,6 @@ def mock_ekd_template(small_grid):
             # obs at 05:00 (inside) → included at spatial_index=1
             # obs at 09:00 (at open upper bound) → excluded
             {
-                "template": "dummy.grib",
                 "start_time": datetime(2023, 1, 1, 6, 0, 0),
                 "end_time": datetime(2023, 1, 1, 6, 0, 0),
                 "time_freq": "6h",
@@ -269,11 +243,9 @@ def mock_ekd_template(small_grid):
         ),
     ],
 )
-def test_irregular_to_grid(mock_define_grid, mock_ekd_template, small_grid, config, df, expected_arrays):
+def test_irregular_to_grid(mock_define_grid, small_grid, config, df, expected_arrays):
     filter_fn = create_filter("irregular_to_grid", **config)
     result = filter_fn(df)
-
-    mock_ekd_template.assert_called_once_with("file", config["template"])
 
     lats, lons = small_grid
     expected_times = pd.date_range(
@@ -299,9 +271,8 @@ def test_irregular_to_grid(mock_define_grid, mock_ekd_template, small_grid, conf
         np.testing.assert_array_equal(field.to_numpy(), expected_arrays[param][t_idx])
 
 
-def test_missing_column_raises(mock_ekd_template):
+def test_missing_column_raises():
     config = {
-        "template": "dummy.grib",
         "start_time": datetime(2023, 1, 1, 6, 0),
         "end_time": datetime(2023, 1, 2, 0, 0),
         "time_freq": "6h",

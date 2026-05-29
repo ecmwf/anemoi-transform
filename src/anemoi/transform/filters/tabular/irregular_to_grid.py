@@ -31,7 +31,8 @@ class IrregularToGrid(Filter):
     """Convert irregular observations within a time window to an ekd.FieldList of gridded fields.
 
     For each target time step, observations are selected from a configurable window
-    and the observation nearest to the target time is chosen per grid point.
+    and the best observation per grid point is chosen based on proximity to the target
+    time and (optionally) data completeness (NaN count).
 
     All columns listed under ``columns`` must be present in the input DataFrame,
     in addition to the columns ``date`` and ``spatial_index``.
@@ -53,6 +54,17 @@ class IrregularToGrid(Filter):
     window: str or None
         String representation of the time window around each target time, e.g. ``"(-6h, 0h]"``.
         Defaults to ``"(-time_freq, 0]"`` when ``None``.
+    nan_score_weight : float
+        Weight used to combine temporal proximity with NaN completeness when selecting
+        observations. Must be in the range ``[0.0, 1.0]``. Defaults to ``0.0`` (nearest-in-time
+        matching only).
+
+        The composite score is computed as:
+            ``score = (1.0 - nan_score_weight) * time_score + nan_score_weight * nan_score``
+
+        A value of ``0.0`` selects observations using only nearest-in-time matching.
+        As the value increases, greater preference is given to rows with fewer NaN
+        values. A value of ``1.0`` selects observations using only the NaN-based score.
 
     Notes
     -----
@@ -75,6 +87,7 @@ class IrregularToGrid(Filter):
               columns: [t, q, u, v]
               time_freq: "6h"
               grid: "o96"
+              nan_score_weight: 0.2
 
     """
 
@@ -87,6 +100,7 @@ class IrregularToGrid(Filter):
         time_freq: str = "6h",
         grid: str = "o96",
         window: str | None = None,
+        nan_score_weight: float = 0.0,
     ):
         self.template = template
         self.start_time = start_time
@@ -100,6 +114,10 @@ class IrregularToGrid(Filter):
 
         window = window or f"(-{time_freq}, 0]"
         self.window = Window(window)
+
+        if not (0.0 <= nan_score_weight <= 1.0):
+            raise ValueError("nan_score_weight must be in the range [0.0, 1.0]")
+        self.nan_score_weight = nan_score_weight
 
     def forward(self, df: pd.DataFrame) -> ekd.FieldList:
         """Convert irregular values (e.g. observations) within a time window to gridded arrays.
@@ -134,6 +152,7 @@ class IrregularToGrid(Filter):
 
         # Create target times
         target_times = pd.date_range(start=self.start_time, end=self.end_time, freq=self.time_freq)
+        time_delta = pd.Timedelta(self.time_freq)
 
         # Initialize grids for all columns to grid with NaNs
         # NaNs will remain for time steps with no observations
@@ -150,7 +169,9 @@ class IrregularToGrid(Filter):
                 # No observations - NaNs remain in grids for this time step
                 continue
 
-            df_nearest = self.get_nearest_obs(df_window, target_time_naive)
+            df_nearest = self.get_nearest_obs(
+                df_window, target_time_naive, time_delta, self.columns, self.nan_score_weight
+            )
             self._fill_grids(grids, df_nearest, self.columns, n_spatial_total, t_idx)
 
         return self._build_output_fieldlist(template_field, target_times, grid_lats, grid_lons, grids)
@@ -239,13 +260,64 @@ class IrregularToGrid(Filter):
         return df_window
 
     @staticmethod
-    def get_nearest_obs(df_window: pd.DataFrame, target_time: datetime) -> pd.DataFrame:
-        # For each spatial location, select observation nearest to target_time
-        df_window["time_diff"] = (df_window["date"] - target_time).abs()
+    def get_nearest_obs(
+        df_window: pd.DataFrame,
+        target_time: datetime,
+        time_freq: pd.Timedelta,
+        columns: list[str],
+        nan_score_weight: float = 0.0,
+    ) -> pd.DataFrame:
+        """Select the best observation per spatial location.
 
-        # Group by spatial_index and take the observation closest to target_time
-        idx_nearest = df_window.groupby("spatial_index")["time_diff"].idxmin()
+        When ``nan_score_weight`` is ``0.0``, the observation nearest in time
+        to ``target_time`` is selected for each ``spatial_index``.
+
+        When ``nan_score_weight`` is set, a composite score is used::
+
+            score = (1.0 - nan_score_weight) * time_score + nan_score_weight * nan_score
+
+        where ``time_score = |time_diff| / time_freq`` and
+        ``nan_score = nan_count / len(columns)``.  This penalises observations
+        with many missing values so that a slightly more distant observation
+        with better data coverage can be preferred.
+
+        Parameters
+        ----------
+        df_window : pd.DataFrame
+            Observations already filtered to the time window.
+        target_time : datetime
+            Target time for proximity calculation.
+        time_freq : pd.Timedelta
+            Time difference between window centres (used to normalise time scoring).
+        columns : list[str]
+            Data columns used for NaN counting.
+        nan_score_weight : float
+            Weight for the NaN penalty term (default 0.0, which is pure
+            nearest-in-time selection).
+
+        Returns
+        -------
+        pd.DataFrame
+            One row per ``spatial_index`` with the selected observation.
+        """
+        df_window = df_window.copy()
+        time_diff = (df_window["date"] - target_time).abs()
+        time_score = time_diff / time_freq
+
+        if nan_score_weight > 0:
+            max_nans = len(columns)
+            nan_count = df_window[columns].isna().sum(axis=1)
+            nan_score = nan_count / max_nans
+            selection_score = (1.0 - nan_score_weight) * time_score + nan_score_weight * nan_score
+        else:
+            selection_score = time_score
+
+        df_window["_selection_score"] = selection_score
+        idx_nearest = df_window.groupby("spatial_index")["_selection_score"].idxmin()
         df_nearest = df_window.loc[idx_nearest]
+
+        # Drop internal scoring column
+        df_nearest = df_nearest.drop(columns=["_selection_score"])
         return df_nearest
 
     @staticmethod

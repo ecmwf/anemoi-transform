@@ -526,7 +526,6 @@ def test_select_window(target_time, window, input_df, expected):
                     "date": pd.to_datetime(["2023-01-01 06:00"]),
                     "spatial_index": [0],
                     "temperature": [42.0],
-                    "time_diff": [pd.Timedelta("00:00:00")],
                 },
                 index=pd.Index([0]),
             ),
@@ -546,7 +545,6 @@ def test_select_window(target_time, window, input_df, expected):
                     "date": pd.to_datetime(["2023-01-01 05:50"]),
                     "spatial_index": [0],
                     "temperature": [200.0],
-                    "time_diff": [pd.Timedelta("00:10:00")],
                 },
                 index=pd.Index([1]),
             ),
@@ -568,7 +566,6 @@ def test_select_window(target_time, window, input_df, expected):
                     "date": pd.to_datetime(["2023-01-01 05:50", "2023-01-01 06:05"]),
                     "spatial_index": [0, 1],
                     "temperature": [200.0, 300.0],
-                    "time_diff": [pd.Timedelta("00:10:00"), pd.Timedelta("00:05:00")],
                 },
                 index=pd.Index([1, 2]),
             ),
@@ -577,5 +574,117 @@ def test_select_window(target_time, window, input_df, expected):
     ],
 )
 def test_get_nearest_obs(target_time, input_df, expected):
-    result = IrregularToGrid.get_nearest_obs(input_df, target_time)
+    result = IrregularToGrid.get_nearest_obs(input_df, target_time, pd.Timedelta("6h"), ["temperature"])
+    pd.testing.assert_frame_equal(result, expected, check_like=True)
+
+
+@pytest.mark.parametrize(
+    "target_time, input_df, columns, nan_score_weight, expected",
+    [
+        pytest.param(
+            # Nearer obs (05:50) has a NaN, further obs (05:00) is complete.
+            # With weight=1.0 (pure NaN scoring), the complete obs wins.
+            datetime(2023, 1, 1, 6, 0),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 05:50", "2023-01-01 05:00"]),
+                    "spatial_index": [0, 0],
+                    "temperature": [np.nan, 20.0],
+                    "humidity": [60.0, 50.0],
+                }
+            ),
+            ["temperature", "humidity"],
+            1.0,
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 05:00"]),
+                    "spatial_index": [0],
+                    "temperature": [20.0],
+                    "humidity": [50.0],
+                },
+                index=pd.Index([1]),
+            ),
+            id="full_nan_weight_prefers_complete_observation",
+        ),
+        pytest.param(
+            # Same data as above but with weight=0.0: nearest in time wins
+            # even though it has a NaN.
+            datetime(2023, 1, 1, 6, 0),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 05:50", "2023-01-01 05:00"]),
+                    "spatial_index": [0, 0],
+                    "temperature": [np.nan, 20.0],
+                    "humidity": [60.0, 50.0],
+                }
+            ),
+            ["temperature", "humidity"],
+            0.0,
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 05:50"]),
+                    "spatial_index": [0],
+                    "temperature": [np.nan],
+                    "humidity": [60.0],
+                },
+                index=pd.Index([0]),
+            ),
+            id="zero_nan_weight_selects_nearest_in_time",
+        ),
+        pytest.param(
+            # Two obs equally distant in time (±30min). One has 1/2 NaN, the other
+            # is complete. A small nan_score_weight is enough to break the tie
+            # in favour of the complete observation.
+            datetime(2023, 1, 1, 6, 0),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 05:30", "2023-01-01 06:30"]),
+                    "spatial_index": [0, 0],
+                    "temperature": [np.nan, 15.0],
+                    "humidity": [60.0, 55.0],
+                }
+            ),
+            ["temperature", "humidity"],
+            0.1,
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 06:30"]),
+                    "spatial_index": [0],
+                    "temperature": [15.0],
+                    "humidity": [55.0],
+                },
+                index=pd.Index([1]),
+            ),
+            id="small_nan_weight_breaks_time_tie",
+        ),
+        pytest.param(
+            # NaN weighting applies independently per spatial_index.
+            # spatial_index=0: nearer obs has NaN → complete obs preferred
+            # spatial_index=1: both complete → nearer obs preferred
+            datetime(2023, 1, 1, 6, 0),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(
+                        ["2023-01-01 05:50", "2023-01-01 05:00", "2023-01-01 05:55", "2023-01-01 05:00"]
+                    ),
+                    "spatial_index": [0, 0, 1, 1],
+                    "temperature": [np.nan, 20.0, 30.0, 40.0],
+                }
+            ),
+            ["temperature"],
+            1.0,
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 05:00", "2023-01-01 05:55"]),
+                    "spatial_index": [0, 1],
+                    "temperature": [20.0, 30.0],
+                },
+                index=pd.Index([1, 2]),
+            ),
+            id="nan_weight_applied_per_spatial_index",
+        ),
+    ],
+)
+def test_get_nearest_obs_nan_weighting(target_time, input_df, columns, nan_score_weight, expected):
+    result = IrregularToGrid.get_nearest_obs(input_df, target_time, pd.Timedelta("6h"), columns, nan_score_weight)
     pd.testing.assert_frame_equal(result, expected, check_like=True)

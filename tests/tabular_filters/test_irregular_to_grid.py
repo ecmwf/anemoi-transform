@@ -17,6 +17,7 @@ import pytest
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 from anemoi.transform.filters.tabular.irregular_to_grid import IrregularToGrid
+from anemoi.transform.filters.tabular.support.window import Window
 
 
 @pytest.fixture
@@ -57,8 +58,8 @@ def mock_ekd_template(small_grid):
         pytest.param(
             {
                 "template": "dummy.grib",
-                "start_time": datetime(2023, 1, 1, 0, 0, 0),
-                "end_time": datetime(2023, 1, 1, 0, 0, 0),
+                "start_time": datetime(2023, 1, 1, 6, 0, 0),
+                "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
                 "columns": ["temperature", "humidity"],
             },
@@ -99,12 +100,12 @@ def mock_ekd_template(small_grid):
             id="values_mapped_to_correct_time_and_spatial_positions",
         ),
         pytest.param(
-            # window for target 06:00 is (00:00 exclusive, 06:01 inclusive]; all three obs fall in it
+            # window for target 06:00 is (00:00 exclusive, 06:00 inclusive]; all three obs fall in it
             # nearest to 06:00 is 05:50 (10 min away), so 200.0 is selected over 300.0 (60 min) and 100.0 (180 min)
             {
                 "template": "dummy.grib",
-                "start_time": datetime(2023, 1, 1, 0, 0, 0),
-                "end_time": datetime(2023, 1, 1, 0, 0, 0),
+                "start_time": datetime(2023, 1, 1, 6, 0, 0),
+                "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
                 "columns": ["temperature"],
             },
@@ -138,8 +139,8 @@ def mock_ekd_template(small_grid):
             # are kept – the NaN value is written to the grid for that column
             {
                 "template": "dummy.grib",
-                "start_time": datetime(2023, 1, 1, 0, 0, 0),
-                "end_time": datetime(2023, 1, 1, 0, 0, 0),
+                "start_time": datetime(2023, 1, 1, 6, 0, 0),
+                "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
                 "columns": ["temperature", "humidity"],
             },
@@ -181,8 +182,8 @@ def mock_ekd_template(small_grid):
             # spatial indices outside [0, n_grid) are silently ignored — both over-bound and negative
             {
                 "template": "dummy.grib",
-                "start_time": datetime(2023, 1, 1, 0, 0, 0),
-                "end_time": datetime(2023, 1, 1, 0, 0, 0),
+                "start_time": datetime(2023, 1, 1, 6, 0, 0),
+                "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
                 "columns": ["temperature"],
             },
@@ -214,8 +215,8 @@ def mock_ekd_template(small_grid):
         pytest.param(
             {
                 "template": "dummy.grib",
-                "start_time": datetime(2023, 1, 1, 0, 0, 0),
-                "end_time": datetime(2023, 1, 1, 0, 0, 0),
+                "start_time": datetime(2023, 1, 1, 6, 0, 0),
+                "end_time": datetime(2023, 1, 2, 0, 0, 0),
                 "time_freq": "6h",
                 "columns": ["temperature"],
             },
@@ -231,6 +232,41 @@ def mock_ekd_template(small_grid):
             },
             id="empty_input_returns_all_nan",
         ),
+        pytest.param(
+            # custom window [-3h, +3h) centred on target 06:00: window is [03:00, 09:00)
+            # obs at 03:00 (at closed lower bound) → included at spatial_index=0
+            # obs at 05:00 (inside) → included at spatial_index=1
+            # obs at 09:00 (at open upper bound) → excluded
+            {
+                "template": "dummy.grib",
+                "start_time": datetime(2023, 1, 1, 6, 0, 0),
+                "end_time": datetime(2023, 1, 1, 6, 0, 0),
+                "time_freq": "6h",
+                "columns": ["temperature"],
+                "window": "[-3h, +3h)",
+            },
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(
+                        [
+                            "2023-01-01 03:00",  # at closed lower bound → included
+                            "2023-01-01 05:00",  # inside window → included
+                            "2023-01-01 09:00",  # at open upper bound → excluded
+                        ]
+                    ),
+                    "spatial_index": [0, 1, 2],
+                    "temperature": [10.0, 20.0, 999.0],
+                }
+            ),
+            {
+                "temperature": np.array(
+                    [
+                        [10.0, 20.0, np.nan, np.nan],
+                    ]
+                ),
+            },
+            id="custom_window_selects_correct_observations",
+        ),
     ],
 )
 def test_irregular_to_grid(mock_define_grid, mock_ekd_template, small_grid, config, df, expected_arrays):
@@ -242,9 +278,9 @@ def test_irregular_to_grid(mock_define_grid, mock_ekd_template, small_grid, conf
     lats, lons = small_grid
     expected_times = pd.date_range(
         start=config["start_time"],
-        end=config["end_time"] + pd.Timedelta(days=1),
+        end=config["end_time"],
         freq=config["time_freq"],
-    )[1:]
+    )
 
     columns = config["columns"]
     assert len(result) == len(expected_times) * len(columns)
@@ -266,8 +302,8 @@ def test_irregular_to_grid(mock_define_grid, mock_ekd_template, small_grid, conf
 def test_missing_column_raises(mock_ekd_template):
     config = {
         "template": "dummy.grib",
-        "start_time": datetime(2023, 1, 1),
-        "end_time": datetime(2023, 1, 1),
+        "start_time": datetime(2023, 1, 1, 6, 0),
+        "end_time": datetime(2023, 1, 2, 0, 0),
         "time_freq": "6h",
         "columns": ["temperature", "missing_col"],
     }
@@ -298,11 +334,11 @@ def test_fill_grids():
 
 
 @pytest.mark.parametrize(
-    "target_time, time_freq, input_df, expected",
+    "target_time, window, input_df, expected",
     [
         pytest.param(
             datetime(2023, 1, 1, 6, 0),
-            "6h",
+            Window("(-6h, 0]"),
             pd.DataFrame(
                 {
                     "date": pd.to_datetime(["2023-01-01 05:00"]),
@@ -322,17 +358,17 @@ def test_fill_grids():
         ),
         pytest.param(
             datetime(2023, 1, 1, 6, 0),
-            "6h",
+            Window("(-6h, 0]"),
             pd.DataFrame(
                 {
-                    "date": pd.to_datetime(["2023-01-01 06:01"]),  # exactly at target + 1min (inclusive upper bound)
+                    "date": pd.to_datetime(["2023-01-01 06:00"]),  # exactly at target (inclusive upper bound)
                     "spatial_index": [0],
                     "temperature": [10.0],
                 }
             ),
             pd.DataFrame(
                 {
-                    "date": pd.to_datetime(["2023-01-01 06:01"]),
+                    "date": pd.to_datetime(["2023-01-01 06:00"]),
                     "spatial_index": [0],
                     "temperature": [10.0],
                 },
@@ -342,7 +378,7 @@ def test_fill_grids():
         ),
         pytest.param(
             datetime(2023, 1, 1, 6, 0),
-            "6h",
+            Window("(-6h, 0]"),
             pd.DataFrame(
                 {
                     "date": pd.to_datetime(["2023-01-01 00:00"]),  # exactly at target - freq (exclusive lower bound)
@@ -355,10 +391,10 @@ def test_fill_grids():
         ),
         pytest.param(
             datetime(2023, 1, 1, 6, 0),
-            "6h",
+            Window("(-6h, 0]"),
             pd.DataFrame(
                 {
-                    "date": pd.to_datetime(["2023-01-01 06:02"]),  # after target + 1min
+                    "date": pd.to_datetime(["2023-01-01 06:01"]),  # after target
                     "spatial_index": [0],
                     "temperature": [10.0],
                 }
@@ -368,7 +404,7 @@ def test_fill_grids():
         ),
         pytest.param(
             datetime(2023, 1, 1, 6, 0),
-            "6h",
+            Window("(-6h, 0]"),
             pd.DataFrame(
                 {
                     "date": pd.to_datetime(["2023-01-01 05:00"]),
@@ -381,7 +417,7 @@ def test_fill_grids():
         ),
         pytest.param(
             datetime(2023, 1, 1, 6, 0),
-            "6h",
+            Window("(-6h, 0]"),
             pd.DataFrame(
                 {
                     "date": pd.to_datetime(["2023-01-01 05:00", "2023-01-01 05:30"]),
@@ -399,11 +435,74 @@ def test_fill_grids():
             ),
             id="all_nan_rows_filtered_partial_data_returned",
         ),
+        pytest.param(
+            datetime(2023, 1, 1, 6, 0),
+            Window("[-6h, 0]"),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 00:00", "2023-01-01 06:00"]),  # both boundaries, both closed
+                    "spatial_index": [0, 1],
+                    "temperature": [10.0, 20.0],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 00:00", "2023-01-01 06:00"]),
+                    "spatial_index": [0, 1],
+                    "temperature": [10.0, 20.0],
+                },
+                index=pd.Index([0, 1]),
+            ),
+            id="closed_both_bounds_includes_boundaries",
+        ),
+        pytest.param(
+            datetime(2023, 1, 1, 6, 0),
+            Window("(-6h, 0)"),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(
+                        ["2023-01-01 00:00", "2023-01-01 03:00", "2023-01-01 06:00"]
+                    ),  # both boundaries excluded, middle included
+                    "spatial_index": [0, 1, 2],
+                    "temperature": [10.0, 20.0, 30.0],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 03:00"]),
+                    "spatial_index": [1],
+                    "temperature": [20.0],
+                },
+                index=pd.Index([1]),
+            ),
+            id="open_both_bounds_excludes_boundaries",
+        ),
+        pytest.param(
+            datetime(2023, 1, 1, 6, 0),
+            Window("(-3h, +1h]"),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(
+                        ["2023-01-01 03:00", "2023-01-01 04:00", "2023-01-01 07:00", "2023-01-01 07:01"]
+                    ),  # lower bound excluded, upper bound included, one obs outside
+                    "spatial_index": [0, 1, 2, 3],
+                    "temperature": [10.0, 20.0, 30.0, 40.0],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "date": pd.to_datetime(["2023-01-01 04:00", "2023-01-01 07:00"]),
+                    "spatial_index": [1, 2],
+                    "temperature": [20.0, 30.0],
+                },
+                index=pd.Index([1, 2]),
+            ),
+            id="asymmetric_window_selects_correct_range",
+        ),
     ],
 )
-def test_select_window(target_time, time_freq, input_df, expected):
-    # note: window is defined backwards from target_time (target_time - time_freq, target_time + 1 min)
-    result = IrregularToGrid.select_window(input_df, target_time, time_freq, ["temperature"])
+def test_select_window(target_time, window, input_df, expected):
+    result = IrregularToGrid.select_window(input_df, target_time, ["temperature"], window)
     if expected is None:
         assert result is None
     else:

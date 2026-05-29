@@ -21,6 +21,7 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filter import new_field_from_numpy
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
+from anemoi.transform.filters.tabular.support.window import Window
 
 LOG = logging.getLogger(__name__)
 
@@ -29,9 +30,8 @@ LOG = logging.getLogger(__name__)
 class IrregularToGrid(Filter):
     """Convert irregular observations within a time window to an ekd.FieldList of gridded fields.
 
-    For each target time step, observations are selected from a window of
-    ``(target_time - time_freq, target_time]`` and the observation nearest
-    to the target time is chosen per grid point.
+    For each target time step, observations are selected from a configurable window
+    and the observation nearest to the target time is chosen per grid point.
 
     All columns listed under ``columns`` must be present in the input DataFrame,
     in addition to the columns ``date`` and ``spatial_index``.
@@ -50,6 +50,9 @@ class IrregularToGrid(Filter):
         Frequency of target time steps (default ``"6h"``).
     grid : str
         Named grid specification (default ``"o96"``).
+    window: str or None
+        String representation of the time window around each target time, e.g. ``"(-6h, 0h]"``.
+        Defaults to ``"(-time_freq, 0]"`` when ``None``.
 
     Notes
     -----
@@ -83,6 +86,7 @@ class IrregularToGrid(Filter):
         columns: list[str],
         time_freq: str = "6h",
         grid: str = "o96",
+        window: str | None = None,
     ):
         self.template = template
         self.start_time = start_time
@@ -93,6 +97,9 @@ class IrregularToGrid(Filter):
 
         if not self.columns:
             raise ValueError("At least one column must be specified")
+
+        window = window or f"(-{time_freq}, 0]"
+        self.window = Window(window)
 
     def forward(self, df: pd.DataFrame) -> ekd.FieldList:
         """Convert irregular values (e.g. observations) within a time window to gridded arrays.
@@ -126,9 +133,7 @@ class IrregularToGrid(Filter):
         LOG.info(f"Generated grid with {n_spatial_total} points")
 
         # Create target times
-        target_times = pd.date_range(
-            start=self.start_time, end=(self.end_time + pd.Timedelta(days=1)), freq=self.time_freq
-        )[1:]
+        target_times = pd.date_range(start=self.start_time, end=self.end_time, freq=self.time_freq)
 
         # Initialize grids for all columns to grid with NaNs
         # NaNs will remain for time steps with no observations
@@ -140,7 +145,7 @@ class IrregularToGrid(Filter):
             # Convert target_time to tz-naive for consistent comparison (all times assumed UTC)
             target_time_naive = pd.Timestamp(target_time).tz_localize(None)
 
-            df_window = self.select_window(df, target_time_naive, self.time_freq, self.columns)
+            df_window = self.select_window(df, target_time_naive, self.columns, self.window)
             if df_window is None:
                 # No observations - NaNs remain in grids for this time step
                 continue
@@ -186,13 +191,38 @@ class IrregularToGrid(Filter):
             grids[col][t_idx, valid_indices] = col_values
 
     @staticmethod
-    def select_window(df: pd.DataFrame, target_time: datetime, time_freq: str, columns: list[str]) -> pd.DataFrame:
-        # Define window: (target_time - time_freq, target_time + 1 minute]
-        window_start = target_time - pd.Timedelta(time_freq)
-        window_end = target_time + pd.Timedelta(minutes=1)
+    def select_window(
+        df: pd.DataFrame,
+        target_time: datetime,
+        columns: list[str],
+        window: Window,
+    ) -> pd.DataFrame | None:
+        """Select observations within a time window around the target time.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Input observations with a ``"date"`` column.
+        target_time : datetime
+            Centre of the selection window.
+        columns : list[str]
+            Data columns — rows where *all* of these are NaN are dropped.
+        window: Window
+            Window definition used to select observations.
+
+        Returns
+        -------
+        pd.DataFrame or None
+            Filtered observations, or ``None`` if no valid observations remain.
+        """
+        window_start = target_time + window.before
+        window_end = target_time + window.after
+        before_closed, after_closed = window.closed
+        before_select = df["date"].ge if before_closed else df["date"].gt
+        after_select = df["date"].le if after_closed else df["date"].lt
 
         # Get observations in this window
-        mask = (df["date"] > window_start) & (df["date"] <= window_end)
+        mask = before_select(window_start) & after_select(window_end)
         if not mask.any():
             # No observations in this window
             return None

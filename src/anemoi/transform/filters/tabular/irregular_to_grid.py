@@ -36,10 +36,26 @@ class IrregularToGrid(Filter):
     All columns listed under ``columns`` must be present in the input DataFrame,
     in addition to the columns ``date`` and ``spatial_index``.
 
+    Parameters
+    ----------
+    template : str
+        Path to a template file used to construct output fields.
+    start_time : datetime
+        Start of the time range.
+    end_time : datetime
+        End of the time range.
+    columns : list[str]
+        Column names in the input DataFrame to grid.
+    time_freq : str
+        Frequency of target time steps (default ``"6h"``).
+    grid : str
+        Named grid specification (default ``"o96"``).
+
     Notes
     -----
-      - Grid points with no observations in the window are filled with ``NaN``
+      - Grid points with no observations in the window are filled with ``NaN``.
       - ``spatial_index`` must be a valid integer index into the named grid.
+      - Out-of-range spatial indices are silently ignored.
 
     Examples
     --------
@@ -74,6 +90,9 @@ class IrregularToGrid(Filter):
         self.columns = columns
         self.time_freq = time_freq
         self.grid = grid
+
+        if not self.columns:
+            raise ValueError("At least one column must be specified")
 
     def forward(self, df: pd.DataFrame) -> ekd.FieldList:
         """Convert irregular values (e.g. observations) within a time window to gridded arrays.

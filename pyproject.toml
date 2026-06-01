@@ -67,11 +67,11 @@ scripts.anemoi-transform = "anemoi.transform.__main__:main"
 version_file = "src/anemoi/transform/_version.py"
 
 [tool.mypy]
-strict = false
-disable_error_code = [ "import-untyped" ]
 exclude = [
   "docs/*",
 ]
+disable_error_code = [ "import-untyped" ]
+strict = false
 
 [tool.pydocstringformatter]
 write = true

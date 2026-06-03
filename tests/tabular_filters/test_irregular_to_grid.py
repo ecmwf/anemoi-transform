@@ -13,10 +13,10 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from anemoi.utils.window import Window
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 from anemoi.transform.filters.tabular.irregular_to_grid import IrregularToGrid
-from anemoi.transform.filters.tabular.support.window import Window
 
 
 @pytest.fixture

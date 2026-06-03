@@ -34,7 +34,7 @@ def do_something(field: ekd.Field, a: float) -> ekd.Field:
     Any
         The modified field.
     """
-    return field.clone(values=field.values * a)
+    return field.set(**{"data.values": field.values * a})
 
 
 def undo_something(field: ekd.Field, a: float) -> ekd.Field:
@@ -52,7 +52,7 @@ def undo_something(field: ekd.Field, a: float) -> ekd.Field:
     Any
         The modified field.
     """
-    return field.clone(values=field.values / a)
+    return field.set(**{"data.values": field.values / a})
 
 
 @skip_if_offline
@@ -65,7 +65,7 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
         The fieldlist to use for testing.
     """
 
-    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
+    before_filter = {field.parameter.variable(): field.to_numpy().copy() for field in fieldlist}
     filter = create_filter(
         "earthkitfieldlambda",
         fn="tests.field_filters.test_lambda.do_something",
@@ -75,10 +75,10 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
     )
 
     transformed = filter.forward(fieldlist)
-    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in transformed}
+    after_forward = {field.parameter.variable(): field.to_numpy().copy() for field in transformed}
 
     untransformed = filter.backward(transformed)
-    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in untransformed}
+    after_backward = {field.parameter.variable(): field.to_numpy().copy() for field in untransformed}
 
     for param in ("sp", "2t"):
         # round trip works

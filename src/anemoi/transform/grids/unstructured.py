@@ -13,8 +13,8 @@ from typing import Any
 from urllib.parse import urlparse
 
 import numpy as np
+from earthkit.data import SimpleFieldList
 from earthkit.data import from_source
-from earthkit.data.indexing.fieldlist import FieldArray
 
 LOG = logging.getLogger(__name__)
 
@@ -153,7 +153,7 @@ class UnstructuredGridField:
         return dict(lat=self.geography.latitudes, lon=self.geography.longitudes)
 
 
-class UnstructuredGridFieldList(FieldArray):
+class UnstructuredGridFieldList(SimpleFieldList):
     """List of unstructured grid fields."""
 
     @classmethod

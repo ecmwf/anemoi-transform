@@ -34,7 +34,7 @@ def _ds_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
 
     try:
         ds = ekd.from_source("file", path)
-        return ds[0].grid_points()
+        return ds[0].geography.latlons()
     except TypeError:
         # This is a workaround for datasets that do not have data variables,
         # but have "latitude" and "longitude" coordinates.

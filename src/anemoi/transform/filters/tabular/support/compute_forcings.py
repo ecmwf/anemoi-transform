@@ -62,7 +62,7 @@ def cos_solar_zenith_angle(
     julian_days
         array of julian day values.
     hours
-        array of hours from start of jul_day.
+        array of hours from start of julian_days.
     latitudes
         array of latitude values.
     longitudes

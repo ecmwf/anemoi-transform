@@ -48,7 +48,7 @@ class LnspToSp(SingleFieldFilter):
         )
 
     def backward_transform(self, surface_pressure: ekd.Field) -> ekd.Field:
-        """Convert surface surface pressure to ln(surface pressure).
+        """Convert surface surface pressure to ln(surface_pressure).
 
         Parameters
         ----------

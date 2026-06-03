@@ -28,25 +28,25 @@ def get_heights(
     lat: np.ndarray,
     lon: np.ndarray,
 ) -> np.ndarray:
-    """Given 2D arrays of lat, lons and heights finds the nearest heights for points in lat, lon arrays
+    """Given 2D arrays of lat, lons and heights finds the nearest heights for points in lat, lon arrays.
 
     Parameters
     ----------
     heights_lats
-        array of orog field lats
+        array of orog field lats.
     heights_lons
-        array of orog field lons
+        array of orog field lons.
     heights
-        array of orog field heights
+        array of orog field heights.
     lat
-        array of latitude points
+        array of latitude points.
     lon
-        array of longitude points
+        array of longitude points.
 
     Returns
     -------
     unknown
-        array of heights closest to lat lon points
+        array of heights closest to lat lon points.
     """
     lat_tree = cKDTree(np.c_[heights_lats])
     lon_tree = cKDTree(np.c_[heights_lons])

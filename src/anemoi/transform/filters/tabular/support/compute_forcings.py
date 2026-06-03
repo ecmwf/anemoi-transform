@@ -13,17 +13,17 @@ import numpy as np
 
 def solar_declination_angle(julian_day: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Vectorized version of Earthkit function:
-    https://github.com/ecmwf/earthkit-meteo/blob/develop/earthkit/meteo/solar/__init__.py
+    https://github.com/ecmwf/earthkit-meteo/blob/develop/earthkit/meteo/solar/__init__.py.
 
     Parameters
     ----------
     julian_day
-        array of julian day values
+        array of julian day values.
 
     Returns
     -------
     unknown
-        array of solar declination angle values
+        array of solar declination angle values.
     """
     days_per_year = 365.25
     angle = julian_day / days_per_year * np.pi * 2
@@ -55,23 +55,23 @@ def cos_solar_zenith_angle(
     longitudes: np.ndarray,
 ) -> np.ndarray:
     """Calculate cosine of solar zenith angle. Vectorized version of earthkit function:
-    https://github.com/ecmwf/earthkit-meteo/blob/develop/earthkit/meteo/solar/__init__.py
+    https://github.com/ecmwf/earthkit-meteo/blob/develop/earthkit/meteo/solar/__init__.py.
 
     Parameters
     ----------
     julian_days
-        array of julian day values
+        array of julian day values.
     hours
-        array of hours from start of jul_day
+        array of hours from start of julian_days.
     latitudes
-        array of latitude values
+        array of latitude values.
     longitudes
-        array of longitude values
+        array of longitude values.
 
     Returns
     -------
     unknown
-        array of cosine solar zenith angle values
+        array of cosine solar zenith angle values.
     """
     # declination angle + time correction for solar angle
     declination, time_correction = solar_declination_angle(julian_days)

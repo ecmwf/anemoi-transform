@@ -135,12 +135,12 @@ class MatchingFieldsFilter(Filter):
                 )
 
     def _check_metadata_match(self, data: ekd.FieldList, args: list[str] | tuple[str, ...]) -> None:
-        """Checks the parameters names of the data and the groups match
+        """Checks the parameters names of the data and the groups match.
 
         Parameters
         ----------
         data : str
-            List with grouped input param names
+            List with grouped input param names.
         args : str
             List with fields to group by.
         """

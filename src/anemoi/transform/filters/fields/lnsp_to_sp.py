@@ -35,12 +35,12 @@ class LnspToSp(SingleFieldFilter):
         Parameters
         ----------
         log_of_surface_pressure : ekd.Field
-            The natural log of surface pressure
+            The natural log of surface pressure.
 
         Returns
         -------
         ekd.Field
-            The surface pressure
+            The surface pressure.
         """
         new_metadata = {"param": self.surface_pressure, "levelist": None, "level": None}
         return self.new_field_from_numpy(
@@ -48,7 +48,7 @@ class LnspToSp(SingleFieldFilter):
         )
 
     def backward_transform(self, surface_pressure: ekd.Field) -> ekd.Field:
-        """Convert surface surface pressure to ln(surface pressure)
+        """Convert surface surface pressure to ln(surface_pressure).
 
         Parameters
         ----------

@@ -76,12 +76,12 @@ def lookup(name: str | list[float] | tuple[float, ...]) -> dict:
     Parameters
     ----------
     name : str
-        The name of the grid
+        The name of the grid.
 
     Returns
     -------
     dict
-        The grid data
+        The grid data.
     """
     if isinstance(name, str) and name.endswith(".npz"):
         return dict(np.load(name))

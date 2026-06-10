@@ -221,10 +221,31 @@ class Variable(ABC):
         if options is None:
             options = {}
 
-        ignore_units = options.get("ignore_units", False)
-        ignore_time_processing = options.get("ignore_time_processing", False)
-        ignore_period = options.get("ignore_period", False)
-        ignore_type_of_level = options.get("ignore_type_of_level", False)
+        assert self.name == other.name
+        name = self.name
+
+        def _ignore(what):
+            ignore = options.get(what, False)
+
+            match ignore:
+                case bool():
+                    return ignore
+
+                case str():
+                    return name == ignore
+
+                case list() | tuple() | set():
+                    return name in ignore
+
+                case _:
+                    raise ValueError(
+                        f"Invalid value for option '{what}': {ignore}. Expected a boolean, a string or a list of variable names."
+                    )
+
+        ignore_units = _ignore("ignore_units")
+        ignore_time_processing = _ignore("ignore_time_processing")
+        ignore_period = _ignore("ignore_period")
+        ignore_type_of_level = _ignore("ignore_type_of_level")
 
         def _compare():
 

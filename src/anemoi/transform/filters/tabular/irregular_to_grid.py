@@ -59,6 +59,8 @@ class IrregularToGrid(Filter):
         A value of ``0.0`` selects observations using only nearest-in-time matching.
         As the value increases, greater preference is given to rows with fewer NaN
         values. A value of ``1.0`` selects observations using only the NaN-based score.
+    cycle_date_column : str
+        Name of the column in the input DataFrame containing the cycle date (optional).
 
     Notes
     -----
@@ -93,6 +95,7 @@ class IrregularToGrid(Filter):
         grid: str = "o96",
         window: str | None = None,
         nan_score_weight: float = 0.0,
+        cycle_date_column: str | None = None,
     ):
         self.start_time = start_time
         self.end_time = end_time
@@ -109,6 +112,7 @@ class IrregularToGrid(Filter):
         if not (0.0 <= nan_score_weight <= 1.0):
             raise ValueError("nan_score_weight must be in the range [0.0, 1.0]")
         self.nan_score_weight = nan_score_weight
+        self.cycle_date_column = cycle_date_column
 
     def forward(self, df: pd.DataFrame) -> ekd.FieldList:
         """Convert irregular values (e.g. observations) within a time window to gridded arrays.
@@ -130,6 +134,8 @@ class IrregularToGrid(Filter):
 
         # Check that all requested columns exist
         required_cols = ["date", "spatial_index"] + list(self.columns)
+        if self.cycle_date_column:
+            required_cols.append(self.cycle_date_column)
         raise_if_df_missing_cols(df, required_cols=required_cols)
 
         # Generate grid coordinates
@@ -139,7 +145,10 @@ class IrregularToGrid(Filter):
         LOG.info(f"Generated grid with {n_spatial_total} points")
 
         # Create target times
-        target_times = pd.date_range(start=self.start_time, end=self.end_time, freq=self.time_freq)
+        if self.cycle_date_column:
+            target_times = pd.to_datetime(df[self.cycle_date_column].unique())
+        else:
+            target_times = pd.date_range(start=self.start_time, end=self.end_time, freq=self.time_freq)
         time_delta = pd.Timedelta(self.time_freq)
 
         # Initialize grids for all columns to grid with NaNs

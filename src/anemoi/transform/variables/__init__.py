@@ -49,16 +49,18 @@ class Variable(ABC):
         Any
             The created Variable instance.
         """
-        from anemoi.transform.variables.variables import VariableFromDict
+        from anemoi.transform.variables.from_dict import VariableFromDict
 
         return VariableFromDict(name, data)
 
     @classmethod
-    def from_earthkit(cls, field: Any) -> Any:
+    def from_earthkit(cls, name: str, field: Any) -> Any:
         """Create a Variable instance from an Earthkit field.
 
         Parameters
         ----------
+        name : str
+            The name of the variable.
         field : Any
             The Earthkit field.
 
@@ -67,9 +69,9 @@ class Variable(ABC):
         Any
             The created Variable instance.
         """
-        from anemoi.transform.variables.variables import VariableFromEarthkit
+        from anemoi.transform.variables.from_ekd import VariableFromEarthkit
 
-        return VariableFromEarthkit(field)
+        return VariableFromEarthkit(name, field)
 
     def __repr__(self) -> str:
         """Return a string representation of the Variable.
@@ -258,7 +260,7 @@ class Variable(ABC):
                     return f"Units are not compatible: {self.units} vs {other.units}"
 
             if self.time_processing != other.time_processing:
-                if ignore_time_processing:
+                if ignore_time_processing or (self.time_processing is None or other.time_processing is None):
                     LOG.warning(
                         f"{self}: time processing types are not compatible: {self.time_processing} vs {other.time_processing}. Ignoring this incompatibility."
                     )
@@ -266,7 +268,7 @@ class Variable(ABC):
                     return f"Time processinging types are not compatible: {self.time_processing} vs {other.time_processing}"
 
             if self.period != other.period:
-                if ignore_period:
+                if ignore_period or (self.period is None or other.period is None):
                     LOG.warning(
                         f"{self}: periods are not compatible: {self.period} vs {other.period}. Ignoring this incompatibility."
                     )
@@ -274,7 +276,7 @@ class Variable(ABC):
                     return f"Periods are not compatible: {self.period} vs {other.period}"
 
             if self.is_pressure_level != other.is_pressure_level:
-                if ignore_type_of_level:
+                if ignore_type_of_level or (self.is_pressure_level is None or other.is_pressure_level is None):
                     LOG.warning(
                         f"{self}: pressure level status is not compatible: {self.is_pressure_level} vs {other.is_pressure_level}. Ignoring this incompatibility."
                     )
@@ -282,7 +284,7 @@ class Variable(ABC):
                     return f"Pressure level status is not compatible: {self.is_pressure_level} vs {other.is_pressure_level}"
 
             if self.is_model_level != other.is_model_level:
-                if ignore_type_of_level:
+                if ignore_type_of_level or (self.is_model_level is None or other.is_model_level is None):
                     LOG.warning(
                         f"{self}: model level status is not compatible: {self.is_model_level} vs {other.is_model_level}. Ignoring this incompatibility."
                     )
@@ -290,7 +292,7 @@ class Variable(ABC):
                     return f"Model level status is not compatible: {self.is_model_level} vs {other.is_model_level}"
 
             if self.is_surface_level != other.is_surface_level:
-                if ignore_type_of_level:
+                if ignore_type_of_level or (self.is_surface_level is None or other.is_surface_level is None):
                     LOG.warning(
                         f"{self}: surface level status is not compatible: {self.is_surface_level} vs {other.is_surface_level}. Ignoring this incompatibility."
                     )

@@ -37,7 +37,8 @@ class VariableFromEarthkit(Variable):
             The namespace for the field metadata, by default "mars".
         """
         super().__init__(name)
-        self.delegate = Variable.from_dict(name, field.metadata(namespace=namespace))
+        metadata = field.metadata(namespace=namespace)
+        self.delegate = Variable.from_dict(name, dict(mars=metadata))
         self.field = field
 
     @property
@@ -107,11 +108,6 @@ class VariableFromEarthkit(Variable):
     @property
     def is_computed_forcing(self) -> bool:
         """Check if the variable is a computed forcing."""
-        raise NotImplementedError()
-
-    @property
-    def is_from_input(self) -> bool:
-        """Check if the variable is from input."""
         raise NotImplementedError()
 
     @property

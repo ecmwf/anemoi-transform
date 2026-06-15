@@ -192,12 +192,6 @@ class Variable(ABC):
 
     @property
     @abstractmethod
-    def is_from_input(self) -> bool:
-        """Check if the variable is from input."""
-        pass
-
-    @property
-    @abstractmethod
     def units(self):
         """Get the units of the variable."""
         pass

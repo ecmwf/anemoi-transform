@@ -76,11 +76,6 @@ class VariableFromMarsVocabulary(Variable):
         return self.data.get("constant_in_time", False)
 
     @property
-    def is_from_input(self) -> bool:
-        """Check if the variable is from input data."""
-        return "mars" in self.data
-
-    @property
     def is_computed_forcing(self) -> bool:
         """Check if the variable is a computed forcing."""
         return self.data.get("computed_forcing", False)

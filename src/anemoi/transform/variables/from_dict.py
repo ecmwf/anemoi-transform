@@ -182,6 +182,17 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
         "number": "ensemble.member",
     }
 
+    # Mapping from earthkit 1.0 level type names to MARS-style abbreviations
+    _LEVEL_TYPE_MAPPING = {
+        "surface": "sfc",
+        "pressure": "pl",
+        "model": "ml",
+        "depth_below_ground_level": "sfc",
+        "height_above_ground": "sfc",
+        "potential_vorticity": "pv",
+        "potential_temperature": "pt",
+    }
+
     def __init__(self, name: str, field: Any) -> None:
         """Initialize the variable with a name and field.
 
@@ -203,16 +214,55 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
 
         data = {"mars": mars_data}
 
+        # Convert earthkit level type to MARS-style abbreviation
+        if "levtype" in mars_data:
+            levtype = mars_data["levtype"]
+            if levtype in self._LEVEL_TYPE_MAPPING:
+                mars_data["levtype"] = self._LEVEL_TYPE_MAPPING[levtype]
+            else:
+                # Remove unknown/unmapped level types so they are treated as None
+                del mars_data["levtype"]
+
         # Get units from the field if available
         try:
             units = field.get("parameter.units")
             if units is not None:
-                data["units"] = units
+                data["units"] = str(units)
+        except (KeyError, TypeError):
+            pass
+
+        # Try to extract time processing info from the field
+        try:
+            statistical_process = field.get("time.statistical_process")
+            if statistical_process is not None:
+                data["process"] = statistical_process
         except (KeyError, TypeError):
             pass
 
         super().__init__(name, data)
         self.field = field
+        # Track whether we actually got process info from the field
+        self._has_process_info = "process" in data
+
+    @property
+    def is_instantanous(self) -> bool:
+        """Check if the variable is instantaneous.
+
+        Returns None if this information is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().is_instantanous
+
+    @property
+    def period(self):
+        """Get the variable's period.
+
+        Returns None if time processing info is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().period
 
 
 class PostProcessedVariable(VariableFromMarsVocabulary):

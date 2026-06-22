@@ -49,16 +49,18 @@ class Variable(ABC):
         Any
             The created Variable instance.
         """
-        from anemoi.transform.variables.variables import VariableFromDict
+        from anemoi.transform.variables.from_dict import VariableFromDict
 
         return VariableFromDict(name, data)
 
     @classmethod
-    def from_earthkit(cls, field: Any) -> Any:
+    def from_earthkit(cls, name: str, field: Any) -> Any:
         """Create a Variable instance from an Earthkit field.
 
         Parameters
         ----------
+        name : str
+            The name of the variable.
         field : Any
             The Earthkit field.
 
@@ -67,9 +69,9 @@ class Variable(ABC):
         Any
             The created Variable instance.
         """
-        from anemoi.transform.variables.variables import VariableFromEarthkit
+        from anemoi.transform.variables.from_ekd import VariableFromEarthkit
 
-        return VariableFromEarthkit(field)
+        return VariableFromEarthkit(name, field)
 
     def __repr__(self) -> str:
         """Return a string representation of the Variable.
@@ -190,12 +192,6 @@ class Variable(ABC):
 
     @property
     @abstractmethod
-    def is_from_input(self) -> bool:
-        """Check if the variable is from input."""
-        pass
-
-    @property
-    @abstractmethod
     def units(self):
         """Get the units of the variable."""
         pass
@@ -217,15 +213,52 @@ class Variable(ABC):
         """
         return 0
 
-    def compatible(self, other: Any, return_reason: bool = False, **options) -> bool | tuple[bool, str | None]:
-        if options is None:
-            options = {}
+    def compatible(
+        self,
+        other: Any,
+        return_reason: bool = False,
+        ignore_units: Any = False,
+        ignore_time_processing: Any = False,
+        ignore_processing_period: Any = False,
+        ignore_type_of_level: Any = False,
+    ) -> bool | tuple[bool, str | None]:
+        """Check if two variables are compatible.
+
+        Parameters
+        ----------
+        other : Any
+            The other variable to compare with.
+        return_reason : bool, optional
+            If True, return a tuple of (bool, str) with the reason for incompatibility.
+            Default is False.
+        ignore_units : bool or str or list, optional
+            Don't check units. Can be a boolean, a variable name, or a list of variable names.
+            Default is False.
+        ignore_time_processing : bool or str or list, optional
+            Don't check time processing (e.g. whether the data is instantaneous or accumulated).
+            Can be a boolean, a variable name, or a list of variable names.
+            Default is False.
+        ignore_processing_period : bool or str or list, optional
+            Don't check time processing period (e.g. whether the data are 3-hourly or 6-hourly accumulations).
+            Can be a boolean, a variable name, or a list of variable names.
+            Default is False.
+        ignore_type_of_level : bool or str or list, optional
+            Don't check type of level (e.g. whether the data are on pressure levels or model levels).
+            Can be a boolean, a variable name, or a list of variable names.
+            Default is False.
+
+        Returns
+        -------
+        bool or tuple[bool, str | None]
+            If return_reason is False, returns True if compatible, False otherwise.
+            If return_reason is True, returns a tuple of (bool, str | None) where the string
+            is the reason for incompatibility, or None if compatible.
+        """
 
         assert self.name == other.name
         name = self.name
 
-        def _ignore(what):
-            ignore = options.get(what, False)
+        def _ignore(what, ignore):
 
             match ignore:
                 case bool():
@@ -242,62 +275,64 @@ class Variable(ABC):
                         f"Invalid value for option '{what}': {ignore}. Expected a boolean, a string or a list of variable names."
                     )
 
-        ignore_units = _ignore("ignore_units")
-        ignore_time_processing = _ignore("ignore_time_processing")
-        ignore_period = _ignore("ignore_period")
-        ignore_type_of_level = _ignore("ignore_type_of_level")
+        check_units = not _ignore("ignore_units", ignore_units)
+        check_time_processing = not _ignore("ignore_time_processing", ignore_time_processing)
+        check_period = not _ignore("ignore_processing_period", ignore_processing_period)
+        check_type_of_level = not _ignore("ignore_type_of_level", ignore_type_of_level)
 
         def _compare():
 
-            if self.units != other.units:
-                if ignore_units or (self.units is None or other.units is None):
-                    LOG.warning(
-                        f"{self}: one of the variables has missing units: {self.units} vs {other.units}. Assuming they are compatible."
-                    )
-                else:
-                    return f"Units are not compatible: {self.units} vs {other.units}"
+            if check_units:
+                if self.units != other.units:
+                    if self.units is None or other.units is None:
+                        LOG.warning(
+                            f"{self}: one of the variables has missing units: {self.units} vs {other.units}. Assuming they are compatible."
+                        )
+                    else:
+                        return f"Units are not compatible: {self.units} vs {other.units}"
 
-            if self.time_processing != other.time_processing:
-                if ignore_time_processing:
-                    LOG.warning(
-                        f"{self}: time processing types are not compatible: {self.time_processing} vs {other.time_processing}. Ignoring this incompatibility."
-                    )
-                else:
-                    return f"Time processinging types are not compatible: {self.time_processing} vs {other.time_processing}"
+            if check_time_processing:
+                if self.time_processing != other.time_processing:
+                    if self.time_processing is None or other.time_processing is None:
+                        LOG.warning(
+                            f"{self}: time processing types are not compatible: {self.time_processing} vs {other.time_processing}. Ignoring this incompatibility."
+                        )
+                    else:
+                        return f"Time processinging types are not compatible: {self.time_processing} vs {other.time_processing}"
 
-            if self.period != other.period:
-                if ignore_period:
-                    LOG.warning(
-                        f"{self}: periods are not compatible: {self.period} vs {other.period}. Ignoring this incompatibility."
-                    )
-                else:
-                    return f"Periods are not compatible: {self.period} vs {other.period}"
+            if check_period:
+                if self.period != other.period:
+                    if self.period is None or other.period is None:
+                        LOG.warning(
+                            f"{self}: periods are not compatible: {self.period} vs {other.period}. Ignoring this incompatibility."
+                        )
+                    else:
+                        return f"Periods are not compatible: {self.period} vs {other.period}"
 
-            if self.is_pressure_level != other.is_pressure_level:
-                if ignore_type_of_level:
-                    LOG.warning(
-                        f"{self}: pressure level status is not compatible: {self.is_pressure_level} vs {other.is_pressure_level}. Ignoring this incompatibility."
-                    )
-                else:
-                    return f"Pressure level status is not compatible: {self.is_pressure_level} vs {other.is_pressure_level}"
+            if check_type_of_level:
+                if self.is_pressure_level != other.is_pressure_level:
+                    if self.is_pressure_level is None or other.is_pressure_level is None:
+                        LOG.warning(
+                            f"{self}: pressure level status is not compatible: {self.is_pressure_level} vs {other.is_pressure_level}. Ignoring this incompatibility."
+                        )
+                    else:
+                        return f"Pressure level status is not compatible: {self.is_pressure_level} vs {other.is_pressure_level}"
 
-            if self.is_model_level != other.is_model_level:
-                if ignore_type_of_level:
-                    LOG.warning(
-                        f"{self}: model level status is not compatible: {self.is_model_level} vs {other.is_model_level}. Ignoring this incompatibility."
-                    )
-                else:
-                    return f"Model level status is not compatible: {self.is_model_level} vs {other.is_model_level}"
+                if self.is_model_level != other.is_model_level:
+                    if self.is_model_level is None or other.is_model_level is None:
+                        LOG.warning(
+                            f"{self}: model level status is not compatible: {self.is_model_level} vs {other.is_model_level}. Ignoring this incompatibility."
+                        )
+                    else:
+                        return f"Model level status is not compatible: {self.is_model_level} vs {other.is_model_level}"
 
-            if self.is_surface_level != other.is_surface_level:
-                if ignore_type_of_level:
-                    LOG.warning(
-                        f"{self}: surface level status is not compatible: {self.is_surface_level} vs {other.is_surface_level}. Ignoring this incompatibility."
-                    )
-                else:
-                    return (
-                        f"Surface level status is not compatible: {self.is_surface_level} vs {other.is_surface_level}"
-                    )
+                if self.is_surface_level != other.is_surface_level:
+                    if self.is_surface_level is None or other.is_surface_level is None:
+                        LOG.warning(
+                            f"{self}: surface level status is not compatible: {self.is_surface_level} vs {other.is_surface_level}. Ignoring this incompatibility."
+                        )
+                    else:
+                        return f"Surface level status is not compatible: {self.is_surface_level} vs {other.is_surface_level}"
 
         reason = _compare()
         if reason:
@@ -306,9 +341,15 @@ class Variable(ABC):
         return (True, None) if return_reason else True
 
     @classmethod
-    def check_compatibility(cls, variables1: dict, variables2: dict, **options) -> None:
-        if options is None:
-            options = {}
+    def check_compatibility(cls, variables1: dict, variables2: dict, *args, **kwargs) -> None:
+        options = {}
+        for arg in args:
+            if isinstance(arg, dict):
+                options.update(arg)
+            else:
+                raise ValueError(f"Invalid argument: {arg}. Expected a dictionary.")
+
+        options.update(kwargs)
 
         keys1 = set(variables1.keys())
         keys2 = set(variables2.keys())

@@ -202,18 +202,17 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
         mars_data["param"] = name
 
         data = {"mars": mars_data}
+
+        # Get units from the field if available
+        try:
+            units = field.get("parameter.units")
+            if units is not None:
+                data["units"] = units
+        except (KeyError, TypeError):
+            pass
+
         super().__init__(name, data)
         self.field = field
-
-    @property
-    def is_pressure_level(self) -> bool:
-        """Check if the variable is at a pressure level."""
-        return self.field.is_pressure_level()
-
-    @property
-    def level(self) -> Any:
-        """Get the level of the variable."""
-        return self.field.level()
 
 
 class PostProcessedVariable(VariableFromMarsVocabulary):

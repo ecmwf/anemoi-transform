@@ -33,8 +33,8 @@ def _ds_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
     import earthkit.data as ekd
 
     try:
-        ds = ekd.from_source("file", path)
-        return ds[0].grid_points()
+        ds = ekd.from_source("file", path).to_fieldlist()
+        return ds[0].geography.latlons()
     except TypeError:
         # This is a workaround for datasets that do not have data variables,
         # but have "latitude" and "longitude" coordinates.
@@ -143,7 +143,7 @@ class MakeMIRMatrix:
     def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **mir_kwargs):
 
         import numpy as np
-        from earthkit.regrid.utils.mir import mir_make_matrix
+        from earthkit.geo.utils.mir import mir_make_matrix
 
         sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=mir, **mir_kwargs)
 

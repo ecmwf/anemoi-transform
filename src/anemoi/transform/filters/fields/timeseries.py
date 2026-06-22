@@ -68,7 +68,7 @@ class Timeseries(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        dt = template_param.metadata("valid_datetime")
+        dt = template_param.time.valid_datetime()
         template_array = template_param.to_numpy()
 
         sel = self.ds.sel(time=dt)

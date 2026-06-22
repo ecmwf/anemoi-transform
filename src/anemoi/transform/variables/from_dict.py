@@ -170,6 +170,101 @@ class VariableFromDict(VariableFromMarsVocabulary):
         super().__init__(name, data)
 
 
+class VariableFromEarthkit(VariableFromMarsVocabulary):
+    """A variable that is defined by an EarthKit field."""
+
+    # Mapping from original metadata keys to earthkit component accessors
+    _MARS_KEY_MAPPING = {
+        "param": "parameter.variable",
+        "levtype": "vertical.level_type",
+        "levelist": "vertical.level",
+        "step": "time.step",
+        "number": "ensemble.member",
+    }
+
+    # Mapping from earthkit 1.0 level type names to MARS-style abbreviations
+    _LEVEL_TYPE_MAPPING = {
+        "surface": "sfc",
+        "pressure": "pl",
+        "model": "ml",
+        "depth_below_ground_level": "sfc",
+        "height_above_ground": "sfc",
+        "potential_vorticity": "pv",
+        "potential_temperature": "pt",
+    }
+
+    def __init__(self, name: str, field: Any) -> None:
+        """Initialize the variable with a name and field.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        field : Any
+            The EarthKit field defining the variable.
+        """
+        # Build a MARS-like metadata dict from the field's component API
+        mars_data = {}
+        for mars_key, component_key in self._MARS_KEY_MAPPING.items():
+            try:
+                mars_data[mars_key] = field.get(component_key)
+            except (KeyError, TypeError):
+                pass
+        mars_data["param"] = name
+
+        data = {"mars": mars_data}
+
+        # Convert earthkit level type to MARS-style abbreviation
+        if "levtype" in mars_data:
+            levtype = mars_data["levtype"]
+            if levtype in self._LEVEL_TYPE_MAPPING:
+                mars_data["levtype"] = self._LEVEL_TYPE_MAPPING[levtype]
+            else:
+                # Remove unknown/unmapped level types so they are treated as None
+                del mars_data["levtype"]
+
+        # Get units from the field if available
+        try:
+            units = field.get("parameter.units")
+            if units is not None:
+                data["units"] = str(units)
+        except (KeyError, TypeError):
+            pass
+
+        # Try to extract time processing info from the field
+        try:
+            statistical_process = field.get("time.statistical_process")
+            if statistical_process is not None:
+                data["process"] = statistical_process
+        except (KeyError, TypeError):
+            pass
+
+        super().__init__(name, data)
+        self.field = field
+        # Track whether we actually got process info from the field
+        self._has_process_info = "process" in data
+
+    @property
+    def is_instantanous(self) -> bool:
+        """Check if the variable is instantaneous.
+
+        Returns None if this information is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().is_instantanous
+
+    @property
+    def period(self):
+        """Get the variable's period.
+
+        Returns None if time processing info is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().period
+
+
 class PostProcessedVariable(VariableFromMarsVocabulary):
     """A variable that is defined by a post-processed dictionary."""
 

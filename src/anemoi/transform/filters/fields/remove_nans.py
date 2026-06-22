@@ -92,7 +92,7 @@ class RemoveNaNs(Filter):
                 first = fields[0]
             else:
                 for first in fields:
-                    if first.metadata("param") == self.param:
+                    if first.parameter.variable() == self.param:
                         break
                 else:
                     raise ValueError(f"{self.param=} not found in\n{fields.ls}")
@@ -100,9 +100,9 @@ class RemoveNaNs(Filter):
             data = first.to_numpy(flatten=True)
             self._mask = ~np.isnan(data)
 
-            latitudes, longitudes = first.grid_points()
-            self._latitudes = latitudes[self._mask]
-            self._longitudes = longitudes[self._mask]
+            latitudes, longitudes = first.geography.latlons()
+            self._latitudes = latitudes.flatten()[self._mask]
+            self._longitudes = longitudes.flatten()[self._mask]
 
         result = []
         for field in tqdm.tqdm(fields, desc="Remove NaNs"):

@@ -16,9 +16,9 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 from ..utils import collect_fields_by_param
 
 INPUT_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20.0, 30.0, 40.0],
-    "valid_datetime": "2018-08-01T12:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20.0, 30.0, 40.0],
+    "time.valid_datetime": "2018-08-01T12:00:00Z",
 }
 
 T_VALUES = np.array([[1.0, np.nan, 3.0], [np.nan, 5.0, 6.0], [7.0, np.nan, 9.0]])
@@ -29,8 +29,8 @@ Q_VALUES = np.array([[np.nan, 2.0, 3.0], [4.0, np.nan, 6.0], [7.0, 8.0, np.nan]]
 def source(test_source):
     return test_source(
         [
-            {"param": "t", "values": T_VALUES.copy(), **INPUT_METADATA},
-            {"param": "q", "values": Q_VALUES.copy(), **INPUT_METADATA},
+            {"parameter.variable": "t", "data.values": T_VALUES.copy(), **INPUT_METADATA},
+            {"parameter.variable": "q", "data.values": Q_VALUES.copy(), **INPUT_METADATA},
         ]
     )
 

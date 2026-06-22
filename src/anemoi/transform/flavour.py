@@ -20,6 +20,30 @@ from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.fields import new_flavoured_field
 
 
+class _FieldMetadataMapping:
+    """A Mapping-like wrapper around a field that supports key lookup via field.metadata(key).
+
+    This is used to provide a dict-like interface for Rule.match(), which expects
+    a Mapping with __contains__ and __getitem__.
+    """
+
+    def __init__(self, field: ekd.Field) -> None:
+        self._field = field
+
+    def __contains__(self, key: str) -> bool:
+        try:
+            self._field.metadata(key)
+            return True
+        except (KeyError, TypeError):
+            return False
+
+    def __getitem__(self, key: str) -> Any:
+        try:
+            return self._field.metadata(key)
+        except (KeyError, TypeError):
+            raise KeyError(key)
+
+
 class RuleBasedFlavour(Flavour):
     """Rule-based flavour for GRIB files."""
 
@@ -93,7 +117,7 @@ class RuleBasedFlavour(Flavour):
             return MISSING_METADATA
 
         for rule in self.rules[key]:
-            if rule.match(field.metadata()):
+            if rule.match(_FieldMetadataMapping(field)):
                 return rule.result
 
         return MISSING_METADATA

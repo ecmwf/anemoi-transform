@@ -231,12 +231,15 @@ class MatchingFieldsFilter(Filter):
         ekd.FieldList
             Transformed data.
         """
+        if self.MATCHING.select != "param":
+            raise NotImplementedError("Only matching by param is supported for now.")
+
         if self.MATCHING.vertical:
             grouping = GroupByParamVertical(group_by)
         else:
             grouping = GroupByParam(group_by)
-
-        input_params = set(data.metadata(self.MATCHING.select))
+        # TODO: reconsider implementation if/when fieldlist supports "parameter.variable" key
+        input_params = set(f.parameter.variable() for f in data)
         self._check_metadata_match(input_params, group_by)
 
         result: list[ekd.Field] = []

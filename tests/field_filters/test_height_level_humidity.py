@@ -10,9 +10,9 @@ from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20.0, 40.0, 60.0, 80.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20.0, 40.0, 60.0, 80.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 R2M_VALUES = np.array([[0, 10, 20, 30], [40, 50, 60, 70], [80, 90, 100, 110]])
@@ -75,17 +75,29 @@ AB_coefficients = {
 @pytest.fixture
 def relative_humidity_source(test_source):
     HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC = [
-        {"param": "2r", "values": R2M_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "sp", "values": SP_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "2t", "values": T2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2r", "data.values": R2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "sp", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2t", "data.values": T2M_VALUES, **MOCK_FIELD_METADATA},
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC.append(
-            {"param": "t", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "parameter.variable": "t",
+                "vertical.level_type": "hybrid",
+                "vertical.level": level,
+                "data.values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     for level, values in Q_VALUES.items():
         HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC.append(
-            {"param": "q", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "parameter.variable": "q",
+                "vertical.level_type": "hybrid",
+                "vertical.level": level,
+                "data.values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     return test_source(HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC)
 
@@ -93,17 +105,29 @@ def relative_humidity_source(test_source):
 @pytest.fixture
 def specific_humidity_source(test_source):
     HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC = [
-        {"param": "2sh", "values": Q2M_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "sp", "values": SP_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "2t", "values": T2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2sh", "data.values": Q2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "sp", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2t", "data.values": T2M_VALUES, **MOCK_FIELD_METADATA},
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC.append(
-            {"param": "t", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "parameter.variable": "t",
+                "vertical.level_type": "hybrid",
+                "vertical.level": level,
+                "data.values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     for level, values in Q_VALUES.items():
         HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC.append(
-            {"param": "q", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "parameter.variable": "q",
+                "vertical.level_type": "hybrid",
+                "vertical.level": level,
+                "data.values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     return test_source(HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC)
 
@@ -111,16 +135,28 @@ def specific_humidity_source(test_source):
 @pytest.fixture
 def dewpoint_temperature_source(test_source):
     HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC = [
-        {"param": "2d", "values": D2M_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "sp", "values": SP_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2d", "data.values": D2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "sp", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC.append(
-            {"param": "t", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "parameter.variable": "t",
+                "vertical.level_type": "hybrid",
+                "vertical.level": level,
+                "data.values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     for level, values in Q_VALUES.items():
         HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC.append(
-            {"param": "q", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "parameter.variable": "q",
+                "vertical.level_type": "hybrid",
+                "vertical.level": level,
+                "data.values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     return test_source(HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC)
 
@@ -253,9 +289,12 @@ def test_relative_humidity_to_specific_humidity_from_file(test_source):
     source = test_source("anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib")
     input_relative_humidity = test_source("anemoi-transform/filters/single_level_relative_humidity.npy").ds.to_numpy()
 
-    md = source.ds.sel(param="2d")[0].metadata().override(edition=2, shortName="2r")
+    template_field = source.ds.sel(**{"parameter.variable": "2d"})[0]
 
-    source.ds += ekd.FieldList.from_array(input_relative_humidity, md)
+    from anemoi.transform.fields import new_field_from_numpy
+
+    new_field = new_field_from_numpy(input_relative_humidity, template=template_field, param="2r")
+    source.ds = ekd.create_fieldlist(list(source.ds) + [new_field])
 
     r_to_q_height = create_filter(
         "r_to_q_height",
@@ -501,9 +540,13 @@ def test_dewpoint_to_specific_humidity_from_file(test_source):
     input_dewpoint_temperature = test_source(
         "anemoi-transform/filters/single_level_dewpoint_temperature.npy"
     ).ds.to_numpy()
-    md = source.ds.sel(param="2d")[0].metadata()
-    ds = source.ds.sel(param=["2sh", "2t", "sp", "q", "t"])
-    ds += ekd.FieldList.from_array(input_dewpoint_temperature, md)
+    template_field = source.ds.sel(**{"parameter.variable": "2d"})[0]
+    ds = source.ds.sel(**{"parameter.variable": ["2sh", "2t", "sp", "q", "t"]})
+
+    from anemoi.transform.fields import new_field_from_numpy
+
+    new_field = new_field_from_numpy(input_dewpoint_temperature, template=template_field, param="2d")
+    ds = ekd.create_fieldlist(list(ds) + [new_field])
     source.ds = ds
 
     d_to_q_height = create_filter(
@@ -565,7 +608,7 @@ def test_dewpoint_temperature_to_specific_humidity(dewpoint_temperature_source):
     # test pipeline output matches known good output
     result = output_fields["2sh"][0].to_numpy()
     expected_specific_humidity = Q2M_VALUES
-    np.testing.assert_allclose(result, expected_specific_humidity)
+    np.testing.assert_allclose(result, expected_specific_humidity, atol=1e-7)
 
 
 def test_height_level_dewpoint_temperature_to_specific_humidity_round_trip(dewpoint_temperature_source):

@@ -11,6 +11,9 @@ UNITS_MAPPING = {
     "Numeric": "dimensionless",  # This is WMO, but Numeric will choke pint or cfunits
 }
 
+"m/s"
+"ms-1"
+
 
 class Units:
     def __init__(self, units: str) -> None:

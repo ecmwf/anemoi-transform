@@ -1,4 +1,4 @@
-# (C) Copyright 2024 Anemoi contributors.
+# (C) Copyright 2024-2026 Anemoi contributors.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -44,17 +44,26 @@ class VariableFromMarsVocabulary(Variable):
     @property
     def is_surface_level(self) -> bool:
         """Check if the variable is at a surface level."""
-        return self.mars.get("levtype", None) == "sfc"
+        levtype = self.mars.get("levtype", None)
+        if levtype is None:
+            return None
+        return levtype == "sfc"
 
     @property
     def is_pressure_level(self) -> bool:
         """Check if the variable is at a pressure level."""
-        return self.mars.get("levtype", None) == "pl"
+        levtype = self.mars.get("levtype", None)
+        if levtype is None:
+            return None
+        return levtype == "pl"
 
     @property
     def is_model_level(self) -> bool:
         """Check if the variable is at a model level."""
-        return self.mars.get("levtype", None) == "ml"
+        levtype = self.mars.get("levtype", None)
+        if levtype is None:
+            return None
+        return levtype == "ml"
 
     @property
     def level(self) -> str | None:
@@ -65,11 +74,6 @@ class VariableFromMarsVocabulary(Variable):
     def is_constant_in_time(self) -> bool:
         """Check if the variable is constant in time."""
         return self.data.get("constant_in_time", False)
-
-    @property
-    def is_from_input(self) -> bool:
-        """Check if the variable is from input data."""
-        return "mars" in self.data
 
     @property
     def is_computed_forcing(self) -> bool:
@@ -164,35 +168,6 @@ class VariableFromDict(VariableFromMarsVocabulary):
             The data defining the variable.
         """
         super().__init__(name, data)
-
-
-class VariableFromEarthkit(VariableFromMarsVocabulary):
-    """A variable that is defined by an EarthKit field."""
-
-    def __init__(self, name: str, field: Any, namespace: str = "mars") -> None:
-        """Initialize the variable with a name, field, and namespace.
-
-        Parameters
-        ----------
-        name : str
-            The name of the variable.
-        field : Any
-            The EarthKit field defining the variable.
-        namespace : str, optional
-            The namespace for the field metadata, by default "mars".
-        """
-        super().__init__(name, field.metadata(namespace=namespace))
-        self.field = field
-
-    @property
-    def is_pressure_level(self) -> bool:
-        """Check if the variable is at a pressure level."""
-        return self.field.is_pressure_level()
-
-    @property
-    def level(self) -> Any:
-        """Get the level of the variable."""
-        return self.field.level()
 
 
 class PostProcessedVariable(VariableFromMarsVocabulary):

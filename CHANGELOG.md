@@ -9,6 +9,20 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.4.2](https://github.com/ecmwf/anemoi-transform/compare/0.4.1...0.4.2) (2026-06-22)
+
+
+### Features
+
+* Implement fine control of variable compatibility ([#306](https://github.com/ecmwf/anemoi-transform/issues/306)) ([3e4ebeb](https://github.com/ecmwf/anemoi-transform/commit/3e4ebebc1ba676f24b8a8e69181d57e3fa0ab5be))
+
+## [0.4.1](https://github.com/ecmwf/anemoi-transform/compare/0.4.0...0.4.1) (2026-06-10)
+
+
+### Features
+
+* Options to not check units ([#303](https://github.com/ecmwf/anemoi-transform/issues/303)) ([416880b](https://github.com/ecmwf/anemoi-transform/commit/416880b1323c30fab99d6150e8496f16201868f7))
+
 ## [0.4.0](https://github.com/ecmwf/anemoi-transform/compare/0.3.2...0.4.0) (2026-05-26)
 
 

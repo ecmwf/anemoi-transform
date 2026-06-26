@@ -28,17 +28,15 @@ class IrregularToGrid(Filter):
 
     For each target time step, observations are selected from a configurable window
     and the best observation per grid point is chosen based on proximity to the target
-    time and (optionally) data completeness (NaN count).
+    time (as defined by the ``window_date_column``) and (optionally) data completeness (NaN count).
 
     All columns listed under ``columns`` must be present in the input DataFrame,
-    in addition to the columns ``date`` and ``spatial_index``.
+    in addition to the columns ``date``, ``spatial_index`` and the column defined by ``window_date_column``.
 
     Parameters
     ----------
-    start_time : datetime
-        Start of the time range.
-    end_time : datetime
-        End of the time range.
+    window_date_column : str
+        Name of the column in the input DataFrame containing the window target date.
     columns : list[str]
         Column names in the input DataFrame to grid.
     time_freq : str
@@ -59,8 +57,6 @@ class IrregularToGrid(Filter):
         A value of ``0.0`` selects observations using only nearest-in-time matching.
         As the value increases, greater preference is given to rows with fewer NaN
         values. A value of ``1.0`` selects observations using only the NaN-based score.
-    cycle_date_column : str
-        Name of the column in the input DataFrame containing the cycle date (optional).
 
     Notes
     -----
@@ -88,17 +84,14 @@ class IrregularToGrid(Filter):
 
     def __init__(
         self,
-        start_time: datetime,
-        end_time: datetime,
+        window_date_column: str,
         columns: list[str],
         time_freq: str = "6h",
         grid: str = "o96",
         window: str | None = None,
         nan_score_weight: float = 0.0,
-        cycle_date_column: str | None = None,
     ):
-        self.start_time = start_time
-        self.end_time = end_time
+        self.window_date_column = window_date_column
         self.columns = columns
         self.time_freq = time_freq
         self.grid = grid
@@ -106,13 +99,15 @@ class IrregularToGrid(Filter):
         if not self.columns:
             raise ValueError("At least one column must be specified")
 
+        if not self.window_date_column:
+            raise ValueError("window_date_column must be specified")
+
         window = window or f"(-{time_freq}, 0]"
         self.window = Window(window)
 
         if not (0.0 <= nan_score_weight <= 1.0):
             raise ValueError("nan_score_weight must be in the range [0.0, 1.0]")
         self.nan_score_weight = nan_score_weight
-        self.cycle_date_column = cycle_date_column
 
     def forward(self, df: pd.DataFrame) -> ekd.FieldList:
         """Convert irregular values (e.g. observations) within a time window to gridded arrays.
@@ -133,9 +128,7 @@ class IrregularToGrid(Filter):
         df["date"] = pd.to_datetime(df["date"])
 
         # Check that all requested columns exist
-        required_cols = ["date", "spatial_index"] + list(self.columns)
-        if self.cycle_date_column:
-            required_cols.append(self.cycle_date_column)
+        required_cols = ["date", "spatial_index", self.window_date_column] + list(self.columns)
         raise_if_df_missing_cols(df, required_cols=required_cols)
 
         # Generate grid coordinates
@@ -145,10 +138,7 @@ class IrregularToGrid(Filter):
         LOG.info(f"Generated grid with {n_spatial_total} points")
 
         # Create target times
-        if self.cycle_date_column:
-            target_times = pd.to_datetime(df[self.cycle_date_column].unique())
-        else:
-            target_times = pd.date_range(start=self.start_time, end=self.end_time, freq=self.time_freq)
+        target_times = pd.to_datetime(df[self.window_date_column].unique())
         time_delta = pd.Timedelta(self.time_freq)
 
         # Initialize grids for all columns to grid with NaNs

@@ -9,6 +9,15 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.4.3](https://github.com/ecmwf/anemoi-transform/compare/0.4.2...0.4.3) (2026-06-29)
+
+
+### Features
+
+* **filter:** Add filter_query (tabular filter) ([#310](https://github.com/ecmwf/anemoi-transform/issues/310)) ([ca3b095](https://github.com/ecmwf/anemoi-transform/commit/ca3b0951007afed9537c9d6b0012ef90605980f6))
+* **filter:** Add irregular_to_grid ([#298](https://github.com/ecmwf/anemoi-transform/issues/298)) ([5bfc68d](https://github.com/ecmwf/anemoi-transform/commit/5bfc68de6bb996b6bb77612661837a45b997cd69))
+* **filter:** Add mask_values_custom (tabular filter) ([#311](https://github.com/ecmwf/anemoi-transform/issues/311)) ([ff771d3](https://github.com/ecmwf/anemoi-transform/commit/ff771d3971fb6455378c652d585507c20e077cff))
+
 ## [0.4.2](https://github.com/ecmwf/anemoi-transform/compare/0.4.1...0.4.2) (2026-06-22)
 
 

@@ -7,13 +7,13 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import earthkit.data as ekd
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
+from anemoi.transform import FieldList
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
@@ -28,7 +28,7 @@ def calc_stats(fieldlist):
 
 
 @skip_if_offline
-def test_clipper_fields(fieldlist: ekd.FieldList) -> None:
+def test_clipper_fields(fieldlist: FieldList) -> None:
     before_stats = calc_stats(fieldlist)
     clipper = create_filter("clipper", minimum=300.0, maximum=305.0, param="2t")
     clipped = clipper(fieldlist)

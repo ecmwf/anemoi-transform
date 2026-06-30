@@ -10,9 +10,9 @@
 
 import logging
 
-import earthkit.data as ekd
 from anemoi.utils.humanize import make_list_int
 
+from anemoi.transform import FieldList
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
@@ -101,17 +101,17 @@ class RepeatMembers(Filter):
         self.members = members
         assert isinstance(members, (tuple, list)), f"members must be a list or tuple, got {type(members)}"
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, data: FieldList) -> FieldList:
         """Apply the forward transformation to replicate fields.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : FieldList
             The input data to be transformed.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             The transformed data.
         """
         result = []

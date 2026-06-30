@@ -13,8 +13,8 @@ from typing import Any
 from urllib.parse import urlparse
 
 import numpy as np
-from earthkit.data import SimpleFieldList
-from earthkit.data import from_source
+
+from anemoi.transform import FieldList
 
 LOG = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ def _load(url_or_path: str, param: str) -> tuple[np.ndarray, str]:
     else:
         source = "file"
 
-    ds = from_source(source, url_or_path).to_fieldlist()
+    ds = FieldList.from_source(source, url_or_path)
     ds = ds.sel(param=param)
 
     assert len(ds) == 1, f"{url_or_path} {param}, expected one field, got {len(ds)}"

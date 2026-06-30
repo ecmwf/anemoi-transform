@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 from unittest import mock
 
-import earthkit.data as ekd
 import numpy as np
 import pytest
 

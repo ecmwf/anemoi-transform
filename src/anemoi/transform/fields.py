@@ -6,7 +6,6 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-import datetime
 import logging
 from abc import ABC
 from abc import abstractmethod
@@ -14,170 +13,215 @@ from typing import Any
 
 import earthkit.data as ekd
 import numpy as np
+from earthkit.data import Field as _EkdField
+from earthkit.data import FieldList as _EkdFieldList
 
 LOG = logging.getLogger(__name__)
 
 
+class Field:
+
+    def __init__(self, field: _EkdField | None = None):
+        self._field = field
+
+    # === forwarded methods for Field class
+
+    def set(self, *args, **kwargs) -> "Field":
+        """Set metadata for the field.
+
+        Parameters
+        ----------
+        **kwargs : Any
+            Metadata to set for the field.
+
+        """
+        return Field(self._field.set(*args, **kwargs))
+
+    def get(self, *args, **kwargs) -> Any:
+        return self._field.get(*args, **kwargs)
+
+    def to_numpy(self, *args, **kwargs) -> Any:
+        return self._field.to_numpy(*args, **kwargs)
+
+    # ===
+    @classmethod
+    def from_numpy(cls, array: np.ndarray, *, template: "Field", **metadata: Any) -> "Field":
+        """Create a new field from a numpy array.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The data for the new field.
+        template : Field
+            The template field to use.
+        **metadata : Any
+            Additional metadata for the new field.
+        """
+        result = Field(template.set(**{"data.values": array}))
+        if metadata:
+            result = Field.with_new_metadata(result, **metadata)
+
+        return result
+
+    @classmethod
+    def with_new_metadata(cls, template: "Field", **metadata: Any) -> "Field":
+        """Create a new field with metadata.
+
+        Parameters
+        ----------
+        template : Field
+            The template field to use.
+        **metadata : Any
+            The metadata for the new field.
+
+        Returns
+        -------
+        Field
+            The new field with the provided metadata.
+        """
+        key_mapping = {
+            "valid_datetime": "time.valid_datetime",
+            "base_datetime": "time.base_datetime",
+            "step": "time.step",
+            "param": "parameter.variable",
+            "units": "parameter.units",
+            "levtype": "vertical.level_type",
+            "levelist": "vertical.level",
+            "number": "ensemble.member",
+        }
+
+        unknown_keys = set(metadata.keys()) - set(key_mapping.keys())
+        if unknown_keys:
+            raise ValueError(f"Unknown metadata keys: {unknown_keys}. Allowed keys are: {set(key_mapping.keys())}")
+
+        # map metadata keys to new locations
+        mapped_metadata = {key_mapping[key]: value for key, value in metadata.items()}
+        return Field(template.set(**mapped_metadata))
+
+
+class FieldList:
+
+    def __init__(self, fieldlist: _EkdFieldList | None = None):
+        self._fieldlist = fieldlist if fieldlist is not None else ekd.create_fieldlist()
+
+    @classmethod
+    def from_fields(cls, fields: list[Field]) -> "FieldList":
+        """Create a FieldList from a list of fields."""
+        return cls(ekd.create_fieldlist([field for field in fields]))
+
+    @classmethod
+    def from_source(cls, name: str, *args, **kwargs) -> "FieldList":
+        """Create a FieldList from a source."""
+        return ekd.from_source(name, *args, **kwargs).to_fieldlist()
+
+    @classmethod
+    def from_file(cls, path: str) -> "FieldList":
+        """Create a FieldList from a file."""
+        return cls.from_source("file", path)
+
+    @classmethod
+    def concat(cls, *args: "FieldList") -> "FieldList":
+        """Concatenate multiple FieldLists into a single FieldList."""
+        return ekd.concat(*args).to_fieldlist()
+
+    def __len__(self) -> int:
+        return len(self._fieldlist)
+
+    def __getitem__(self, index: int) -> Field:
+        return Field(self._fieldlist[index])
+
+
 class Flavour(ABC):
     @abstractmethod
-    def __call__(self, key: str, field: ekd.Field) -> Any:
+    def __call__(self, key: str, field: Field) -> Any:
         """Called during field metadata lookup, so it can be modified"""
         pass
 
 
-def new_fieldlist_from_list(fields: list[ekd.Field]) -> ekd.FieldList:
-    """Create a new FieldList from a list of fields.
+# def new_fieldlist_from_list(fields: list[Field]) -> FieldList:
+#     """Create a new FieldList from a list of fields.
 
-    Parameters
-    ----------
-    fields : list[ekd.Field]
-        List of fields to include in the fieldlist.
+#     Parameters
+#     ----------
+#     fields : list[Field]
+#         List of fields to include in the fieldlist.
 
-    Returns
-    -------
-    ekd.FieldList
-        A new FieldList containing the provided fields.
-    """
-    return ekd.create_fieldlist(fields)
-
-
-def new_empty_fieldlist() -> ekd.FieldList:
-    """Create a new empty SimpleFieldList.
-
-    Returns
-    -------
-    SimpleFieldList
-        A new empty SimpleFieldList.
-    """
-    return ekd.create_fieldlist()
+#     Returns
+#     -------
+#     FieldList
+#         A new FieldList containing the provided fields.
+#     """
+#     return ekd.create_fieldlist(fields)
 
 
-def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: Any) -> ekd.Field:
-    """Create a new field from a numpy array.
+# def new_field_with_valid_datetime(template: Field, date: Any) -> Field:
+#     """Create a new field with a valid datetime (sets the step to 0)
+#     therefore updating the base_datetime as well.
 
-    Parameters
-    ----------
-    array : np.ndarray
-        The data for the new field.
-    template : ekd.Field
-        The template field to use.
-    **metadata : Any
-        Additional metadata for the new field.
+#     Parameters
+#     ----------
+#     template : Field
+#         The template field to use.
+#     date : Any
+#         The valid datetime for the new field.
 
-    Returns
-    -------
-    ekd.Field
-        The new field with the provided data and metadata.
-    """
-    new_data = template.set(**{"data.values": array})
-    if not metadata:
-        return new_data
-    return new_field_with_metadata(new_data, **metadata)
+#     Returns
+#     -------
+#     Field
+#         The new field with the provided valid datetime.
+#     """
+#     time = template.time.set(valid_datetime=date, step=datetime.timedelta(hours=0))
+#     return template.set(time=time)
 
 
-def new_field_with_valid_datetime(template: ekd.Field, date: Any) -> ekd.Field:
-    """Create a new field with a valid datetime (sets the step to 0)
-    therefore updating the base_datetime as well.
+# def new_field_with_units(template: Field, units: str) -> Field:
+#     """Create a new field with units.
 
-    Parameters
-    ----------
-    template : ekd.Field
-        The template field to use.
-    date : Any
-        The valid datetime for the new field.
+#     Parameters
+#     ----------
+#     template : Field
+#         The template field to use.
+#     units : str
+#         The units for the new field.
 
-    Returns
-    -------
-    ekd.Field
-        The new field with the provided valid datetime.
-    """
-    time = template.time.set(valid_datetime=date, step=datetime.timedelta(hours=0))
-    return template.set(time=time)
+#     Returns
+#     -------
+#     Field
+#         The new field with the provided units.
+#     """
+#     return new_field_with_metadata(template, units=units)
 
 
-def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
-    """Create a new field with metadata.
+# def new_field_from_latitudes_longitudes(
+#     template: Field, latitudes: np.ndarray, longitudes: np.ndarray
+# ) -> Field:
+#     """Create a new field from latitudes and longitudes.
 
-    Parameters
-    ----------
-    template : ekd.Field
-        The template field to use.
-    **metadata : Any
-        The metadata for the new field.
+#     Parameters
+#     ----------
+#     template : Field
+#         The template field to use.
+#     latitudes : np.ndarray
+#         The latitudes for the new field.
+#     longitudes : np.ndarray
+#         The longitudes for the new field.
 
-    Returns
-    -------
-    ekd.Field
-        The new field with the provided metadata.
-    """
-    key_mapping = {
-        "valid_datetime": "time.valid_datetime",
-        "base_datetime": "time.base_datetime",
-        "step": "time.step",
-        "param": "parameter.variable",
-        "units": "parameter.units",
-        "levtype": "vertical.level_type",
-        "levelist": "vertical.level",
-        "number": "ensemble.member",
-    }
-
-    unknown_keys = set(metadata.keys()) - set(key_mapping.keys())
-    if unknown_keys:
-        raise ValueError(f"Unknown metadata keys: {unknown_keys}. Allowed keys are: {set(key_mapping.keys())}")
-
-    # map metadata keys to new locations
-    mapped_metadata = {key_mapping[key]: value for key, value in metadata.items()}
-    return template.set(**mapped_metadata)
+#     Returns
+#     -------
+#     Field
+#         The new field with the provided latitudes and longitudes.
+#     """
+#     return template.set(
+#         **{
+#             "geography.latitudes": latitudes,
+#             "geography.longitudes": longitudes,
+#         }
+#     )
 
 
-def new_field_with_units(template: ekd.Field, units: str) -> ekd.Field:
-    """Create a new field with units.
-
-    Parameters
-    ----------
-    template : ekd.Field
-        The template field to use.
-    units : str
-        The units for the new field.
-
-    Returns
-    -------
-    ekd.Field
-        The new field with the provided units.
-    """
-    return new_field_with_metadata(template, units=units)
-
-
-def new_field_from_latitudes_longitudes(
-    template: ekd.Field, latitudes: np.ndarray, longitudes: np.ndarray
-) -> ekd.Field:
-    """Create a new field from latitudes and longitudes.
-
-    Parameters
-    ----------
-    template : ekd.Field
-        The template field to use.
-    latitudes : np.ndarray
-        The latitudes for the new field.
-    longitudes : np.ndarray
-        The longitudes for the new field.
-
-    Returns
-    -------
-    ekd.Field
-        The new field with the provided latitudes and longitudes.
-    """
-    return template.set(
-        **{
-            "geography.latitudes": latitudes,
-            "geography.longitudes": longitudes,
-        }
-    )
-
-
-def new_flavoured_field(field: ekd.Field, flavour: Flavour) -> ekd.Field:
-    """Create a new field with a flavour."""
-    raise NotImplementedError("Not implemented yet.")
+# def new_flavoured_field(field: Field, flavour: Flavour) -> Field:
+#     """Create a new field with a flavour."""
+#     raise NotImplementedError("Not implemented yet.")
 
 
 class FieldSelection:

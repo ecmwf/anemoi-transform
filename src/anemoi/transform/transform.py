@@ -16,12 +16,13 @@ from typing import Callable
 from typing import TypeAlias
 from typing import TypeVar
 
-import earthkit.data as ekd
 import pandas as pd
+
+from anemoi.transform import FieldList
 
 T = TypeVar("T", bound="Transform")
 
-DataContainer: TypeAlias = ekd.FieldList | pd.DataFrame
+DataContainer: TypeAlias = FieldList | pd.DataFrame
 
 
 class _TransformMetaClass(ABCMeta):

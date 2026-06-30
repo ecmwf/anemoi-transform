@@ -1,4 +1,3 @@
-import earthkit.data as ekd
 import numpy as np
 import pytest
 from anemoi.utils.testing import skip_if_offline

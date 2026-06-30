@@ -10,8 +10,7 @@ from abc import ABC
 from abc import abstractmethod
 from typing import Callable
 
-import earthkit.data as ekd
-
+from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -46,12 +45,12 @@ class RescaleMixin(ABC):
     def forward_select(self):
         return {"parameter.variable": self.param}
 
-    def forward_transform(self, param: ekd.Field) -> ekd.Field:
+    def forward_transform(self, param: Field) -> Field:
         """Apply the forward transformation (x to ax+b)."""
         rescaled = self.rescaler.forward(param.to_numpy())
         return self.new_field_from_numpy(rescaled, template=param, param=self.param, units=self.forward_units)
 
-    def backward_transform(self, param: ekd.Field) -> ekd.Field:
+    def backward_transform(self, param: Field) -> Field:
         """Apply the backward transformation (ax+b to x)."""
         descaled = self.rescaler.backward(param.to_numpy())
         return self.new_field_from_numpy(descaled, template=param, param=self.param)

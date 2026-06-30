@@ -10,9 +10,9 @@
 
 import logging
 
-import earthkit.data as ekd
 import tqdm
 
+from anemoi.transform import FieldList
 from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
@@ -46,17 +46,17 @@ class IconRefinement(Filter):
         self.latitudes, self.longitudes = icon_grid(self.grid, self.refinement_level_c)
         self.nearest_grid_points = None
 
-    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, fields: FieldList) -> FieldList:
         """Interpolate the input fields to an ICON grid.
 
         Parameters
         ----------
-        fields : ekd.FieldList
+        fields : FieldList
             List of fields to be interpolated.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             List of interpolated fields.
         """
         if self.nearest_grid_points is None:

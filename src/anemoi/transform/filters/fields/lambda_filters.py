@@ -10,8 +10,7 @@
 import importlib
 from collections.abc import Callable
 
-import earthkit.data as ekd
-
+from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -82,18 +81,18 @@ class EarthkitFieldLambdaFilter(SingleFieldFilter):
     def forward_select(self):
         return {"parameter.variable": self.param}
 
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+    def forward_transform(self, field: Field) -> Field:
         """Apply the forward lambda function to a field."""
         return self.fn(field, *self.fn_args, **self.fn_kwargs)
 
-    def backward_transform(self, field: ekd.Field) -> ekd.Field:
+    def backward_transform(self, field: Field) -> Field:
         """Apply the backward lambda function to a field."""
         if self.backward_fn is None:
             raise ValueError("Backward function is undefined.")
         return self.backward_fn(field, *self.fn_args, **self.fn_kwargs)
 
     @staticmethod
-    def _import_fn(fn: str) -> Callable[..., ekd.Field]:
+    def _import_fn(fn: str) -> Callable[..., Field]:
         """Import a function from a string path.
 
         Parameters
@@ -103,7 +102,7 @@ class EarthkitFieldLambdaFilter(SingleFieldFilter):
 
         Returns
         -------
-        Callable[..., ekd.Field]
+        Callable[..., Field]
             The imported function.
 
         Raises

@@ -30,7 +30,6 @@ def _xr_ds_lat_lon(path: str, lat_name: str, lon_name: str) -> tuple[np.ndarray,
 
 
 def _ds_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
-    import earthkit.data as ekd
 
     try:
         ds = ekd.from_source("file", path).to_fieldlist()

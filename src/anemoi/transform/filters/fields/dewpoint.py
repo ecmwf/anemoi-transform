@@ -10,9 +10,9 @@
 from collections.abc import Iterator
 from typing import Literal
 
-import earthkit.data as ekd
 from earthkit.meteo import thermo
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 
 from .matching import MatchingFieldsFilter
@@ -55,7 +55,7 @@ class DewPoint(MatchingFieldsFilter):
         self.dewpoint = dewpoint
         super().__init__()
 
-    def forward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, relative_humidity: Field, temperature: Field) -> Iterator[Field]:
         """Return the dewpoint temperature (Td, in K) along with temperature (K) and relative humidity (in %)"""
 
         relative_humidity_values = relative_humidity.to_numpy()
@@ -63,7 +63,7 @@ class DewPoint(MatchingFieldsFilter):
         td = thermo.dewpoint_from_relative_humidity(t=temperature.to_numpy(), r=relative_humidity_values)
         yield self.new_field_from_numpy(td, template=relative_humidity, param=self.dewpoint)
 
-    def backward_transform(self, dewpoint: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
+    def backward_transform(self, dewpoint: Field, temperature: Field) -> Iterator[Field]:
         """This will return the relative humidity (in %) from temperature (in K) and dewpoint (Td, in K),
         along with temperature and dewpoint
         """

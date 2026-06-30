@@ -8,9 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -64,7 +64,7 @@ class Clipper(SingleFieldFilter):
     def forward_select(self):
         return {"parameter.variable": self.param}
 
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+    def forward_transform(self, field: Field) -> Field:
         data = field.to_numpy()
         clipped = np.clip(data, self.minimum, self.maximum)
         return self.new_field_from_numpy(clipped, template=field, param=self.param)

@@ -12,8 +12,8 @@ import logging
 from collections import defaultdict
 from collections.abc import Hashable
 
-import earthkit.data as ekd
-
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
@@ -71,18 +71,18 @@ class Sum(Filter):
         self.output = output
         self.ignore_level = ignore_level
 
-    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, fields: FieldList) -> FieldList:
         """Computes the sum over a set of variables.
 
         Args:
             fields (List[Any]): The list of input fields.
 
         Returns:
-            ekd.FieldList: The resulting FieldArray with summed fields.
+            FieldList: The resulting FieldArray with summed fields.
         """
         result = []
 
-        needed_fields: dict[tuple[Hashable, ...], dict[str, ekd.Field]] = defaultdict(dict)
+        needed_fields: dict[tuple[Hashable, ...], dict[str, Field]] = defaultdict(dict)
 
         for f in fields:
             key = grouping_dict_all(f)
@@ -119,5 +119,5 @@ class Sum(Filter):
 
         return new_fieldlist_from_list(result)
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def backward(self, data: FieldList) -> FieldList:
         raise NotImplementedError("Sum filter is not reversible")

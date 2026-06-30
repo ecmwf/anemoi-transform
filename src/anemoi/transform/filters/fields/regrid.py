@@ -11,10 +11,11 @@
 import logging
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 import tqdm
 
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
@@ -46,12 +47,12 @@ def as_gridspec(grid: str | dict[str, Any] | None) -> dict[str, Any] | None:
     return grid
 
 
-def as_griddata(grid: str | ekd.Field | dict[str, Any] | None) -> dict[str, Any] | None:
+def as_griddata(grid: str | Field | dict[str, Any] | None) -> dict[str, Any] | None:
     """Convert grid data to a dictionary format.
 
     Parameters
     ----------
-    grid : str | ekd.Field | dict[str, Any] | None
+    grid : str | Field | dict[str, Any] | None
         The grid data.
 
     Returns
@@ -62,7 +63,7 @@ def as_griddata(grid: str | ekd.Field | dict[str, Any] | None) -> dict[str, Any]
     if grid is None:
         return None
 
-    if isinstance(grid, ekd.Field):
+    if isinstance(grid, Field):
         lat, lon = grid.geography.latlons()
         return dict(latitudes=lat, longitudes=lon)
 
@@ -169,17 +170,17 @@ class RegridFilter(Filter):
             in_grid=in_grid, out_grid=out_grid, method=method, matrix=matrix, mask=mask, check=check
         )
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, data: FieldList) -> FieldList:
         """Apply the forward regridding transformation.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : FieldList
             The input data to be transformed.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             The transformed data.
         """
 
@@ -228,7 +229,7 @@ class EarthkitRegrid:
         if check:
             LOG.warning("Check is not supported by EarthkitRegrid")
 
-    def __call__(self, field: Any) -> ekd.Field:
+    def __call__(self, field: Any) -> Field:
         """Interpolate the field data.
 
         Parameters
@@ -238,7 +239,7 @@ class EarthkitRegrid:
 
         Returns
         -------
-        ekd.Field
+        Field
             The interpolated field.
         """
         from earthkit.geo.grids.array import regrid
@@ -291,17 +292,17 @@ class MIRMatrix:
             latitudes=loaded["out_latitudes"], longitudes=loaded["out_longitudes"]
         )
 
-    def __call__(self, field: ekd.Field) -> ekd.Field:
+    def __call__(self, field: Field) -> Field:
         """Interpolate the field data using the regrid matrix.
 
         Parameters
         ----------
-        field : ekd.Field
+        field : Field
             The field to be interpolated.
 
         Returns
         -------
-        ekd.Field
+        Field
             The interpolated field.
         """
         if self.check:
@@ -345,7 +346,7 @@ class ScipyKDTreeNearestNeighbours:
         if check:
             LOG.warning("Check is not supported by ScipyKDTreeNearestNeighbours")
 
-    def __call__(self, field: Any) -> ekd.Field:
+    def __call__(self, field: Any) -> Field:
         """Interpolate the field data using nearest neighbours.
 
         Parameters
@@ -355,7 +356,7 @@ class ScipyKDTreeNearestNeighbours:
 
         Returns
         -------
-        ekd.Field
+        Field
             The interpolated field.
         """
         if self.in_grid is None:
@@ -403,7 +404,7 @@ class MaskedRegrid:
 
         self.mask = np.load(mask)["mask"]
 
-    def __call__(self, field: ekd.Field) -> ekd.Field:
+    def __call__(self, field: Field) -> Field:
         """Regrid the field data using the mask.
 
         Parameters
@@ -413,7 +414,7 @@ class MaskedRegrid:
 
         Returns
         -------
-        ekd.Field
+        Field
             The regridded field.
         """
 

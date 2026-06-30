@@ -10,10 +10,10 @@ from collections import defaultdict
 from collections.abc import Mapping
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.source import Source
 
 

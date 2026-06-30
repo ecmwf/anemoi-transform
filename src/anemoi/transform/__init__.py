@@ -14,3 +14,9 @@ try:
 except ImportError:  # pragma: no cover
     # Local copy or not installed with setuptools
     __version__ = "999"
+
+
+from .fields import Field
+from .fields import FieldList
+
+__all__ = ["Field", "FieldList", "__version__"]

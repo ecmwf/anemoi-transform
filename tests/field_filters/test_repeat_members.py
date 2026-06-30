@@ -10,7 +10,6 @@
 import os
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 import pytest
 

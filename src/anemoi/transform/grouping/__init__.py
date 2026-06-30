@@ -14,7 +14,8 @@ from collections.abc import Callable
 from collections.abc import Iterator
 from typing import Any
 
-import earthkit.data as ekd
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 
 LOG = logging.getLogger(__name__)
 

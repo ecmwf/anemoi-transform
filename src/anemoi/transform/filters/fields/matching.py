@@ -20,11 +20,10 @@ from typing import Iterable
 from typing import Literal
 from typing import cast
 
-import earthkit.data as ekd
 import numpy as np
 
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.filter import Filter
 from anemoi.transform.grouping import GroupByParam
 from anemoi.transform.grouping import GroupByParamVertical
@@ -81,7 +80,7 @@ class MatchingSpec:
         return self.return_inputs
 
 
-def inputs_generator(input_list: Iterable[str], **kwargs) -> Iterator[ekd.Field]:
+def inputs_generator(input_list: Iterable[str], **kwargs) -> Iterator[Field]:
     for name in input_list:
         if name in kwargs:
             yield kwargs[name]
@@ -134,7 +133,7 @@ class MatchingFieldsFilter(Filter):
                     f"Some {direction} inputs will not be returned because they are not in the filter parameters: {diff}"
                 )
 
-    def _check_metadata_match(self, data: ekd.FieldList, args: list[str] | tuple[str, ...]) -> None:
+    def _check_metadata_match(self, data: FieldList, args: list[str] | tuple[str, ...]) -> None:
         """Checks the parameters names of the data and the groups match.
 
         Parameters
@@ -152,22 +151,22 @@ class MatchingFieldsFilter(Filter):
         if not set(args).issubset(data):
             LOG.warning(msg)
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, data: FieldList) -> FieldList:
         """Transform the data using the forward transformation function.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : FieldList
             Input data to be transformed.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             Transformed data.
         """
 
         # passed into this...
-        def _forward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
+        def _forward_transform(*fields: Field) -> Iterator[Field]:
             kwargs = dict(zip(self.MATCHING.forward, fields, strict=True))
             return chain(
                 inputs_generator(self.MATCHING.inputs(direction="forward"), **kwargs), self.forward_transform(**kwargs)
@@ -180,22 +179,22 @@ class MatchingFieldsFilter(Filter):
             *group_by,
         )
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def backward(self, data: FieldList) -> FieldList:
         """Transform the data using the backward transformation function.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : FieldList
             Input data to be transformed.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             Transformed data.
         """
 
         # passed into this...
-        def _backward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
+        def _backward_transform(*fields: Field) -> Iterator[Field]:
             kwargs = dict(zip(self.MATCHING.backward, fields, strict=True))
             return chain(
                 inputs_generator(self.MATCHING.inputs(direction="backward"), **kwargs),
@@ -211,15 +210,15 @@ class MatchingFieldsFilter(Filter):
 
     def _transform(
         self,
-        data: ekd.FieldList,
-        transform: Callable[..., Iterator[ekd.Field]],
+        data: FieldList,
+        transform: Callable[..., Iterator[Field]],
         *group_by: str,
-    ) -> ekd.FieldList:
+    ) -> FieldList:
         """Transform the data using the specified transformation function.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : FieldList
             Input data to be transformed.
         transform : Callable
             Transformation function to apply to the data.
@@ -228,7 +227,7 @@ class MatchingFieldsFilter(Filter):
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             Transformed data.
         """
         if self.MATCHING.select != "param":
@@ -242,73 +241,73 @@ class MatchingFieldsFilter(Filter):
         input_params = set(f.parameter.variable() for f in data)
         self._check_metadata_match(input_params, group_by)
 
-        result: list[ekd.Field] = []
+        result: list[Field] = []
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)
         return self.new_fieldlist_from_list(result)
 
-    def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, **kwargs) -> ekd.Field:
+    def new_field_from_numpy(self, array: np.ndarray, *, template: Field, **kwargs) -> Field:
         """Create a new field from a numpy array.
 
         Parameters
         ----------
         array : np.ndarray
             Numpy array containing the field data.
-        template : ekd.Field
+        template : Field
             Template field to use for metadata.
         **kwargs : Any
             Additional keyword arguments for the new field.
 
         Returns
         -------
-        ekd.Field
+        Field
             New field created from the numpy array.
         """
-        return new_field_from_numpy(array, template=template, **kwargs)
+        return Field.from_numpy(array, template=template, **kwargs)
 
-    def new_fieldlist_from_list(self, fields: list[ekd.Field]) -> ekd.FieldList:
+    def new_fieldlist_from_list(self, fields: list[Field]) -> FieldList:
         """Create a new field list from a list of fields.
 
         Parameters
         ----------
-        fields : List[ekd.Field]
+        fields : List[Field]
             List of fields to create the field list from.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             New field list created from the list of fields.
         """
-        return new_fieldlist_from_list(fields)
+        return FieldList.from_fields(fields)
 
     @abstractmethod
-    def forward_transform(self, *fields: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, *fields: Field) -> Iterator[Field]:
         """Forward transformation to be implemented by subclasses.
 
         Parameters
         ----------
-        fields : ekd.Field
+        fields : Field
             Fields to be transformed.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Transformed fields.
         """
         pass
 
-    def backward_transform(self, *fields: ekd.Field) -> Iterator[ekd.Field]:
+    def backward_transform(self, *fields: Field) -> Iterator[Field]:
         """Backward transformation to be implemented by subclasses.
 
         Parameters
         ----------
-        fields : ekd.Field
+        fields : Field
             Fields to be transformed.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Transformed fields.
         """
         raise NotImplementedError("Backward transformation not implemented.")

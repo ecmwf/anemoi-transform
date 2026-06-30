@@ -14,13 +14,12 @@ from collections.abc import Callable
 from functools import singledispatchmethod
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 import pandas as pd
 
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.fields import FieldSelection
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.transform import Transform
 
 LOG = logging.getLogger(__name__)
@@ -61,7 +60,7 @@ class DispatchingFilter(Transform):
         return self.forward_fallback(data)
 
     @forward.register
-    def _(self, data: ekd.FieldList) -> ekd.FieldList:
+    def _(self, data: FieldList) -> FieldList:
         return self.forward_fields(data)
 
     @forward.register
@@ -71,7 +70,7 @@ class DispatchingFilter(Transform):
     def forward_fallback(self, data: Any) -> Any:
         raise TypeError(f"No forward method for {type(data)}")
 
-    def forward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward_fields(self, data: FieldList) -> FieldList:
         return self.forward_fallback(data)
 
     def forward_tabular(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -82,7 +81,7 @@ class DispatchingFilter(Transform):
         return self.backward_fallback(data)
 
     @backward.register
-    def _(self, data: ekd.FieldList) -> ekd.FieldList:
+    def _(self, data: FieldList) -> FieldList:
         return self.backward_fields(data)
 
     @backward.register
@@ -95,7 +94,7 @@ class DispatchingFilter(Transform):
     def backward_tabular(self, data: pd.DataFrame) -> pd.DataFrame:
         return self.backward_fallback(data)
 
-    def backward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+    def backward_fields(self, data: FieldList) -> FieldList:
         return self.backward_fallback(data)
 
 
@@ -151,15 +150,15 @@ class SingleFieldFilter(Filter):
         return self.forward_select()
 
     @abstractmethod
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+    def forward_transform(self, field: Field) -> Field:
         """Apply the transformation to a field. Must be implemented by subclasses."""
         pass
 
-    def backward_transform(self, field: ekd.Field) -> ekd.Field:
+    def backward_transform(self, field: Field) -> Field:
         """Apply the backward transformation to a field."""
         raise NotImplementedError("Field backward transform not implemented.")
 
-    def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, **metadata: dict) -> ekd.Field:
+    def new_field_from_numpy(self, array: np.ndarray, *, template: Field, **metadata: dict) -> Field:
         return new_field_from_numpy(array, template=template, **metadata)
 
     def _validate_inputs(self) -> None:
@@ -186,17 +185,17 @@ class SingleFieldFilter(Filter):
         return self._config[name]
 
     @staticmethod
-    def _map_transform(transform_function: Callable, fields: ekd.FieldList) -> ekd.FieldList:
+    def _map_transform(transform_function: Callable, fields: FieldList) -> FieldList:
         return new_fieldlist_from_list([transform_function(field) for field in fields])
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        def transform(field: ekd.Field) -> ekd.Field:
+    def forward(self, data: FieldList) -> FieldList:
+        def transform(field: Field) -> Field:
             return self.forward_transform(field) if self._forward_selection.match(field) else field
 
         return self._map_transform(transform, data)
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        def transform(field: ekd.Field) -> ekd.Field:
+    def backward(self, data: FieldList) -> FieldList:
+        def transform(field: Field) -> Field:
             return self.backward_transform(field) if self._backward_selection.match(field) else field
 
         return self._map_transform(transform, data)

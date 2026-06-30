@@ -11,8 +11,7 @@
 from collections.abc import Iterator
 from typing import Literal
 
-import earthkit.data as ekd
-
+from anemoi.transform import Field
 from anemoi.transform.constants import g_gravitational_acceleration
 from anemoi.transform.filters.fields import filter_registry
 
@@ -72,24 +71,24 @@ class VerticalVelocity(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        vertical_velocity: ekd.Field,
-        temperature: ekd.Field,
-        humidity: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        vertical_velocity: Field,
+        temperature: Field,
+        humidity: Field,
+    ) -> Iterator[Field]:
         """Convert vertical wind speed from Pa/s to m/s.
 
         Parameters
         ----------
-        vertical_velocity : ekd.Field
+        vertical_velocity : Field
             The vertical wind speed in Pa/s.
-        temperature : ekd.Field
+        temperature : Field
             The temperature field.
-        humidity : ekd.Field
+        humidity : Field
             The humidity field.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             The vertical wind speed in m/s.
         """
 
@@ -101,22 +100,22 @@ class VerticalVelocity(MatchingFieldsFilter):
         yield self.new_field_from_numpy(wz, template=vertical_velocity, param=self.geometric_vertical_velocity)
 
     def backward_transform(
-        self, geometric_vertical_velocity: ekd.Field, temperature: ekd.Field, humidity: ekd.Field
-    ) -> Iterator[ekd.Field]:
+        self, geometric_vertical_velocity: Field, temperature: Field, humidity: Field
+    ) -> Iterator[Field]:
         """Convert vertical wind speed from m/s to Pa/s.
 
         Parameters
         ----------
-        geometric_vertical_velocity : ekd.Field
+        geometric_vertical_velocity : Field
             The vertical wind speed in m/s.
-        temperature : ekd.Field
+        temperature : Field
             The temperature field.
-        humidity : ekd.Field
+        humidity : Field
             The humidity field.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             The vertical wind speed in Pa/s.
         """
 

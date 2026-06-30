@@ -10,9 +10,9 @@
 from collections.abc import Iterator
 from typing import Literal
 
-import earthkit.data as ekd
 import earthkit.meteo.thermo.array as thermo
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 
 from .matching import MatchingFieldsFilter
@@ -66,13 +66,13 @@ class HumidityConversion(MatchingFieldsFilter):
         self.humidity = humidity
         super().__init__()
 
-    def forward_transform(self, humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, humidity: Field, temperature: Field) -> Iterator[Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
         pressure = 100 * float(humidity.vertical.level())
         rh = thermo.relative_humidity_from_specific_humidity(temperature.to_numpy(), humidity.to_numpy(), pressure)
         yield self.new_field_from_numpy(rh, template=humidity, param=self.relative_humidity)
 
-    def backward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
+    def backward_transform(self, relative_humidity: Field, temperature: Field) -> Iterator[Field]:
         """This will return specific humidity along with temperature from relative humidity and temperature"""
         pressure = 100 * float(temperature.vertical.level())  # levels are measured in hectopascals
         q = thermo.specific_humidity_from_relative_humidity(

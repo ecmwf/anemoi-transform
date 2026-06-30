@@ -1,6 +1,6 @@
-import earthkit.data as ekd
 import pytest
 
+from anemoi.transform import Field
 from anemoi.transform.grouping import GroupByParam
 
 from .utils import mock_field
@@ -80,7 +80,7 @@ def test_group_by_param_vertical(sample_fields_vertical):
     from anemoi.transform.grouping import GroupByParamVertical
 
     def get_param(f):
-        if isinstance(f, ekd.Field):
+        if isinstance(f, Field):
             f = [f]
 
         param = [x.parameter.variable() for x in f]
@@ -99,7 +99,7 @@ def test_group_by_param_vertical(sample_fields_vertical):
         assert [get_param(field) for field in group] == match_params
         metadata = []
         for fields in group:
-            if isinstance(fields, ekd.Field):
+            if isinstance(fields, Field):
                 fields = [fields]
             for field in fields:
                 num_matching += 1

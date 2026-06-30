@@ -10,8 +10,6 @@
 
 from typing import Any
 
-import earthkit.data as ekd
-
 from anemoi.transform.source import Source
 from anemoi.transform.sources import source_registry
 

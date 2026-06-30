@@ -10,9 +10,9 @@
 
 import logging
 
-import earthkit.data as ekd
 import tqdm
 
+from anemoi.transform import FieldList
 from anemoi.transform.fields import new_field_from_latitudes_longitudes
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
@@ -72,17 +72,17 @@ class RemoveNaNs(Filter):
         self._latitudes = None
         self._longitudes = None
 
-    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, fields: FieldList) -> FieldList:
         """Mask out NaNs in the fields.
 
         Parameters
         ----------
-        fields : ekd.FieldList
+        fields : FieldList
             List of fields to be processed.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             List of fields with NaNs masked out.
         """
         import numpy as np

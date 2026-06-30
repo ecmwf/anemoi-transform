@@ -8,9 +8,10 @@
 # nor does it submit to any jurisdiction.
 
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -42,22 +43,22 @@ class SnowDepthMasked(SingleFieldFilter):
     optional_inputs = {"snow_depth": "sd", "snow_depth_masked": "sd_masked"}
 
     def prepare_filter(self):
-        self.glacier_mask = ekd.from_source("file", self.glacier_mask).to_fieldlist()[0].to_numpy().astype(bool)
+        self.glacier_mask = FieldList.from_file(self.glacier_mask)[0].to_numpy().astype(bool)
 
     def forward_select(self):
         return {"parameter.variable": self.snow_depth}
 
-    def forward_transform(self, snow_depth: ekd.Field) -> ekd.Field:
+    def forward_transform(self, snow_depth: Field) -> Field:
         """Mask out glaciers in snow depth.
 
         Parameters
         ----------
-        snow_depth : ekd.Field
+        snow_depth : Field
             Snow depth field.
 
         Returns
         -------
-        ekd.Field
+        Field
             Snow depth field with glaciers masked out.
         """
         snow_depth_masked = mask_glaciers(snow_depth.to_numpy(), self.glacier_mask)

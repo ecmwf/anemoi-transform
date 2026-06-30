@@ -9,9 +9,9 @@
 
 from collections.abc import Iterator
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -116,57 +116,57 @@ class Oras6Clipping(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        siue: ekd.Field,
-        sivn: ekd.Field,
-        siconc: ekd.Field,
-        icesalt: ekd.Field,
-        sihc: ekd.Field,
-        snhc: ekd.Field,
-        sipf: ekd.Field,
-        sitemptop: ekd.Field,
-        sntemp: ekd.Field,
-        snvol: ekd.Field,
-        sivol: ekd.Field,
-        sialb: ekd.Field,
-        vasit: ekd.Field,
-        tos: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        siue: Field,
+        sivn: Field,
+        siconc: Field,
+        icesalt: Field,
+        sihc: Field,
+        snhc: Field,
+        sipf: Field,
+        sitemptop: Field,
+        sntemp: Field,
+        snvol: Field,
+        sivol: Field,
+        sialb: Field,
+        vasit: Field,
+        tos: Field,
+    ) -> Iterator[Field]:
         """Mask sea ice-related variables where concentration is low.
 
         Parameters
         ----------
-        siue : ekd.Field
+        siue : Field
             Eastward sea ice velocity.
-        sivn : ekd.Field
+        sivn : Field
             Northward sea ice velocity.
-        siconc : ekd.Field
+        siconc : Field
             Sea ice concentration.
-        icesalt : ekd.Field
+        icesalt : Field
             Sea ice salinity.
-        sihc : ekd.Field
+        sihc : Field
             Sea ice heat content.
-        snhc : ekd.Field
+        snhc : Field
             Snow heat content.
-        sipf : ekd.Field
+        sipf : Field
             Sea ice pressure field.
-        sitemptop : ekd.Field
+        sitemptop : Field
             Sea ice top temperature.
-        sntemp : ekd.Field
+        sntemp : Field
             Snow temperature.
-        snvol : ekd.Field
+        snvol : Field
             Snow volume.
-        sivol : ekd.Field
+        sivol : Field
             Sea ice volume.
-        sialb : ekd.Field
+        sialb : Field
             Sea ice albedo.
-        vasit : ekd.Field
+        vasit : Field
             Vertically integrated sea ice temperature.
-        tos : ekd.Field
+        tos : Field
             Temperature of the surface.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Transformed fields with masked values.
         """
 

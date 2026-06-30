@@ -8,10 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 
-import earthkit.data as ekd
 import pytest
 
-from anemoi.transform.grids import UnstructuredGridFieldList
 from anemoi.transform.grids.named import lookup
 
 latitude_url = "http://icon-downloads.mpimet.mpg.de/grids/public/edzw/icon_extpar_0026_R03B07_G_20150805.g2"

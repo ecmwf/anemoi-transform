@@ -16,8 +16,6 @@ from typing import Any
 import numpy as np
 from anemoi.utils.registry import Registry
 
-from anemoi.transform.grids.unstructured import UnstructuredGridFieldList
-
 grid_registry = Registry(__name__)
 
 

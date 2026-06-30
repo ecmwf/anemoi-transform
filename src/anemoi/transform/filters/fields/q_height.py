@@ -9,12 +9,13 @@
 from collections.abc import Iterator
 from typing import Literal
 
-import earthkit.data as ekd
 import numpy as np
 from earthkit.meteo import thermo
 from earthkit.meteo import vertical
 from numpy.typing import NDArray
 
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.constants import model_level_AB as predefined_AB
 from anemoi.transform.filters.fields import filter_registry
 
@@ -40,7 +41,7 @@ def _set_AB(model_level_AB: str | dict[str, NDArray]) -> tuple:
     return (np.array(model_level_AB["A"]), np.array(model_level_AB["B"]))
 
 
-def _check_consistency(A: NDArray, B: NDArray, model_level_fields: dict[str, ekd.FieldList]):
+def _check_consistency(A: NDArray, B: NDArray, model_level_fields: dict[str, FieldList]):
     # Assert that A and B coefficient have the same shape.
     assert A.shape == B.shape, "A and B coefficients must have same shape"
     for name, field in model_level_fields.items():
@@ -105,10 +106,10 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        specific_humidity_at_height_level: ekd.Field,
-        temperature_at_height_level: ekd.Field,
-        pressure_at_height_level: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        specific_humidity_at_height_level: Field,
+        temperature_at_height_level: Field,
+        pressure_at_height_level: Field,
+    ) -> Iterator[Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
 
         # If we want to take into account the mixed / ice phase when T ~ 0C / T < 0C
@@ -129,10 +130,10 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
 
     def backward_transform(
         self,
-        relative_humidity_at_height_level: ekd.Field,
-        temperature_at_height_level: ekd.Field,
-        pressure_at_height_level: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        relative_humidity_at_height_level: Field,
+        temperature_at_height_level: Field,
+        pressure_at_height_level: Field,
+    ) -> Iterator[Field]:
         """This will return the specific humidity along with temperature from relative humidity and temperature"""
 
         specific_humidity_at_height_level = thermo.specific_humidity_from_relative_humidity(
@@ -249,12 +250,12 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        specific_humidity_at_height_level: ekd.Field,
-        temperature_at_height_level: ekd.Field,
-        surface_pressure: ekd.Field,
-        specific_humidity_at_model_levels: ekd.FieldList,
-        temperature_at_model_levels: ekd.FieldList,
-    ) -> Iterator[ekd.Field]:
+        specific_humidity_at_height_level: Field,
+        temperature_at_height_level: Field,
+        surface_pressure: Field,
+        specific_humidity_at_model_levels: FieldList,
+        temperature_at_model_levels: FieldList,
+    ) -> Iterator[Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
 
         # Check vertical consistency
@@ -296,12 +297,12 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
 
     def backward_transform(
         self,
-        relative_humidity_at_height_level: ekd.Field,
-        temperature_at_height_level: ekd.Field,
-        surface_pressure: ekd.Field,
-        specific_humidity_at_model_levels: ekd.FieldList,
-        temperature_at_model_levels: ekd.FieldList,
-    ) -> Iterator[ekd.Field]:
+        relative_humidity_at_height_level: Field,
+        temperature_at_height_level: Field,
+        surface_pressure: Field,
+        specific_humidity_at_model_levels: FieldList,
+        temperature_at_model_levels: FieldList,
+    ) -> Iterator[Field]:
         """This will return the specific humidity along with temperature from relative humidity and temperature"""
 
         # Check vertical consistency
@@ -438,11 +439,11 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        specific_humidity_at_height_level: ekd.Field,
-        surface_pressure: ekd.Field,
-        specific_humidity_at_model_levels: ekd.FieldList,
-        temperature_at_model_levels: ekd.FieldList,
-    ) -> Iterator[ekd.Field]:
+        specific_humidity_at_height_level: Field,
+        surface_pressure: Field,
+        specific_humidity_at_model_levels: FieldList,
+        temperature_at_model_levels: FieldList,
+    ) -> Iterator[Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
         # Check vertical consistency
 
@@ -481,11 +482,11 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
 
     def backward_transform(
         self,
-        dewpoint_temperature_at_height_level: ekd.Field,
-        surface_pressure: ekd.Field,
-        specific_humidity_at_model_levels: ekd.FieldList,
-        temperature_at_model_levels: ekd.FieldList,
-    ) -> Iterator[ekd.Field]:
+        dewpoint_temperature_at_height_level: Field,
+        surface_pressure: Field,
+        specific_humidity_at_model_levels: FieldList,
+        temperature_at_model_levels: FieldList,
+    ) -> Iterator[Field]:
         """This will return the specific humidity along with temperature from relative humidity and temperature"""
 
         # Check vertical consistency

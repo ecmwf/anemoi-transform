@@ -7,20 +7,20 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import earthkit.data as ekd
 import numpy.testing as npt
 from anemoi.utils.testing import skip_if_offline
 
+from anemoi.transform import FieldList
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 @skip_if_offline
-def test_rescale(fieldlist: ekd.FieldList) -> None:
+def test_rescale(fieldlist: FieldList) -> None:
     """Test rescaling temperature from Kelvin to Celsius and back.
 
     Parameters
     ----------
-    fieldlist : ekd.FieldList
+    fieldlist : FieldList
         The fieldlist to use for testing.
     """
 
@@ -45,12 +45,12 @@ def test_rescale(fieldlist: ekd.FieldList) -> None:
 
 
 @skip_if_offline
-def test_convert(fieldlist: ekd.FieldList) -> None:
+def test_convert(fieldlist: FieldList) -> None:
     """Test converting temperature from Kelvin to Celsius and back.
 
     Parameters
     ----------
-    fieldlist : ekd.FieldList
+    fieldlist : FieldList
         The fieldlist to use for testing.
     """
     before_filter = {field.parameter.variable(): field.to_numpy().copy() for field in fieldlist}

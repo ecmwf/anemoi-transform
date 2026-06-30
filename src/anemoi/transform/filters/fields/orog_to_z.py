@@ -9,8 +9,7 @@
 
 from typing import Any
 
-import earthkit.data as ekd
-
+from anemoi.transform import Field
 from anemoi.transform.constants import g_gravitational_acceleration
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
@@ -41,17 +40,17 @@ class Orography(SingleFieldFilter):
         # select only fields where the param is self.geopotential
         return {"parameter.variable": self.geopotential}
 
-    def forward_transform(self, orography: ekd.Field) -> ekd.Field:
+    def forward_transform(self, orography: Field) -> Field:
         """Convert orography in m to surface geopotential in m²/s².
 
         Parameters
         ----------
-        orography : ekd.Field
+        orography : Field
             The orography field in m.
 
         Returns
         -------
-        ekd.Field
+        Field
             The surface geopotential in m²/s².
         """
         new_metadata = {"param": self.geopotential}
@@ -59,17 +58,17 @@ class Orography(SingleFieldFilter):
             orography.to_numpy() * g_gravitational_acceleration, template=orography, **new_metadata
         )
 
-    def backward_transform(self, geopotential: ekd.Field) -> ekd.Field:
+    def backward_transform(self, geopotential: Field) -> Field:
         """Convert surface geopotential in m²/s² to orography in m.
 
         Parameters
         ----------
-        geopotential : ekd.Field
+        geopotential : Field
             The surface geopotential in m²/s².
 
         Returns
         -------
-        ekd.Field
+        Field
             The orography in m.
         """
         orig_metadata = {"param": self.orography}

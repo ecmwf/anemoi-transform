@@ -10,11 +10,11 @@
 
 from collections.abc import Callable
 
-import earthkit.data as ekd
 import numpy as np
 import pytest
 from anemoi.utils.testing import GetTestData
 
+from anemoi.transform import FieldList
 from anemoi.transform.source import Source
 from anemoi.transform.sources import source_registry
 
@@ -34,7 +34,7 @@ class TestingSource(Source):
 
 
 @pytest.fixture
-def fieldlist(get_test_data: GetTestData) -> ekd.FieldList:
+def fieldlist(get_test_data: GetTestData) -> FieldList:
     """Fixture to create a fieldlist for testing."""
     return ekd.from_source("file", get_test_data("anemoi-filters/2t-sp.grib")).to_fieldlist()
 

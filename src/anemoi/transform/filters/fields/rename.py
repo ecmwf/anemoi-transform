@@ -9,8 +9,7 @@
 
 import re
 
-import earthkit.data as ekd
-
+from anemoi.transform import Field
 from anemoi.transform.fields import new_field_with_metadata
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
@@ -154,7 +153,7 @@ class Rename(SingleFieldFilter):
                 raise ValueError(f"Invalid value for rename: {key}: {value}")
         self.renamers = tuple(renamers.values())
 
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+    def forward_transform(self, field: Field) -> Field:
         for renamer in self.renamers:
             field = renamer.rename(field)
         return field

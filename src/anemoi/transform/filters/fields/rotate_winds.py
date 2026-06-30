@@ -9,10 +9,10 @@
 
 from collections.abc import Iterator
 
-import earthkit.data as ekd
 from earthkit.geo.rotate import rotate_vector
 from pyproj import CRS
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -56,19 +56,19 @@ class RotateWinds(MatchingFieldsFilter):
         self.target_projection = target_projection
         super().__init__()
 
-    def forward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, x_wind: Field, y_wind: Field) -> Iterator[Field]:
         """Rotate wind components from source projection to target projection.
 
         Parameters
         ----------
-        x_wind : ekd.Field
+        x_wind : Field
             The x wind component field.
-        y_wind : ekd.Field
+        y_wind : Field
             The y wind component field.
 
         Yields
         ------
-        Iterator[ekd.Field]
+        Iterator[Field]
             The rotated wind component fields.
         """
         lats, lons = x_wind.geography.latlons()
@@ -90,19 +90,19 @@ class RotateWinds(MatchingFieldsFilter):
         yield self.new_field_from_numpy(x_new, template=x_wind, param=x_wind.parameter.variable())
         yield self.new_field_from_numpy(y_new, template=y_wind, param=y_wind.parameter.variable())
 
-    def backward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
+    def backward_transform(self, x_wind: Field, y_wind: Field) -> Iterator[Field]:
         """Rotate wind components from target projection back to source projection.
 
         Parameters
         ----------
-        x_wind : ekd.Field
+        x_wind : Field
             The x wind component field.
-        y_wind : ekd.Field
+        y_wind : Field
             The y wind component field.
 
         Yields
         ------
-        Iterator[ekd.Field]
+        Iterator[Field]
             The rotated wind component fields.
         """
         lats, lons = x_wind.geography.latlons()

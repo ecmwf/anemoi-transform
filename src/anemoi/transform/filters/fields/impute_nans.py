@@ -10,9 +10,9 @@
 
 import logging
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -49,7 +49,7 @@ class ImputeNaNs(SingleFieldFilter):
     def forward_select(self):
         return {"parameter.variable": self.param}
 
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+    def forward_transform(self, field: Field) -> Field:
         values = field.to_numpy(flatten=True).copy()
         values[np.isnan(values)] = self.value
         return self.new_field_from_numpy(values, template=field)

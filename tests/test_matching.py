@@ -10,10 +10,9 @@
 
 from collections.abc import Iterator
 
-import earthkit.data as ekd
 import pytest
 
-from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform import Field
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
 
@@ -32,7 +31,7 @@ class AddFields(MatchingFieldsFilter):
         self.return_inputs = return_inputs
         super().__init__()
 
-    def forward_transform(self, a: ekd.Field, b: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, a: Field, b: Field) -> Iterator[Field]:
         result = a.values + b.values
         yield new_field_from_numpy(result, template=a, param="c")
 
@@ -55,7 +54,7 @@ def test_forward_transform_adds_fields():
     f = AddFields(a="a", b="b")
     result = f.forward(data)
     assert len(result) == 1
-    assert isinstance(result[0], ekd.Field)
+    assert isinstance(result[0], Field)
     assert result[0].parameter.variable() == "c"
 
 
@@ -72,7 +71,7 @@ def test_return_inputs():
     result = f.forward(data)
     assert len(result) == 3
     for i in range(3):
-        assert isinstance(result[i], ekd.Field)
+        assert isinstance(result[i], Field)
     assert {result[i].parameter.variable() for i in range(2)} == {"a", "b"}
     assert result[2].parameter.variable() == "c"
 
@@ -80,7 +79,7 @@ def test_return_inputs():
     result = f.forward(data)
     assert len(result) == 2
     for i in range(2):
-        assert isinstance(result[i], ekd.Field)
+        assert isinstance(result[i], Field)
     assert result[0].parameter.variable() == "a"
     assert result[1].parameter.variable() == "c"
 

@@ -11,9 +11,9 @@
 from collections.abc import Iterator
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -55,18 +55,18 @@ class CosSinWaveDirection(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        mean_wave_direction: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        mean_wave_direction: Field,
+    ) -> Iterator[Field]:
         """Convert mean wave direction to its cosine and sine components.
 
         Parameters
         ----------
-        mean_wave_direction : ekd.Field
+        mean_wave_direction : Field
             The mean wave direction field.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Fields of cosine and sine of the mean wave direction.
         """
         data = mean_wave_direction.to_numpy()
@@ -77,21 +77,21 @@ class CosSinWaveDirection(MatchingFieldsFilter):
 
     def backward_transform(
         self,
-        cos_mean_wave_direction: ekd.Field,
-        sin_mean_wave_direction: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        cos_mean_wave_direction: Field,
+        sin_mean_wave_direction: Field,
+    ) -> Iterator[Field]:
         """Convert cosine and sine components back to mean wave direction.
 
         Parameters
         ----------
-        cos_mean_wave_direction : ekd.Field
+        cos_mean_wave_direction : Field
             The cosine of the mean wave direction field.
-        sin_mean_wave_direction : ekd.Field
+        sin_mean_wave_direction : Field
             The sine of the mean wave direction field.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Field of the mean wave direction.
         """
         mwd = np.rad2deg(np.arctan2(sin_mean_wave_direction.to_numpy(), cos_mean_wave_direction.to_numpy()))

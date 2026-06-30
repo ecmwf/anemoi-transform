@@ -35,9 +35,9 @@ dynamic = [ "version" ]
 dependencies = [
   "anemoi-utils>=0.5.1",
   "cfunits",
-  "earthkit-data==1.0.0rc12",
-  "earthkit-geo==1.0.0rc8",
-  "earthkit-meteo==1.0.0rc3",
+  "earthkit-data>=1",
+  "earthkit-geo>=1",
+  "earthkit-meteo>=1",
   "healpy",
   "pandas<3",
 ]

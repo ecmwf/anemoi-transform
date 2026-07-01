@@ -66,6 +66,44 @@ class Field:
 
     # ===
     @classmethod
+    def from_components(cls, **kwargs: Any) -> "Field":
+        """Create a new field from its components.
+
+        This is a thin wrapper around :meth:`earthkit.data.Field.from_components`
+        that returns a wrapped :class:`Field`.
+
+        Parameters
+        ----------
+        **kwargs : Any
+            The components of the field (e.g. ``values``, ``parameter``,
+            ``geography``, ``time``, ``labels``, ...).
+
+        Returns
+        -------
+        Field
+            The new field created from the given components.
+        """
+        return cls(_EkdField.from_components(**kwargs))
+
+    @staticmethod
+    def new_grib_handle(handle: Any) -> Any:
+        """Create a new earthkit GRIB codes handle.
+
+        Parameters
+        ----------
+        handle : Any
+            A raw eccodes handle to wrap.
+
+        Returns
+        -------
+        earthkit.data.readers.grib.handle.GribCodesHandle
+            The new GRIB codes handle.
+        """
+        from earthkit.data.readers.grib.handle import GribCodesHandle
+
+        return GribCodesHandle(handle, None, None)
+
+    @classmethod
     def from_numpy(cls, array: np.ndarray, *, template: "Field", **metadata: Any) -> "Field":
         """Create a new field from a numpy array.
 
@@ -248,6 +286,52 @@ class FieldList(Datum):
     def concat(cls, *args: "FieldList") -> "FieldList":
         """Concatenate multiple FieldLists into a single FieldList."""
         return cls(ekd.concat(*[_unwrap_fieldlist(arg) for arg in args]).to_fieldlist())
+
+    @staticmethod
+    def to_datetime(value: Any) -> Any:
+        """Convert a value to a :class:`datetime.datetime`.
+
+        Thin wrapper around :func:`earthkit.data.utils.dates.to_datetime`.
+        """
+        from earthkit.data.utils.dates import to_datetime
+
+        return to_datetime(value)
+
+    @staticmethod
+    def to_timedelta(value: Any) -> Any:
+        """Convert a value to a :class:`datetime.timedelta`.
+
+        Thin wrapper around :func:`earthkit.data.utils.dates.to_timedelta`.
+        """
+        from earthkit.data.utils.dates import to_timedelta
+
+        return to_timedelta(value)
+
+    @staticmethod
+    def availability(requests: Any) -> Any:
+        """Build an :class:`earthkit.data.utils.availability.Availability`.
+
+        Parameters
+        ----------
+        requests : Any
+            The requests used to build the availability.
+
+        Returns
+        -------
+        earthkit.data.utils.availability.Availability
+            The availability object.
+        """
+        from earthkit.data.utils.availability import Availability
+
+        return Availability(requests)
+
+    def sel(self, *args, **kwargs) -> "FieldList":
+        """Select a subset of the fields, returning a new :class:`FieldList`."""
+        return FieldList(self._fieldlist.sel(*args, **kwargs))
+
+    def order_by(self, *args, **kwargs) -> "FieldList":
+        """Order the fields, returning a new :class:`FieldList`."""
+        return FieldList(self._fieldlist.order_by(*args, **kwargs))
 
     def __len__(self) -> int:
         return len(self._fieldlist)

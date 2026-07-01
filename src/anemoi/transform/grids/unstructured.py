@@ -153,8 +153,30 @@ class UnstructuredGridField:
         return dict(lat=self.geography.latitudes, lon=self.geography.longitudes)
 
 
-class UnstructuredGridFieldList(SimpleFieldList):
-    """List of unstructured grid fields."""
+class UnstructuredGridFieldList(FieldList):
+    """List of unstructured grid fields.
+
+    This is a thin container built on :class:`anemoi.transform.FieldList` that
+    holds :class:`UnstructuredGridField` objects directly rather than wrapping an
+    earthkit-data field list.
+    """
+
+    def __init__(self, fields: list["UnstructuredGridField"]) -> None:
+        self._fieldlist = None
+        self._fields = list(fields)
+
+    @property
+    def _underlying(self) -> list["UnstructuredGridField"]:
+        return self._fields
+
+    def __len__(self) -> int:
+        return len(self._fields)
+
+    def __getitem__(self, index: int) -> "UnstructuredGridField":
+        return self._fields[index]
+
+    def __iter__(self):
+        return iter(self._fields)
 
     @classmethod
     def from_grib(

@@ -21,6 +21,9 @@ from anemoi.transform.datum import Datum
 
 LOG = logging.getLogger(__name__)
 
+# Sentinel returned by a Flavour when it has no value for a given metadata key.
+MISSING_METADATA = object()
+
 
 def _unwrap_field(field: "Field | _EkdField") -> _EkdField:
     """Return the underlying earthkit field for either a wrapped or raw field."""
@@ -176,6 +179,24 @@ class Field:
             )
         )
 
+    @classmethod
+    def flavoured(cls, field: "Field", flavour: "Flavour") -> "Field":
+        """Create a new field whose metadata lookups are mediated by a flavour.
+
+        Parameters
+        ----------
+        field : Field
+            The field to wrap with the flavour.
+        flavour : Flavour
+            The flavour used to resolve metadata keys.
+
+        Returns
+        -------
+        Field
+            The new flavoured field.
+        """
+        raise NotImplementedError("Not implemented yet.")
+
 
 class FieldList(Datum):
     """A thin, transparent wrapper around an earthkit-data fieldlist.
@@ -243,92 +264,6 @@ class Flavour(ABC):
     def __call__(self, key: str, field: Field) -> Any:
         """Called during field metadata lookup, so it can be modified"""
         pass
-
-
-# def new_fieldlist_from_list(fields: list[Field]) -> FieldList:
-#     """Create a new FieldList from a list of fields.
-
-#     Parameters
-#     ----------
-#     fields : list[Field]
-#         List of fields to include in the fieldlist.
-
-#     Returns
-#     -------
-#     FieldList
-#         A new FieldList containing the provided fields.
-#     """
-#     return ekd.create_fieldlist(fields)
-
-
-# def new_field_with_valid_datetime(template: Field, date: Any) -> Field:
-#     """Create a new field with a valid datetime (sets the step to 0)
-#     therefore updating the base_datetime as well.
-
-#     Parameters
-#     ----------
-#     template : Field
-#         The template field to use.
-#     date : Any
-#         The valid datetime for the new field.
-
-#     Returns
-#     -------
-#     Field
-#         The new field with the provided valid datetime.
-#     """
-#     time = template.time.set(valid_datetime=date, step=datetime.timedelta(hours=0))
-#     return template.set(time=time)
-
-
-# def new_field_with_units(template: Field, units: str) -> Field:
-#     """Create a new field with units.
-
-#     Parameters
-#     ----------
-#     template : Field
-#         The template field to use.
-#     units : str
-#         The units for the new field.
-
-#     Returns
-#     -------
-#     Field
-#         The new field with the provided units.
-#     """
-#     return new_field_with_metadata(template, units=units)
-
-
-# def new_field_from_latitudes_longitudes(
-#     template: Field, latitudes: np.ndarray, longitudes: np.ndarray
-# ) -> Field:
-#     """Create a new field from latitudes and longitudes.
-
-#     Parameters
-#     ----------
-#     template : Field
-#         The template field to use.
-#     latitudes : np.ndarray
-#         The latitudes for the new field.
-#     longitudes : np.ndarray
-#         The longitudes for the new field.
-
-#     Returns
-#     -------
-#     Field
-#         The new field with the provided latitudes and longitudes.
-#     """
-#     return template.set(
-#         **{
-#             "geography.latitudes": latitudes,
-#             "geography.longitudes": longitudes,
-#         }
-#     )
-
-
-# def new_flavoured_field(field: Field, flavour: Flavour) -> Field:
-#     """Create a new field with a flavour."""
-#     raise NotImplementedError("Not implemented yet.")
 
 
 class FieldSelection:

@@ -9,7 +9,6 @@
 
 
 from anemoi.transform import FieldList
-from anemoi.transform.fields import new_empty_fieldlist
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -29,4 +28,4 @@ class Empty(Filter):
         super().__init__()
 
     def forward(self, data: FieldList) -> FieldList:
-        return new_empty_fieldlist()
+        return FieldList()

@@ -17,8 +17,6 @@ from anemoi.transform import Field
 from anemoi.transform import FieldList
 from anemoi.transform.fields import MISSING_METADATA
 from anemoi.transform.fields import Flavour
-from anemoi.transform.fields import new_fieldlist_from_list
-from anemoi.transform.fields import new_flavoured_field
 
 
 class _FieldMetadataMapping:
@@ -82,7 +80,7 @@ class RuleBasedFlavour(Flavour):
         Field
             The field with the applied flavour.
         """
-        return new_flavoured_field(field, self)
+        return Field.flavoured(field, self)
 
     def map(self, fieldlist: FieldList) -> FieldList:
         """Apply the flavour to a fieldlist.
@@ -97,7 +95,7 @@ class RuleBasedFlavour(Flavour):
         FieldList
             The list of fields with the applied flavour.
         """
-        return new_fieldlist_from_list([self.apply(field) for field in fieldlist])
+        return FieldList.from_fields([self.apply(field) for field in fieldlist])
 
     def __call__(self, key: str, field: Field) -> Any:
         """Called when the field metadata is queried.

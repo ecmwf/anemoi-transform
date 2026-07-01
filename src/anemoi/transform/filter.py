@@ -159,7 +159,7 @@ class SingleFieldFilter(Filter):
         raise NotImplementedError("Field backward transform not implemented.")
 
     def new_field_from_numpy(self, array: np.ndarray, *, template: Field, **metadata: dict) -> Field:
-        return new_field_from_numpy(array, template=template, **metadata)
+        return Field.from_numpy(array, template=template, **metadata)
 
     def _validate_inputs(self) -> None:
         if not self.required_inputs:
@@ -186,7 +186,7 @@ class SingleFieldFilter(Filter):
 
     @staticmethod
     def _map_transform(transform_function: Callable, fields: FieldList) -> FieldList:
-        return new_fieldlist_from_list([transform_function(field) for field in fields])
+        return FieldList.from_fields([transform_function(field) for field in fields])
 
     def forward(self, data: FieldList) -> FieldList:
         def transform(field: Field) -> Field:

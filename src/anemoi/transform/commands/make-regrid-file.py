@@ -14,6 +14,7 @@ import os
 
 import numpy as np
 
+from anemoi.transform import FieldList
 from anemoi.transform.commands import Command
 from anemoi.transform.constants import L_1_degree_earth_arc_length_km as L_1d_km
 
@@ -32,7 +33,7 @@ def _xr_ds_lat_lon(path: str, lat_name: str, lon_name: str) -> tuple[np.ndarray,
 def _ds_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
 
     try:
-        ds = ekd.from_source("file", path).to_fieldlist()
+        ds = FieldList.from_file(path)
         return ds[0].geography.latlons()
     except TypeError:
         # This is a workaround for datasets that do not have data variables,

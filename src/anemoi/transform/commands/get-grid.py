@@ -10,6 +10,7 @@
 
 import argparse
 
+from anemoi.transform import FieldList
 from anemoi.transform.commands import Command
 
 
@@ -37,7 +38,6 @@ class GetGrid(Command):
             The arguments to run the command with.
         """
         import numpy as np
-        from earthkit.data import from_source
 
         if args.source == "mars":
             # anemoi-transform get-grid --source mars grid=o400,levtype=sfc,param=2t grid-o400.npz
@@ -47,7 +47,7 @@ class GetGrid(Command):
         else:
             input = args.input
 
-        ds = from_source(args.source, input).to_fieldlist()
+        ds = FieldList.from_source(args.source, input)
         lat, lon = ds[0].geography.latlons()
         np.savez(args.output, latitudes=lat, longitudes=lon)
 

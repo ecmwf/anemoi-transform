@@ -180,6 +180,6 @@ class GroupByParamVertical(GroupByParam):
         for key, group in self.groups.items():
             for param, value in group.items():
                 if isinstance(value, list):
-                    group[param] = ekd.create_fieldlist(value)
+                    group[param] = FieldList.from_fields(value)
 
         LOG.info(f"Params groups: {self.groups_params}")

@@ -61,10 +61,10 @@ def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Sour
 
                 ds = _NumpyWrapper()
             else:
-                ds = ekd.from_source("file", path).to_fieldlist()
+                ds = FieldList.from_file(path)
         elif isinstance(dataset, list):
             dataset = [group_component_dict(spec) for spec in dataset]
-            ds = ekd.from_source("list-of-dicts", dataset).to_fieldlist()
+            ds = FieldList.from_dicts(dataset)
         else:
             raise ValueError("dataset must be a string or a list of dicts")
         return source_registry.create("testing", dataset=ds)
@@ -76,7 +76,7 @@ def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Sour
 def mars_test_source() -> Callable[[list[dict]], Source]:
     def _source(dataset: list[dict]) -> Source:
         dataset = [group_component_dict(spec) for spec in dataset]
-        ds = ekd.from_source("list-of-dicts", dataset).to_fieldlist()
+        ds = FieldList.from_dicts(dataset)
         return source_registry.create("testing", dataset=ds)
 
     return _source

@@ -10,6 +10,7 @@
 
 from typing import Any
 
+from anemoi.transform.fields import FieldList
 from anemoi.transform.source import Source
 from anemoi.transform.sources import source_registry
 
@@ -28,7 +29,7 @@ class Mars(Source):
             Keyword arguments for the MARS request.
         """
 
-    def forward(self, data: dict[str, Any]) -> ekd.Source:
+    def forward(self, data: dict[str, Any]) -> FieldList:
         """Fetch data from MARS.
 
         Parameters
@@ -38,10 +39,10 @@ class Mars(Source):
 
         Returns
         -------
-        ekd.Source
+        FieldList
             The data fetched from MARS.
         """
-        return ekd.from_source("mars", **data).to_fieldlist()
+        return FieldList.from_source("mars", **data)
 
     def __ror__(self, data: dict[str, Any]) -> Source:
         """Enable the use of the pipe operator with this source.
@@ -69,7 +70,7 @@ class Mars(Source):
                 """
                 self.data: dict[str, Any] = data
 
-            def forward(self, data: Any) -> ekd.Source:
+            def forward(self, data: Any) -> FieldList:
                 """Fetch data from MARS using the stored request parameters.
 
                 Parameters
@@ -79,7 +80,7 @@ class Mars(Source):
 
                 Returns
                 -------
-                ekd.Source
+                FieldList
                     The data fetched from MARS.
                 """
                 return this.forward(self.data)

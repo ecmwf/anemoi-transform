@@ -72,6 +72,9 @@ exclude = [
 disable_error_code = [ "import-untyped" ]
 strict = false
 
+[tool.pytest]
+ini_options.pythonpath = [ "tests" ]
+
 [tool.pydocstringformatter]
 write = true
 exclude = "docs/*"

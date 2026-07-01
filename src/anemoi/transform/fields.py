@@ -27,14 +27,6 @@ class Field:
     # === forwarded methods for Field class
 
     def set(self, *args, **kwargs) -> "Field":
-        """Set metadata for the field.
-
-        Parameters
-        ----------
-        **kwargs : Any
-            Metadata to set for the field.
-
-        """
         return Field(self._field.set(*args, **kwargs))
 
     def get(self, *args, **kwargs) -> Any:
@@ -56,6 +48,11 @@ class Field:
             The template field to use.
         **metadata : Any
             Additional metadata for the new field.
+
+        Returns
+        -------
+        Field
+            The new field created from the numpy array and template.
         """
         result = Field(template.set(**{"data.values": array}))
         if metadata:
@@ -108,6 +105,11 @@ class FieldList:
     def from_fields(cls, fields: list[Field]) -> "FieldList":
         """Create a FieldList from a list of fields."""
         return cls(ekd.create_fieldlist([field for field in fields]))
+
+    @classmethod
+    def from_dicts(cls, dicts: list[dict]) -> "FieldList":
+        """Create a FieldList from a list of dictionaries."""
+        return cls(ekd.from_source("list-of-dicts", dicts).to_fieldlist())
 
     @classmethod
     def from_source(cls, name: str, *args, **kwargs) -> "FieldList":

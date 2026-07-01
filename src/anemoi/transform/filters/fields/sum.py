@@ -14,8 +14,6 @@ from collections.abc import Hashable
 
 from anemoi.transform import Field
 from anemoi.transform import FieldList
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.grouping import grouping_dict_all
@@ -115,9 +113,9 @@ class Sum(Filter):
                     s = c
                 else:
                     s += c
-            result.append(new_field_from_numpy(s, template=values[list(values.keys())[0]], param=self.output))
+            result.append(Field.from_numpy(s, template=values[list(values.keys())[0]], param=self.output))
 
-        return new_fieldlist_from_list(result)
+        return FieldList.from_fields(result)
 
     def backward(self, data: FieldList) -> FieldList:
         raise NotImplementedError("Sum filter is not reversible")

@@ -16,9 +16,6 @@ import tqdm
 
 from anemoi.transform import Field
 from anemoi.transform import FieldList
-from anemoi.transform.fields import new_field_from_latitudes_longitudes
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -204,7 +201,7 @@ class RegridFilter(Filter):
         for field in tqdm.tqdm(data, desc="Regridding"):
             result.append(self.interpolator(field))
 
-        return new_fieldlist_from_list(result)
+        return FieldList.from_fields(result)
 
 
 class EarthkitRegrid:
@@ -253,8 +250,8 @@ class EarthkitRegrid:
         # regrid returns (data, grid_spec)
         regrid_data, _ = regrid_result
 
-        return new_field_from_latitudes_longitudes(
-            new_field_from_numpy(
+        return Field.from_latitudes_longitudes(
+            Field.from_numpy(
                 regrid_data,
                 template=field,
             ),
@@ -312,7 +309,7 @@ class MIRMatrix:
         data = field.to_numpy(flatten=True)
         data = self.matrix @ data
 
-        return new_field_from_latitudes_longitudes(new_field_from_numpy(data, template=field), **self.out_grid)
+        return Field.from_latitudes_longitudes(Field.from_numpy(data, template=field), **self.out_grid)
 
 
 class ScipyKDTreeNearestNeighbours:
@@ -381,7 +378,7 @@ class ScipyKDTreeNearestNeighbours:
         assert data.shape == self.in_grid["longitudes"].shape, (data.shape, self.in_grid["longitudes"].shape)
 
         data = data[..., self.nearest_grid_points]
-        return new_field_from_latitudes_longitudes(new_field_from_numpy(data, template=field), **self.out_grid)
+        return Field.from_latitudes_longitudes(Field.from_numpy(data, template=field), **self.out_grid)
 
 
 class MaskedRegrid:
@@ -427,8 +424,8 @@ class MaskedRegrid:
             self.out_latitudes = in_latitudes[self.mask]
             self.out_longitudes = in_longitudes[self.mask]
 
-        return new_field_from_latitudes_longitudes(
-            new_field_from_numpy(data, template=field), latitudes=self.out_latitudes, longitudes=self.out_longitudes
+        return Field.from_latitudes_longitudes(
+            Field.from_numpy(data, template=field), latitudes=self.out_latitudes, longitudes=self.out_longitudes
         )
 
 

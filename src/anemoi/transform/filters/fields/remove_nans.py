@@ -12,10 +12,8 @@ import logging
 
 import tqdm
 
+from anemoi.transform import Field
 from anemoi.transform import FieldList
-from anemoi.transform.fields import new_field_from_latitudes_longitudes
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -109,11 +107,11 @@ class RemoveNaNs(Filter):
 
             data = field.to_numpy(flatten=True)
             result.append(
-                new_field_from_latitudes_longitudes(
-                    new_field_from_numpy(data[self._mask], template=field),
+                Field.from_latitudes_longitudes(
+                    Field.from_numpy(data[self._mask], template=field),
                     latitudes=self._latitudes,
                     longitudes=self._longitudes,
                 )
             )
 
-        return new_fieldlist_from_list(result)
+        return FieldList.from_fields(result)

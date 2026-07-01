@@ -36,7 +36,7 @@ class TestingSource(Source):
 @pytest.fixture
 def fieldlist(get_test_data: GetTestData) -> FieldList:
     """Fixture to create a fieldlist for testing."""
-    return ekd.from_source("file", get_test_data("anemoi-filters/2t-sp.grib")).to_fieldlist()
+    return FieldList.from_file(get_test_data("anemoi-filters/2t-sp.grib"))
 
 
 @pytest.fixture

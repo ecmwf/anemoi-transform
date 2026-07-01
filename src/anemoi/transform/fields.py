@@ -6,6 +6,7 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
+import datetime
 import logging
 from abc import ABC
 from abc import abstractmethod
@@ -16,13 +17,38 @@ import numpy as np
 from earthkit.data import Field as _EkdField
 from earthkit.data import FieldList as _EkdFieldList
 
+from anemoi.transform.datum import Datum
+
 LOG = logging.getLogger(__name__)
 
 
+def _unwrap_field(field: "Field | _EkdField") -> _EkdField:
+    """Return the underlying earthkit field for either a wrapped or raw field."""
+    return field._field if isinstance(field, Field) else field
+
+
+def _unwrap_fieldlist(fieldlist: "FieldList | _EkdFieldList") -> _EkdFieldList:
+    """Return the underlying earthkit fieldlist for either a wrapped or raw fieldlist."""
+    return fieldlist._fieldlist if isinstance(fieldlist, FieldList) else fieldlist
+
+
 class Field:
+    """A thin, transparent wrapper around an earthkit-data field.
+
+    Attribute access that is not explicitly defined here is delegated to the
+    underlying earthkit field, so component accessors such as ``parameter``,
+    ``time``, ``geography``, ``vertical`` and ``ensemble`` remain available.
+    """
 
     def __init__(self, field: _EkdField | None = None):
         self._field = field
+
+    def __getattr__(self, name: str) -> Any:
+        # __getattr__ is only called when normal attribute lookup fails.
+        # Delegate to the underlying earthkit field.
+        if name == "_field":
+            raise AttributeError(name)
+        return getattr(self._field, name)
 
     # === forwarded methods for Field class
 
@@ -54,9 +80,9 @@ class Field:
         Field
             The new field created from the numpy array and template.
         """
-        result = Field(template.set(**{"data.values": array}))
+        result = cls(_unwrap_field(template).set(**{"data.values": array}))
         if metadata:
-            result = Field.with_new_metadata(result, **metadata)
+            result = cls.with_new_metadata(result, **metadata)
 
         return result
 
@@ -93,18 +119,94 @@ class Field:
 
         # map metadata keys to new locations
         mapped_metadata = {key_mapping[key]: value for key, value in metadata.items()}
-        return Field(template.set(**mapped_metadata))
+        return cls(_unwrap_field(template).set(**mapped_metadata))
+
+    @classmethod
+    def with_valid_datetime(cls, template: "Field", date: Any) -> "Field":
+        """Create a new field with a valid datetime (sets the step to 0).
+
+        Setting the ``step`` to 0 means the ``base_datetime`` is updated to be
+        equal to the new ``valid_datetime``.
+
+        Parameters
+        ----------
+        template : Field
+            The template field to use.
+        date : Any
+            The valid datetime for the new field.
+
+        Returns
+        -------
+        Field
+            The new field with the provided valid datetime and a step of 0.
+        """
+        return cls(
+            _unwrap_field(template).set(
+                **{
+                    "time.valid_datetime": date,
+                    "time.step": datetime.timedelta(hours=0),
+                }
+            )
+        )
+
+    @classmethod
+    def from_latitudes_longitudes(cls, template: "Field", latitudes: np.ndarray, longitudes: np.ndarray) -> "Field":
+        """Create a new field from latitudes and longitudes.
+
+        Parameters
+        ----------
+        template : Field
+            The template field to use.
+        latitudes : np.ndarray
+            The latitudes for the new field.
+        longitudes : np.ndarray
+            The longitudes for the new field.
+
+        Returns
+        -------
+        Field
+            The new field with the provided latitudes and longitudes.
+        """
+        return cls(
+            _unwrap_field(template).set(
+                **{
+                    "geography.latitudes": latitudes,
+                    "geography.longitudes": longitudes,
+                }
+            )
+        )
 
 
-class FieldList:
+class FieldList(Datum):
+    """A thin, transparent wrapper around an earthkit-data fieldlist.
+
+    Iterating or indexing a :class:`FieldList` yields :class:`Field` objects.
+    Attribute access that is not explicitly defined here is delegated to the
+    underlying earthkit fieldlist.
+    """
 
     def __init__(self, fieldlist: _EkdFieldList | None = None):
         self._fieldlist = fieldlist if fieldlist is not None else ekd.create_fieldlist()
+        self._fields: list[Field] | None = None
+
+    @property
+    def _underlying(self) -> _EkdFieldList:
+        return self._fieldlist
+
+    @property
+    def _wrapped(self) -> list[Field]:
+        if self._fields is None:
+            self._fields = [f if isinstance(f, Field) else Field(f) for f in self._fieldlist]
+        return self._fields
 
     @classmethod
     def from_fields(cls, fields: list[Field]) -> "FieldList":
         """Create a FieldList from a list of fields."""
-        return cls(ekd.create_fieldlist([field for field in fields]))
+        fields = [f if isinstance(f, Field) else Field(f) for f in fields]
+        result = cls(ekd.create_fieldlist([f._field for f in fields]))
+        # Preserve the identity of the provided fields.
+        result._fields = fields
+        return result
 
     @classmethod
     def from_dicts(cls, dicts: list[dict]) -> "FieldList":
@@ -114,7 +216,7 @@ class FieldList:
     @classmethod
     def from_source(cls, name: str, *args, **kwargs) -> "FieldList":
         """Create a FieldList from a source."""
-        return ekd.from_source(name, *args, **kwargs).to_fieldlist()
+        return cls(ekd.from_source(name, *args, **kwargs).to_fieldlist())
 
     @classmethod
     def from_file(cls, path: str) -> "FieldList":
@@ -124,13 +226,16 @@ class FieldList:
     @classmethod
     def concat(cls, *args: "FieldList") -> "FieldList":
         """Concatenate multiple FieldLists into a single FieldList."""
-        return ekd.concat(*args).to_fieldlist()
+        return cls(ekd.concat(*[_unwrap_fieldlist(arg) for arg in args]).to_fieldlist())
 
     def __len__(self) -> int:
         return len(self._fieldlist)
 
     def __getitem__(self, index: int) -> Field:
-        return Field(self._fieldlist[index])
+        return self._wrapped[index]
+
+    def __iter__(self):
+        return iter(self._wrapped)
 
 
 class Flavour(ABC):

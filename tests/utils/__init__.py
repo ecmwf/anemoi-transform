@@ -75,7 +75,7 @@ class SelectFieldSource(Source):
         for f in self._fields:
             if self.params and f.parameter.variable() in self.params:
                 fields.append(f)
-        return new_fieldlist_from_list(fields)
+        return FieldList.from_fields(fields)
 
 
 class SelectAndAddFieldSource(Source):
@@ -98,7 +98,7 @@ class SelectAndAddFieldSource(Source):
         for f in self._additional_fields:
             if self.params and f.parameter.variable() in self.params and f.parameter.variable() not in params:
                 fields.append(f)
-        return new_fieldlist_from_list(fields)
+        return FieldList.from_fields(fields)
 
 
 def compare_npz_files(file1, file2):
@@ -116,7 +116,7 @@ def compare_npz_files(file1, file2):
 def mock_field(**metadata):
     field_spec = {"data.values": np.array([1])} | metadata
     field_spec = group_component_dict(field_spec)
-    return ekd.from_source("list-of-dicts", [field_spec]).to_fieldlist()[0]
+    return FieldList.from_dicts([field_spec])[0]
 
 
 def group_component_dict(components: Mapping[str, Any]) -> dict[str, dict[str, Any]]:

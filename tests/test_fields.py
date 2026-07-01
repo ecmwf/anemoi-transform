@@ -9,28 +9,30 @@
 
 import pytest
 
-from src.anemoi.transform.fields import FieldSelection
+from anemoi.transform import Field
+from anemoi.transform import FieldList
+from anemoi.transform.fields import FieldSelection
 
 from .utils import mock_field
 
 
 @pytest.fixture
 def sample_field():
-    return ekd.from_source("sample", "test.grib").to_fieldlist()[0]
+    return FieldList.from_source("sample", "test.grib")[0]
 
 
 @pytest.mark.xfail(reason="setting arbitrary metadata not yet supported")
 def test_field_new_metadata(sample_field):
     """Test that a new field can be created with new metadata."""
     # TODO: consider whether new_field_with_metadata should allow setting ekd field labels
-    new_field = new_field_with_metadata(sample_field, foo="bar")
+    new_field = Field.with_new_metadata(sample_field, foo="bar")
     assert new_field.get("labels.foo") == "bar"
 
 
 def test_field_update_metadata(sample_field):
     """Test that a new field can be created with updated metadata."""
     assert sample_field.parameter.variable() == "2t"
-    new_field = new_field_with_metadata(sample_field, param="foo")
+    new_field = Field.with_new_metadata(sample_field, param="foo")
     assert new_field.parameter.variable() == "foo"
 
 
@@ -39,7 +41,7 @@ def test_update_multiple_metadata(sample_field):
     """Test that we can update multiple metadata keys at once."""
     assert sample_field.metadata("param") == "2t"
     assert sample_field.metadata("centre") == "ecmf"
-    new_field = new_field_with_metadata(sample_field, param="foo", centre="bar")
+    new_field = Field.with_new_metadata(sample_field, param="foo", centre="bar")
     assert new_field.parameter.variable() == "foo"
     assert new_field.metadata("centre") == "bar"
 
@@ -47,7 +49,7 @@ def test_update_multiple_metadata(sample_field):
 @pytest.mark.xfail(reason="setting arbitrary metadata not yet supported")
 def test_metadata_in_new_field(sample_field):
     """Test that we can check if a key is in the metadata."""
-    new_field = new_field_with_metadata(sample_field, foo="bar")
+    new_field = Field.with_new_metadata(sample_field, foo="bar")
     assert new_field.get("labels.foo") == "bar"
 
 
@@ -55,7 +57,7 @@ def test_metadata_in_new_field(sample_field):
 def test_field_with_updated_metadata_has_same_keys(sample_field):
     """Test that updating existing metadata leaves the keys unchanged."""
     assert sample_field.metadata("param") == "2t"
-    new_field = new_field_with_metadata(sample_field, param="foo")
+    new_field = Field.with_new_metadata(sample_field, param="foo")
     assert new_field.parameter.variable() == "foo"
     assert new_field.metadata("param") == "foo"
 
@@ -63,7 +65,7 @@ def test_field_with_updated_metadata_has_same_keys(sample_field):
 @pytest.mark.xfail(reason="setting arbitrary metadata not yet supported")
 def test_field_adding_metadata_updates_keys(sample_field):
     """Test that adding a new metadata key is reflected in the keys."""
-    new_field = new_field_with_metadata(sample_field, foo="bar")
+    new_field = Field.with_new_metadata(sample_field, foo="bar")
     assert new_field.get("labels.foo") == "bar"
 
 

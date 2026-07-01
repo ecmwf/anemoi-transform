@@ -10,9 +10,8 @@
 
 import logging
 
+from anemoi.transform import Field
 from anemoi.transform import FieldList
-from anemoi.transform.fields import new_field_with_valid_datetime
-from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -43,6 +42,6 @@ class ClearStepFilter(Filter):
         for field in data:
             valid_datetime = field.time.valid_datetime()
             step = field.time.step()
-            result.append(new_field_with_valid_datetime(field, valid_datetime - step))
+            result.append(Field.with_valid_datetime(field, valid_datetime - step))
 
-        return new_fieldlist_from_list(result)
+        return FieldList.from_fields(result)

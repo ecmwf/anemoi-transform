@@ -11,7 +11,6 @@ import datetime
 
 import numpy as np
 import pytest
-from earthkit.data.utils.dates import to_datetime
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
@@ -51,8 +50,8 @@ def test_clear_step(source):
     assert len(output_fields[param]) == 3
 
     for input_field, output_field in zip(input_fields[param], output_fields[param]):
-        input_validtime = to_datetime(input_field.time.valid_datetime())
-        output_validtime = to_datetime(output_field.time.valid_datetime())
+        input_validtime = input_field.time.valid_datetime()
+        output_validtime = output_field.time.valid_datetime()
         input_step = input_field.time.step()
 
         expected_validtime = input_validtime - input_step

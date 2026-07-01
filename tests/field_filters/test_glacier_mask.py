@@ -11,6 +11,7 @@ from unittest import mock
 import numpy as np
 import pytest
 
+from anemoi.transform import FieldList
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 from ..utils import collect_fields_by_param
@@ -36,15 +37,15 @@ def snow_depth_source(test_source):
 def mock_mask():
     field = {"parameter.variable": "glacier_mask", "data.values": GLACIER_MASK.copy(), **MOCK_FIELD_METADATA}
     field = group_component_dict(field)
-    return ekd.from_source("list-of-dicts", [field])
+    return FieldList.from_dicts([field])
 
 
 def test_glacier_mask(snow_depth_source, mock_mask):
-    with mock.patch("anemoi.transform.filters.fields.glacier_mask.ekd.from_source") as mock_earthkit:
+    with mock.patch("anemoi.transform.filters.fields.glacier_mask.FieldList.from_file") as mock_earthkit:
         mock_earthkit.return_value = mock_mask
 
         glacier_mask = create_filter("glacier_mask", glacier_mask="glacier_mask.grib")
-        mock_earthkit.assert_called_once_with("file", "glacier_mask.grib")
+        mock_earthkit.assert_called_once_with("glacier_mask.grib")
 
     pipeline = snow_depth_source | glacier_mask
 

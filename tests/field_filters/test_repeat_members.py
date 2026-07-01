@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 import pytest
 
+from anemoi.transform import FieldList
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
@@ -39,8 +40,7 @@ def _get_template() -> tuple[Any, np.ndarray, Any]:
     Tuple
         A tuple containing the fieldlist, and values
     """
-    temp = ekd.from_source("mars", {"param": "2t", "levtype": "sfc", "dates": ["2023-11-17 00:00:00"]})
-    fieldlist = temp.to_fieldlist()
+    fieldlist = FieldList.from_source("mars", {"param": "2t", "levtype": "sfc", "dates": ["2023-11-17 00:00:00"]})
     return fieldlist, fieldlist[0].values
 
 

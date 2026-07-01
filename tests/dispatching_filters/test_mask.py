@@ -48,10 +48,8 @@ def field_source(test_source):
 
 @pytest.fixture()
 def ekd_from_source():
-    def side_effect(source_type, path):
+    def side_effect(path):
         mock_field = mock.Mock()
-        if source_type != "file":
-            raise ValueError("Invalid source type")
         # mask expected to be flattened
         mask = MASK_VALUES[path].copy().flatten()
         mock_field.to_numpy.return_value = mask
@@ -62,7 +60,7 @@ def ekd_from_source():
         mock_source.to_fieldlist.return_value = mock_fieldlist
         return mock_source
 
-    with mock.patch("anemoi.transform.filters.fields.apply_mask.ekd.from_source", autospec=True) as mock_fn:
+    with mock.patch("anemoi.transform.filters.fields.apply_mask.FieldList.from_file") as mock_fn:
         mock_fn.side_effect = side_effect
         yield mock_fn
 
@@ -80,7 +78,7 @@ def ekd_from_source():
 @pytest.mark.parametrize("mask_name", MASK_VALUES.keys())
 def test_apply_mask_fields(field_source, ekd_from_source, mask_name, rename, threshold_options):
     apply_mask = create_filter("apply_mask", path=mask_name, rename=rename, **threshold_options)
-    ekd_from_source.assert_called_once_with("file", mask_name)
+    ekd_from_source.assert_called_once_with(mask_name)
 
     pipeline = field_source | apply_mask
 

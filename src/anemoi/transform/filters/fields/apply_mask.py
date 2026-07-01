@@ -213,7 +213,7 @@ class MaskVariable(Filter):
 
         mask = self._compute_mask(mask_field.to_numpy(flatten=True))
 
-        fields = new_fieldlist_from_list(remaining)
+        fields = FieldList.from_fields(remaining)
         return mask, fields
 
     def forward(self, fields: FieldList) -> FieldList:

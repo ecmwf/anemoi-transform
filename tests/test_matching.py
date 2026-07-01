@@ -13,6 +13,7 @@ from collections.abc import Iterator
 import pytest
 
 from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
 
@@ -33,7 +34,7 @@ class AddFields(MatchingFieldsFilter):
 
     def forward_transform(self, a: Field, b: Field) -> Iterator[Field]:
         result = a.values + b.values
-        yield new_field_from_numpy(result, template=a, param="c")
+        yield Field.from_numpy(result, template=a, param="c")
 
 
 def test_matching_spec_initializes_correctly():
@@ -49,7 +50,7 @@ def test_forward_transform_adds_fields():
     b = mock_field(
         **{"parameter.variable": "b", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
     )
-    data = ekd.create_fieldlist([a, b])
+    data = FieldList.from_fields([a, b])
 
     f = AddFields(a="a", b="b")
     result = f.forward(data)
@@ -65,7 +66,7 @@ def test_return_inputs():
     b = mock_field(
         **{"parameter.variable": "b", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
     )
-    data = ekd.create_fieldlist([a, b])
+    data = FieldList.from_fields([a, b])
 
     f = AddFields(a="a", b="b", return_inputs="all")
     result = f.forward(data)
@@ -89,7 +90,7 @@ def test_missing_component_raises():
         **{"parameter.variable": "a", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
     )
     # Missing 'b'
-    data = ekd.create_fieldlist([a])
+    data = FieldList.from_fields([a])
     f = AddFields(a="a", b="b")
 
     with pytest.raises(ValueError):
@@ -187,7 +188,7 @@ def test_metadata_mismatch_warning(caplog):
     d = mock_field(
         **{"parameter.variable": "d", "time.valid_datetime": "2000-01-01T00:00Z", "time.step": 0, "vertical.level": 850}
     )
-    data = ekd.create_fieldlist([c, d])
+    data = FieldList.from_fields([c, d])
 
     f = AddFields(a="a", b="b")
 

@@ -16,7 +16,9 @@ except ImportError:  # pragma: no cover
     __version__ = "999"
 
 
+from .datum import Datum
 from .fields import Field
 from .fields import FieldList
+from .frames import Frame
 
-__all__ = ["Field", "FieldList", "__version__"]
+__all__ = ["Datum", "Field", "FieldList", "Frame", "__version__"]

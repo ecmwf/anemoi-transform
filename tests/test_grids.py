@@ -10,6 +10,7 @@
 
 import pytest
 
+from anemoi.transform import FieldList
 from anemoi.transform.grids.named import lookup
 
 latitude_url = "http://icon-downloads.mpimet.mpg.de/grids/public/edzw/icon_extpar_0026_R03B07_G_20150805.g2"
@@ -35,7 +36,7 @@ def do_not_test_unstructured_from_url() -> None:
 
     assert len(lats) == len(lons)
 
-    forcings = ekd.from_source(
+    forcings = FieldList.from_source(
         "forcings",
         ds,
         date="2015-08-05",

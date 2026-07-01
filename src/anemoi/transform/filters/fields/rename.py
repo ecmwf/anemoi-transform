@@ -10,7 +10,6 @@
 import re
 
 from anemoi.transform import Field
-from anemoi.transform.fields import new_field_with_metadata
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -64,7 +63,7 @@ class FormatRename:
 
         kwargs = dict(zip(self.format_keys, values))
         kwargs = {self.what: self.format.format(**kwargs)}
-        return new_field_with_metadata(template=field, **kwargs)
+        return Field.with_new_metadata(template=field, **kwargs)
 
 
 class DictRename:
@@ -85,7 +84,7 @@ class DictRename:
 
         kwargs = {self.what: self.renaming[md]}
 
-        return new_field_with_metadata(template=field, **kwargs)
+        return Field.with_new_metadata(template=field, **kwargs)
 
 
 @filter_registry.register("rename_fields")

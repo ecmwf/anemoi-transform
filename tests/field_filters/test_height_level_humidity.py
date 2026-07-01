@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 from anemoi.utils.testing import skip_if_offline
 
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 from ..utils import SelectAndAddFieldSource
@@ -290,10 +292,8 @@ def test_relative_humidity_to_specific_humidity_from_file(test_source):
 
     template_field = source.ds.sel(**{"parameter.variable": "2d"})[0]
 
-    from anemoi.transform.fields import new_field_from_numpy
-
-    new_field = new_field_from_numpy(input_relative_humidity, template=template_field, param="2r")
-    source.ds = ekd.create_fieldlist(list(source.ds) + [new_field])
+    new_field = Field.from_numpy(input_relative_humidity, template=template_field, param="2r")
+    source.ds = FieldList.from_fields(list(source.ds) + [new_field])
 
     r_to_q_height = create_filter(
         "r_to_q_height",
@@ -542,10 +542,8 @@ def test_dewpoint_to_specific_humidity_from_file(test_source):
     template_field = source.ds.sel(**{"parameter.variable": "2d"})[0]
     ds = source.ds.sel(**{"parameter.variable": ["2sh", "2t", "sp", "q", "t"]})
 
-    from anemoi.transform.fields import new_field_from_numpy
-
-    new_field = new_field_from_numpy(input_dewpoint_temperature, template=template_field, param="2d")
-    ds = ekd.create_fieldlist(list(ds) + [new_field])
+    new_field = Field.from_numpy(input_dewpoint_temperature, template=template_field, param="2d")
+    ds = FieldList.from_fields(list(ds) + [new_field])
     source.ds = ds
 
     d_to_q_height = create_filter(

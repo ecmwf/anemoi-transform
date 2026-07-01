@@ -72,6 +72,11 @@ class SuperOb(Filter):
         ----------
         df : pandas.DataFrame
             The (empty) input frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The empty frame with columns reordered to match the aggregated output schema.
         """
         grouped = set(self.columns_to_groupby)
         nearest = set(self.columns_to_take_nearest)

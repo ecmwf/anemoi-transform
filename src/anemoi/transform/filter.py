@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
+import functools
 import logging
 from abc import abstractmethod
 from collections.abc import Callable
@@ -19,6 +20,7 @@ import pandas as pd
 
 from anemoi.transform import Field
 from anemoi.transform import FieldList
+from anemoi.transform import Frame
 from anemoi.transform.fields import FieldSelection
 from anemoi.transform.transform import Transform
 
@@ -29,6 +31,48 @@ class Filter(Transform):
     """A filter transform that processes field data."""
 
     pass
+
+
+def _preserve_frame_type(method: Callable) -> Callable:
+    """Wrap a raw-``DataFrame`` filter method so it also accepts/returns :class:`Frame`.
+
+    When called with a :class:`~anemoi.transform.frames.Frame`, the underlying
+    pandas ``DataFrame`` is unwrapped, the wrapped method runs on it, and a
+    ``DataFrame`` result is re-wrapped as a ``Frame``. When called with a raw
+    ``pd.DataFrame`` (or anything else), the method runs unchanged and the result
+    type is preserved. This lets a ``Frame`` flow through a tabular pipeline
+    end-to-end without changing filter bodies or the raw-``DataFrame`` contract
+    that existing callers and tests rely on.
+    """
+
+    @functools.wraps(method)
+    def wrapper(self: Any, data: Any, *args: Any, **kwargs: Any) -> Any:
+        if isinstance(data, Frame):
+            result = method(self, data.to_pandas(), *args, **kwargs)
+            return Frame.from_pandas(result) if isinstance(result, pd.DataFrame) else result
+        return method(self, data, *args, **kwargs)
+
+    wrapper._frame_type_preserving = True
+    return wrapper
+
+
+class TabularFilter(Filter):
+    """A filter that transforms tabular data (a pandas ``DataFrame``).
+
+    Subclasses implement ``forward`` (and optionally ``backward``) operating on a
+    raw :class:`pandas.DataFrame`, exactly as before. This base transparently also
+    accepts and returns an :class:`~anemoi.transform.frames.Frame` (the tabular
+    counterpart of :class:`~anemoi.transform.fields.FieldList`), so tabular data
+    can flow through a pipeline as a ``Frame`` — while a raw ``DataFrame`` in still
+    yields a raw ``DataFrame`` out, preserving the existing contract.
+    """
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        for name in ("forward", "backward"):
+            method = cls.__dict__.get(name)
+            if method is not None and not getattr(method, "_frame_type_preserving", False):
+                setattr(cls, name, _preserve_frame_type(method))
 
 
 class DispatchingFilter(Transform):
@@ -67,6 +111,10 @@ class DispatchingFilter(Transform):
     def _(self, data: pd.DataFrame) -> pd.DataFrame:
         return self.forward_tabular(data)
 
+    @forward.register
+    def _(self, data: Frame) -> Frame:
+        return Frame.from_pandas(self.forward_tabular(data.to_pandas()))
+
     def forward_fallback(self, data: Any) -> Any:
         raise TypeError(f"No forward method for {type(data)}")
 
@@ -87,6 +135,10 @@ class DispatchingFilter(Transform):
     @backward.register
     def _(self, data: pd.DataFrame) -> pd.DataFrame:
         return self.backward_tabular(data)
+
+    @backward.register
+    def _(self, data: Frame) -> Frame:
+        return Frame.from_pandas(self.backward_tabular(data.to_pandas()))
 
     def backward_fallback(self, data: Any) -> Any:
         raise NotImplementedError(f"No backward method for {type(data)}")

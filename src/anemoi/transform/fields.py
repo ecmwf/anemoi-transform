@@ -16,6 +16,9 @@ import earthkit.data as ekd
 import numpy as np
 from earthkit.data import Field as _EkdField
 from earthkit.data import FieldList as _EkdFieldList
+from earthkit.data.core.order import build_remapping
+from earthkit.data.utils.dates import to_datetime
+from earthkit.data.utils.dates import to_timedelta
 
 from anemoi.transform.datum import Datum
 
@@ -23,6 +26,106 @@ LOG = logging.getLogger(__name__)
 
 # Sentinel returned by a Flavour when it has no value for a given metadata key.
 MISSING_METADATA = object()
+
+# ---------------------------------------------------------------------------
+# earthkit-data facade
+#
+# This module is the single place in the Anemoi packages that imports
+# ``earthkit.data``. Everything the rest of the codebase needs from
+# earthkit-data is re-exported here (see ``fields``, ``concat``,
+# ``from_source``, ``Pattern``, ``build_remapping``, ``to_datetime``, ... and
+# the lazily-loaded names in ``__getattr__`` below). Import from
+# ``anemoi.transform.fields`` rather than adding a new ``earthkit.data`` import
+# elsewhere.
+# ---------------------------------------------------------------------------
+
+# Raw earthkit-data types, exposed under explicit names so they do not clash
+# with the wrapper ``Field`` / ``FieldList`` classes defined below (which are
+# the intended abstraction for gridded data collections).
+EarthkitField = _EkdField
+EarthkitFieldList = _EkdFieldList
+
+# earthkit 1.0rc12 compatibility shim (moved here from anemoi-datasets so that
+# earthkit-data internals are only ever touched in this module):
+# ``earthkit.data.utils.unique.build_remapping`` always returns ``None`` (bug).
+# Patch it to actually return the built remapping. Remove when fixed upstream.
+import earthkit.data.utils.unique as _ekd_unique  # noqa: E402
+
+if not getattr(_ekd_unique, "_build_remapping_patched", False):
+
+    def _patched_unique_build_remapping(remapping: Any, patch: Any) -> Any:
+        if remapping is not None or patch is not None:
+            return build_remapping(remapping, patch)
+        return None
+
+    _ekd_unique.build_remapping = _patched_unique_build_remapping
+    _ekd_unique._build_remapping_patched = True
+
+
+class _GribOutput:
+    """A minimal GRIB file writer.
+
+    earthkit-data 1.0 removed ``earthkit.data.readers.grib.output.new_grib_output``.
+    This reproduces the small subset the Anemoi packages depend on
+    (``write`` / ``close``) on top of the 1.0 :class:`~earthkit.data.encoders.grib.GribEncoder`.
+    """
+
+    def __init__(self, path: str):
+        self._file = open(path, "wb")
+
+    def write(
+        self,
+        values: Any,
+        check_nans: bool = True,
+        metadata: dict | None = None,
+        template: Any = None,
+        missing_value: float = 9999,
+        **kwargs: Any,
+    ) -> None:
+        from earthkit.data.encoders.grib import GribEncoder
+
+        metadata = {**(metadata or {}), **kwargs}
+        GribEncoder().encode(
+            values=values,
+            template=template,
+            check_nans=check_nans,
+            metadata=metadata,
+            missing_value=missing_value,
+        ).to_file(self._file)
+
+    def close(self) -> None:
+        self._file.close()
+
+
+def new_grib_output(path: str) -> _GribOutput:
+    """Open a GRIB file for writing (earthkit-data 1.0 compatible).
+
+    Drop-in replacement for the removed
+    ``earthkit.data.readers.grib.output.new_grib_output``.
+    """
+    return _GribOutput(path)
+
+
+def __getattr__(name: str) -> Any:
+    """Lazily re-export heavier / optional earthkit-data internals.
+
+    Kept out of the eager import block so that importing
+    :mod:`anemoi.transform.fields` stays cheap; the underlying module is only
+    imported on first access (PEP 562).
+    """
+    _lazy = {
+        "Availability": ("earthkit.data.utils.availability", "Availability"),
+        "temp_file": ("earthkit.data.core.temporary", "temp_file"),
+        "GribEncoder": ("earthkit.data.encoders.grib", "GribEncoder"),
+        "XArrayFieldList": ("earthkit.data.readers.xarray.fieldlist", "XArrayFieldList"),
+        "download_and_cache": ("earthkit.data.sources.url", "download_and_cache"),
+    }
+    if name in _lazy:
+        import importlib
+
+        module_name, attr = _lazy[name]
+        return getattr(importlib.import_module(module_name), attr)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def _unwrap_field(field: "Field | _EkdField") -> _EkdField:
@@ -293,7 +396,6 @@ class FieldList(Datum):
 
         Thin wrapper around :func:`earthkit.data.utils.dates.to_datetime`.
         """
-        from earthkit.data.utils.dates import to_datetime
 
         return to_datetime(value)
 
@@ -303,7 +405,6 @@ class FieldList(Datum):
 
         Thin wrapper around :func:`earthkit.data.utils.dates.to_timedelta`.
         """
-        from earthkit.data.utils.dates import to_timedelta
 
         return to_timedelta(value)
 
@@ -381,3 +482,37 @@ class FieldSelection:
             return all(field.get(key) in values for key, values in self._spec.items())
         except KeyError:
             return False
+
+
+# ---------------------------------------------------------------------------
+# Module-level constructors for the wrapper collection types.
+#
+# These are the free-function form of the ``Field`` / ``FieldList`` factory
+# classmethods above, so callers can build fields without referencing the
+# classes directly (and never earthkit-data directly).
+# ---------------------------------------------------------------------------
+
+
+def new_field_from_numpy(array: np.ndarray, *, template: Field, **metadata: Any) -> Field:
+    """Create a new :class:`Field` from a numpy array (see :meth:`Field.from_numpy`)."""
+    return Field.from_numpy(array, template=template, **metadata)
+
+
+def new_field_from_latitudes_longitudes(template: Field, latitudes: np.ndarray, longitudes: np.ndarray) -> Field:
+    """Create a new :class:`Field` from latitudes/longitudes (see :meth:`Field.from_latitudes_longitudes`)."""
+    return Field.from_latitudes_longitudes(template, latitudes, longitudes)
+
+
+def new_field_with_metadata(template: Field, **metadata: Any) -> Field:
+    """Create a new :class:`Field` with updated metadata (see :meth:`Field.with_new_metadata`)."""
+    return Field.with_new_metadata(template, **metadata)
+
+
+def new_field_with_valid_datetime(template: Field, date: Any) -> Field:
+    """Create a new :class:`Field` with a valid datetime (see :meth:`Field.with_valid_datetime`)."""
+    return Field.with_valid_datetime(template, date)
+
+
+def new_fieldlist_from_list(fields: list[Field]) -> FieldList:
+    """Create a :class:`FieldList` from a list of fields (see :meth:`FieldList.from_fields`)."""
+    return FieldList.from_fields(fields)

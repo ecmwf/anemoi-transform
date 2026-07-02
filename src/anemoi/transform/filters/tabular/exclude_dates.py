@@ -13,13 +13,13 @@ from collections import defaultdict
 
 import pandas as pd
 
-from anemoi.transform.filter import Filter
+from anemoi.transform.filter import TabularFilter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
 @filter_registry.register("exclude_dates")
-class ExcludeDates(Filter):
+class ExcludeDates(TabularFilter):
     """Masks values in specified columns of a DataFrame if the ``date`` column
     falls within any of the date ranges provided (inclusive).
 

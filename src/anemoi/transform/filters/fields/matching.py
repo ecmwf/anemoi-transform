@@ -39,6 +39,8 @@ class MatchingSpec:
     backward: tuple[str, ...] = ()
     return_inputs: Literal["all", "none"] | tuple[str, ...] = "none"
     vertical: bool = False
+    skip_partial: bool = False
+    """Skip groups that do not have all parameters. If True, groups with missing parameters will be skipped."""
 
     @staticmethod
     def _to_tuple_of_str(x: str | Iterable[str]) -> tuple[str, ...]:
@@ -240,7 +242,7 @@ class MatchingFieldsFilter(Filter):
         self._check_metadata_match(input_params, group_by)
 
         result: list[ekd.Field] = []
-        for matching in grouping.iterate(data, other=result.append):
+        for matching in grouping.iterate(data, other=result.append, skip_partial=self.MATCHING.skip_partial):
             for f in transform(*matching):
                 result.append(f)
         return self.new_fieldlist_from_list(result)

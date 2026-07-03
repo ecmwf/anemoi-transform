@@ -110,9 +110,11 @@ class GroupByParam:
                 raise ValueError(f"Duplicate component {param} for {key}")
             self.groups[key][param] = f
             self.groups_params.add(param)
-        LOG.info(f"Params groups: {self.groups_params}")
+        LOG.debug(f"Params groups: {self.groups_params}")
 
-    def iterate(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[tuple[Any, ...]]:
+    def iterate(
+        self, data: list[Any], *, other: Callable[[Any], None] = _lost, skip_partial: bool = False
+    ) -> Iterator[tuple[Any, ...]]:
         """Iterate over the data and group fields by parameters.
 
         Parameters
@@ -121,6 +123,8 @@ class GroupByParam:
             List of data fields to group.
         other : callable, optional
             Function to call for fields that do not match the parameters, by default _lost.
+        skip_partial : bool, optional
+            Whether to skip groups that do not have all parameters, by default False.
 
         Returns
         -------
@@ -130,8 +134,8 @@ class GroupByParam:
         self._get_groups(data, other=other)
         for _, group in self.groups.items():
             if len(group) != len(self.params):
-                for p in data:
-                    print(p)
+                if skip_partial:
+                    continue
                 raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(group.keys())}")
 
             yield tuple(group[p] for p in self.params)
@@ -172,4 +176,4 @@ class GroupByParamVertical(GroupByParam):
                     self.groups[key][param] = ds
                 levels[param].append(level)
             self.groups_params.add(param)
-        LOG.info(f"Params groups: {self.groups_params}")
+        LOG.debug(f"Params groups: {self.groups_params}")

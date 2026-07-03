@@ -14,10 +14,10 @@ from typing import Any
 LOG = logging.getLogger(__name__)
 
 
-class Datum(ABC):
+class DataContainer(ABC):
     """Abstract base class for transparent wrappers around a backing container.
 
-    A :class:`Datum` is a thin, transparent wrapper around some underlying data
+    A :class:`DataContainer` is a thin, transparent wrapper around some underlying data
     container (for example an earthkit-data field list or a pandas DataFrame).
     Concrete subclasses such as :class:`anemoi.transform.fields.FieldList` and
     :class:`anemoi.transform.frames.Frame` store that container and expose it
@@ -25,10 +25,7 @@ class Datum(ABC):
 
     Attribute access that is not explicitly defined on a subclass is delegated
     to the underlying container via :meth:`__getattr__`, so the container's own
-    accessors and methods remain available on the wrapper. Subclasses must also
-    implement the common factory class methods (:meth:`from_dicts`,
-    :meth:`from_file`, :meth:`concat`) and the container protocol
-    (:meth:`__len__`, :meth:`__getitem__`, :meth:`__iter__`).
+    accessors and methods remain available on the wrapper.
     """
 
     @property
@@ -45,24 +42,6 @@ class Datum(ABC):
         if name.startswith("_"):
             raise AttributeError(name)
         return getattr(self._underlying, name)
-
-    @classmethod
-    @abstractmethod
-    def from_dicts(cls, dicts: list[dict]) -> "Datum":
-        """Create a Datum from a list of dictionaries."""
-        raise NotImplementedError
-
-    @classmethod
-    @abstractmethod
-    def from_file(cls, path: str) -> "Datum":
-        """Create a Datum from a file."""
-        raise NotImplementedError
-
-    @classmethod
-    @abstractmethod
-    def concat(cls, *args: "Datum") -> "Datum":
-        """Concatenate multiple Datums into a single Datum."""
-        raise NotImplementedError
 
     @abstractmethod
     def __len__(self) -> int:

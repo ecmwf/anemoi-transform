@@ -13,7 +13,7 @@ from typing import Any
 import pandas as pd
 from pandas import DataFrame as _PandasFrame
 
-from anemoi.transform.datum import Datum
+from anemoi.transform.data import DataContainer
 
 LOG = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def _unwrap_frame(frame: "Frame | _PandasFrame") -> _PandasFrame:
     return frame._frame if isinstance(frame, Frame) else frame
 
 
-class Frame(Datum):
+class Frame(DataContainer):
     """A thin, transparent wrapper around a pandas DataFrame.
 
     This mirrors the way :class:`anemoi.transform.fields.FieldList` wraps an

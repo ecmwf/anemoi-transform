@@ -20,7 +20,7 @@ from earthkit.data.core.order import build_remapping
 from earthkit.data.utils.dates import to_datetime
 from earthkit.data.utils.dates import to_timedelta
 
-from anemoi.transform.datum import Datum
+from anemoi.transform.data import DataContainer
 
 LOG = logging.getLogger(__name__)
 
@@ -339,7 +339,7 @@ class Field:
         raise NotImplementedError("Not implemented yet.")
 
 
-class FieldList(Datum):
+class FieldList(DataContainer):
     """A thin, transparent wrapper around an earthkit-data fieldlist.
 
     Iterating or indexing a :class:`FieldList` yields :class:`Field` objects.
@@ -491,6 +491,11 @@ class FieldSelection:
 # classmethods above, so callers can build fields without referencing the
 # classes directly (and never earthkit-data directly).
 # ---------------------------------------------------------------------------
+
+
+def from_source(name: str, *args: Any, **kwargs: Any) -> "FieldList":
+    """Create a :class:`FieldList` from an earthkit-data source."""
+    return FieldList.from_source(name, *args, **kwargs)
 
 
 def new_field_from_numpy(array: np.ndarray, *, template: Field, **metadata: Any) -> Field:

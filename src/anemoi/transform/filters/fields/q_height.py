@@ -26,6 +26,34 @@ from .matching import MatchingSpec
 EPS_SPECIFIC = 1.0e-8
 
 
+def _pressure_at_height_level(height: float, t: NDArray, q: NDArray, sp: NDArray, A: NDArray, B: NDArray) -> NDArray:
+    """Pressure at a height above the surface, from model full-levels.
+
+    Replacement for ``earthkit.meteo.vertical.pressure_at_height_levels``,
+    removed in earthkit-meteo 1.0: pressure on the hybrid levels is
+    interpolated linearly in geopotential above ground, with the surface
+    (``sp`` at height 0) as the auxiliary bottom point — the same algorithm
+    as the removed function.
+    """
+    p_full = vertical.pressure_on_hybrid_levels(sp, A=A, B=B, output="full")
+    p_height = vertical.interpolate_hybrid_to_height_levels(
+        data=p_full,
+        target_h=np.array([height]),
+        t=t,
+        q=q,
+        za=None,
+        sp=sp,
+        A=A,
+        B=B,
+        h_type="geopotential",
+        h_reference="ground",
+        interpolation="linear",
+        aux_bottom_data=sp,
+        aux_bottom_h=0.0,
+    )
+    return p_height[0, ...]
+
+
 def _set_AB(model_level_AB: str | dict[str, NDArray]) -> tuple:
     if isinstance(model_level_AB, str):
         model_level_AB = model_level_AB.upper()
@@ -239,13 +267,13 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         surface_pressure: NDArray,
     ) -> NDArray:
 
-        return vertical.pressure_at_height_levels(
-            height=self.height,
-            t=temperature_at_model_levels,
-            q=specific_humidity_at_model_levels,
-            sp=surface_pressure,
-            A=self.A,
-            B=self.B,
+        return _pressure_at_height_level(
+            self.height,
+            temperature_at_model_levels,
+            specific_humidity_at_model_levels,
+            surface_pressure,
+            self.A,
+            self.B,
         )
 
     def forward_transform(
@@ -428,13 +456,13 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         surface_pressure: NDArray,
     ) -> NDArray:
 
-        return vertical.pressure_at_height_levels(
-            height=self.height,
-            t=temperature_at_model_levels,
-            q=specific_humidity_at_model_levels,
-            sp=surface_pressure,
-            A=self.A,
-            B=self.B,
+        return _pressure_at_height_level(
+            self.height,
+            temperature_at_model_levels,
+            specific_humidity_at_model_levels,
+            surface_pressure,
+            self.A,
+            self.B,
         )
 
     def forward_transform(

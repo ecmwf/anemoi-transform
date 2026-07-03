@@ -624,12 +624,25 @@ def nearest_grid_points(
 
     target_xyz = latlon_to_xyz(target_latitudes, target_longitudes)
     target_points = np.array(target_xyz).transpose()
-    if max_distance is None:
-        distances, indices = cKDTree(source_points).query(target_points, k=num_neighbours_to_return)
+
+    tree = cKDTree(source_points)
+    query_kwargs = {} if max_distance is None else {"distance_upper_bound": max_distance}
+
+    if num_neighbours_to_return == 1 and len(source_points) > 1:
+        # When a target point is exactly equidistant from two or more source
+        # points (common on regular grids), which one cKDTree returns depends
+        # on the tree build and scipy version/platform. Break such ties
+        # deterministically by picking the lowest source index, so results
+        # are reproducible across environments.
+        d2, i2 = tree.query(target_points, k=2, **query_kwargs)
+        distances, indices = d2[:, 0], i2[:, 0].copy()
+        ties = np.isfinite(d2[:, 1]) & np.isclose(d2[:, 0], d2[:, 1], rtol=1e-9, atol=0.0)
+        for t in np.nonzero(ties)[0]:
+            candidates = tree.query_ball_point(target_points[t], r=d2[t, 0] * (1.0 + 1e-9))
+            indices[t] = min(candidates)
     else:
-        distances, indices = cKDTree(source_points).query(
-            target_points, k=num_neighbours_to_return, distance_upper_bound=max_distance
-        )
+        distances, indices = tree.query(target_points, k=num_neighbours_to_return, **query_kwargs)
+
     if return_distances:
         return indices, distances
     return indices

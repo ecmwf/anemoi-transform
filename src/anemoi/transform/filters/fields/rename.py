@@ -24,6 +24,18 @@ _KEY_MAPPING = {
 }
 
 
+# Renaming these keys renames the field itself: the new value is attached as
+# the field's name (the ``labels.name`` label, see ``anemoi.transform.naming``)
+# rather than overwriting the underlying metadata.
+_NAME_KEYS = ("name", "param")
+
+
+def _apply_rename(field: Field, what: str, value: str) -> Field:
+    if what in _NAME_KEYS:
+        return Field.with_name(field, value)
+    return Field.with_new_metadata(template=field, **{what: value})
+
+
 def _get_metadata(field, key):
     """Get metadata value by key, trying original metadata keys first, then component API."""
     try:
@@ -62,8 +74,7 @@ class FormatRename:
         values = [_get_metadata(field, b) for b in self.bits]
 
         kwargs = dict(zip(self.format_keys, values))
-        kwargs = {self.what: self.format.format(**kwargs)}
-        return Field.with_new_metadata(template=field, **kwargs)
+        return _apply_rename(field, self.what, self.format.format(**kwargs))
 
 
 class DictRename:
@@ -82,9 +93,7 @@ class DictRename:
         if md not in self.renaming:
             return field
 
-        kwargs = {self.what: self.renaming[md]}
-
-        return Field.with_new_metadata(template=field, **kwargs)
+        return _apply_rename(field, self.what, self.renaming[md])
 
 
 @filter_registry.register("rename_fields")

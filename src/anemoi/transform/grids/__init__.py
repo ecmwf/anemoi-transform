@@ -52,6 +52,3 @@ def create_grid(context: Any, config: Any) -> Grid:
     grid = grid_registry.from_config(config)
     grid.context = context
     return grid
-
-
-__all__ = ["UnstructuredGridFieldList"]

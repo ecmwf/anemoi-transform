@@ -46,9 +46,10 @@ def test_rename_field(grib_source):
 
     for original, result in zip(grib_source, pipeline):
         assert isinstance(result, Field)
+        # Renaming 'param' names the field (labels.name); metadata is untouched.
         if original.parameter.variable() == "z":
-            assert result.parameter.variable() == "geopotential"
+            assert result.name == "geopotential"
         elif original.parameter.variable() == "t":
-            assert result.parameter.variable() == "temperature"
+            assert result.name == "temperature"
         else:
             raise RuntimeError(f"Unexpected param: {original.metadata('param')}")

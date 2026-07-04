@@ -45,12 +45,22 @@ def _preserve_frame_type(method: Callable) -> Callable:
     that existing callers and tests rely on.
     """
 
+    def _propagate_attrs(data: Any, result: Any) -> Any:
+        # pandas propagates DataFrame.attrs inconsistently; carry them over
+        # explicitly (e.g. the origin attached by the dataset-create actions)
+        # without overwriting anything the filter set itself.
+        if isinstance(data, pd.DataFrame) and isinstance(result, pd.DataFrame):
+            for k, v in data.attrs.items():
+                result.attrs.setdefault(k, v)
+        return result
+
     @functools.wraps(method)
     def wrapper(self: Any, data: Any, *args: Any, **kwargs: Any) -> Any:
         if isinstance(data, Frame):
-            result = method(self, data.to_pandas(), *args, **kwargs)
+            frame = data.to_pandas()
+            result = _propagate_attrs(frame, method(self, frame, *args, **kwargs))
             return Frame.from_pandas(result) if isinstance(result, pd.DataFrame) else result
-        return method(self, data, *args, **kwargs)
+        return _propagate_attrs(data, method(self, data, *args, **kwargs))
 
     wrapper._frame_type_preserving = True
     return wrapper

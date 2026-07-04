@@ -31,12 +31,15 @@ def test_rename_grib_dict_rename(grib_source):
     pipeline = grib_source | rename
 
     for original, result in zip(grib_source, pipeline):
+        # Renaming 'param' names the field: the new name is carried by the
+        # labels.name label (Field.with_name); the GRIB metadata is untouched.
         if original.parameter.variable() == "z":
-            assert result.parameter.variable() == "geopotential"
+            assert result.name == "geopotential"
         elif original.parameter.variable() == "t":
-            assert result.parameter.variable() == "temperature"
+            assert result.name == "temperature"
         else:
             raise RuntimeError(f"Unexpected param: {original.parameter.variable()}")
+        assert result.parameter.variable() == original.parameter.variable()
 
 
 @skip_if_offline
@@ -54,7 +57,7 @@ def test_rename_grib_format_rename(grib_source):
         orig_level_d = original.metadata("levelist:d")
         assert isinstance(orig_level, int)
         assert isinstance(orig_level_d, float)
-        assert result.parameter.variable() == f"{orig_param}_{orig_level}_{orig_levtype}_{orig_level_d}"
+        assert result.name == f"{orig_param}_{orig_level}_{orig_levtype}_{orig_level_d}"
 
 
 @skip_if_offline
@@ -67,11 +70,12 @@ def test_rename_grib_dict_multiple(grib_source):
     pipeline = grib_source | rename
 
     for original, result in zip(grib_source, pipeline):
+        # 'levelist' is ordinary metadata (rewritten); 'param' names the field.
         assert result.vertical.level() == f"{original.vertical.level()}hPa"
         if original.parameter.variable() == "z":
-            assert result.parameter.variable() == "geopotential"
+            assert result.name == "geopotential"
         elif original.parameter.variable() == "t":
-            assert result.parameter.variable() == "temperature"
+            assert result.name == "temperature"
         else:
             raise RuntimeError(f"Unexpected param: {original.parameter.variable()}")
 
@@ -86,9 +90,9 @@ def test_rename_netcdf(netcdf_source):
 
     for original, result in zip(netcdf_source, pipeline):
         if original.parameter.variable() == "t2m":
-            assert result.parameter.variable() == "2m temperature"
+            assert result.name == "2m temperature"
         elif original.parameter.variable() == "msl":
-            assert result.parameter.variable() == "mean sea level pressure"
+            assert result.name == "mean sea level pressure"
         else:
             raise RuntimeError(f"Unexpected param: {original.parameter.variable()}")
 

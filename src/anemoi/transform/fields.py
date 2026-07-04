@@ -6,6 +6,17 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
+
+"""The wrapper ``Field`` / ``FieldList`` abstraction over earthkit-data.
+
+This module owns everything that pertains to fields and fieldlists: the
+wrapper classes themselves, their constructors (``FieldList.from_source``,
+``FieldList.concat``, ``Field.from_numpy``, ...) and ``new_grib_output``.
+Non-field earthkit-data utilities (dates, patterns, availability, temporary
+files, ...) are imported from ``earthkit.data`` directly at their call
+sites.
+"""
+
 import datetime
 import logging
 from abc import ABC
@@ -17,8 +28,6 @@ import numpy as np
 from earthkit.data import Field as _EkdField
 from earthkit.data import FieldList as _EkdFieldList
 from earthkit.data.core.order import build_remapping
-from earthkit.data.utils.dates import to_datetime  # noqa: F401  (facade re-export)
-from earthkit.data.utils.dates import to_timedelta  # noqa: F401  (facade re-export)
 
 from anemoi.transform.data import DataContainer
 
@@ -26,18 +35,6 @@ LOG = logging.getLogger(__name__)
 
 # Sentinel returned by a Flavour when it has no value for a given metadata key.
 MISSING_METADATA = object()
-
-# ---------------------------------------------------------------------------
-# earthkit-data facade
-#
-# This module is the single place in the Anemoi packages that imports
-# ``earthkit.data``. Everything the rest of the codebase needs from
-# earthkit-data is re-exported here (see ``fields``, ``concat``,
-# ``from_source``, ``Pattern``, ``build_remapping``, ``to_datetime``, ... and
-# the lazily-loaded names in ``__getattr__`` below). Import from
-# ``anemoi.transform.fields`` rather than adding a new ``earthkit.data`` import
-# elsewhere.
-# ---------------------------------------------------------------------------
 
 # Raw earthkit-data types, exposed under explicit names so they do not clash
 # with the wrapper ``Field`` / ``FieldList`` classes defined below (which are
@@ -71,6 +68,7 @@ class _GribOutput:
     """
 
     def __init__(self, path: str):
+        """Open ``path`` for writing GRIB messages."""
         self._file = open(path, "wb")
 
     def write(
@@ -82,6 +80,23 @@ class _GribOutput:
         missing_value: float = 9999,
         **kwargs: Any,
     ) -> None:
+        """Encode one GRIB message and append it to the file.
+
+        Parameters
+        ----------
+        values : Any
+            The values to encode.
+        check_nans : bool
+            Replace NaNs in the values with ``missing_value``.
+        metadata : dict, optional
+            Metadata to encode; merged with ``**kwargs``.
+        template : Field, optional
+            A (wrapped or raw) field used as encoding template.
+        missing_value : float
+            The value encoded in place of NaNs.
+        **kwargs : Any
+            Additional metadata to encode.
+        """
         from earthkit.data.encoders.grib import GribEncoder
 
         metadata = {**(metadata or {}), **kwargs}
@@ -94,6 +109,7 @@ class _GribOutput:
         ).to_file(self._file)
 
     def close(self) -> None:
+        """Close the output file."""
         self._file.close()
 
 
@@ -114,12 +130,7 @@ def __getattr__(name: str) -> Any:
     imported on first access (PEP 562).
     """
     _lazy = {
-        "Availability": ("earthkit.data.utils.availability", "Availability"),
-        "Pattern": ("earthkit.data.utils.patterns", "Pattern"),
-        "temp_file": ("earthkit.data.core.temporary", "temp_file"),
-        "GribEncoder": ("earthkit.data.encoders.grib", "GribEncoder"),
         "XArrayFieldList": ("earthkit.data.readers.xarray.fieldlist", "XArrayFieldList"),
-        "download_and_cache": ("earthkit.data.sources.url", "download_and_cache"),
     }
     if name in _lazy:
         import importlib
@@ -176,24 +187,88 @@ class Field:
     """
 
     def __init__(self, field: _EkdField | None = None):
+        """Wrap a raw earthkit-data field.
+
+        Parameters
+        ----------
+        field : earthkit.data.Field, optional
+            The underlying earthkit-data field.
+        """
         self._field = field
 
     def __getattr__(self, name: str) -> Any:
-        # __getattr__ is only called when normal attribute lookup fails.
-        # Delegate to the underlying earthkit field.
+        """Delegate attribute access to the underlying earthkit field.
+
+        Only called when normal attribute lookup fails, so the wrapper's
+        own methods and properties take precedence.
+        """
         if name == "_field":
             raise AttributeError(name)
         return getattr(self._field, name)
 
+    @property
+    def name(self) -> str:
+        """The name of the field (the ``labels.name`` label).
+
+        The name is attached by a naming scheme (see
+        :mod:`anemoi.transform.naming`) or explicitly with
+        :meth:`with_name`; accessing it on a field that has not been
+        named is an error.
+        """
+        name = self._field.get("labels.name", default=None)
+        if name is None:
+            raise ValueError(f"Field has no name (labels.name not set): {self._field}")
+        return name
+
+    @property
+    def valid_datetime(self) -> datetime.datetime:
+        """The valid datetime of the field (``time.valid_datetime``), timezone-naive."""
+        value = self._field.get("time.valid_datetime", default=None)
+        if value is None:
+            raise ValueError(f"Field has no valid datetime: {self._field}")
+        assert isinstance(value, datetime.datetime), f"Expected a datetime, got {type(value)}: {value!r}"
+        assert value.tzinfo is None, f"Expected a timezone-naive datetime, got {value!r}"
+        return value
+
+    @property
+    def param(self) -> str:
+        """The variable name of the field (``parameter.variable``)."""
+        value = self._field.get("parameter.variable", default=None)
+        if value is None:
+            raise ValueError(f"Field has no variable name: {self._field}")
+        return value
+
+    @property
+    def number(self) -> int:
+        """The ensemble member of the field (``metadata.number``).
+
+        Fields that carry no ensemble information are member 0, following
+        the convention used throughout the pipelines.
+        """
+        return self._field.get("metadata.number", default=None) or 0
+
     # === forwarded methods for Field class
 
     def set(self, *args, **kwargs) -> "Field":
+        """Return a new :class:`Field` with the given components overridden.
+
+        Thin forward of :meth:`earthkit.data.Field.set` that re-wraps the
+        result.
+        """
         return Field(self._field.set(*args, **kwargs))
 
     def get(self, *args, **kwargs) -> Any:
+        """Get a metadata value by component path (e.g. ``"vertical.level"``).
+
+        Thin forward of :meth:`earthkit.data.Field.get`.
+        """
         return self._field.get(*args, **kwargs)
 
     def to_numpy(self, *args, **kwargs) -> Any:
+        """Return the field values as a numpy array.
+
+        Thin forward of :meth:`earthkit.data.Field.to_numpy`.
+        """
         return self._field.to_numpy(*args, **kwargs)
 
     # ===
@@ -284,6 +359,24 @@ class Field:
         # map metadata keys to new locations
         mapped_metadata = {_METADATA_KEY_MAPPING[key]: value for key, value in metadata.items()}
         return cls(_unwrap_field(template).set(**mapped_metadata))
+
+    @classmethod
+    def with_name(cls, field: "Field", name: str) -> "Field":
+        """Create a new field carrying ``name`` as its ``labels.name`` label.
+
+        Parameters
+        ----------
+        field : Field
+            The field to name.
+        name : str
+            The name to attach.
+
+        Returns
+        -------
+        Field
+            The new named field.
+        """
+        return cls(_unwrap_field(field).set(**{"labels.name": name}))
 
     @classmethod
     def with_valid_datetime(cls, template: "Field", date: Any) -> "Field":
@@ -388,22 +481,45 @@ class FieldList(DataContainer):
     """
 
     def __init__(self, fieldlist: _EkdFieldList | None = None):
+        """Wrap a raw earthkit-data fieldlist.
+
+        Parameters
+        ----------
+        fieldlist : earthkit.data.FieldList, optional
+            The underlying earthkit-data fieldlist. When omitted, the
+            fieldlist is empty.
+        """
         self._fieldlist = fieldlist if fieldlist is not None else ekd.create_fieldlist()
         self._fields: list[Field] | None = None
 
     @property
     def _underlying(self) -> _EkdFieldList:
+        """The underlying earthkit-data fieldlist (see :class:`DataContainer`)."""
         return self._fieldlist
 
     @property
     def _wrapped(self) -> list[Field]:
+        """The fields as wrapped :class:`Field` objects (built lazily, cached)."""
         if self._fields is None:
             self._fields = [f if isinstance(f, Field) else Field(f) for f in self._fieldlist]
         return self._fields
 
     @classmethod
     def from_fields(cls, fields: list[Field]) -> "FieldList":
-        """Create a FieldList from a list of fields."""
+        """Create a :class:`FieldList` from a list of fields.
+
+        Parameters
+        ----------
+        fields : list of Field
+            The fields (wrapped or raw) to build the fieldlist from. The
+            identity of wrapped fields is preserved: indexing the result
+            returns the same objects.
+
+        Returns
+        -------
+        FieldList
+            The new fieldlist.
+        """
         fields = [f if isinstance(f, Field) else Field(f) for f in fields]
         result = cls(ekd.create_fieldlist([f._field for f in fields]))
         # Preserve the identity of the provided fields.
@@ -412,12 +528,45 @@ class FieldList(DataContainer):
 
     @classmethod
     def from_dicts(cls, dicts: list[dict]) -> "FieldList":
-        """Create a FieldList from a list of dictionaries."""
+        """Create a :class:`FieldList` from a list of dictionaries.
+
+        Parameters
+        ----------
+        dicts : list of dict
+            One dictionary per field, with the field components (``values``,
+            ``geography``, ``time``, ...), as accepted by the earthkit-data
+            ``list-of-dicts`` source.
+
+        Returns
+        -------
+        FieldList
+            The new fieldlist.
+        """
         return cls(ekd.from_source("list-of-dicts", dicts).to_fieldlist())
 
     @classmethod
     def from_source(cls, name: str, *args, **kwargs) -> "FieldList":
-        """Create a FieldList from a source."""
+        """Create a :class:`FieldList` from an earthkit-data source.
+
+        Wrapped ``Field``/``FieldList`` arguments are unwrapped before they
+        reach earthkit-data (some sources, e.g. ``forcings``, take a field
+        or fieldlist as template).
+
+        Parameters
+        ----------
+        name : str
+            The name of the earthkit-data source (``"file"``, ``"mars"``,
+            ``"forcings"``, ...).
+        *args : Any
+            Positional arguments for the source.
+        **kwargs : Any
+            Keyword arguments for the source.
+
+        Returns
+        -------
+        FieldList
+            The new fieldlist.
+        """
         args = tuple(_unwrap_any(a) for a in args)
         kwargs = {k: _unwrap_any(v) for k, v in kwargs.items()}
         result = ekd.from_source(name, *args, **kwargs)
@@ -430,13 +579,49 @@ class FieldList(DataContainer):
         return cls(result)
 
     @classmethod
-    def from_file(cls, path: str) -> "FieldList":
-        """Create a FieldList from a file."""
-        return cls.from_source("file", path)
+    def from_file(cls, path: str, *, keep: Any = None) -> "FieldList":
+        """Create a :class:`FieldList` from a file.
+
+        Parameters
+        ----------
+        path : str
+            The path of the file to read.
+        keep : Any, optional
+            An object to keep alive for as long as the fields (or any field
+            derived from them via ``set()``) are alive — typically a
+            temporary-file handle whose deletion would invalidate the
+            fields' underlying GRIB handles.
+
+        Returns
+        -------
+        FieldList
+            The new fieldlist.
+        """
+        result = cls.from_source("file", path)
+        if keep is not None:
+            # Pin on the data component: it is shared with every field derived
+            # from these via ``set()``, whereas the field object itself is not.
+            for field in result._fieldlist:
+                field._components["data"]._anemoi_keep = keep
+        return result
 
     @classmethod
     def concat(cls, *args: "FieldList") -> "FieldList":
-        """Concatenate multiple FieldLists into a single FieldList."""
+        """Concatenate multiple fieldlists into a single :class:`FieldList`.
+
+        In earthkit-data 1.0 ``fieldlist + fieldlist`` is element-wise
+        arithmetic; this is the way to concatenate collections.
+
+        Parameters
+        ----------
+        *args : FieldList
+            The fieldlists (wrapped or raw) to concatenate.
+
+        Returns
+        -------
+        FieldList
+            The concatenated fieldlist.
+        """
         result = ekd.concat(*[_unwrap_fieldlist(arg) for arg in args])
         # See the comment in from_source(): avoid a redundant .to_fieldlist()
         # call, which can corrupt already-materialised fields.
@@ -463,19 +648,42 @@ class FieldList(DataContainer):
         return FieldList(self._fieldlist.order_by(*args, **kwargs))
 
     def __len__(self) -> int:
+        """Return the number of fields."""
         return len(self._fieldlist)
 
     def __getitem__(self, index: int) -> Field:
+        """Return the field at ``index``, as a wrapped :class:`Field`."""
         return self._wrapped[index]
 
     def __iter__(self):
+        """Iterate over the fields, as wrapped :class:`Field` objects."""
         return iter(self._wrapped)
 
 
 class Flavour(ABC):
+    """Base class for flavours: per-field metadata overrides.
+
+    A flavour resolves metadata keys for a field (e.g. from a set of rules)
+    and is applied with :meth:`Field.flavoured`.
+    """
+
     @abstractmethod
     def __call__(self, key: str, field: Field) -> Any:
-        """Called during field metadata lookup, so it can be modified"""
+        """Return the flavour's value for ``key`` on ``field``.
+
+        Parameters
+        ----------
+        key : str
+            The metadata key being resolved.
+        field : Field
+            The field whose metadata is being resolved.
+
+        Returns
+        -------
+        Any
+            The value to use, or :data:`MISSING_METADATA` when the flavour
+            has no value for this key.
+        """
         pass
 
 
@@ -510,47 +718,3 @@ class FieldSelection:
             return all(field.get(key) in values for key, values in self._spec.items())
         except KeyError:
             return False
-
-
-# ---------------------------------------------------------------------------
-# Module-level constructors for the wrapper collection types.
-#
-# These are the free-function form of the ``Field`` / ``FieldList`` factory
-# classmethods above, so callers can build fields without referencing the
-# classes directly (and never earthkit-data directly).
-# ---------------------------------------------------------------------------
-
-
-def from_source(name: str, *args: Any, **kwargs: Any) -> "FieldList":
-    """Create a :class:`FieldList` from an earthkit-data source."""
-    return FieldList.from_source(name, *args, **kwargs)
-
-
-def concat(*args: "FieldList") -> "FieldList":
-    """Concatenate multiple FieldLists into a single FieldList (see :meth:`FieldList.concat`)."""
-    return FieldList.concat(*args)
-
-
-def new_field_from_numpy(array: np.ndarray, *, template: Field, **metadata: Any) -> Field:
-    """Create a new :class:`Field` from a numpy array (see :meth:`Field.from_numpy`)."""
-    return Field.from_numpy(array, template=template, **metadata)
-
-
-def new_field_from_latitudes_longitudes(template: Field, latitudes: np.ndarray, longitudes: np.ndarray) -> Field:
-    """Create a new :class:`Field` from latitudes/longitudes (see :meth:`Field.from_latitudes_longitudes`)."""
-    return Field.from_latitudes_longitudes(template, latitudes, longitudes)
-
-
-def new_field_with_metadata(template: Field, **metadata: Any) -> Field:
-    """Create a new :class:`Field` with updated metadata (see :meth:`Field.with_new_metadata`)."""
-    return Field.with_new_metadata(template, **metadata)
-
-
-def new_field_with_valid_datetime(template: Field, date: Any) -> Field:
-    """Create a new :class:`Field` with a valid datetime (see :meth:`Field.with_valid_datetime`)."""
-    return Field.with_valid_datetime(template, date)
-
-
-def new_fieldlist_from_list(fields: list[Field]) -> FieldList:
-    """Create a :class:`FieldList` from a list of fields (see :meth:`FieldList.from_fields`)."""
-    return FieldList.from_fields(fields)

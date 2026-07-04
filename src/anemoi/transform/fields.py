@@ -51,6 +51,7 @@ import earthkit.data.utils.unique as _ekd_unique  # noqa: E402
 if not getattr(_ekd_unique, "_build_remapping_patched", False):
 
     def _patched_unique_build_remapping(remapping: Any, patch: Any) -> Any:
+        """Fixed version of ``earthkit.data.utils.unique.build_remapping``."""
         if remapping is not None or patch is not None:
             return build_remapping(remapping, patch)
         return None
@@ -640,11 +641,45 @@ class FieldList(DataContainer):
         return self
 
     def sel(self, *args, **kwargs) -> "FieldList":
-        """Select a subset of the fields, returning a new :class:`FieldList`."""
+        """Select a subset of the fields.
+
+        Thin forward of :meth:`earthkit.data.FieldList.sel` that re-wraps
+        the result.
+
+        Parameters
+        ----------
+        *args : Any
+            Positional arguments for ``sel``.
+        **kwargs : Any
+            Selection criteria, keyed by component path (e.g.
+            ``sel(**{"labels.name": "2t"})``).
+
+        Returns
+        -------
+        FieldList
+            The selected fields.
+        """
         return FieldList(self._fieldlist.sel(*args, **kwargs))
 
     def order_by(self, *args, **kwargs) -> "FieldList":
-        """Order the fields, returning a new :class:`FieldList`."""
+        """Order the fields.
+
+        Thin forward of :meth:`earthkit.data.FieldList.order_by` that
+        re-wraps the result.
+
+        Parameters
+        ----------
+        *args : Any
+            Ordering keys, as component paths (e.g.
+            ``order_by("labels.name")``).
+        **kwargs : Any
+            Additional ordering options.
+
+        Returns
+        -------
+        FieldList
+            The ordered fields.
+        """
         return FieldList(self._fieldlist.order_by(*args, **kwargs))
 
     def __len__(self) -> int:
@@ -693,16 +728,28 @@ class FieldSelection:
     ALLOWED_KEYS = {"parameter.variable", "vertical.level"}
 
     def __init__(self, **kwargs):
+        """Build a selection from metadata key/value constraints.
+
+        Parameters
+        ----------
+        **kwargs : Any
+            Constraints, keyed by component path (see ``ALLOWED_KEYS``).
+            Values may be scalars or lists of accepted values; ``None`` and
+            empty lists mean "no constraint on this key". No constraints at
+            all matches every field.
+        """
         self._spec = kwargs
         self._validate_spec()
         self._sanitise_spec()
         self._all = len(self._spec) == 0
 
     def _validate_spec(self):
+        """Reject constraint keys that are not in ``ALLOWED_KEYS``."""
         if not set(self._spec).issubset(self.ALLOWED_KEYS):
             raise ValueError(f"Invalid keys in spec: {tuple(self._spec)} - only {self.ALLOWED_KEYS} are allowed.")
 
     def _sanitise_spec(self):
+        """Normalise constraint values to tuples, dropping empty constraints."""
         for key, value in list(self._spec.items()):
             if isinstance(value, (str, int, float, bool)):
                 self._spec[key] = (value,)
@@ -711,7 +758,22 @@ class FieldSelection:
             elif not isinstance(value, (list, tuple)):
                 raise ValueError(f"Invalid value for key {key}: {value}")
 
-    def match(self, field):
+    def match(self, field) -> bool:
+        """Return whether ``field`` satisfies every constraint.
+
+        Parameters
+        ----------
+        field : Field
+            The field to test.
+
+        Returns
+        -------
+        bool
+            ``True`` when all constrained keys have one of the accepted
+            values (or when the selection has no constraints), ``False``
+            otherwise — including when a constrained key is missing from
+            the field.
+        """
         if self._all:
             return True
         try:

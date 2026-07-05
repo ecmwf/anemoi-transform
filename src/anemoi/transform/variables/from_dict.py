@@ -86,9 +86,9 @@ class VariableFromMarsVocabulary(Variable):
         return self.data.get("process") == "accumulation"
 
     @property
-    def is_instantanous(self) -> bool:
-        """Check if the variable is instantaneous."""
-        return "process" not in self.data
+    def is_valid_over_a_period(self) -> bool:
+        """Check if the variable is valid over a period (e.g. accumulated or averaged)."""
+        return "process" in self.data
 
     @property
     def time_processing(self):
@@ -100,7 +100,7 @@ class VariableFromMarsVocabulary(Variable):
         """Get the variable's period as a timedelta.
         For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
         """
-        if self.is_instantanous:
+        if self.is_instantaneous:
             return as_timedelta(0)
 
         if not (period := self.data.get("period")):
@@ -113,6 +113,7 @@ class VariableFromMarsVocabulary(Variable):
 
     @property
     def units(self):
+        """Get the units of the variable (a :class:`Units`, or None if missing)."""
         units = self.data.get("units", None)
         return Units(units) if units else None
 
@@ -126,52 +127,9 @@ class VariableFromMarsVocabulary(Variable):
         """Get the parameter of the variable."""
         return self.mars.get("param", super().param)
 
-    def similarity(self, other: Any) -> int:
-        """Calculate the similarity between this variable and another.
-
-        Parameters
-        ----------
-        other : Any
-            The other variable to compare with.
-
-        Returns
-        -------
-        int
-            The similarity score between the two variables.
-        """
-        if not isinstance(other, VariableFromMarsVocabulary):
-            return 0
-
-        def __similarity(a: Any, b: Any) -> int:
-            if isinstance(a, dict) and isinstance(b, dict):
-                return sum(__similarity(a[k], b[k]) for k in set(a.keys()) & set(b.keys()))
-
-            if isinstance(a, list) and isinstance(b, list):
-                return sum(__similarity(a[i], b[i]) for i in range(min(len(a), len(b))))
-
-            return 1 if a == b else 0
-
-        return __similarity(self.data, other.data)
-
 
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""
-
-    def __init__(self, name: str, data: dict[str, Any]) -> None:
-        """Initialize the variable with a name and data.
-
-        Parameters
-        ----------
-        name : str
-            The name of the variable.
-        data : dict
-            The data defining the variable.
-        """
-        super().__init__(name, data)
-
-
-class PostProcessedVariable(VariableFromMarsVocabulary):
-    """A variable that is defined by a post-processed dictionary."""
 
     def __init__(self, name: str, data: dict[str, Any]) -> None:
         """Initialize the variable with a name and data.

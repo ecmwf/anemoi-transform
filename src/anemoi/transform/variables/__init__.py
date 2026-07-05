@@ -167,15 +167,14 @@ class Variable(ABC):
 
     @property
     @abstractmethod
-    def is_instantanous(self) -> bool:
-        """Check if the variable is instantaneous."""
+    def is_valid_over_a_period(self) -> bool:
+        """Check if the variable is valid over a period (e.g. accumulated or averaged)."""
         pass
 
     @property
-    def is_valid_over_a_period(self) -> bool:
-        """Check if the variable is valid over a period."""
-
-        return not self.is_instantanous
+    def is_instantaneous(self) -> bool:
+        """Check if the variable is instantaneous."""
+        return not self.is_valid_over_a_period
 
     @property
     @abstractmethod
@@ -220,23 +219,6 @@ class Variable(ABC):
     def units(self):
         """Get the units of the variable."""
         pass
-
-    def similarity(self, other: Any) -> int:
-        """Compute the similarity between two variables. This is used when
-        encoding a variable in GRIB and we do not have a template for it.
-        We can then try to find the most similar variable for which we have a template.
-
-        Parameters
-        ----------
-        other : Any
-            The other variable to compare with.
-
-        Returns
-        -------
-        int
-            The similarity score.
-        """
-        return 0
 
     def compatible(
         self,
@@ -284,7 +266,7 @@ class Variable(ABC):
         name = self.name
 
         def _ignore(what, ignore):
-
+            """Resolve an ignore option (bool, name or list of names) for this variable."""
             match ignore:
                 case bool():
                     return ignore
@@ -306,7 +288,7 @@ class Variable(ABC):
         check_type_of_level = not _ignore("ignore_type_of_level", ignore_type_of_level)
 
         def _compare():
-
+            """Return the first incompatibility reason, or None when compatible."""
             if check_units:
                 if self.units != other.units:
                     if self.units is None or other.units is None:
@@ -367,6 +349,23 @@ class Variable(ABC):
 
     @classmethod
     def check_compatibility(cls, variables1: dict, variables2: dict, *args, **kwargs) -> None:
+        """Check that two ``{name: Variable}`` mappings are compatible.
+
+        Raises ``ValueError`` when the variable names differ or any pair is
+        incompatible (see :meth:`compatible`).
+
+        Parameters
+        ----------
+        variables1 : dict
+            The first ``{name: Variable}`` mapping.
+        variables2 : dict
+            The second ``{name: Variable}`` mapping.
+        *args : Any
+            Dictionaries of options merged into the ``ignore_*`` keyword
+            arguments passed to :meth:`compatible`.
+        **kwargs : Any
+            Options passed to :meth:`compatible` (e.g. ``ignore_units``).
+        """
         options = {}
         for arg in args:
             if isinstance(arg, dict):

@@ -10,7 +10,7 @@
 import re
 
 from anemoi.transform import Field
-from anemoi.transform.fields import METADATA_KEY_MAPPING
+from anemoi.transform.fields import metadata_key
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -34,12 +34,14 @@ def _get_metadata(field, key):
         pass
 
     # Try the mapped component key
-    mapped = METADATA_KEY_MAPPING.get(key)
-    if mapped is not None:
-        try:
-            return field.get(mapped)
-        except (KeyError, TypeError) as e:
-            raise KeyError(f"Cannot get metadata for key '{key}'") from e
+    try:
+        mapped = metadata_key(key)
+    except ValueError:
+        return None
+    try:
+        return field.get(mapped)
+    except (KeyError, TypeError) as e:
+        raise KeyError(f"Cannot get metadata for key '{key}'") from e
 
 
 class FormatRename:

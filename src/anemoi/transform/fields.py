@@ -19,6 +19,7 @@ sites.
 
 import datetime
 import logging
+import warnings
 from abc import ABC
 from abc import abstractmethod
 from typing import Any
@@ -142,11 +143,9 @@ def __getattr__(name: str) -> Any:
 
 
 # Legacy (GRIB-style) metadata key names mapped to earthkit-data 1.0
-# component paths. This is the single source of truth for that mapping:
-# used to build new fields via ``set()`` (``Field.with_new_metadata``,
-# ``Field.flavoured``), to translate naming templates, to resolve legacy
-# keys in the ``rename`` filter and in ``sel()`` remappings.
-METADATA_KEY_MAPPING = {
+# component paths. This is the single source of truth for that mapping;
+# all key-by-key translation goes through :func:`metadata_key`.
+_METADATA_KEY_MAPPING = {
     "valid_datetime": "time.valid_datetime",
     "base_datetime": "time.base_datetime",
     "step": "time.step",
@@ -158,6 +157,46 @@ METADATA_KEY_MAPPING = {
     "levelist": "vertical.level",
     "number": "ensemble.member",
 }
+
+
+def metadata_key(key: str, default: str | None = None) -> str:
+    """Translate a metadata key to its earthkit-data 1.0 component path.
+
+    Component paths (keys containing a ``.``, e.g. ``parameter.variable``)
+    pass through unchanged. Legacy GRIB/MARS-style keys (``param``,
+    ``levelist``, ...) are translated to their component path and emit a
+    :class:`DeprecationWarning`: user-facing surfaces that historically
+    accept them (naming templates, the ``rename`` filter,
+    :meth:`Field.with_new_metadata` kwargs, ``sel()`` kwargs) remain
+    supported, but the component vocabulary is the one to use.
+
+    Parameters
+    ----------
+    key : str
+        The metadata key to translate — a component path or a legacy key.
+    default : str, optional
+        The value to return for a bare key that is not a known legacy key
+        (e.g. ``f"metadata.{key}"`` to fall back to a raw GRIB key). When
+        omitted, an unknown bare key raises ``ValueError``.
+
+    Returns
+    -------
+    str
+        The earthkit-data 1.0 component path for the key.
+    """
+    if "." in key:
+        return key
+    mapped = _METADATA_KEY_MAPPING.get(key)
+    if mapped is not None:
+        warnings.warn(
+            f"Metadata key {key!r} is deprecated, use {mapped!r} instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return mapped
+    if default is not None:
+        return default
+    raise ValueError(f"Unknown metadata key {key!r}. Known legacy keys: {sorted(_METADATA_KEY_MAPPING)}")
 
 
 def _unwrap_field(field: "Field | _EkdField") -> _EkdField:
@@ -349,21 +388,17 @@ class Field:
         template : Field
             The template field to use.
         **metadata : Any
-            The metadata for the new field.
+            The metadata for the new field, keyed by component path
+            (e.g. ``{"parameter.variable": ...}``) or by legacy key
+            (translated via :func:`metadata_key`, with a deprecation
+            warning). Unknown bare keys raise ``ValueError``.
 
         Returns
         -------
         Field
             The new field with the provided metadata.
         """
-        unknown_keys = set(metadata.keys()) - set(METADATA_KEY_MAPPING.keys())
-        if unknown_keys:
-            raise ValueError(
-                f"Unknown metadata keys: {unknown_keys}. Allowed keys are: {set(METADATA_KEY_MAPPING.keys())}"
-            )
-
-        # map metadata keys to new locations
-        mapped_metadata = {METADATA_KEY_MAPPING[key]: value for key, value in metadata.items()}
+        mapped_metadata = {metadata_key(key): value for key, value in metadata.items()}
         return cls(_unwrap_field(template).set(**mapped_metadata))
 
     @classmethod
@@ -471,7 +506,7 @@ class Field:
         for key in rules:
             value = flavour(key, wrapped)
             if value is not MISSING_METADATA:
-                overrides[METADATA_KEY_MAPPING.get(key, f"metadata.{key}")] = value
+                overrides[metadata_key(key, default=f"metadata.{key}")] = value
 
         if not overrides:
             return wrapped

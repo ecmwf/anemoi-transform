@@ -8,11 +8,12 @@
 # nor does it submit to any jurisdiction.
 
 import logging
+import warnings
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Union
 
-from anemoi.transform.fields import METADATA_KEY_MAPPING
+from anemoi.transform.fields import metadata_key
 from anemoi.transform.units import Units
 from anemoi.transform.variables import Variable
 
@@ -33,9 +34,12 @@ _LEVEL_TYPE_MAPPING = {
     "potential_temperature": "pt",
 }
 
-# The MARS-style GRIB keys reported by ``grib_keys`` (component paths come
-# from the canonical ``METADATA_KEY_MAPPING``).
-_GRIB_KEYS = ("param", "levtype", "levelist", "step", "number")
+# The MARS-style GRIB keys reported by ``grib_keys``, with their component
+# paths. GRIB encoding is a sanctioned legacy surface (the MARS keys are the
+# output format there), so the deprecation warning is silenced while deriving.
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", DeprecationWarning)
+    _GRIB_KEYS = {key: metadata_key(key) for key in ("param", "levtype", "levelist", "step", "number")}
 
 
 class VariableFromField(Variable):
@@ -100,20 +104,13 @@ class VariableFromField(Variable):
         return None
 
     @property
-    def is_instantanous(self) -> bool:
-        """Check if the variable is instantaneous (unknown when the field has no statistical process)."""
-        process = self.time_processing
-        if process is None:
-            return None
-        return False
-
-    @property
     def is_valid_over_a_period(self) -> bool:
-        """Check if the variable is valid over a period (e.g. accumulated or averaged)."""
-        process = self.time_processing
-        if process is None:
-            return None
-        return True
+        """Check if the variable is valid over a period (e.g. accumulated or averaged).
+
+        A field without a ``time.statistical_process`` is taken to be
+        instantaneous.
+        """
+        return self.time_processing is not None
 
     @property
     def time_processing(self):
@@ -148,8 +145,8 @@ class VariableFromField(Variable):
     def grib_keys(self) -> dict[str, Any]:
         """Get MARS-style GRIB keys for the variable, from the field's components."""
         keys = {}
-        for grib_key in _GRIB_KEYS:
-            value = self.field.get(METADATA_KEY_MAPPING[grib_key], default=None)
+        for grib_key, path in _GRIB_KEYS.items():
+            value = self.field.get(path, default=None)
             if value is not None:
                 keys[grib_key] = value
         if "levtype" in keys:

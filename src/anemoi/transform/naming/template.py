@@ -12,7 +12,7 @@ import logging
 import re
 
 from anemoi.transform import Field
-from anemoi.transform.fields import METADATA_KEY_MAPPING
+from anemoi.transform.fields import metadata_key
 from anemoi.transform.naming import Naming
 from anemoi.transform.naming import naming_registry
 
@@ -75,7 +75,7 @@ def _to_earthkit10_template(template: str) -> str:
             # Type-qualified keys must use metadata.key:type — component
             # paths (e.g. vertical.level:d) do not support eccodes types.
             return "{metadata." + key + type_qual + "}"
-        return "{" + METADATA_KEY_MAPPING.get(key, f"metadata.{key}") + "}"
+        return "{" + metadata_key(key, default=f"metadata.{key}") + "}"
 
     return _BARE_TEMPLATE_VAR.sub(_replace, template)
 

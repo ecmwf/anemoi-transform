@@ -296,7 +296,10 @@ class Variable(ABC):
                             f"{self}: one of the variables has missing units: {self.units} vs {other.units}. Assuming they are compatible."
                         )
                     else:
-                        return f"Units are not compatible: {self.units} vs {other.units}"
+                        return (
+                            f"Units are not compatible: "
+                            f"{self.units} (canonical: {self.units:c}) vs {other.units} (canonical: {other.units:c})"
+                        )
 
             if check_time_processing:
                 if self.time_processing != other.time_processing:

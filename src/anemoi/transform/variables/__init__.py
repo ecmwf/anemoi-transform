@@ -54,24 +54,49 @@ class Variable(ABC):
         return VariableFromDict(name, data)
 
     @classmethod
-    def from_earthkit(cls, name: str, field: Any) -> Any:
-        """Create a Variable instance from an Earthkit field.
+    def from_field(cls, name: str, field: Any) -> Any:
+        """Create a Variable instance from a field.
 
         Parameters
         ----------
         name : str
             The name of the variable.
-        field : Any
-            The Earthkit field.
+        field : Field
+            The field describing the variable.
 
         Returns
         -------
         Any
             The created Variable instance.
         """
-        from anemoi.transform.variables.from_dict import VariableFromEarthkit
+        from anemoi.transform.variables.from_field import VariableFromField
 
-        return VariableFromEarthkit(name, field)
+        return VariableFromField(name, field)
+
+    @classmethod
+    def from_earthkit(cls, name: str, field: Any) -> Any:
+        """Deprecated alias of :meth:`from_field`.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        field : Field
+            The field describing the variable.
+
+        Returns
+        -------
+        Any
+            The created Variable instance.
+        """
+        import warnings
+
+        warnings.warn(
+            "'Variable.from_earthkit' is deprecated. Please use 'Variable.from_field' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return cls.from_field(name, field)
 
     def __repr__(self) -> str:
         """Return a string representation of the Variable.

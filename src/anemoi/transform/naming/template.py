@@ -12,22 +12,12 @@ import logging
 import re
 
 from anemoi.transform import Field
+from anemoi.transform.fields import METADATA_KEY_MAPPING
 from anemoi.transform.naming import Naming
 from anemoi.transform.naming import naming_registry
 
 LOG = logging.getLogger(__name__)
 
-# Mapping from legacy bare template keys to earthkit 1.0 component paths.
-# - ``parameter.variable`` survives ``field.set()`` and
-#   ``new_field_from_latitudes_longitudes`` wrapping.
-# - ``vertical.level`` also survives all wrapping; it returns 0 for surface
-#   fields (the ``_0`` suffix is stripped after template evaluation, see
-#   :func:`_strip_zero_level_suffix`).
-_LEGACY_KEY_MAP = {
-    "param": "parameter.variable",
-    "level": "vertical.level",
-    "levelist": "vertical.level",
-}
 
 # Pattern that matches bare {key} or {key:type} template variables but leaves
 # already-prefixed {component.key} forms (e.g. {parameter.variable}) untouched.
@@ -85,7 +75,7 @@ def _to_earthkit10_template(template: str) -> str:
             # Type-qualified keys must use metadata.key:type — component
             # paths (e.g. vertical.level:d) do not support eccodes types.
             return "{metadata." + key + type_qual + "}"
-        return "{" + _LEGACY_KEY_MAP.get(key, f"metadata.{key}") + "}"
+        return "{" + METADATA_KEY_MAPPING.get(key, f"metadata.{key}") + "}"
 
     return _BARE_TEMPLATE_VAR.sub(_replace, template)
 

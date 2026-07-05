@@ -10,19 +10,9 @@
 import re
 
 from anemoi.transform import Field
+from anemoi.transform.fields import METADATA_KEY_MAPPING
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
-
-# Mapping from old metadata keys to component-based accessor paths
-_KEY_MAPPING = {
-    "param": "parameter.variable",
-    "levelist": "vertical.level",
-    "levtype": "vertical.level_type",
-    "step": "time.step",
-    "valid_datetime": "time.valid_datetime",
-    "number": "ensemble.member",
-}
-
 
 # Renaming these keys renames the field itself: the new value is attached as
 # the field's name (the ``labels.name`` label, see ``anemoi.transform.naming``)
@@ -44,7 +34,7 @@ def _get_metadata(field, key):
         pass
 
     # Try the mapped component key
-    mapped = _KEY_MAPPING.get(key)
+    mapped = METADATA_KEY_MAPPING.get(key)
     if mapped is not None:
         try:
             return field.get(mapped)

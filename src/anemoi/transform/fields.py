@@ -142,14 +142,19 @@ def __getattr__(name: str) -> Any:
 
 
 # Legacy (GRIB-style) metadata key names mapped to earthkit-data 1.0
-# component paths, for building new fields via ``set()``.
-_METADATA_KEY_MAPPING = {
+# component paths. This is the single source of truth for that mapping:
+# used to build new fields via ``set()`` (``Field.with_new_metadata``,
+# ``Field.flavoured``), to translate naming templates, to resolve legacy
+# keys in the ``rename`` filter and in ``sel()`` remappings.
+METADATA_KEY_MAPPING = {
     "valid_datetime": "time.valid_datetime",
     "base_datetime": "time.base_datetime",
     "step": "time.step",
     "param": "parameter.variable",
+    "shortName": "parameter.variable",
     "units": "parameter.units",
     "levtype": "vertical.level_type",
+    "level": "vertical.level",
     "levelist": "vertical.level",
     "number": "ensemble.member",
 }
@@ -351,14 +356,14 @@ class Field:
         Field
             The new field with the provided metadata.
         """
-        unknown_keys = set(metadata.keys()) - set(_METADATA_KEY_MAPPING.keys())
+        unknown_keys = set(metadata.keys()) - set(METADATA_KEY_MAPPING.keys())
         if unknown_keys:
             raise ValueError(
-                f"Unknown metadata keys: {unknown_keys}. Allowed keys are: {set(_METADATA_KEY_MAPPING.keys())}"
+                f"Unknown metadata keys: {unknown_keys}. Allowed keys are: {set(METADATA_KEY_MAPPING.keys())}"
             )
 
         # map metadata keys to new locations
-        mapped_metadata = {_METADATA_KEY_MAPPING[key]: value for key, value in metadata.items()}
+        mapped_metadata = {METADATA_KEY_MAPPING[key]: value for key, value in metadata.items()}
         return cls(_unwrap_field(template).set(**mapped_metadata))
 
     @classmethod
@@ -466,7 +471,7 @@ class Field:
         for key in rules:
             value = flavour(key, wrapped)
             if value is not MISSING_METADATA:
-                overrides[_METADATA_KEY_MAPPING.get(key, f"metadata.{key}")] = value
+                overrides[METADATA_KEY_MAPPING.get(key, f"metadata.{key}")] = value
 
         if not overrides:
             return wrapped

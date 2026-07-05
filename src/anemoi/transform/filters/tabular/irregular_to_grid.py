@@ -1,0 +1,321 @@
+# (C) Copyright 2026- Anemoi contributors.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+
+import logging
+from datetime import datetime
+
+import earthkit.data as ekd
+import numpy as np
+import pandas as pd
+from anemoi.utils.window import Window
+
+from anemoi.transform.filter import Filter
+from anemoi.transform.filters.tabular import filter_registry
+from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
+
+LOG = logging.getLogger(__name__)
+
+
+@filter_registry.register("irregular_to_grid")
+class IrregularToGrid(Filter):
+    """Convert irregular observations within a time window to an ekd.FieldList of gridded fields.
+
+    For each target time step, observations are selected from a configurable window
+    and the best observation per grid point is chosen based on proximity to the target
+    time (as defined by the ``window_date_column``) and (optionally) data completeness (NaN count).
+
+    All columns listed under ``columns`` must be present in the input DataFrame,
+    in addition to the columns ``date``, ``spatial_index`` and the column defined by ``window_date_column``.
+
+    Parameters
+    ----------
+    window_date_column : str
+        Name of the column in the input DataFrame containing the window target date.
+    columns : list[str]
+        Column names in the input DataFrame to grid.
+    time_freq : str
+        Frequency of target time steps (default ``"6h"``).
+    grid : str
+        Named grid specification (default ``"o96"``).
+    window: str or None
+        String representation of the time window around each target time, e.g. ``"(-6h, 0h]"``.
+        Defaults to ``"(-time_freq, 0]"`` when ``None``.
+    nan_score_weight : float
+        Weight used to combine temporal proximity with NaN completeness when selecting
+        observations. Must be in the range ``[0.0, 1.0]``. Defaults to ``0.0`` (nearest-in-time
+        matching only).
+
+        The composite score is computed as:
+            ``score = (1.0 - nan_score_weight) * time_score + nan_score_weight * nan_score``
+
+        A value of ``0.0`` selects observations using only nearest-in-time matching.
+        As the value increases, greater preference is given to rows with fewer NaN
+        values. A value of ``1.0`` selects observations using only the NaN-based score.
+
+    Notes
+    -----
+      - Grid points with no observations in the window are filled with ``NaN``.
+      - ``spatial_index`` must be a valid integer index into the named grid.
+      - Out-of-range spatial indices are silently ignored.
+
+    Examples
+    --------
+    .. code-block:: yaml
+
+      input:
+        pipe:
+          - source:
+              ...
+          - irregular_to_grid:
+              start_time: "2020-01-01"
+              end_time: "2020-01-31"
+              columns: [t, q, u, v]
+              time_freq: "6h"
+              grid: "o96"
+              nan_score_weight: 0.2
+
+    """
+
+    def __init__(
+        self,
+        window_date_column: str,
+        columns: list[str],
+        time_freq: str = "6h",
+        grid: str = "o96",
+        window: str | None = None,
+        nan_score_weight: float = 0.0,
+    ):
+        self.window_date_column = window_date_column
+        self.columns = columns
+        self.time_freq = time_freq
+        self.grid = grid
+
+        if not self.columns:
+            raise ValueError("At least one column must be specified")
+
+        if not self.window_date_column:
+            raise ValueError("window_date_column must be specified")
+
+        window = window or f"(-{time_freq}, 0]"
+        self.window = Window(window)
+
+        if not (0.0 <= nan_score_weight <= 1.0):
+            raise ValueError("nan_score_weight must be in the range [0.0, 1.0]")
+        self.nan_score_weight = nan_score_weight
+
+    def forward(self, df: pd.DataFrame) -> ekd.FieldList:
+        """Convert irregular values (e.g. observations) within a time window to gridded arrays.
+
+        Parameters:
+        -----------
+        df : pandas DataFrame
+            Must have columns: ['date', 'spatial_index'] and the columns
+            specified in self.columns
+
+        Returns:
+        --------
+        ekd.FieldList
+            The gridded fields computed from the DataFrame.
+        """
+        # Ensure date column is datetime-like
+        df = df.copy()
+        df["date"] = pd.to_datetime(df["date"])
+
+        # Check that all requested columns exist
+        required_cols = ["date", "spatial_index", self.window_date_column] + list(self.columns)
+        raise_if_df_missing_cols(df, required_cols=required_cols)
+
+        # Generate grid coordinates
+        LOG.info(f"Generating grid coordinates for {self.grid}...")
+        grid_lats, grid_lons = self._define_grid(self.grid)
+        n_spatial_total = len(grid_lats)
+        LOG.info(f"Generated grid with {n_spatial_total} points")
+
+        # Create target times
+        target_times = pd.to_datetime(df[self.window_date_column].unique())
+        time_delta = pd.Timedelta(self.time_freq)
+
+        # Initialize grids for all columns to grid with NaNs
+        # NaNs will remain for time steps with no observations
+        n_time = len(target_times)
+        grids = {col: np.full((n_time, n_spatial_total), np.nan) for col in self.columns}
+
+        # Process each target time
+        for t_idx, target_time in enumerate(target_times):
+            # Convert target_time to tz-naive for consistent comparison (all times assumed UTC)
+            target_time_naive = pd.Timestamp(target_time).tz_localize(None)
+
+            df_window = self.select_window(df, target_time_naive, self.columns, self.window)
+            if df_window is None:
+                # No observations - NaNs remain in grids for this time step
+                continue
+
+            df_nearest = self.get_nearest_obs(
+                df_window, target_time_naive, time_delta, self.columns, self.nan_score_weight
+            )
+            self._fill_grids(grids, df_nearest, self.columns, n_spatial_total, t_idx)
+
+        return self._build_output_fieldlist(target_times, grid_lats, grid_lons, grids)
+
+    @staticmethod
+    def _build_output_fieldlist(
+        times: pd.DatetimeIndex,
+        latitudes: np.ndarray,
+        longitudes: np.ndarray,
+        grids: dict[str, np.ndarray],
+    ) -> ekd.FieldList:
+        field_dicts = []
+        for t, time in enumerate(times):
+            valid_dt = pd.Timestamp(time).to_pydatetime()
+            for param, arr in grids.items():
+                field_dicts.append(
+                    {
+                        "param": param,
+                        "values": arr[t],
+                        "latitudes": latitudes,
+                        "longitudes": longitudes,
+                        "valid_datetime": valid_dt,
+                    }
+                )
+        return ekd.from_source("list-of-dicts", field_dicts)
+
+    @staticmethod
+    def _fill_grids(
+        grids: dict[str, np.ndarray],
+        df_nearest: pd.DataFrame,
+        columns: list[str],
+        n_spatial_total: int,
+        t_idx: int,
+    ):
+        # Note: mutates grids in-place
+        # Fill in the grids (spatial_index is used directly as array index
+        spatial_indices = df_nearest["spatial_index"].values.astype(np.intp)
+        valid_mask = (spatial_indices >= 0) & (spatial_indices < n_spatial_total)
+        valid_indices = spatial_indices[valid_mask]
+
+        for col in columns:
+            col_values = df_nearest[col].values[valid_mask]
+            grids[col][t_idx, valid_indices] = col_values
+
+    @staticmethod
+    def select_window(
+        df: pd.DataFrame,
+        target_time: datetime,
+        columns: list[str],
+        window: Window,
+    ) -> pd.DataFrame | None:
+        """Select observations within a time window around the target time.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Input observations with a ``"date"`` column.
+        target_time : datetime
+            Centre of the selection window.
+        columns : list[str]
+            Data columns — rows where *all* of these are NaN are dropped.
+        window: Window
+            Window definition used to select observations.
+
+        Returns
+        -------
+        pd.DataFrame or None
+            Filtered observations, or ``None`` if no valid observations remain.
+        """
+        window_start = target_time + window.before
+        window_end = target_time + window.after
+        before_closed, after_closed = window.closed
+        before_select = df["date"].ge if before_closed else df["date"].gt
+        after_select = df["date"].le if after_closed else df["date"].lt
+
+        # Get observations in this window
+        mask = before_select(window_start) & after_select(window_end)
+        if not mask.any():
+            # No observations in this window
+            return None
+
+        df_window = df[mask].copy()
+
+        # Filter out rows where ALL columns to grid are NaN
+        valid_mask = ~df_window[columns].isna().all(axis=1)
+        df_window = df_window[valid_mask]
+
+        if len(df_window) == 0:
+            # All observations filtered out
+            return None
+        return df_window
+
+    @staticmethod
+    def get_nearest_obs(
+        df_window: pd.DataFrame,
+        target_time: datetime,
+        time_freq: pd.Timedelta,
+        columns: list[str],
+        nan_score_weight: float = 0.0,
+    ) -> pd.DataFrame:
+        """Select the best observation per spatial location.
+
+        When ``nan_score_weight`` is ``0.0``, the observation nearest in time
+        to ``target_time`` is selected for each ``spatial_index``.
+
+        When ``nan_score_weight`` is set, a composite score is used::
+
+            score = (1.0 - nan_score_weight) * time_score + nan_score_weight * nan_score
+
+        where ``time_score = |time_diff| / time_freq`` and
+        ``nan_score = nan_count / len(columns)``.  This penalises observations
+        with many missing values so that a slightly more distant observation
+        with better data coverage can be preferred.
+
+        Parameters
+        ----------
+        df_window : pd.DataFrame
+            Observations already filtered to the time window.
+        target_time : datetime
+            Target time for proximity calculation.
+        time_freq : pd.Timedelta
+            Time difference between window centres (used to normalise time scoring).
+        columns : list[str]
+            Data columns used for NaN counting.
+        nan_score_weight : float
+            Weight for the NaN penalty term (default 0.0, which is pure
+            nearest-in-time selection).
+
+        Returns
+        -------
+        pd.DataFrame
+            One row per ``spatial_index`` with the selected observation.
+        """
+        df_window = df_window.copy()
+        time_diff = (df_window["date"] - target_time).abs()
+        time_score = time_diff / time_freq
+
+        if nan_score_weight > 0:
+            max_nans = len(columns)
+            nan_count = df_window[columns].isna().sum(axis=1)
+            nan_score = nan_count / max_nans
+            selection_score = (1.0 - nan_score_weight) * time_score + nan_score_weight * nan_score
+        else:
+            selection_score = time_score
+
+        df_window["_selection_score"] = selection_score
+        idx_nearest = df_window.groupby("spatial_index")["_selection_score"].idxmin()
+        df_nearest = df_window.loc[idx_nearest]
+
+        # Drop internal scoring column
+        df_nearest = df_nearest.drop(columns=["_selection_score"])
+        return df_nearest
+
+    @staticmethod
+    def _define_grid(grid: str) -> tuple[np.ndarray, np.ndarray]:
+        from anemoi.transform.grids.named import lookup
+
+        grid_info = lookup(grid)
+        lon = np.where(grid_info["longitudes"] > 180, grid_info["longitudes"] - 360, grid_info["longitudes"])
+        return grid_info["latitudes"], lon

@@ -35,7 +35,7 @@ dynamic = [ "version" ]
 dependencies = [
   "anemoi-utils>=0.5.4",
   "cfunits",
-  "earthkit-data>=0.12.4,<1",
+  "earthkit-data>=0.12.4,<2",
   "earthkit-geo>=0.3,<1",
   "earthkit-meteo>=0.4.1,<1",
   "earthkit-regrid>=0.4,<1",

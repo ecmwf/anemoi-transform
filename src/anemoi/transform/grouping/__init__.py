@@ -142,7 +142,8 @@ class GroupByParamVertical(GroupByParam):
         assert callable(other), type(other)
         self.groups: dict[frozenset[Any], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
-        levels: dict[str, Any] = defaultdict(list)
+        levels: dict[frozenset[Any], dict[str, Any]] = defaultdict(lambda: defaultdict(list))
+
         for f in data:
             key, extras = self._get_grouping_key(
                 f, extract_from_grouping_key=["param", "levelist"], remove_from_grouping_key=["variable", "levtype"]
@@ -162,7 +163,7 @@ class GroupByParamVertical(GroupByParam):
                 self.groups[key][param] = f
             else:
                 if param in self.groups[key]:
-                    if level in levels[param]:
+                    if level in levels[key][param]:
                         raise ValueError(f"Duplicate component {param} for {key} and level {level}")
                     else:
                         self.groups[key][param].append(f)
@@ -170,6 +171,6 @@ class GroupByParamVertical(GroupByParam):
                     ds = SimpleFieldList()
                     ds.append(f)
                     self.groups[key][param] = ds
-                levels[param].append(level)
+                levels[key][param].append(level)
             self.groups_params.add(param)
         LOG.info(f"Params groups: {self.groups_params}")

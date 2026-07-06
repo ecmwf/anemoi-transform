@@ -9,7 +9,11 @@
 
 
 import pytest
+from anemoi.utils.testing import GetTestData
+from anemoi.utils.testing import skip_if_offline
+from earthkit.data.sources.url import download_and_cache
 
+from anemoi.transform import FieldList
 from anemoi.transform.units import Units
 
 
@@ -61,6 +65,35 @@ def test_units_equality() -> None:
 
     assert hash(Units("m/s")) == hash(Units("m s**-1"))
     assert str(Units("m s**-1")) == "m s**-1"
+
+
+@skip_if_offline
+def test_units_from_netcdf() -> None:
+    """Test that the units of a variable read from a netCDF file canonicalise correctly."""
+    url = "https://archive.unidata.ucar.edu/software/netcdf/examples/tos_O1_2001-2002.nc"
+    path = download_and_cache(url)
+
+    ds = FieldList.from_file(path)
+    tos = ds.sel(**{"parameter.variable": "tos"})
+    assert len(tos) > 0
+
+    units = Units(str(tos[0].get("parameter.units")))
+    assert units.canonical == "K"
+    assert units == "K"
+
+
+@skip_if_offline
+def test_units_from_grib(get_test_data: GetTestData) -> None:
+    """Test that the units of variables read from a GRIB file canonicalise correctly."""
+    ds = FieldList.from_file(get_test_data("anemoi-filters/2t-sp.grib"))
+
+    t2 = ds.sel(**{"parameter.variable": "2t"})
+    assert len(t2) > 0
+    assert Units(str(t2[0].get("parameter.units"))) == "K"
+
+    sp = ds.sel(**{"parameter.variable": "sp"})
+    assert len(sp) > 0
+    assert Units(str(sp[0].get("parameter.units"))) == "Pa"
 
 
 def test_units_format() -> None:

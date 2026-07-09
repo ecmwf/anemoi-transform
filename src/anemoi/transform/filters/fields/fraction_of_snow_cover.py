@@ -119,6 +119,6 @@ class FractionOfSnowCover(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        snow_cover = compute_fraction_of_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
+        fscov = compute_fraction_of_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield self.new_field_from_numpy(snow_cover, template=snow_depth, param=self.fraction_of_snow_cover, units="Fraction")
+        yield self.new_field_from_numpy(fscov, template=snow_depth, param=self.fraction_of_snow_cover, units="Fraction")

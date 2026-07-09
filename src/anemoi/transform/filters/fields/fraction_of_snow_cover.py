@@ -34,9 +34,9 @@ def compute_fraction_of_snow_cover(snow_depth: np.ndarray, snow_density: np.ndar
     """
     tmp1 = (1000 * snow_depth) / snow_density
     tmp2 = np.clip(snow_density, 100, 400)
-    snow_cover = np.clip(np.tanh((4000 * tmp1) / tmp2), 0, 1)
-    snow_cover[snow_cover > 0.99] = 1.0
-    return snow_cover
+    fscov = np.clip(np.tanh((4000 * tmp1) / tmp2), 0, 1)
+    fscov[fscov > 0.99] = 1.0
+    return fscov
 
 
 @filter_registry.register("fraction_of_snow_cover")

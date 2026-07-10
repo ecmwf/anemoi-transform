@@ -64,7 +64,7 @@ def as_griddata(grid: str | Field | dict[str, Any] | None) -> dict[str, Any] | N
     if grid is None:
         return None
 
-    if isinstance(grid, Field):
+    if isinstance(grid, Field) or hasattr(grid, "grid_points"):
         lat, lon = grid.grid_points()
         return dict(latitudes=lat, longitudes=lon)
 
@@ -317,11 +317,12 @@ class ScipyKDTreeNearestNeighbours:
 
     nearest_grid_points = None
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, check: bool = False) -> None:
+    def __init__(self, *, in_grid: Any = None, out_grid: Any, method: str, check: bool = False) -> None:
         """Parameters
         -------------
-        in_grid : Any
-            The input grid specification.
+        in_grid : Any, optional
+            The input grid specification. If not provided, it is inferred from
+            the field being interpolated.
         out_grid : Any
             The output grid specification.
         method : str

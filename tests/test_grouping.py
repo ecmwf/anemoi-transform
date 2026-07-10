@@ -84,6 +84,50 @@ def test_group_by_param(sample_fields):
         assert field in sample_fields
 
 
+def test_group_by_param_missing_metadata_keys():
+    """Fields missing some MARS keys (e.g. GRIB1 climate files without ECMWF
+    local definitions, lacking class/type/stream/expver) must still be grouped
+    with fields that have them.
+    """
+    base = {"domain": "g", "levtype": "sfc", "date": 20200513, "time": 1200, "step": 0}
+    full = base | {"class": "od", "type": "an", "stream": "oper", "expver": "0001"}
+    fields = [
+        mock_field(param="slt", **full),
+        mock_field(param="tvh", **base),
+        mock_field(param="tvl", **base),
+    ]
+
+    match_params = ["tvh", "tvl", "slt"]
+    grouper = GroupByParam(params=match_params)
+
+    groups = list(grouper.iterate(fields))
+    assert len(groups) == 1
+    assert [field.metadata("param") for field in groups[0]] == match_params
+
+
+def test_group_by_param_missing_metadata_keys_still_separates_groups():
+    """Ignoring missing keys must not merge fields that differ in a key
+    present in all fields.
+    """
+    base = {"domain": "g", "levtype": "sfc", "date": 20200513, "time": 1200}
+    full = base | {"class": "od", "type": "an", "stream": "oper", "expver": "0001"}
+    fields = [
+        mock_field(param="slt", step=0, **full),
+        mock_field(param="tvh", step=0, **base),
+        mock_field(param="slt", step=1, **full),
+        mock_field(param="tvh", step=1, **base),
+    ]
+
+    match_params = ["tvh", "slt"]
+    grouper = GroupByParam(params=match_params)
+
+    groups = list(grouper.iterate(fields))
+    assert len(groups) == 2
+    for group in groups:
+        assert [field.metadata("param") for field in group] == match_params
+        assert len({field.metadata("step") for field in group}) == 1
+
+
 @pytest.mark.xfail(reason="vertical grouping not yet implemented")
 def test_group_by_param_vertical(sample_fields_vertical):
     from anemoi.transform.grouping import GroupByParamVertical

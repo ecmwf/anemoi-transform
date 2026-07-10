@@ -198,3 +198,68 @@ class Units:
                 pass
             if result == previous:
                 return result
+
+
+# --------------------------------------------------------------------------- #
+# earthkit-data units work-around
+#
+# earthkit's unit parser aliases the WMO/GRIB spelling "(0 - 1)" (a 0-1
+# *fraction*, e.g. cloud cover / albedo) to "percent" -- wrong by a factor of
+# 100 relative to the data (see ``earthkit-units-issue.md``). A 0-1 fraction is
+# dimensionless, so map "(0 - 1)"/"0 - 1" to "dimensionless" instead. ("%" is
+# left to earthkit, which already normalises it to "percent".)
+#
+# The patch is installed ONLY when earthkit is observed to mishandle "(0 - 1)",
+# so it disables itself automatically once earthkit is fixed upstream. earthkit
+# itself is left untouched.
+# --------------------------------------------------------------------------- #
+
+# WMO/GRIB unit spellings normalised at dataset-build time. Native (un-rescaled)
+# fields are recorded straight from their GRIB ``metadata.units`` and never pass
+# through earthkit's parser, so the fraction/percent spellings must be remapped
+# here too. Only these two are touched -- every other GRIB spelling (``m``,
+# ``K``, ``kg m**-2`` ...) is left as-is.
+BUILD_UNIT_ALIASES = {"(0 - 1)": "dimensionless", "%": "percent"}
+
+_FRACTION_SPELLINGS = ("(0 - 1)", "0 - 1")
+
+
+def _earthkit_mishandles_fraction() -> bool:
+    """Return True iff earthkit maps the 0-1 fraction spelling "(0 - 1)" to percent."""
+    try:
+        from earthkit.utils.units import Units as _EkUnits
+
+        return _EkUnits.from_any("(0 - 1)") == "%"
+    except Exception:
+        return False
+
+
+def _install_earthkit_fraction_fix() -> bool:
+    """Map the 0-1 fraction spellings "(0 - 1)"/"0 - 1" to "dimensionless"
+    instead of earthkit's (wrong) "percent".
+
+    No-op unless earthkit actually exhibits the bug, so the work-around vanishes
+    once earthkit is fixed. Returns whether the patch is now in place.
+    """
+    if not _earthkit_mishandles_fraction():
+        return False
+
+    from earthkit.utils.units import units as _ek
+
+    if getattr(_ek, "_anemoi_fraction_fix", False):
+        return True
+
+    _ek.UNIT_STR_ALIASES.pop("(0 - 1)", None)
+    _original_from_any = _ek.Units.from_any
+
+    def _from_any(units):
+        if isinstance(units, str) and units.strip() in _FRACTION_SPELLINGS:
+            return _original_from_any("dimensionless")
+        return _original_from_any(units)
+
+    _ek.Units.from_any = staticmethod(_from_any)
+    _ek._anemoi_fraction_fix = True
+    return True
+
+
+_install_earthkit_fraction_fix()

@@ -90,10 +90,40 @@ class GroupByParam:
             raise ValueError(f"Expected {extract_from_grouping_key} keys to extract, got {extracted_keys}")
         return grouping_key, extracted_keys
 
+    @staticmethod
+    def _restrict_to_common_keys(entries: list[tuple]) -> list[tuple]:
+        """Restrict grouping keys to the metadata keys present in all fields.
+
+        Some fields (e.g. GRIB1 climate files without ECMWF local definitions)
+        lack metadata keys such as 'class', 'type', 'stream' or 'expver'. Keys
+        that are not present in every field are ignored when grouping,
+        otherwise such fields could never be matched together.
+
+        Parameters
+        ----------
+        entries : list of tuple
+            Tuples whose first element is the grouping key dict.
+
+        Returns
+        -------
+        list of tuple
+            Entries with grouping key dicts restricted to the common keys.
+        """
+        if not entries:
+            return entries
+        all_keys = [set(key) for key, *_ in entries]
+        common = set.intersection(*all_keys)
+        dropped = set.union(*all_keys) - common
+        if dropped:
+            LOG.warning(f"Ignoring metadata keys not present in all fields when grouping: {sorted(dropped)}")
+            entries = [({k: v for k, v in key.items() if k in common}, *rest) for key, *rest in entries]
+        return entries
+
     def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
         self.groups: dict[frozenset[Any], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
+        entries = []
         for f in data:
             key, extras = self._get_grouping_key(
                 f, extract_from_grouping_key=["param"], remove_from_grouping_key=["variable"]
@@ -104,6 +134,9 @@ class GroupByParam:
                 other(f)
                 continue
 
+            entries.append((key, param, f))
+
+        for key, param, f in self._restrict_to_common_keys(entries):
             key = frozenset(key.items())
 
             if param in self.groups[key]:
@@ -143,6 +176,7 @@ class GroupByParamVertical(GroupByParam):
         self.groups: dict[frozenset[Any], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
         levels: dict[str, Any] = defaultdict(list)
+        entries = []
         for f in data:
             key, extras = self._get_grouping_key(
                 f, extract_from_grouping_key=["param", "levelist"], remove_from_grouping_key=["variable", "levtype"]
@@ -154,6 +188,9 @@ class GroupByParamVertical(GroupByParam):
                 other(f)
                 continue
 
+            entries.append((key, param, level, f))
+
+        for key, param, level, f in self._restrict_to_common_keys(entries):
             key = frozenset(key.items())
 
             if level is None:

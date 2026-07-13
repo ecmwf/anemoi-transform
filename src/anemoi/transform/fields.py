@@ -298,9 +298,36 @@ class Field:
         """Return a new :class:`Field` with the given components overridden.
 
         Thin forward of :meth:`earthkit.data.Field.set` that re-wraps the
-        result.
+        result, with one addition: ``proc.time_value`` / ``proc.time_method``
+        keys are supported (e.g. ``proc.time_method="accum"`` with
+        ``proc.time_value=timedelta(hours=6)`` for a 6h accumulation).
+        earthkit-data 1.0 does not implement ``set()`` on the ``proc``
+        component, so these are routed through
+        :meth:`earthkit.data.Field.from_field` with a rebuilt ``Proc``
+        component instead.
         """
-        return Field(self._field.set(*args, **kwargs))
+        proc = {key[len("proc.time_") :]: kwargs.pop(key) for key in list(kwargs) if key.startswith("proc.time_")}
+        result = self._field.set(*args, **kwargs) if (args or kwargs) else self._field
+        if proc:
+            from earthkit.data.field.component.proc import Proc
+
+            # The underlying set() only hides the raw metadata itself when it
+            # received a (non-data, non-labels) metadata key.
+            already_hidden = bool(args) or any(key.split(".", 1)[0] not in ("data", "labels") for key in kwargs)
+            result = _EkdField.from_field(result, proc=Proc.from_dict({"time": proc}))
+            if not already_hidden:
+                # ``from_field`` keeps the raw (e.g. GRIB) ``metadata.*`` keys
+                # visible, which would now be stale; replicate the hiding that
+                # ``set()`` performs when it receives new metadata.
+                for key in list(result._private.keys()):
+                    value = result._private[key]
+                    if not key.startswith("_"):
+                        result._private.pop(key)
+                        key = f"_{key}"
+                    if hasattr(value, "sync"):
+                        value = value.sync(result)
+                    result._private[key] = value
+        return Field(result)
 
     def get(self, *args, **kwargs) -> Any:
         """Get a metadata value by component path (e.g. ``"vertical.level"``).
@@ -399,7 +426,8 @@ class Field:
             The new field with the provided metadata.
         """
         mapped_metadata = {metadata_key(key): value for key, value in metadata.items()}
-        return cls(_unwrap_field(template).set(**mapped_metadata))
+        template = template if isinstance(template, cls) else cls(template)
+        return template.set(**mapped_metadata)
 
     @classmethod
     def with_name(cls, field: "Field", name: str) -> "Field":

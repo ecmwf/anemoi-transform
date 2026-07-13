@@ -46,7 +46,7 @@ class LnspToSp(SingleFieldFilter):
         field = self.new_field_from_numpy(
             np.exp(log_of_surface_pressure.to_numpy()), template=log_of_surface_pressure, **new_metadata
         )
-        return field.set(vertical={"level": None})
+        return field.set(vertical={"level": None, "level_type": None})
 
     def backward_transform(self, surface_pressure: Field) -> Field:
         """Convert surface surface pressure to ln(surface_pressure).

@@ -27,9 +27,13 @@ def test_rescale(fieldlist: FieldList) -> None:
     before_filter = {field.parameter.variable(): field.to_numpy().copy() for field in fieldlist}
 
     # rescale from K to °C
-    k_to_deg = create_filter("rescale", scale=1.0, offset=-273.15, param="2t")
+    k_to_deg = create_filter("rescale", scale=1.0, offset=-273.15, param="2t", units="degC")
     rescaled = k_to_deg.forward(fieldlist)
     after_forward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled}
+
+    for field in rescaled:
+        if field.parameter.variable() == "2t":
+            assert field.get("parameter.units") == "degC"
 
     # and back
     rescaled_back = k_to_deg.backward(rescaled)

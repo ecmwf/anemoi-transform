@@ -57,11 +57,16 @@ class RescaleMixin(ABC):
 
 
 class Rescale(RescaleMixin, SingleFieldFilter):
-    """A filter to rescale a parameter from a scale and an offset, and back."""
+    """A filter to rescale a parameter from a scale and an offset, and back.
 
-    required_inputs = ("scale", "offset", "param")
+    The ``units`` input gives the units of the rescaled values; it is
+    attached to the fields produced by the forward transformation.
+    """
+
+    required_inputs = ("scale", "offset", "param", "units")
 
     def prepare_filter(self):
+        self.forward_units = self.units
         self.rescaler = Rescaler(self.scale, self.offset)
 
 

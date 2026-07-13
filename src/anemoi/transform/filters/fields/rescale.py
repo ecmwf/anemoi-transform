@@ -75,10 +75,8 @@ class Rescale(RescaleMixin, SingleFieldFilter):
     """
 
     required_inputs = ("scale", "offset", "param", "units")
-    required_inputs = ("scale", "offset", "param", "units")
 
     def prepare_filter(self):
-        self.forward_units = self.units
         self.forward_units = self.units
         self.rescaler = Rescaler(self.scale, self.offset)
 

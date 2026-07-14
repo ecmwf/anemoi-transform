@@ -7,6 +7,30 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+"""Typed representation of meteorological variables.
+
+Variables are collected when datasets are created (from the fields, see
+:class:`~anemoi.transform.variables.from_field.VariableFromField`),
+serialised to JSON in the dataset metadata, copied to checkpoint
+metadata at training time, and deserialised again with
+:meth:`Variable.from_dict` in training and inference.
+
+The serialised form is self-describing: each variable dictionary may
+carry a ``"schema"`` key naming the layout it was written with (see
+``VARIABLE_SCHEMAS``). Dictionaries without a ``"schema"`` key are the
+historical MARS-vocabulary layout, so every existing dataset and
+checkpoint keeps deserialising. Versioning is per variable rather than
+per collection because collections are recombined across datasets of
+different vintages (join, select, rename, complement).
+
+Each layout is modelled with pydantic in
+:mod:`anemoi.transform.variables.schemas`; the class ``from_dict``
+dispatches to validates the dictionary against its model
+(``schema_model``), and ``as_dict`` dumps it, so both directions of the
+JSON round-trip are validated.
+"""
+
+import importlib
 import logging
 from abc import ABC
 from abc import abstractmethod
@@ -18,6 +42,29 @@ if TYPE_CHECKING:
     from datetime import timedelta
 
 LOG = logging.getLogger(__name__)
+
+# Serialisation schema name → implementing class, as "module.Class" paths
+# (resolved lazily to avoid import cycles).  The `None` entry handles
+# legacy dictionaries that predate the "schema" key.
+VARIABLE_SCHEMAS: dict[str | None, str] = {
+    None: "anemoi.transform.variables.from_dict.VariableFromDict",
+    "variable/1": "anemoi.transform.variables.components.VariableFromComponents",
+}
+
+
+def register_variable_schema(schema: str, class_path: str) -> None:
+    """Register a serialisation schema for :meth:`Variable.from_dict`.
+
+    Parameters
+    ----------
+    schema : str
+        The schema name, as stored under the ``"schema"`` key of the
+        serialised variable (e.g. ``"variable/2"``).
+    class_path : str
+        Fully qualified ``module.Class`` path of the class implementing
+        the schema. The class is instantiated as ``Class(name, data)``.
+    """
+    VARIABLE_SCHEMAS[schema] = class_path
 
 
 class Variable(ABC):
@@ -34,24 +81,42 @@ class Variable(ABC):
         self.name: str = name
 
     @classmethod
-    def from_dict(cls, name: str, data: dict[str, Any]) -> Any:
-        """Create a Variable instance from a dictionary.
+    def from_dict(cls, name: str, data: dict[str, Any]) -> "Variable":
+        """Create a Variable instance from a serialised dictionary.
+
+        The concrete class is selected from the dictionary's ``"schema"``
+        key via ``VARIABLE_SCHEMAS``; dictionaries without that key use
+        the legacy MARS-vocabulary layout.
 
         Parameters
         ----------
         name : str
             The name of the variable.
         data : Dict[str, Any]
-            The data dictionary.
+            The serialised variable.
 
         Returns
         -------
-        Any
+        Variable
             The created Variable instance.
-        """
-        from anemoi.transform.variables.from_dict import VariableFromDict
 
-        return VariableFromDict(name, data)
+        Raises
+        ------
+        ValueError
+            If the dictionary carries an unknown ``"schema"`` (e.g. it
+            was written by a newer version of this package).
+        """
+        schema = data.get("schema")
+        class_path = VARIABLE_SCHEMAS.get(schema)
+        if class_path is None:
+            raise ValueError(
+                f"Variable {name!r}: unknown serialisation schema {schema!r}"
+                f" (known: {sorted(k for k in VARIABLE_SCHEMAS if k is not None)})."
+                " It may have been written by a newer version of anemoi-transform."
+            )
+        module_name, _, class_name = class_path.rpartition(".")
+        klass = getattr(importlib.import_module(module_name), class_name)
+        return klass(name, data)
 
     @classmethod
     def from_field(cls, name: str, field: Any) -> Any:
@@ -137,21 +202,33 @@ class Variable(ABC):
 
     @property
     @abstractmethod
-    def is_pressure_level(self) -> bool:
-        """Check if the variable is a pressure level."""
+    def _level_type(self) -> str | None:
+        """The level type as a MARS-style abbreviation (``"sfc"``, ``"pl"``, ...), or None when unknown."""
         pass
 
     @property
-    @abstractmethod
-    def is_model_level(self) -> bool:
-        """Check if the variable is a pressure level."""
-        pass
+    def is_pressure_level(self) -> bool | None:
+        """Check if the variable is a pressure level (None when the level type is unknown)."""
+        level_type = self._level_type
+        if level_type is None:
+            return None
+        return level_type == "pl"
 
     @property
-    @abstractmethod
-    def is_surface_level(self) -> bool:
-        """Check if the variable is on the surface."""
-        pass
+    def is_model_level(self) -> bool | None:
+        """Check if the variable is a model level (None when the level type is unknown)."""
+        level_type = self._level_type
+        if level_type is None:
+            return None
+        return level_type == "ml"
+
+    @property
+    def is_surface_level(self) -> bool | None:
+        """Check if the variable is on the surface (None when the level type is unknown)."""
+        level_type = self._level_type
+        if level_type is None:
+            return None
+        return level_type == "sfc"
 
     @property
     @abstractmethod
@@ -166,10 +243,9 @@ class Variable(ABC):
         pass
 
     @property
-    @abstractmethod
     def is_valid_over_a_period(self) -> bool:
         """Check if the variable is valid over a period (e.g. accumulated or averaged)."""
-        pass
+        return self.time_processing is not None
 
     @property
     def is_instantaneous(self) -> bool:
@@ -191,15 +267,29 @@ class Variable(ABC):
         pass
 
     @property
-    @abstractmethod
     def is_accumulation(self) -> bool:
         """Check if the variable is an accumulation."""
-        pass
+        return self.time_processing == "accumulation"
 
     @property
     def param(self) -> str:
         """Get the parameter name of the variable."""
         return self.name
+
+    @abstractmethod
+    def as_dict(self) -> dict[str, Any]:
+        """Serialise the variable to a JSON-compatible dictionary.
+
+        The result round-trips through :meth:`from_dict`: it either
+        carries a ``"schema"`` key naming its layout or uses the legacy
+        MARS-vocabulary layout.
+
+        Returns
+        -------
+        dict
+            The serialised variable.
+        """
+        pass
 
     # This may need to move to a different class
     @property

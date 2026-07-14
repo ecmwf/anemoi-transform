@@ -41,6 +41,7 @@ dependencies = [
   "healpy",
   "pandas<3",
   "pint",
+  "pydantic>=2",
 ]
 optional-dependencies.all = [ "anemoi-transform[plots]" ]
 optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]

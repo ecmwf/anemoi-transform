@@ -197,9 +197,11 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         )
 
         yield self.new_field_from_numpy(
-            total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
+            total_precipitation_cleaned,
+            template=total_precipitation,
+            **{"parameter.variable": self.total_precipitation},
         )
-        yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
+        yield self.new_field_from_numpy(quality_clipped, template=quality, **{"parameter.variable": self.quality})
 
         if self.return_mask:
             yield mask

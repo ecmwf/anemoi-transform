@@ -73,7 +73,7 @@ def test_units_from_netcdf() -> None:
     url = "https://archive.unidata.ucar.edu/software/netcdf/examples/tos_O1_2001-2002.nc"
     path = download_and_cache(url)
 
-    ds = FieldList.from_file(path)
+    ds = FieldList.from_source("file", path)
     tos = ds.sel(**{"parameter.variable": "tos"})
     assert len(tos) > 0
 
@@ -85,7 +85,7 @@ def test_units_from_netcdf() -> None:
 @skip_if_offline
 def test_units_from_grib(get_test_data: GetTestData) -> None:
     """Test that the units of variables read from a GRIB file canonicalise correctly."""
-    ds = FieldList.from_file(get_test_data("anemoi-filters/2t-sp.grib"))
+    ds = FieldList.from_source("file", get_test_data("anemoi-filters/2t-sp.grib"))
 
     t2 = ds.sel(**{"parameter.variable": "2t"})
     assert len(t2) > 0

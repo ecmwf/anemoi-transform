@@ -55,7 +55,7 @@ class RescaleMixin(ABC):
         # units, not identity) so ``param`` may name several fields at once.
         # Only override units when the direction defines them, otherwise the
         # template's units are kept (passing units=None would clobber them).
-        metadata = {} if units is None else {"units": units}
+        metadata = {} if units is None else {"parameter.units": units}
         return self.new_field_from_numpy(values, template=field, **metadata)
 
     def forward_transform(self, field: Field) -> Field:

@@ -70,7 +70,7 @@ class HumidityConversion(MatchingFieldsFilter):
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
         pressure = 100 * float(humidity.vertical.level())
         rh = thermo.relative_humidity_from_specific_humidity(temperature.to_numpy(), humidity.to_numpy(), pressure)
-        yield self.new_field_from_numpy(rh, template=humidity, param=self.relative_humidity)
+        yield self.new_field_from_numpy(rh, template=humidity, **{"parameter.variable": self.relative_humidity})
 
     def backward_transform(self, relative_humidity: Field, temperature: Field) -> Iterator[Field]:
         """This will return specific humidity along with temperature from relative humidity and temperature"""
@@ -78,7 +78,7 @@ class HumidityConversion(MatchingFieldsFilter):
         q = thermo.specific_humidity_from_relative_humidity(
             temperature.to_numpy(), relative_humidity.to_numpy(), pressure
         )
-        yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
+        yield self.new_field_from_numpy(q, template=relative_humidity, **{"parameter.variable": self.humidity})
 
 
 filter_registry.register("q_to_r", HumidityConversion)

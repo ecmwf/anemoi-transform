@@ -36,7 +36,7 @@ class TestingSource(Source):
 @pytest.fixture
 def fieldlist(get_test_data: GetTestData) -> FieldList:
     """Fixture to create a fieldlist for testing."""
-    return FieldList.from_file(get_test_data("anemoi-filters/2t-sp.grib"))
+    return FieldList.from_source("file", get_test_data("anemoi-filters/2t-sp.grib"))
 
 
 @pytest.fixture
@@ -61,7 +61,7 @@ def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Sour
 
                 ds = _NumpyWrapper()
             else:
-                ds = FieldList.from_file(path)
+                ds = FieldList.from_source("file", path)
         elif isinstance(dataset, list):
             dataset = [group_component_dict(spec) for spec in dataset]
             ds = FieldList.from_dicts(dataset)

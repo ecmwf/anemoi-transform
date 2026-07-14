@@ -97,8 +97,8 @@ class WindComponents(MatchingFieldsFilter):
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(speed, template=u_component, param=self.wind_speed)
-        yield self.new_field_from_numpy(direction, template=v_component, param=self.wind_direction)
+        yield self.new_field_from_numpy(speed, template=u_component, **{"parameter.variable": self.wind_speed})
+        yield self.new_field_from_numpy(direction, template=v_component, **{"parameter.variable": self.wind_direction})
 
     def backward_transform(self, wind_speed: Field, wind_direction: Field) -> Iterator[Field]:
         """Convert wind speed and direction to U and V components.
@@ -123,8 +123,8 @@ class WindComponents(MatchingFieldsFilter):
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(u, template=wind_speed, param=self.u_component)
-        yield self.new_field_from_numpy(v, template=wind_direction, param=self.v_component)
+        yield self.new_field_from_numpy(u, template=wind_speed, **{"parameter.variable": self.u_component})
+        yield self.new_field_from_numpy(v, template=wind_direction, **{"parameter.variable": self.v_component})
 
 
 filter_registry.register("uv_to_ddff", WindComponents)

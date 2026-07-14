@@ -153,7 +153,7 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             relative_humidity_at_height_level,
             template=specific_humidity_at_height_level,
-            param=self.relative_humidity_at_height_level,
+            **{"parameter.variable": self.relative_humidity_at_height_level},
         )
 
     def backward_transform(
@@ -173,7 +173,7 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             specific_humidity_at_height_level,
             template=relative_humidity_at_height_level,
-            param=self.specific_humidity_at_height_level,
+            **{"parameter.variable": self.specific_humidity_at_height_level},
         )
 
 
@@ -320,7 +320,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             relative_humidity_at_height_level,
             template=specific_humidity_at_height_level,
-            param=self.relative_humidity_at_height_level,
+            **{"parameter.variable": self.relative_humidity_at_height_level},
         )
 
     def backward_transform(
@@ -362,7 +362,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             specific_humidity_at_height_level,
             template=relative_humidity_at_height_level,
-            param=self.specific_humidity_at_height_level,
+            **{"parameter.variable": self.specific_humidity_at_height_level},
         )
 
 
@@ -505,7 +505,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             dewpoint_temperature_at_height_level,
             template=specific_humidity_at_height_level,
-            param=self.dewpoint_temperature_at_height_level,
+            **{"parameter.variable": self.dewpoint_temperature_at_height_level},
         )
 
     def backward_transform(
@@ -544,7 +544,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             specific_humidity_at_height_level,
             template=dewpoint_temperature_at_height_level,
-            param=self.specific_humidity_at_height_level,
+            **{"parameter.variable": self.specific_humidity_at_height_level},
         )
 
 

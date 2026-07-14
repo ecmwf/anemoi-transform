@@ -47,19 +47,17 @@ def source(test_source):
 
 @pytest.fixture()
 def ekd_from_source():
-    def side_effect(path):
+    def side_effect(source, path):
         mock_field = mock.Mock()
         # mask expected to be flattened
         mask = MASK_VALUES[path].copy().flatten()
         mock_field.to_numpy.return_value = mask
-        # Return a mock that supports .to_fieldlist()[0]
-        mock_source = mock.Mock()
-        mock_fieldlist = mock.Mock()
-        mock_fieldlist.__getitem__ = mock.Mock(return_value=mock_field)
-        mock_source.to_fieldlist.return_value = mock_fieldlist
-        return mock_source
+        # Return a mock that supports [0]
+        mock_fieldlist = mock.MagicMock()
+        mock_fieldlist.__getitem__.return_value = mock_field
+        return mock_fieldlist
 
-    with mock.patch("anemoi.transform.filters.fields.apply_mask.FieldList.from_file") as mock_fn:
+    with mock.patch("anemoi.transform.filters.fields.apply_mask.FieldList.from_source") as mock_fn:
         mock_fn.side_effect = side_effect
         yield mock_fn
 
@@ -67,7 +65,7 @@ def ekd_from_source():
 def test_apply_mask_fails_without_arguments(ekd_from_source):
     with pytest.raises(ValueError):
         create_filter("apply_mask", path="all_zeros")
-        ekd_from_source.assert_called_once_with("all_zeros")
+        ekd_from_source.assert_called_once_with("file", "all_zeros")
 
 
 @pytest.mark.parametrize(
@@ -83,7 +81,7 @@ def test_apply_mask_fails_without_arguments(ekd_from_source):
 @pytest.mark.parametrize("mask_name", MASK_VALUES.keys())
 def test_apply_mask(source, ekd_from_source, mask_name, rename, threshold_options):
     apply_mask = create_filter("apply_mask", path=mask_name, rename=rename, **threshold_options)
-    ekd_from_source.assert_called_once_with(mask_name)
+    ekd_from_source.assert_called_once_with("file", mask_name)
 
     pipeline = source | apply_mask
 
@@ -118,7 +116,7 @@ def test_apply_mask_only_single_param(source, ekd_from_source):
         threshold_operator=">",
         param="t",
     )
-    ekd_from_source.assert_called_once_with("mixed_floats")
+    ekd_from_source.assert_called_once_with("file", "mixed_floats")
 
     pipeline = source | apply_mask
 

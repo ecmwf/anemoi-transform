@@ -67,4 +67,4 @@ class Clipper(SingleFieldFilter):
     def forward_transform(self, field: Field) -> Field:
         data = field.to_numpy()
         clipped = np.clip(data, self.minimum, self.maximum)
-        return self.new_field_from_numpy(clipped, template=field, param=self.param)
+        return self.new_field_from_numpy(clipped, template=field, **{"parameter.variable": self.param})

@@ -41,11 +41,11 @@ def mock_mask():
 
 
 def test_glacier_mask(snow_depth_source, mock_mask):
-    with mock.patch("anemoi.transform.filters.fields.glacier_mask.FieldList.from_file") as mock_earthkit:
+    with mock.patch("anemoi.transform.filters.fields.glacier_mask.FieldList.from_source") as mock_earthkit:
         mock_earthkit.return_value = mock_mask
 
         glacier_mask = create_filter("glacier_mask", glacier_mask="glacier_mask.grib")
-        mock_earthkit.assert_called_once_with("glacier_mask.grib")
+        mock_earthkit.assert_called_once_with("file", "glacier_mask.grib")
 
     pipeline = snow_depth_source | glacier_mask
 

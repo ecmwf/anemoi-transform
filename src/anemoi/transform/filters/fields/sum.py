@@ -113,7 +113,9 @@ class Sum(Filter):
                     s = c
                 else:
                     s += c
-            result.append(Field.from_numpy(s, template=values[list(values.keys())[0]], param=self.output))
+            result.append(
+                Field.from_numpy(s, template=values[list(values.keys())[0]], **{"parameter.variable": self.output})
+            )
 
         return FieldList.from_fields(result)
 

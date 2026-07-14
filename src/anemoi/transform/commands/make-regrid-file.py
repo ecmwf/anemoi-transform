@@ -33,7 +33,7 @@ def _xr_ds_lat_lon(path: str, lat_name: str, lon_name: str) -> tuple[np.ndarray,
 def _ds_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
 
     try:
-        ds = FieldList.from_file(path)
+        ds = FieldList.from_source("file", path)
         return ds[0].geography.latlons(flatten=True)
     except TypeError:
         # This is a workaround for datasets that do not have data variables,

@@ -92,12 +92,14 @@ class VerticalVelocity(MatchingFieldsFilter):
             The vertical wind speed in m/s.
         """
 
-        level = float(vertical_velocity._metadata.get("levelist", None))
+        level = float(vertical_velocity.get("vertical.level"))
         # here the pressure gradient is assimilated to volumic weight : hydrostatic hypothesis
         rho = (100 * level) / (287 * temperature.to_numpy() * (1 + 0.61 * humidity.to_numpy()) + 1e-8)
         wz = (-1.0 / (rho * g_gravitational_acceleration + 1e-8)) * vertical_velocity.to_numpy()
 
-        yield self.new_field_from_numpy(wz, template=vertical_velocity, param=self.geometric_vertical_velocity)
+        yield self.new_field_from_numpy(
+            wz, template=vertical_velocity, **{"parameter.variable": self.geometric_vertical_velocity}
+        )
 
     def backward_transform(
         self, geometric_vertical_velocity: Field, temperature: Field, humidity: Field
@@ -119,12 +121,14 @@ class VerticalVelocity(MatchingFieldsFilter):
             The vertical wind speed in Pa/s.
         """
 
-        level = float(geometric_vertical_velocity._metadata.get("levelist", None))
+        level = float(geometric_vertical_velocity.get("vertical.level"))
         # here the pressure gradient is assimilated to volumic weight : hydrostatic hypothesis
         rho = (100 * level) / (287 * temperature.to_numpy() * (1 + 0.61 * humidity.to_numpy()) + 1e-8)
         w = -1.0 * rho * g_gravitational_acceleration * geometric_vertical_velocity.to_numpy()
 
-        yield self.new_field_from_numpy(w, template=geometric_vertical_velocity, param=self.vertical_velocity)
+        yield self.new_field_from_numpy(
+            w, template=geometric_vertical_velocity, **{"parameter.variable": self.vertical_velocity}
+        )
 
 
 filter_registry.register("w_to_wz", VerticalVelocity)

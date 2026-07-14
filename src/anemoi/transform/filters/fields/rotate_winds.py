@@ -87,8 +87,8 @@ class RotateWinds(MatchingFieldsFilter):
             self.target_projection,
         )
 
-        yield self.new_field_from_numpy(x_new, template=x_wind, param=x_wind.parameter.variable())
-        yield self.new_field_from_numpy(y_new, template=y_wind, param=y_wind.parameter.variable())
+        yield self.new_field_from_numpy(x_new, template=x_wind, **{"parameter.variable": x_wind.parameter.variable()})
+        yield self.new_field_from_numpy(y_new, template=y_wind, **{"parameter.variable": y_wind.parameter.variable()})
 
     def backward_transform(self, x_wind: Field, y_wind: Field) -> Iterator[Field]:
         """Rotate wind components from target projection back to source projection.
@@ -118,8 +118,12 @@ class RotateWinds(MatchingFieldsFilter):
             self.source_projection,
         )
 
-        yield self.new_field_from_numpy(x_unrotated, template=x_wind, param=x_wind.parameter.variable())
-        yield self.new_field_from_numpy(y_unrotated, template=y_wind, param=y_wind.parameter.variable())
+        yield self.new_field_from_numpy(
+            x_unrotated, template=x_wind, **{"parameter.variable": x_wind.parameter.variable()}
+        )
+        yield self.new_field_from_numpy(
+            y_unrotated, template=y_wind, **{"parameter.variable": y_wind.parameter.variable()}
+        )
 
 
 filter_registry.register("rotate_winds", RotateWinds)

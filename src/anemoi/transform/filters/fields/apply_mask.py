@@ -153,7 +153,7 @@ class MaskVariable(Filter):
             if self.path.endswith(".npy"):
                 mask = np.load(self.path)
             else:
-                mask = FieldList.from_file(self.path).to_fieldlist()[0].to_numpy(flatten=True)
+                mask = FieldList.from_source("file", self.path)[0].to_numpy(flatten=True)
             self.mask = self._compute_mask(mask)
 
     def _compute_mask(self, mask_values: np.ndarray) -> np.ndarray:
@@ -186,7 +186,7 @@ class MaskVariable(Filter):
         if self.rename is not None:
             param = field.parameter.variable()
             name = f"{param}_{self.rename}"
-            metadata["param"] = name
+            metadata["parameter.variable"] = name
 
         return Field.from_numpy(values, template=field, **metadata)
 

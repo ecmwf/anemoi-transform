@@ -10,11 +10,11 @@
 """The wrapper ``Field`` / ``FieldList`` abstraction over earthkit-data.
 
 This module owns everything that pertains to fields and fieldlists: the
-wrapper classes themselves, their constructors (``FieldList.from_source``,
-``FieldList.concat``, ``Field.from_numpy``, ...) and ``new_grib_output``.
-Non-field earthkit-data utilities (dates, patterns, availability, temporary
-files, ...) are imported from ``earthkit.data`` directly at their call
-sites.
+wrapper classes themselves and their constructors (``FieldList.from_source``,
+``FieldList.concat``, ``Field.from_numpy``, ...). GRIB-specific routines
+live in :mod:`anemoi.transform.grib`; non-field earthkit-data utilities
+(dates, patterns, availability, temporary files, ...) are imported from
+``earthkit.data`` directly at their call sites.
 """
 
 import datetime
@@ -59,69 +59,6 @@ if not getattr(_ekd_unique, "_build_remapping_patched", False):
 
     _ekd_unique.build_remapping = _patched_unique_build_remapping
     _ekd_unique._build_remapping_patched = True
-
-
-class _GribOutput:
-    """A minimal GRIB file writer.
-
-    earthkit-data 1.0 removed ``earthkit.data.readers.grib.output.new_grib_output``.
-    This reproduces the small subset the Anemoi packages depend on
-    (``write`` / ``close``) on top of the 1.0 :class:`~earthkit.data.encoders.grib.GribEncoder`.
-    """
-
-    def __init__(self, path: str):
-        """Open ``path`` for writing GRIB messages."""
-        self._file = open(path, "wb")
-
-    def write(
-        self,
-        values: Any,
-        check_nans: bool = True,
-        metadata: dict | None = None,
-        template: Any = None,
-        missing_value: float = 9999,
-        **kwargs: Any,
-    ) -> None:
-        """Encode one GRIB message and append it to the file.
-
-        Parameters
-        ----------
-        values : Any
-            The values to encode.
-        check_nans : bool
-            Replace NaNs in the values with ``missing_value``.
-        metadata : dict, optional
-            Metadata to encode; merged with ``**kwargs``.
-        template : Field, optional
-            A (wrapped or raw) field used as encoding template.
-        missing_value : float
-            The value encoded in place of NaNs.
-        **kwargs : Any
-            Additional metadata to encode.
-        """
-        from earthkit.data.encoders.grib import GribEncoder
-
-        metadata = {**(metadata or {}), **kwargs}
-        GribEncoder().encode(
-            values=values,
-            template=_unwrap_field(template) if template is not None else None,
-            check_nans=check_nans,
-            metadata=metadata,
-            missing_value=missing_value,
-        ).to_file(self._file)
-
-    def close(self) -> None:
-        """Close the output file."""
-        self._file.close()
-
-
-def new_grib_output(path: str) -> _GribOutput:
-    """Open a GRIB file for writing (earthkit-data 1.0 compatible).
-
-    Drop-in replacement for the removed
-    ``earthkit.data.readers.grib.output.new_grib_output``.
-    """
-    return _GribOutput(path)
 
 
 def __getattr__(name: str) -> Any:
@@ -363,24 +300,6 @@ class Field:
             The new field created from the given components.
         """
         return cls(_EkdField.from_components(**kwargs))
-
-    @staticmethod
-    def new_grib_handle(handle: Any) -> Any:
-        """Create a new earthkit GRIB codes handle.
-
-        Parameters
-        ----------
-        handle : Any
-            A raw eccodes handle to wrap.
-
-        Returns
-        -------
-        earthkit.data.readers.grib.handle.GribCodesHandle
-            The new GRIB codes handle.
-        """
-        from earthkit.data.readers.grib.handle import GribCodesHandle
-
-        return GribCodesHandle(handle, None, None)
 
     @classmethod
     def from_numpy(cls, array: np.ndarray, *, template: "Field", **metadata: Any) -> "Field":
@@ -646,33 +565,6 @@ class FieldList(DataContainer):
         if not isinstance(result, _EkdFieldList):
             result = result.to_fieldlist()
         return cls(result)
-
-    @classmethod
-    def from_file(cls, path: str, *, keep: Any = None) -> "FieldList":
-        """Create a :class:`FieldList` from a file.
-
-        Parameters
-        ----------
-        path : str
-            The path of the file to read.
-        keep : Any, optional
-            An object to keep alive for as long as the fields (or any field
-            derived from them via ``set()``) are alive — typically a
-            temporary-file handle whose deletion would invalidate the
-            fields' underlying GRIB handles.
-
-        Returns
-        -------
-        FieldList
-            The new fieldlist.
-        """
-        result = cls.from_source("file", path)
-        if keep is not None:
-            # Pin on the data component: it is shared with every field derived
-            # from these via ``set()``, whereas the field object itself is not.
-            for field in result._fieldlist:
-                field._components["data"]._anemoi_keep = keep
-        return result
 
     @classmethod
     def concat(cls, *args: "FieldList") -> "FieldList":

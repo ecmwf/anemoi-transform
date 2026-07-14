@@ -9,8 +9,7 @@
 
 from typing import Any
 
-import earthkit.data as ekd
-
+from anemoi.transform import FieldList
 from anemoi.transform.workflow import Workflow
 from anemoi.transform.workflows import workflow_registry
 
@@ -30,34 +29,34 @@ class Pipeline(Workflow):
 
         self.filters: list[Any] = filters
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, data: FieldList) -> FieldList:
         """Apply the filters in sequence to the data.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : FieldList
             The input data to be processed by the filters.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             The processed data after applying all filters.
         """
         for filter in self.filters:
             data = filter.forward(data)
         return data
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def backward(self, data: FieldList) -> FieldList:
         """Apply the filters in reverse sequence to the data.
 
         Parameters
         ----------
-        data : ekd.FieldList
+        data : FieldList
             The input data to be processed by the filters in reverse order.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             The processed data after applying all filters in reverse order.
         """
         for filter in reversed(self.filters):

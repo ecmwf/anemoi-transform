@@ -9,9 +9,9 @@
 
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -23,41 +23,42 @@ class LnspToSp(SingleFieldFilter):
 
     def forward_select(self):
         # select only fields where the param is self.log_of_surface_pressure
-        return {"param": self.log_of_surface_pressure}
+        return {"parameter.variable": self.log_of_surface_pressure}
 
     def backward_select(self):
         # select only fields where the param is self.surface_pressure
-        return {"param": self.surface_pressure}
+        return {"parameter.variable": self.surface_pressure}
 
-    def forward_transform(self, log_of_surface_pressure: ekd.Field) -> ekd.Field:
+    def forward_transform(self, log_of_surface_pressure: Field) -> Field:
         """Convert ln(sp) to sp.
 
         Parameters
         ----------
-        log_of_surface_pressure : ekd.Field
+        log_of_surface_pressure : Field
             The natural log of surface pressure.
 
         Returns
         -------
-        ekd.Field
+        Field
             The surface pressure.
         """
-        new_metadata = {"param": self.surface_pressure, "levelist": None, "level": None}
-        return self.new_field_from_numpy(
+        new_metadata = {"param": self.surface_pressure}
+        field = self.new_field_from_numpy(
             np.exp(log_of_surface_pressure.to_numpy()), template=log_of_surface_pressure, **new_metadata
         )
+        return field.set(vertical={"level": None, "level_type": None})
 
-    def backward_transform(self, surface_pressure: ekd.Field) -> ekd.Field:
+    def backward_transform(self, surface_pressure: Field) -> Field:
         """Convert surface surface pressure to ln(surface_pressure).
 
         Parameters
         ----------
-        surface_pressure : ekd.Field
+        surface_pressure : Field
             The surface pressure.
 
         Returns
         -------
-        ekd.Field
+        Field
             The natural log of surface pressure.
         """
         orig_metadata = {"param": self.log_of_surface_pressure}

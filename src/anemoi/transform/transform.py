@@ -13,15 +13,11 @@ from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
 from typing import Callable
-from typing import TypeAlias
 from typing import TypeVar
 
-import earthkit.data as ekd
-import pandas as pd
+from anemoi.transform.data import DataContainer
 
 T = TypeVar("T", bound="Transform")
-
-DataContainer: TypeAlias = ekd.FieldList | pd.DataFrame
 
 
 class _TransformMetaClass(ABCMeta):

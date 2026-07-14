@@ -7,16 +7,20 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+"""Variables deserialised from metadata dictionaries (legacy MARS-vocabulary schema)."""
+
 import logging
-from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Union
 
 from anemoi.utils.dates import as_timedelta
 
 from anemoi.transform.units import Units
 from anemoi.transform.variables import Variable
+from anemoi.transform.variables.schemas import LegacyVariableSchema
+from anemoi.transform.variables.schemas import VariableSchema
 
 if TYPE_CHECKING:
     from datetime import timedelta
@@ -24,46 +28,115 @@ if TYPE_CHECKING:
 LOG = logging.getLogger(__name__)
 
 
-class VariableFromMarsVocabulary(Variable):
-    """A variable that is defined by the Mars vocabulary."""
+class VariableFromDictionary(Variable):
+    """Base for variables deserialised from a metadata dictionary.
 
-    def __init__(self, name: str, data: dict[str, Any]) -> None:
+    The dictionary is validated against the class's pydantic model
+    (``schema_model``); the schema-independent parts of the layout —
+    the time-processing keys (``process``, ``period``) and the
+    create-time flags (``computed_forcing``, ``constant_in_time``) —
+    are implemented here, on the shared base model.
+    """
+
+    schema_model: ClassVar[type[VariableSchema]] = VariableSchema
+
+    def __init__(self, name: str, data: dict[str, Any] | VariableSchema) -> None:
         """Initialize the variable with a name and data.
 
         Parameters
         ----------
         name : str
             The name of the variable.
-        data : dict
-            The data defining the variable.
+        data : dict or VariableSchema
+            The serialised variable; dictionaries are validated against
+            the class's ``schema_model``.
         """
         super().__init__(name)
+        if not isinstance(data, VariableSchema):
+            data = self.schema_model.model_validate(data)
         self.data = data
-        self.mars = self.data.get("mars", {})
+
+    def as_dict(self) -> dict[str, Any]:
+        """Serialise the variable back to a dictionary (round-trip identity).
+
+        Returns
+        -------
+        dict
+            The validated dictionary, with only explicitly-set keys.
+        """
+        return self.data.as_dict()
+
+    def retrieval_metadata(self, repository: str) -> dict[str, Any] | None:
+        """Return the request metadata stored under a repository's key.
+
+        The repository name is the top-level key of the serialised
+        variable (``"mars"``, ...); unmodelled repositories are reachable
+        too, as the schema models allow extra keys.
+
+        Parameters
+        ----------
+        repository : str
+            The name of the data repository / archival system.
+
+        Returns
+        -------
+        dict or None
+            The stored metadata, or None when absent or empty.
+        """
+        block = getattr(self.data, repository, None)
+        return dict(block) if block else None
 
     @property
-    def is_surface_level(self) -> bool:
-        """Check if the variable is at a surface level."""
-        levtype = self.mars.get("levtype", None)
-        if levtype is None:
-            return None
-        return levtype == "sfc"
+    def is_constant_in_time(self) -> bool:
+        """Check if the variable is constant in time."""
+        return self.data.constant_in_time
 
     @property
-    def is_pressure_level(self) -> bool:
-        """Check if the variable is at a pressure level."""
-        levtype = self.mars.get("levtype", None)
-        if levtype is None:
-            return None
-        return levtype == "pl"
+    def is_computed_forcing(self) -> bool:
+        """Check if the variable is a computed forcing."""
+        return self.data.computed_forcing
 
     @property
-    def is_model_level(self) -> bool:
-        """Check if the variable is at a model level."""
-        levtype = self.mars.get("levtype", None)
-        if levtype is None:
+    def time_processing(self):
+        """Get the time processing type of the variable."""
+        return self.data.process
+
+    @property
+    def period(self) -> Union["timedelta", None]:
+        """Get the variable's period as a timedelta.
+        For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
+        """
+        if self.is_instantaneous:
+            return as_timedelta(0)
+
+        if (period := self.data.period) is None:
             return None
-        return levtype == "ml"
+
+        return period[1] - period[0]
+
+
+class VariableFromMarsVocabulary(VariableFromDictionary):
+    """A variable that is defined by the Mars vocabulary."""
+
+    schema_model: ClassVar[type[VariableSchema]] = LegacyVariableSchema
+
+    def __init__(self, name: str, data: dict[str, Any] | LegacyVariableSchema) -> None:
+        """Initialize the variable with a name and data.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        data : dict or LegacyVariableSchema
+            The data defining the variable.
+        """
+        super().__init__(name, data)
+        self.mars = self.data.mars
+
+    @property
+    def _level_type(self) -> str | None:
+        """The MARS ``levtype`` of the variable, or None when unknown."""
+        return self.mars.get("levtype", None)
 
     @property
     def level(self) -> str | None:
@@ -71,116 +144,33 @@ class VariableFromMarsVocabulary(Variable):
         return self.mars.get("levelist", None)
 
     @property
-    def is_constant_in_time(self) -> bool:
-        """Check if the variable is constant in time."""
-        return self.data.get("constant_in_time", False)
-
-    @property
-    def is_computed_forcing(self) -> bool:
-        """Check if the variable is a computed forcing."""
-        return self.data.get("computed_forcing", False)
-
-    @property
-    def is_accumulation(self) -> bool:
-        """Check if the variable is an accumulation."""
-        return self.data.get("process") == "accumulation"
-
-    @property
-    def is_instantanous(self) -> bool:
-        """Check if the variable is instantaneous."""
-        return "process" not in self.data
-
-    @property
-    def time_processing(self):
-        """Get the time processing type of the variable."""
-        return self.data.get("process")
-
-    @property
-    def period(self) -> Union["timedelta", None]:
-        """Get the variable's period as a timedelta.
-        For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
-        """
-        if self.is_instantanous:
-            return as_timedelta(0)
-
-        if not (period := self.data.get("period")):
-            return None
-
-        if not isinstance(period, Sequence) or len(period) != 2:
-            return None
-
-        return as_timedelta(period[1]) - as_timedelta(period[0])
-
-    @property
     def units(self):
-        units = self.data.get("units", None)
+        """Get the units of the variable (a :class:`Units`, or None if missing)."""
+        units = self.data.units
         return Units(units) if units else None
 
     @property
     def grib_keys(self) -> dict[str, Any]:
         """Get the GRIB keys of the variable."""
-        return self.data.get("mars", {}).copy()
+        return dict(self.mars)
 
     @property
     def param(self) -> str:
         """Get the parameter of the variable."""
         return self.mars.get("param", super().param)
 
-    def similarity(self, other: Any) -> int:
-        """Calculate the similarity between this variable and another.
-
-        Parameters
-        ----------
-        other : Any
-            The other variable to compare with.
-
-        Returns
-        -------
-        int
-            The similarity score between the two variables.
-        """
-        if not isinstance(other, VariableFromMarsVocabulary):
-            return 0
-
-        def __similarity(a: Any, b: Any) -> int:
-            if isinstance(a, dict) and isinstance(b, dict):
-                return sum(__similarity(a[k], b[k]) for k in set(a.keys()) & set(b.keys()))
-
-            if isinstance(a, list) and isinstance(b, list):
-                return sum(__similarity(a[i], b[i]) for i in range(min(len(a), len(b))))
-
-            return 1 if a == b else 0
-
-        return __similarity(self.data, other.data)
-
 
 class VariableFromDict(VariableFromMarsVocabulary):
     """A variable that is defined by a user provided dictionary."""
 
-    def __init__(self, name: str, data: dict[str, Any]) -> None:
+    def __init__(self, name: str, data: dict[str, Any] | LegacyVariableSchema) -> None:
         """Initialize the variable with a name and data.
 
         Parameters
         ----------
         name : str
             The name of the variable.
-        data : dict
-            The data defining the variable.
-        """
-        super().__init__(name, data)
-
-
-class PostProcessedVariable(VariableFromMarsVocabulary):
-    """A variable that is defined by a post-processed dictionary."""
-
-    def __init__(self, name: str, data: dict[str, Any]) -> None:
-        """Initialize the variable with a name and data.
-
-        Parameters
-        ----------
-        name : str
-            The name of the variable.
-        data : dict
+        data : dict or LegacyVariableSchema
             The data defining the variable.
         """
         super().__init__(name, data)

@@ -9,9 +9,9 @@
 
 from collections.abc import Iterator
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -104,19 +104,19 @@ class SnowCover(MatchingFieldsFilter):
         self.snow_cover = snow_cover
         super().__init__()
 
-    def forward_transform(self, snow_depth: ekd.Field, snow_density: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, snow_depth: Field, snow_density: Field) -> Iterator[Field]:
         """Convert snow depth and snow density to snow cover.
 
         Parameters
         ----------
-        snow_depth : ekd.Field
+        snow_depth : Field
             The snow depth data.
-        snow_density : ekd.Field
+        snow_density : Field
             The snow density data.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Transformed fields.
         """
         snow_cover = compute_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())

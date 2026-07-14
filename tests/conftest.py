@@ -10,31 +10,17 @@
 
 from collections.abc import Callable
 
-import earthkit.data as ekd
 import numpy as np
 import pytest
 from anemoi.utils.testing import GetTestData
-from earthkit.data.indexing.fieldlist import SimpleFieldList
-from earthkit.data.sources.array_list import ArrayField
-from earthkit.data.utils.metadata.dict import UserMetadata
 
+from anemoi.transform import FieldList
 from anemoi.transform.source import Source
 from anemoi.transform.sources import source_registry
 
+from .utils import group_component_dict
+
 pytest_plugins = ["anemoi.utils.testing"]
-
-# Create a ekd Metadata Class that mocks the mars metadata namespace
-MARS_KEYS = {"param", "levelist", "type", "step", "date", "time", "number", "expver", "class", "stream", "domain"}
-
-
-class MarsUserMetadata(UserMetadata):
-    def namespaces(self):
-        return ["mars"]
-
-    def as_namespace(self, namespace=None):
-        if namespace == "mars":
-            return {k: v for k, v in self._data.items() if k in MARS_KEYS}
-        return {}
 
 
 @source_registry.register("testing")
@@ -48,9 +34,9 @@ class TestingSource(Source):
 
 
 @pytest.fixture
-def fieldlist(get_test_data: GetTestData) -> ekd.FieldList:
+def fieldlist(get_test_data: GetTestData) -> FieldList:
     """Fixture to create a fieldlist for testing."""
-    return ekd.from_source("file", get_test_data("anemoi-filters/2t-sp.grib"))
+    return FieldList.from_file(get_test_data("anemoi-filters/2t-sp.grib"))
 
 
 @pytest.fixture
@@ -58,9 +44,27 @@ def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Sour
     def _source(dataset: str | list[dict]) -> Source:
         """Create a source from a known file or a list of dicts for testing."""
         if isinstance(dataset, str):
-            ds = ekd.from_source("file", get_test_data(dataset))
+            path = get_test_data(dataset)
+            # TODO: revisit how npy files are loaded
+            if path.endswith(".npy"):
+                # numpy files can't be loaded by earthkit 1.0, load directly
+                arr = np.load(path)
+
+                class _NumpyWrapper:
+                    """Wrapper to mimic the old ds interface for numpy arrays."""
+
+                    def to_numpy(self):
+                        return arr
+
+                    def to_fieldlist(self):
+                        return self
+
+                ds = _NumpyWrapper()
+            else:
+                ds = FieldList.from_file(path)
         elif isinstance(dataset, list):
-            ds = ekd.from_source("list-of-dicts", dataset)
+            dataset = [group_component_dict(spec) for spec in dataset]
+            ds = FieldList.from_dicts(dataset)
         else:
             raise ValueError("dataset must be a string or a list of dicts")
         return source_registry.create("testing", dataset=ds)
@@ -71,10 +75,8 @@ def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Sour
 @pytest.fixture
 def mars_test_source() -> Callable[[list[dict]], Source]:
     def _source(dataset: list[dict]) -> Source:
-        fields = []
-        for d in dataset:
-            v = np.array(d["values"])
-            fields.append(ArrayField(v, MarsUserMetadata(d, shape=v.shape)))
-        return source_registry.create("testing", dataset=SimpleFieldList(fields=fields))
+        dataset = [group_component_dict(spec) for spec in dataset]
+        ds = FieldList.from_dicts(dataset)
+        return source_registry.create("testing", dataset=ds)
 
     return _source

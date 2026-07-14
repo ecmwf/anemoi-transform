@@ -11,9 +11,9 @@
 from collections.abc import Iterator
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -55,18 +55,18 @@ class CosSinFromRad(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        param: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        param: Field,
+    ) -> Iterator[Field]:
         """Convert a direction variable to its cosine and sine components.
 
         Parameters
         ----------
-        param : ekd.Field
+        param : Field
             The direction field.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Fields of cosine and sine of the direction.
         """
         data = param.to_numpy()
@@ -80,21 +80,21 @@ class CosSinFromRad(MatchingFieldsFilter):
 
     def backward_transform(
         self,
-        cos_param: ekd.Field,
-        sin_param: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        cos_param: Field,
+        sin_param: Field,
+    ) -> Iterator[Field]:
         """Convert cosine and sine components back to direction in radians in the range [-pi, pi).
 
         Parameters
         ----------
-        cos_param : ekd.Field
+        cos_param : Field
             The cosine of the direction field.
-        sin_param : ekd.Field
+        sin_param : Field
             The sine of the  direction field.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Field of the direction.
         """
         direction = np.arctan2(sin_param.to_numpy(), cos_param.to_numpy())

@@ -8,18 +8,19 @@
 # nor does it submit to any jurisdiction.
 from unittest import mock
 
-import earthkit.data as ekd
 import numpy as np
 import pytest
 
+from anemoi.transform import FieldList
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 from ..utils import collect_fields_by_param
+from ..utils import group_component_dict
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 SNOW_DEPTH_VALUES = np.array([[100.0, 200.0], [300.0, 400.0], [500.0, 600.0]])
@@ -28,22 +29,23 @@ GLACIER_MASK = np.array([[0, 0], [0, 1], [1, 1]])
 
 @pytest.fixture
 def snow_depth_source(test_source):
-    SNOW_DEPTH_SPEC = [{"param": "sd", "values": SNOW_DEPTH_VALUES.copy(), **MOCK_FIELD_METADATA}]
+    SNOW_DEPTH_SPEC = [{"parameter.variable": "sd", "data.values": SNOW_DEPTH_VALUES.copy(), **MOCK_FIELD_METADATA}]
     return test_source(SNOW_DEPTH_SPEC)
 
 
 @pytest.fixture
 def mock_mask():
-    field = {"param": "glacier_mask", "values": GLACIER_MASK.copy(), **MOCK_FIELD_METADATA}
-    return ekd.from_source("list-of-dicts", [field])
+    field = {"parameter.variable": "glacier_mask", "data.values": GLACIER_MASK.copy(), **MOCK_FIELD_METADATA}
+    field = group_component_dict(field)
+    return FieldList.from_dicts([field])
 
 
 def test_glacier_mask(snow_depth_source, mock_mask):
-    with mock.patch("anemoi.transform.filters.fields.glacier_mask.ekd.from_source") as mock_earthkit:
+    with mock.patch("anemoi.transform.filters.fields.glacier_mask.FieldList.from_file") as mock_earthkit:
         mock_earthkit.return_value = mock_mask
 
         glacier_mask = create_filter("glacier_mask", glacier_mask="glacier_mask.grib")
-        mock_earthkit.assert_called_once_with("file", "glacier_mask.grib")
+        mock_earthkit.assert_called_once_with("glacier_mask.grib")
 
     pipeline = snow_depth_source | glacier_mask
 

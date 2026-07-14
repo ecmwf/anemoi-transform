@@ -10,8 +10,7 @@ from abc import ABC
 from abc import abstractmethod
 from typing import Callable
 
-import earthkit.data as ekd
-
+from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -31,7 +30,12 @@ class Rescaler:
 class RescaleMixin(ABC):
     # inheriting classes should define required_inputs (which must include param)
     # and must define self.rescaler in prepare_filter
-    param: str
+    #
+    # ``param`` may be a single variable name or a list of names: every matching
+    # field is rescaled with the same scale/offset (batch rescale). The field's
+    # own variable name is preserved — a rescale changes values and units, not
+    # identity — so a single filter can cover a whole unit-homogeneous group.
+    param: "str | list[str]"
     rescaler: Rescaler
     # intended to be inherited from SingleFieldFilter
     new_field_from_numpy: Callable
@@ -44,25 +48,36 @@ class RescaleMixin(ABC):
         raise NotImplementedError("prepare_filter must be implemented by subclasses.")
 
     def forward_select(self):
-        return {"param": self.param}
+        return {"parameter.variable": self.param}
 
-    def forward_transform(self, param: ekd.Field) -> ekd.Field:
+    def _rescaled_field(self, field: Field, values, units) -> Field:
+        # Preserve the field's own variable name (a rescale changes values and
+        # units, not identity) so ``param`` may name several fields at once.
+        # Only override units when the direction defines them, otherwise the
+        # template's units are kept (passing units=None would clobber them).
+        metadata = {} if units is None else {"units": units}
+        return self.new_field_from_numpy(values, template=field, **metadata)
+
+    def forward_transform(self, field: Field) -> Field:
         """Apply the forward transformation (x to ax+b)."""
-        rescaled = self.rescaler.forward(param.to_numpy())
-        return self.new_field_from_numpy(rescaled, template=param, param=self.param, units=self.forward_units)
+        return self._rescaled_field(field, self.rescaler.forward(field.to_numpy()), self.forward_units)
 
-    def backward_transform(self, param: ekd.Field) -> ekd.Field:
+    def backward_transform(self, field: Field) -> Field:
         """Apply the backward transformation (ax+b to x)."""
-        descaled = self.rescaler.backward(param.to_numpy())
-        return self.new_field_from_numpy(descaled, template=param, param=self.param)
+        return self._rescaled_field(field, self.rescaler.backward(field.to_numpy()), self.backward_units)
 
 
 class Rescale(RescaleMixin, SingleFieldFilter):
-    """A filter to rescale a parameter from a scale and an offset, and back."""
+    """A filter to rescale a parameter from a scale and an offset, and back.
 
-    required_inputs = ("scale", "offset", "param")
+    The ``units`` input gives the units of the rescaled values; it is
+    attached to the fields produced by the forward transformation.
+    """
+
+    required_inputs = ("scale", "offset", "param", "units")
 
     def prepare_filter(self):
+        self.forward_units = self.units
         self.rescaler = Rescaler(self.scale, self.offset)
 
 

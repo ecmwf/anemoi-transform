@@ -7,40 +7,31 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import os
-from typing import Any
-
-import earthkit.data as ekd
 import numpy as np
 import pytest
+from anemoi.utils.testing import skip_if_offline
 
+from anemoi.transform import FieldList
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
-NO_MARS = not os.path.exists(os.path.expanduser("~/.ecmwfapirc"))
+
+@pytest.fixture
+def template(fieldlist: FieldList) -> tuple[FieldList, np.ndarray]:
+    """Fixture returning a single-field (2t) fieldlist and its values."""
+    single = fieldlist.sel(**{"parameter.variable": "2t"})
+    assert len(single) == 1
+    return single, single[0].values
 
 
-def _get_template() -> tuple[Any, np.ndarray, Any]:
-    """Get a template fieldlist, values, and metadata for testing.
-
-    Returns
-    -------
-    Tuple
-        A tuple containing the fieldlist, values, and metadata.
-    """
-    temp = ekd.from_source("mars", {"param": "2t", "levtype": "sfc", "dates": ["2023-11-17 00:00:00"]})
-    fieldlist = temp.to_fieldlist()
-    return fieldlist, fieldlist[0].values, fieldlist[0].metadata
-
-
-@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
-def test_repeat_members_using_numbers_1() -> None:
+@skip_if_offline
+def test_repeat_members_using_numbers_1(template: tuple[FieldList, np.ndarray]) -> None:
     """Test repeat_members filter using a list of numbers.
 
     Tests:
     - Repeating members using a list of numbers [1, 2, 3].
     - Asserting the repeated members have correct values and metadata.
     """
-    fieldlist, values, metadata = _get_template()
+    fieldlist, values = template
 
     repeat = create_filter("repeat_members", numbers=[1, 2, 3])
     repeated = repeat.forward(fieldlist)
@@ -48,19 +39,18 @@ def test_repeat_members_using_numbers_1() -> None:
     for i, f in enumerate(repeated):
         assert f.values.shape == values.shape
         assert np.all(f.values == values)
-        assert f.metadata("number") == i + 1
-        assert f.metadata("name") == metadata("name")
+        assert f.ensemble.member() == str(i + 1)
 
 
-@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
-def test_repeat_members_using_numbers_2() -> None:
+@skip_if_offline
+def test_repeat_members_using_numbers_2(template: tuple[FieldList, np.ndarray]) -> None:
     """Test repeat_members filter using a range of numbers.
 
     Tests:
     - Repeating members using a range of numbers "1/to/3".
     - Asserting the repeated members have correct values and metadata.
     """
-    fieldlist, values, metadata = _get_template()
+    fieldlist, values = template
 
     repeat = create_filter("repeat_members", numbers="1/to/3")
     repeated = repeat.forward(fieldlist)
@@ -68,19 +58,18 @@ def test_repeat_members_using_numbers_2() -> None:
     for i, f in enumerate(repeated):
         assert f.values.shape == values.shape
         assert np.all(f.values == values)
-        assert f.metadata("number") == i + 1
-        assert f.metadata("name") == metadata("name")
+        assert f.ensemble.member() == str(i + 1)
 
 
-@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
-def test_repeat_members_using_members() -> None:
+@skip_if_offline
+def test_repeat_members_using_members(template: tuple[FieldList, np.ndarray]) -> None:
     """Test repeat_members filter using a list of members.
 
     Tests:
     - Repeating members using a list of members [0, 1, 2].
     - Asserting the repeated members have correct values and metadata.
     """
-    fieldlist, values, metadata = _get_template()
+    fieldlist, values = template
 
     repeat = create_filter("repeat_members", members=[0, 1, 2])
     repeated = repeat.forward(fieldlist)
@@ -88,19 +77,18 @@ def test_repeat_members_using_members() -> None:
     for i, f in enumerate(repeated):
         assert f.values.shape == values.shape
         assert np.all(f.values == values)
-        assert f.metadata("number") == i + 1
-        assert f.metadata("name") == metadata("name")
+        assert f.ensemble.member() == str(i + 1)
 
 
-@pytest.mark.skipif(NO_MARS, reason="No access to MARS")
-def test_repeat_members_using_count() -> None:
+@skip_if_offline
+def test_repeat_members_using_count(template: tuple[FieldList, np.ndarray]) -> None:
     """Test repeat_members filter using a count.
 
     Tests:
     - Repeating members using a count of 3.
     - Asserting the repeated members have correct values and metadata.
     """
-    fieldlist, values, metadata = _get_template()
+    fieldlist, values = template
 
     repeat = create_filter("repeat_members", count=3)
     repeated = repeat.forward(fieldlist)
@@ -108,13 +96,8 @@ def test_repeat_members_using_count() -> None:
     for i, f in enumerate(repeated):
         assert f.values.shape == values.shape
         assert np.all(f.values == values)
-        assert f.metadata("number") == i + 1
-        assert f.metadata("name") == metadata("name")
+        assert f.ensemble.member() == str(i + 1)
 
 
 if __name__ == "__main__":
-    """Run all test functions that start with 'test_'."""
-    for name, obj in list(globals().items()):
-        if name.startswith("test_") and callable(obj):
-            print(f"Running {name}...")
-            obj()
+    pytest.main([__file__])

@@ -31,12 +31,15 @@ def test_rename_grib_dict_rename(grib_source):
     pipeline = grib_source | rename
 
     for original, result in zip(grib_source, pipeline):
-        if original.metadata("param") == "z":
-            assert result.metadata("param") == "geopotential"
-        elif original.metadata("param") == "t":
-            assert result.metadata("param") == "temperature"
+        # Renaming 'param' names the field: the new name is carried by the
+        # labels.name label (Field.with_name); the GRIB metadata is untouched.
+        if original.parameter.variable() == "z":
+            assert result.name == "geopotential"
+        elif original.parameter.variable() == "t":
+            assert result.name == "temperature"
         else:
-            raise RuntimeError(f"Unexpected param: {original.metadata('param')}")
+            raise RuntimeError(f"Unexpected param: {original.parameter.variable()}")
+        assert result.parameter.variable() == original.parameter.variable()
 
 
 @skip_if_offline
@@ -48,12 +51,13 @@ def test_rename_grib_format_rename(grib_source):
     pipeline = grib_source | rename
 
     for original, result in zip(grib_source, pipeline):
-        orig_param, orig_level, orig_levtype, orig_level_d = original.metadata(
-            "param", "levelist", "levtype", "levelist:d"
-        )
+        orig_param = original.metadata("param")
+        orig_level = original.metadata("levelist")
+        orig_levtype = original.metadata("levtype")
+        orig_level_d = original.metadata("levelist:d")
         assert isinstance(orig_level, int)
         assert isinstance(orig_level_d, float)
-        assert result.metadata("param") == f"{orig_param}_{orig_level}_{orig_levtype}_{orig_level_d}"
+        assert result.name == f"{orig_param}_{orig_level}_{orig_levtype}_{orig_level_d}"
 
 
 @skip_if_offline
@@ -66,13 +70,14 @@ def test_rename_grib_dict_multiple(grib_source):
     pipeline = grib_source | rename
 
     for original, result in zip(grib_source, pipeline):
-        assert result.metadata("levelist") == f"{original.metadata('levelist')}hPa"
-        if original.metadata("param") == "z":
-            assert result.metadata("param") == "geopotential"
-        elif original.metadata("param") == "t":
-            assert result.metadata("param") == "temperature"
+        # 'levelist' is ordinary metadata (rewritten); 'param' names the field.
+        assert result.vertical.level() == f"{original.vertical.level()}hPa"
+        if original.parameter.variable() == "z":
+            assert result.name == "geopotential"
+        elif original.parameter.variable() == "t":
+            assert result.name == "temperature"
         else:
-            raise RuntimeError(f"Unexpected param: {original.metadata('param')}")
+            raise RuntimeError(f"Unexpected param: {original.parameter.variable()}")
 
 
 @skip_if_offline
@@ -84,12 +89,12 @@ def test_rename_netcdf(netcdf_source):
     pipeline = netcdf_source | rename
 
     for original, result in zip(netcdf_source, pipeline):
-        if original.metadata("param") == "t2m":
-            assert result.metadata("param") == "2m temperature"
-        elif original.metadata("param") == "msl":
-            assert result.metadata("param") == "mean sea level pressure"
+        if original.parameter.variable() == "t2m":
+            assert result.name == "2m temperature"
+        elif original.parameter.variable() == "msl":
+            assert result.name == "mean sea level pressure"
         else:
-            raise RuntimeError(f"Unexpected param: {original.metadata('param')}")
+            raise RuntimeError(f"Unexpected param: {original.parameter.variable()}")
 
 
 if __name__ == "__main__":

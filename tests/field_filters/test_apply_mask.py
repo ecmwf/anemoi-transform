@@ -17,9 +17,9 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 MASK_VALUES = {
@@ -39,23 +39,27 @@ DATA_VALUES = {
 @pytest.fixture()
 def source(test_source):
     FIELD_SPECS = [
-        {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA} for param, values in DATA_VALUES.items()
+        {"parameter.variable": param, "data.values": values.copy(), **MOCK_FIELD_METADATA}
+        for param, values in DATA_VALUES.items()
     ]
     return test_source(FIELD_SPECS)
 
 
 @pytest.fixture()
 def ekd_from_source():
-    def side_effect(source_type, path):
+    def side_effect(path):
         mock_field = mock.Mock()
-        if source_type != "file":
-            raise ValueError("Invalid source type")
         # mask expected to be flattened
         mask = MASK_VALUES[path].copy().flatten()
         mock_field.to_numpy.return_value = mask
-        return [mock_field]
+        # Return a mock that supports .to_fieldlist()[0]
+        mock_source = mock.Mock()
+        mock_fieldlist = mock.Mock()
+        mock_fieldlist.__getitem__ = mock.Mock(return_value=mock_field)
+        mock_source.to_fieldlist.return_value = mock_fieldlist
+        return mock_source
 
-    with mock.patch("anemoi.transform.filters.fields.apply_mask.ekd.from_source", autospec=True) as mock_fn:
+    with mock.patch("anemoi.transform.filters.fields.apply_mask.FieldList.from_file") as mock_fn:
         mock_fn.side_effect = side_effect
         yield mock_fn
 
@@ -63,7 +67,7 @@ def ekd_from_source():
 def test_apply_mask_fails_without_arguments(ekd_from_source):
     with pytest.raises(ValueError):
         create_filter("apply_mask", path="all_zeros")
-        ekd_from_source.assert_called_once_with("file", "all_zeros")
+        ekd_from_source.assert_called_once_with("all_zeros")
 
 
 @pytest.mark.parametrize(
@@ -79,7 +83,7 @@ def test_apply_mask_fails_without_arguments(ekd_from_source):
 @pytest.mark.parametrize("mask_name", MASK_VALUES.keys())
 def test_apply_mask(source, ekd_from_source, mask_name, rename, threshold_options):
     apply_mask = create_filter("apply_mask", path=mask_name, rename=rename, **threshold_options)
-    ekd_from_source.assert_called_once_with("file", mask_name)
+    ekd_from_source.assert_called_once_with(mask_name)
 
     pipeline = source | apply_mask
 
@@ -114,7 +118,7 @@ def test_apply_mask_only_single_param(source, ekd_from_source):
         threshold_operator=">",
         param="t",
     )
-    ekd_from_source.assert_called_once_with("file", "mixed_floats")
+    ekd_from_source.assert_called_once_with("mixed_floats")
 
     pipeline = source | apply_mask
 

@@ -10,9 +10,9 @@
 from collections.abc import Iterator
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -112,24 +112,24 @@ class LandParameters(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        high_veg_type: ekd.Field,
-        low_veg_type: ekd.Field,
-        soil_type: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        high_veg_type: Field,
+        low_veg_type: Field,
+        soil_type: Field,
+    ) -> Iterator[Field]:
         """Get static parameters from table based on soil/vegetation type.
 
         Parameters
         ----------
-        high_veg_type : ekd.Field
+        high_veg_type : Field
             High vegetation type.
-        low_veg_type : ekd.Field
+        low_veg_type : Field
             Low vegetation type.
-        soil_type : ekd.Field
+        soil_type : Field
             Soil type.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             An iterator over the new fields with static parameters.
         """
         hveg_rsmin, hveg_cov, hveg_z0m = read_crosswalking_table(high_veg_type.to_numpy(), VEG_TYPE_DIC)

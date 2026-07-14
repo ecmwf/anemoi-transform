@@ -151,3 +151,4 @@ trace.txt
 *.prof
 prof/
 *.gz
+report_output/report.html

@@ -15,9 +15,9 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 LSM_VALUES = np.array([[1, 0], [1, 1], [0, 0]])
@@ -32,7 +32,8 @@ DATA_VALUES = {
 @pytest.fixture()
 def source(test_source):
     FIELD_SPECS = [
-        {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA} for param, values in DATA_VALUES.items()
+        {"parameter.variable": param, "data.values": values.copy(), **MOCK_FIELD_METADATA}
+        for param, values in DATA_VALUES.items()
     ]
     return test_source(FIELD_SPECS)
 

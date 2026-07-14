@@ -10,12 +10,10 @@
 
 import logging
 
-import earthkit.data as ekd
 import tqdm
 
-from anemoi.transform.fields import new_field_from_latitudes_longitudes
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.grids.icon import icon_grid
@@ -46,24 +44,24 @@ class IconRefinement(Filter):
         self.latitudes, self.longitudes = icon_grid(self.grid, self.refinement_level_c)
         self.nearest_grid_points = None
 
-    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, fields: FieldList) -> FieldList:
         """Interpolate the input fields to an ICON grid.
 
         Parameters
         ----------
-        fields : ekd.FieldList
+        fields : FieldList
             List of fields to be interpolated.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             List of interpolated fields.
         """
         if self.nearest_grid_points is None:
             from anemoi.utils.grids import nearest_grid_points
 
             # We assume all fields have the same grid
-            latitudes, longitudes = fields[0].grid_points()
+            latitudes, longitudes = fields[0].geography.latlons(flatten=True)
             self.nearest_grid_points = nearest_grid_points(
                 latitudes,
                 longitudes,
@@ -76,10 +74,10 @@ class IconRefinement(Filter):
 
             data = field.to_numpy(flatten=True)
             data = data[..., self.nearest_grid_points]
-            new_field = new_field_from_latitudes_longitudes(
-                new_field_from_numpy(data, template=field), latitudes=self.latitudes, longitudes=self.longitudes
+            new_field = Field.from_latitudes_longitudes(
+                Field.from_numpy(data, template=field), latitudes=self.latitudes, longitudes=self.longitudes
             )
             new_field.resolution = f"mrl{self.refinement_level_c}"
             result.append(new_field)
 
-        return new_fieldlist_from_list(result)
+        return FieldList.from_fields(result)

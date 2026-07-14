@@ -7,9 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import earthkit.data as ekd
 import pandas as pd
 
+from anemoi.transform import FieldList
 from anemoi.transform.filter import DispatchingFilter
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.fields.orog_to_z import Orography as OrographyFields
@@ -33,10 +33,10 @@ class GeopotentialToHeight(DispatchingFilter):
         # tabular filter uses geopotential and height keys
         self.tabular_filter = GeopotentialToHeightTabular(geopotential=config["geopotential"], height=config["height"])
 
-    def forward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward_fields(self, data: FieldList) -> FieldList:
         return self.field_filter.forward(data)
 
-    def backward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+    def backward_fields(self, data: FieldList) -> FieldList:
         return self.field_filter.backward(data)
 
     def forward_tabular(self, data: pd.DataFrame) -> pd.DataFrame:

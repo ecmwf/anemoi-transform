@@ -11,12 +11,12 @@
 import healpy as hp
 import pandas as pd
 
-from anemoi.transform.filter import Filter
+from anemoi.transform.filter import TabularFilter
 from anemoi.transform.filters.tabular import filter_registry
 
 
 @filter_registry.register("add_healpix")
-class AddHealpix(Filter):
+class AddHealpix(TabularFilter):
     """Add a healpix index column ``healpix_idx_{nside}`` to the DataFrame.
 
     The configuration key ``nside`` is an integer representing the number of

@@ -8,19 +8,20 @@
 # nor does it submit to any jurisdiction.
 
 
+import functools
 import logging
 from abc import abstractmethod
 from collections.abc import Callable
 from functools import singledispatchmethod
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 import pandas as pd
 
+from anemoi.transform import Field
+from anemoi.transform import FieldList
+from anemoi.transform import Frame
 from anemoi.transform.fields import FieldSelection
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.transform import Transform
 
 LOG = logging.getLogger(__name__)
@@ -30,6 +31,58 @@ class Filter(Transform):
     """A filter transform that processes field data."""
 
     pass
+
+
+def _preserve_frame_type(method: Callable) -> Callable:
+    """Wrap a raw-``DataFrame`` filter method so it also accepts/returns :class:`Frame`.
+
+    When called with a :class:`~anemoi.transform.frames.Frame`, the underlying
+    pandas ``DataFrame`` is unwrapped, the wrapped method runs on it, and a
+    ``DataFrame`` result is re-wrapped as a ``Frame``. When called with a raw
+    ``pd.DataFrame`` (or anything else), the method runs unchanged and the result
+    type is preserved. This lets a ``Frame`` flow through a tabular pipeline
+    end-to-end without changing filter bodies or the raw-``DataFrame`` contract
+    that existing callers and tests rely on.
+    """
+
+    def _propagate_attrs(data: Any, result: Any) -> Any:
+        # pandas propagates DataFrame.attrs inconsistently; carry them over
+        # explicitly (e.g. the origin attached by the dataset-create actions)
+        # without overwriting anything the filter set itself.
+        if isinstance(data, pd.DataFrame) and isinstance(result, pd.DataFrame):
+            for k, v in data.attrs.items():
+                result.attrs.setdefault(k, v)
+        return result
+
+    @functools.wraps(method)
+    def wrapper(self: Any, data: Any, *args: Any, **kwargs: Any) -> Any:
+        if isinstance(data, Frame):
+            frame = data.to_pandas()
+            result = _propagate_attrs(frame, method(self, frame, *args, **kwargs))
+            return Frame.from_pandas(result) if isinstance(result, pd.DataFrame) else result
+        return _propagate_attrs(data, method(self, data, *args, **kwargs))
+
+    wrapper._frame_type_preserving = True
+    return wrapper
+
+
+class TabularFilter(Filter):
+    """A filter that transforms tabular data (a pandas ``DataFrame``).
+
+    Subclasses implement ``forward`` (and optionally ``backward``) operating on a
+    raw :class:`pandas.DataFrame`, exactly as before. This base transparently also
+    accepts and returns an :class:`~anemoi.transform.frames.Frame` (the tabular
+    counterpart of :class:`~anemoi.transform.fields.FieldList`), so tabular data
+    can flow through a pipeline as a ``Frame`` — while a raw ``DataFrame`` in still
+    yields a raw ``DataFrame`` out, preserving the existing contract.
+    """
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        for name in ("forward", "backward"):
+            method = cls.__dict__.get(name)
+            if method is not None and not getattr(method, "_frame_type_preserving", False):
+                setattr(cls, name, _preserve_frame_type(method))
 
 
 class DispatchingFilter(Transform):
@@ -61,17 +114,21 @@ class DispatchingFilter(Transform):
         return self.forward_fallback(data)
 
     @forward.register
-    def _(self, data: ekd.FieldList) -> ekd.FieldList:
+    def _(self, data: FieldList) -> FieldList:
         return self.forward_fields(data)
 
     @forward.register
     def _(self, data: pd.DataFrame) -> pd.DataFrame:
         return self.forward_tabular(data)
 
+    @forward.register
+    def _(self, data: Frame) -> Frame:
+        return Frame.from_pandas(self.forward_tabular(data.to_pandas()))
+
     def forward_fallback(self, data: Any) -> Any:
         raise TypeError(f"No forward method for {type(data)}")
 
-    def forward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward_fields(self, data: FieldList) -> FieldList:
         return self.forward_fallback(data)
 
     def forward_tabular(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -82,12 +139,16 @@ class DispatchingFilter(Transform):
         return self.backward_fallback(data)
 
     @backward.register
-    def _(self, data: ekd.FieldList) -> ekd.FieldList:
+    def _(self, data: FieldList) -> FieldList:
         return self.backward_fields(data)
 
     @backward.register
     def _(self, data: pd.DataFrame) -> pd.DataFrame:
         return self.backward_tabular(data)
+
+    @backward.register
+    def _(self, data: Frame) -> Frame:
+        return Frame.from_pandas(self.backward_tabular(data.to_pandas()))
 
     def backward_fallback(self, data: Any) -> Any:
         raise NotImplementedError(f"No backward method for {type(data)}")
@@ -95,7 +156,7 @@ class DispatchingFilter(Transform):
     def backward_tabular(self, data: pd.DataFrame) -> pd.DataFrame:
         return self.backward_fallback(data)
 
-    def backward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+    def backward_fields(self, data: FieldList) -> FieldList:
         return self.backward_fallback(data)
 
 
@@ -151,16 +212,16 @@ class SingleFieldFilter(Filter):
         return self.forward_select()
 
     @abstractmethod
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+    def forward_transform(self, field: Field) -> Field:
         """Apply the transformation to a field. Must be implemented by subclasses."""
         pass
 
-    def backward_transform(self, field: ekd.Field) -> ekd.Field:
+    def backward_transform(self, field: Field) -> Field:
         """Apply the backward transformation to a field."""
         raise NotImplementedError("Field backward transform not implemented.")
 
-    def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, **metadata: dict) -> ekd.Field:
-        return new_field_from_numpy(array, template=template, **metadata)
+    def new_field_from_numpy(self, array: np.ndarray, *, template: Field, **metadata: dict) -> Field:
+        return Field.from_numpy(array, template=template, **metadata)
 
     def _validate_inputs(self) -> None:
         if not self.required_inputs:
@@ -186,17 +247,17 @@ class SingleFieldFilter(Filter):
         return self._config[name]
 
     @staticmethod
-    def _map_transform(transform_function: Callable, fields: ekd.FieldList) -> ekd.FieldList:
-        return new_fieldlist_from_list([transform_function(field) for field in fields])
+    def _map_transform(transform_function: Callable, fields: FieldList) -> FieldList:
+        return FieldList.from_fields([transform_function(field) for field in fields])
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
-        def transform(field: ekd.Field) -> ekd.Field:
+    def forward(self, data: FieldList) -> FieldList:
+        def transform(field: Field) -> Field:
             return self.forward_transform(field) if self._forward_selection.match(field) else field
 
         return self._map_transform(transform, data)
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
-        def transform(field: ekd.Field) -> ekd.Field:
+    def backward(self, data: FieldList) -> FieldList:
+        def transform(field: Field) -> Field:
             return self.backward_transform(field) if self._backward_selection.match(field) else field
 
         return self._map_transform(transform, data)

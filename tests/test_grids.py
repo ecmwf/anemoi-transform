@@ -8,43 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 
-import earthkit.data as ekd
 import pytest
 
-from anemoi.transform.grids import UnstructuredGridFieldList
 from anemoi.transform.grids.named import lookup
-
-latitude_url = "http://icon-downloads.mpimet.mpg.de/grids/public/edzw/icon_extpar_0026_R03B07_G_20150805.g2"
-tlat = "tlat"
-
-longitudes_url = "http://icon-downloads.mpimet.mpg.de/grids/public/edzw/icon_extpar_0026_R03B07_G_20150805.g2"
-tlon = "tlon"
-
-
-def do_not_test_unstructured_from_url() -> None:
-    """Test the UnstructuredGridFieldList class for loading data from URLs.
-
-    Tests:
-    - Loading latitude and longitude data from URLs.
-    - Asserting the loaded data has the correct number of grid points.
-    - Creating forcings from the loaded data and asserting their properties.
-    """
-    ds = UnstructuredGridFieldList.from_grib(latitude_url, longitudes_url, tlat, tlon)
-
-    assert len(ds) == 1
-
-    lats, lons = ds[0].grid_points()
-
-    assert len(lats) == len(lons)
-
-    forcings = ekd.from_source(
-        "forcings",
-        ds,
-        date="2015-08-05",
-        param=["cos_latitude", "sin_latitude"],
-    )
-
-    assert len(forcings) == 2
 
 
 def test_lookup_o96() -> None:

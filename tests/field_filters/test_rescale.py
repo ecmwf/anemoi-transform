@@ -7,33 +7,37 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import earthkit.data as ekd
 import numpy.testing as npt
 from anemoi.utils.testing import skip_if_offline
 
+from anemoi.transform import FieldList
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
 @skip_if_offline
-def test_rescale(fieldlist: ekd.FieldList) -> None:
+def test_rescale(fieldlist: FieldList) -> None:
     """Test rescaling temperature from Kelvin to Celsius and back.
 
     Parameters
     ----------
-    fieldlist : ekd.FieldList
+    fieldlist : FieldList
         The fieldlist to use for testing.
     """
 
-    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
+    before_filter = {field.parameter.variable(): field.to_numpy().copy() for field in fieldlist}
 
     # rescale from K to °C
-    k_to_deg = create_filter("rescale", scale=1.0, offset=-273.15, param="2t")
+    k_to_deg = create_filter("rescale", scale=1.0, offset=-273.15, param="2t", units="degC")
     rescaled = k_to_deg.forward(fieldlist)
-    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled}
+    after_forward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled}
+
+    for field in rescaled:
+        if field.parameter.variable() == "2t":
+            assert field.get("parameter.units") == "degC"
 
     # and back
     rescaled_back = k_to_deg.backward(rescaled)
-    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled_back}
+    after_backward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled_back}
 
     for param in ("2t", "sp"):
         npt.assert_allclose(before_filter[param], after_backward[param])
@@ -45,23 +49,23 @@ def test_rescale(fieldlist: ekd.FieldList) -> None:
 
 
 @skip_if_offline
-def test_convert(fieldlist: ekd.FieldList) -> None:
+def test_convert(fieldlist: FieldList) -> None:
     """Test converting temperature from Kelvin to Celsius and back.
 
     Parameters
     ----------
-    fieldlist : ekd.FieldList
+    fieldlist : FieldList
         The fieldlist to use for testing.
     """
-    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
+    before_filter = {field.parameter.variable(): field.to_numpy().copy() for field in fieldlist}
     # rescale from K to °C
     k_to_deg = create_filter("convert", unit_in="K", unit_out="degC", param="2t")
     rescaled = k_to_deg.forward(fieldlist)
-    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled}
+    after_forward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled}
 
     # and back
     rescaled_back = k_to_deg.backward(rescaled)
-    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in rescaled_back}
+    after_backward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled_back}
 
     for param in ("2t", "sp"):
         npt.assert_allclose(before_filter[param], after_backward[param])

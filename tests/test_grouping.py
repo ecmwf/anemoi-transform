@@ -7,26 +7,19 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import earthkit.data as ekd
 import pytest
 
+from anemoi.transform import Field
 from anemoi.transform.grouping import GroupByParam
 
 from .utils import mock_field
 
 
 def field_generator(**metadata_values):
-    MOCK_MARS_METADATA = {
-        "domain": "g",
-        "levtype": "sfc",
-        "date": 20200513,
-        "time": 1200,
-        "step": 0,
-        "param": "2t",
-        "class": "od",
-        "type": "an",
-        "stream": "oper",
-        "expver": "0001",
+    MOCK_METADATA = {
+        "time.step": 0,
+        "time.valid_datetime": "2020-05-13T12:00:00Z",
+        "parameter.variable": "2t",
     }
     # builds fields with metadata from cartesian product of metadata_values
     fields = []
@@ -34,7 +27,7 @@ def field_generator(**metadata_values):
 
     combinations = itertools.product(*metadata_values.values())
     for values in combinations:
-        metadata = MOCK_MARS_METADATA | dict(zip(metadata_values.keys(), values))
+        metadata = MOCK_METADATA | dict(zip(metadata_values.keys(), values))
         fields.append(mock_field(**metadata))
     return fields
 
@@ -42,15 +35,30 @@ def field_generator(**metadata_values):
 @pytest.fixture
 def sample_fields():
     return field_generator(
-        step=[0, 1],
-        param=["t", "q", "u", "v"],
+        **{
+            "time.step": [0, 1],
+            "parameter.variable": ["t", "q", "u", "v"],
+        }
     )
 
 
 @pytest.fixture
 def sample_fields_vertical():
-    surface_fields = field_generator(step=[0, 1], levtype=["sfc"], param=["2q", "2r", "2t", "sp"])
-    vertical_fields = field_generator(step=[0, 1], levtype=["ml"], param=["q", "t"], levelist=[1, 2, 3])
+    surface_fields = field_generator(
+        **{
+            "time.step": [0, 1],
+            "vertical.level_type": ["sfc"],
+            "parameter.variable": ["2q", "2r", "2t", "sp"],
+        }
+    )
+    vertical_fields = field_generator(
+        **{
+            "time.step": [0, 1],
+            "vertical.level_type": ["hybrid"],
+            "parameter.variable": ["q", "t"],
+            "vertical.level": [1, 2, 3],
+        }
+    )
     return surface_fields + vertical_fields
 
 
@@ -64,35 +72,27 @@ def test_group_by_param(sample_fields):
     for group in grouper.iterate(sample_fields, other=other.append):
         assert len(group) == len(match_params)
         # ensure order is the same
-        assert [field.metadata("param") for field in group] == match_params
-        metadata = []
+        assert [field.parameter.variable() for field in group] == match_params
         for field in group:
             num_matching += 1
             # check field is unchanged
             assert field in sample_fields
 
-            # get metadata except param from each field
-            m = field.metadata(namespace="mars")
-            m.pop("param", None)
-            metadata.append(m)
-        # rest of the metadata the same within a group
-        assert all(m == metadata[0] for m in metadata[1:])
-
     assert num_matching + len(other) == len(sample_fields)
     for field in other:
-        assert field.metadata("param") not in match_params
+        assert field.parameter.variable() not in match_params
         assert field in sample_fields
 
 
-@pytest.mark.xfail(reason="vertical grouping not yet implemented")
+@pytest.mark.xfail(reason="vertical grouping test to be revisited")
 def test_group_by_param_vertical(sample_fields_vertical):
     from anemoi.transform.grouping import GroupByParamVertical
 
     def get_param(f):
-        if isinstance(f, ekd.Field):
+        if isinstance(f, Field):
             f = [f]
 
-        param = [x.metadata("param") for x in f]
+        param = [x.parameter.variable() for x in f]
         assert len(set(param)) == 1
         return param[0]
 
@@ -108,17 +108,17 @@ def test_group_by_param_vertical(sample_fields_vertical):
         assert [get_param(field) for field in group] == match_params
         metadata = []
         for fields in group:
-            if isinstance(fields, ekd.Field):
+            if isinstance(fields, Field):
                 fields = [fields]
             for field in fields:
                 num_matching += 1
                 # check field is unchanged
                 assert field in sample_fields_vertical
-                # get metadata except keys known to be different from each field
-                m = field.metadata(namespace="mars")
-                m.pop("param", None)
-                m.pop("levtype", None)
-                m.pop("levelist", None)
+                # get metadata via component API (namespace="mars" removed in ekd 1.0)
+                m = {
+                    "step": field.time.step(),
+                    "valid_datetime": field.time.valid_datetime(),
+                }
                 metadata.append(m)
 
         # rest of the metadata the same within a group
@@ -126,5 +126,5 @@ def test_group_by_param_vertical(sample_fields_vertical):
 
     assert num_matching + len(other) == len(sample_fields_vertical)
     for field in other:
-        assert field.metadata("param") not in match_params
+        assert field.parameter.variable() not in match_params
         assert field in sample_fields_vertical

@@ -15,9 +15,9 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 from ..utils import collect_fields_by_param
 
 INPUT_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20.0, 30.0, 40.0],
-    "valid_datetime": "2018-08-01T12:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20.0, 30.0, 40.0],
+    "time.valid_datetime": "2018-08-01T12:00:00Z",
 }
 
 T_VALUES = np.array([[1.0, np.nan, 3.0], [np.nan, 5.0, 6.0], [7.0, np.nan, 9.0]])
@@ -29,9 +29,9 @@ R_VALUES = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
 def source(test_source):
     return test_source(
         [
-            {"param": "t", "values": T_VALUES.copy(), **INPUT_METADATA},
-            {"param": "q", "values": Q_VALUES.copy(), **INPUT_METADATA},
-            {"param": "r", "values": R_VALUES.copy(), **INPUT_METADATA},
+            {"parameter.variable": "t", "data.values": T_VALUES.copy(), **INPUT_METADATA},
+            {"parameter.variable": "q", "data.values": Q_VALUES.copy(), **INPUT_METADATA},
+            {"parameter.variable": "r", "data.values": R_VALUES.copy(), **INPUT_METADATA},
         ]
     )
 
@@ -101,8 +101,8 @@ def test_impute_nans_grid_unchanged(source):
     output_fields = collect_fields_by_param(pipeline)
 
     # grid should be unchanged (unlike remove_nans which reduces the grid)
-    input_lats, input_lons = input_fields["t"][0].grid_points()
-    output_lats, output_lons = output_fields["t"][0].grid_points()
+    input_lats, input_lons = input_fields["t"][0].geography.latlons()
+    output_lats, output_lons = output_fields["t"][0].geography.latlons()
     assert np.array_equal(input_lats, output_lats)
     assert np.array_equal(input_lons, output_lons)
 

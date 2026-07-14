@@ -129,6 +129,40 @@ def test_variable_from_components() -> None:
     assert forcing.is_surface_level is None
 
 
+def test_retrieval_request() -> None:
+    """Test that retrieval_request rebuilds a repository request from a variable.
+
+    Tests:
+    - The legacy layout exposes its mars block as a 'mars' retrieval request.
+    - The 'variable/1' layout exposes its stored mars block the same way.
+    - A variable without a mars block returns None.
+    - An unknown repository raises a ValueError.
+    """
+    legacy = Variable.from_dict("2t", {"mars": {"param": "2t", "levtype": "sfc"}})
+    assert legacy.retrieval_request("mars") == {"param": "2t", "levtype": "sfc"}
+    assert legacy.retrieval_request() == {"param": "2t", "levtype": "sfc"}
+
+    components = Variable.from_dict(
+        "t_850",
+        {
+            "schema": "variable/1",
+            "parameter": {"variable": "t", "units": "K"},
+            "vertical": {"level_type": "pressure", "level": 850},
+            "mars": {"param": "t", "levtype": "pl", "levelist": 850},
+        },
+    )
+    assert components.retrieval_request("mars") == {"param": "t", "levtype": "pl", "levelist": 850}
+
+    no_mars = Variable.from_dict(
+        "cos_latitude",
+        {"schema": "variable/1", "parameter": {"variable": "cos_latitude"}},
+    )
+    assert no_mars.retrieval_request("mars") is None
+
+    with pytest.raises(ValueError, match="Unknown retrieval system"):
+        legacy.retrieval_request("does-not-exist")
+
+
 def test_from_field_round_trip() -> None:
     """Test that Variable.from_field serialises to JSON and deserialises equivalently.
 

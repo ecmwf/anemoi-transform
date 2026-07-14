@@ -66,6 +66,26 @@ class VariableFromDictionary(Variable):
         """
         return self.data.as_dict()
 
+    def retrieval_metadata(self, repository: str) -> dict[str, Any] | None:
+        """Return the request metadata stored under a repository's key.
+
+        The repository name is the top-level key of the serialised
+        variable (``"mars"``, ...); unmodelled repositories are reachable
+        too, as the schema models allow extra keys.
+
+        Parameters
+        ----------
+        repository : str
+            The name of the data repository / archival system.
+
+        Returns
+        -------
+        dict or None
+            The stored metadata, or None when absent or empty.
+        """
+        block = getattr(self.data, repository, None)
+        return dict(block) if block else None
+
     @property
     def is_constant_in_time(self) -> bool:
         """Check if the variable is constant in time."""

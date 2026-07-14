@@ -298,6 +298,58 @@ class Variable(ABC):
         """Get the GRIB keys for the variable."""
         pass
 
+    @abstractmethod
+    def retrieval_metadata(self, repository: str) -> dict[str, Any] | None:
+        """Return the request metadata stored for a data repository.
+
+        This is the raw block collected at dataset-create time (e.g. the
+        ``"mars"`` request); :meth:`retrieval_request` turns it into an
+        actual request via the repository's
+        :class:`~anemoi.transform.variables.retrieval.Retrieval`.
+
+        Parameters
+        ----------
+        repository : str
+            The name of the data repository / archival system (e.g. ``"mars"``).
+
+        Returns
+        -------
+        dict or None
+            The stored metadata, or None when the variable carries none
+            for that repository.
+        """
+        pass
+
+    def retrieval_request(self, repository: str = "mars") -> dict[str, Any] | None:
+        """Build a retrieval request for a data repository / archival system.
+
+        ``"mars"`` is one such repository; new ones are added by
+        registering a
+        :class:`~anemoi.transform.variables.retrieval.Retrieval` (see
+        :func:`~anemoi.transform.variables.retrieval.register_retrieval`),
+        so a dataset built from one repository can later be re-retrieved
+        from another.
+
+        Parameters
+        ----------
+        repository : str, optional
+            The name of the data repository, by default ``"mars"``.
+
+        Returns
+        -------
+        dict or None
+            The retrieval request, or None when the variable carries no
+            metadata for that repository.
+
+        Raises
+        ------
+        ValueError
+            If no retrieval system is registered under ``repository``.
+        """
+        from anemoi.transform.variables.retrieval import retrieval_system
+
+        return retrieval_system(repository).request(self)
+
     @property
     @abstractmethod
     def is_computed_forcing(self) -> bool:

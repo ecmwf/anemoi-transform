@@ -29,6 +29,8 @@ from anemoi.utils.dates import as_timedelta
 from anemoi.transform.fields import metadata_key
 from anemoi.transform.variables.components import SCHEMA
 from anemoi.transform.variables.components import ComponentVariable
+from anemoi.transform.variables.retrieval import retrieval_system
+from anemoi.transform.variables.retrieval import retrieval_systems
 from anemoi.transform.variables.schemas import VariableSchemaV1
 
 if TYPE_CHECKING:
@@ -124,28 +126,23 @@ class VariableFromField(ComponentVariable):
 
     @cached_property
     def _mars(self) -> dict[str, Any]:
-        """The field's MARS request metadata (empty when the source has none).
+        """The field's MARS request metadata (empty when the source has none)."""
+        return retrieval_system("mars").collect(self.field) or {}
 
-        Falls back to the ``metadata.default`` collection when the MARS
-        one is empty, and repairs unusable ``param`` values (``"~"``,
-        ``"unknown"``) from the raw GRIB keys.
+    def retrieval_metadata(self, repository: str) -> dict[str, Any] | None:
+        """Collect the request metadata for a data repository from the field.
+
+        Parameters
+        ----------
+        repository : str
+            The name of the data repository / archival system (e.g. ``"mars"``).
+
+        Returns
+        -------
+        dict or None
+            The collected metadata, or None when the field carries none.
         """
-        md = self.field.get(collections="metadata.mars")
-        if not md:
-            md = self.field.get(collections="metadata.default")
-        if md is None:
-            md = {}
-
-        md = {k: v for k, v in md.items() if not k.startswith("_")}
-
-        if md.get("param") == "~":
-            md["param"] = self.field.metadata("param")
-            assert md["param"] not in ("~", "unknown"), (md, self.field.metadata("param"))
-
-        if md.get("param") == "unknown":
-            md["param"] = str(self.field.get("metadata.paramId", default="unknown"))
-
-        return md
+        return retrieval_system(repository).collect(self.field)
 
     @cached_property
     def _time_window(self) -> tuple[str | None, Union["timedelta", None], Union["timedelta", None]]:
@@ -347,7 +344,11 @@ class VariableFromField(ComponentVariable):
         if grib:
             result["grib"] = grib
 
-        if self._mars:
-            result["mars"] = dict(self._mars)
+        # Collect every registered data repository's request metadata (MARS,
+        # and any others registered) so the variable can later be re-retrieved.
+        for name in retrieval_systems():
+            block = retrieval_system(name).collect(self.field)
+            if block:
+                result[name] = block
 
         return VariableSchemaV1.model_validate(result).as_dict()

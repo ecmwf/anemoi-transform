@@ -8,18 +8,15 @@
 # nor does it submit to any jurisdiction.
 
 
-from collections.abc import Callable
-
 import earthkit.data as ekd
 
-from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import SingleFieldFilter
 
 
 class Drop(SingleFieldFilter):
     """A filter to drop based on metadata selection"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, param: str | list[str] | None = None, levelist: int | list[int] | None = None):
         """Initialise the Drop filter.
 
         Parameters
@@ -27,7 +24,11 @@ class Drop(SingleFieldFilter):
         **kwargs : dict
             Metadata selection criteria for dropping fields.
         """
-        self.selection_criteria = kwargs
+        self.selection_criteria = {}
+        if param is not None:
+            self.selection_criteria["param"] = param
+        if levelist is not None:
+            self.selection_criteria["levelist"] = levelist
         super().__init__()
 
     def forward_select(self):
@@ -35,11 +36,6 @@ class Drop(SingleFieldFilter):
 
     def backward_select(self):
         return self.selection_criteria
-
-    @staticmethod
-    def _map_transform(transform_function: Callable, fields: ekd.FieldList) -> ekd.FieldList:
-        fieldlist = [transform_function(field) for field in fields]
-        return new_fieldlist_from_list([f for f in fieldlist if f is not None])
 
     def forward_transform(self, drop_field: ekd.Field) -> None:
         """Drop fields based on metadata selection."""

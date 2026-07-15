@@ -66,5 +66,5 @@ class SnowDepthMasked(SingleFieldFilter):
         return self.new_field_from_numpy(
             snow_depth_masked,
             template=snow_depth,
-            **{"parameter.variable": self.snow_depth_masked, "parameter.units": "Fraction"},
+            **{"parameter.variable": self.snow_depth_masked},
         )

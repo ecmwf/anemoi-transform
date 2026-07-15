@@ -58,6 +58,9 @@ class DewPoint(MatchingFieldsFilter):
     def forward_transform(self, relative_humidity: Field, temperature: Field) -> Iterator[Field]:
         """Return the dewpoint temperature (Td, in K) along with temperature (K) and relative humidity (in %)"""
 
+        relative_humidity.check_units("%")
+        temperature.check_units("K")
+
         relative_humidity_values = relative_humidity.to_numpy()
         relative_humidity_values[relative_humidity_values == 0] = EPS
         td = thermo.dewpoint_from_relative_humidity(t=temperature.to_numpy(), r=relative_humidity_values)
@@ -67,6 +70,8 @@ class DewPoint(MatchingFieldsFilter):
         """This will return the relative humidity (in %) from temperature (in K) and dewpoint (Td, in K),
         along with temperature and dewpoint
         """
+        dewpoint.check_units("K")
+        temperature.check_units("K")
         rh = thermo.relative_humidity_from_dewpoint(t=temperature.to_numpy(), td=dewpoint.to_numpy())
         yield self.new_field_from_numpy(rh, template=temperature, **{"parameter.variable": self.relative_humidity, "parameter.units": "%"})
 

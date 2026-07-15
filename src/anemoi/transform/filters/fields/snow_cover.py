@@ -119,6 +119,8 @@ class SnowCover(MatchingFieldsFilter):
         Iterator[Field]
             Transformed fields.
         """
+        snow_depth.check_units("m")
+        snow_density.check_units("kg m**-3")
         snow_cover = compute_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
         yield self.new_field_from_numpy(

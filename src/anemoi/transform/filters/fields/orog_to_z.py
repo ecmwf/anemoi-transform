@@ -53,7 +53,8 @@ class Orography(SingleFieldFilter):
         Field
             The surface geopotential in m²/s².
         """
-        new_metadata = {"parameter.variable": self.geopotential}
+        orography.check_units("m")
+        new_metadata = {"parameter.variable": self.geopotential, "parameter.units": "m**2 s**-2"}
         return self.new_field_from_numpy(
             orography.to_numpy() * g_gravitational_acceleration, template=orography, **new_metadata
         )
@@ -71,7 +72,8 @@ class Orography(SingleFieldFilter):
         Field
             The orography in m.
         """
-        orig_metadata = {"parameter.variable": self.orography}
+        geopotential.check_units("m**2 s**-2")
+        orig_metadata = {"parameter.variable": self.orography, "parameter.units": "m"}
         return self.new_field_from_numpy(
             geopotential.to_numpy() / g_gravitational_acceleration, template=geopotential, **orig_metadata
         )

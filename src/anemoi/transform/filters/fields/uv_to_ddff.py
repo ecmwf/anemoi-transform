@@ -91,14 +91,21 @@ class WindComponents(MatchingFieldsFilter):
             The wind direction field.
         """
 
+        u_component.check_units("m s**-1")
+        v_component.check_units("m s**-1")
+
         speed, direction = xy_to_polar(
             u_component.to_numpy(),
             v_component.to_numpy(),
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(speed, template=u_component, **{"parameter.variable": self.wind_speed})
-        yield self.new_field_from_numpy(direction, template=v_component, **{"parameter.variable": self.wind_direction})
+        yield self.new_field_from_numpy(
+            speed, template=u_component, **{"parameter.variable": self.wind_speed, "parameter.units": "m s**-1"}
+        )
+        yield self.new_field_from_numpy(
+            direction, template=v_component, **{"parameter.variable": self.wind_direction, "parameter.units": "degree"}
+        )
 
     def backward_transform(self, wind_speed: Field, wind_direction: Field) -> Iterator[Field]:
         """Convert wind speed and direction to U and V components.
@@ -117,14 +124,21 @@ class WindComponents(MatchingFieldsFilter):
             The V component of the wind.
         """
 
+        wind_speed.check_units("m s**-1")
+        wind_direction.check_units("degree")
+
         u, v = polar_to_xy(
             wind_speed.to_numpy(),
             wind_direction.to_numpy(),
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(u, template=wind_speed, **{"parameter.variable": self.u_component})
-        yield self.new_field_from_numpy(v, template=wind_direction, **{"parameter.variable": self.v_component})
+        yield self.new_field_from_numpy(
+            u, template=wind_speed, **{"parameter.variable": self.u_component, "parameter.units": "m s**-1"}
+        )
+        yield self.new_field_from_numpy(
+            v, template=wind_direction, **{"parameter.variable": self.v_component, "parameter.units": "m s**-1"}
+        )
 
 
 filter_registry.register("uv_to_ddff", WindComponents)

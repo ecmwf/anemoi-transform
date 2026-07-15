@@ -45,10 +45,10 @@ FF_VALUES = {
 @pytest.fixture
 def uv_source(test_source):
     UV_SPEC = [
-        {"parameter.variable": "u", "vertical.level": 500, "data.values": U_VALUES[500], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "v", "vertical.level": 500, "data.values": V_VALUES[500], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "u", "vertical.level": 850, "data.values": U_VALUES[850], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "v", "vertical.level": 850, "data.values": V_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "u", "parameter.units": "m s**-1", "vertical.level": 500, "data.values": U_VALUES[500], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "v", "parameter.units": "m s**-1", "vertical.level": 500, "data.values": V_VALUES[500], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "u", "parameter.units": "m s**-1", "vertical.level": 850, "data.values": U_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "v", "parameter.units": "m s**-1", "vertical.level": 850, "data.values": V_VALUES[850], **MOCK_FIELD_METADATA},
     ]
     return test_source(UV_SPEC)
 
@@ -56,10 +56,10 @@ def uv_source(test_source):
 @pytest.fixture
 def ddff_source(test_source):
     DDFF_SPEC = [
-        {"parameter.variable": "ws", "vertical.level": 500, "data.values": DD_VALUES[500], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "wdir", "vertical.level": 500, "data.values": FF_VALUES[500], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "ws", "vertical.level": 850, "data.values": DD_VALUES[850], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "wdir", "vertical.level": 850, "data.values": FF_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "ws", "parameter.units": "m s**-1", "vertical.level": 500, "data.values": DD_VALUES[500], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "wdir", "parameter.units": "degree", "vertical.level": 500, "data.values": FF_VALUES[500], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "ws", "parameter.units": "m s**-1", "vertical.level": 850, "data.values": DD_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "wdir", "parameter.units": "degree", "vertical.level": 850, "data.values": FF_VALUES[850], **MOCK_FIELD_METADATA},
     ]
     return test_source(DDFF_SPEC)
 

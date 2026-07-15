@@ -34,7 +34,7 @@ def lnsp_source(test_source):
 
 @pytest.fixture
 def sp_source(test_source):
-    SP_SPEC = [{"parameter.variable": "sp", "data.values": SP_VALUES, **MOCK_FIELD_METADATA}]
+    SP_SPEC = [{"parameter.variable": "sp", "parameter.units": "Pa", "data.values": SP_VALUES, **MOCK_FIELD_METADATA}]
     return test_source(SP_SPEC)
 
 

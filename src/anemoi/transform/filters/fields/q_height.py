@@ -140,6 +140,10 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
     ) -> Iterator[Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
 
+        specific_humidity_at_height_level.check_units("kg kg**-1")
+        temperature_at_height_level.check_units("K")
+        pressure_at_height_level.check_units("Pa")
+
         # If we want to take into account the mixed / ice phase when T ~ 0C / T < 0C
         # Then it is best to go through td: q --> td --> rh. (see https://github.com/ecmwf/earthkit-meteo/issues/15)
         # However, going straight to relative humidity seems to be a closer match to the RH values calculated by IFS
@@ -153,7 +157,7 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             relative_humidity_at_height_level,
             template=specific_humidity_at_height_level,
-            **{"parameter.variable": self.relative_humidity_at_height_level},
+            **{"parameter.variable": self.relative_humidity_at_height_level, "parameter.units": "%"},
         )
 
     def backward_transform(
@@ -164,6 +168,10 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
     ) -> Iterator[Field]:
         """This will return the specific humidity along with temperature from relative humidity and temperature"""
 
+        relative_humidity_at_height_level.check_units("%")
+        temperature_at_height_level.check_units("K")
+        pressure_at_height_level.check_units("Pa")
+
         specific_humidity_at_height_level = thermo.specific_humidity_from_relative_humidity(
             t=temperature_at_height_level.to_numpy(),
             r=relative_humidity_at_height_level.to_numpy(),
@@ -173,7 +181,7 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             specific_humidity_at_height_level,
             template=relative_humidity_at_height_level,
-            **{"parameter.variable": self.specific_humidity_at_height_level},
+            **{"parameter.variable": self.specific_humidity_at_height_level, "parameter.units": "kg kg**-1"},
         )
 
 
@@ -296,6 +304,10 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             },
         )
 
+        specific_humidity_at_height_level.check_units("kg kg**-1")
+        temperature_at_height_level.check_units("K")
+        surface_pressure.check_units("Pa")
+
         # Make sure model levels are ordered ascending (highest level first):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
         temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
@@ -320,7 +332,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             relative_humidity_at_height_level,
             template=specific_humidity_at_height_level,
-            **{"parameter.variable": self.relative_humidity_at_height_level},
+            **{"parameter.variable": self.relative_humidity_at_height_level, "parameter.units": "%"},
         )
 
     def backward_transform(
@@ -343,6 +355,10 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             },
         )
 
+        relative_humidity_at_height_level.check_units("%")
+        temperature_at_height_level.check_units("K")
+        surface_pressure.check_units("Pa")
+
         # Make sure model levels are ordered ascending (highest level first):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
         temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
@@ -362,7 +378,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             specific_humidity_at_height_level,
             template=relative_humidity_at_height_level,
-            **{"parameter.variable": self.specific_humidity_at_height_level},
+            **{"parameter.variable": self.specific_humidity_at_height_level, "parameter.units": "kg kg**-1"},
         )
 
 
@@ -484,6 +500,9 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             },
         )
 
+        specific_humidity_at_height_level.check_units("kg kg**-1")
+        surface_pressure.check_units("Pa")
+
         # Make sure model levels are ordered ascending (highest level first):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
         temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
@@ -505,7 +524,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             dewpoint_temperature_at_height_level,
             template=specific_humidity_at_height_level,
-            **{"parameter.variable": self.dewpoint_temperature_at_height_level},
+            **{"parameter.variable": self.dewpoint_temperature_at_height_level, "parameter.units": "K"},
         )
 
     def backward_transform(
@@ -527,6 +546,9 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             },
         )
 
+        dewpoint_temperature_at_height_level.check_units("K")
+        surface_pressure.check_units("Pa")
+
         # Make sure model levels are ordered ascending (highest level first):
         specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
         temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
@@ -544,7 +566,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         yield self.new_field_from_numpy(
             specific_humidity_at_height_level,
             template=dewpoint_temperature_at_height_level,
-            **{"parameter.variable": self.specific_humidity_at_height_level},
+            **{"parameter.variable": self.specific_humidity_at_height_level, "parameter.units": "kg kg**-1"},
         )
 
 

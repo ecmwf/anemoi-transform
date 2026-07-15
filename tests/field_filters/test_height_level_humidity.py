@@ -85,9 +85,9 @@ AB_coefficients = {
 @pytest.fixture
 def relative_humidity_source(test_source):
     HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC = [
-        {"parameter.variable": "2r", "data.values": R2M_VALUES, **MOCK_FIELD_METADATA},
-        {"parameter.variable": "sp", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
-        {"parameter.variable": "2t", "data.values": T2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2r", "parameter.units": "%", "data.values": R2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "sp", "parameter.units": "Pa", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2t", "parameter.units": "K", "data.values": T2M_VALUES, **MOCK_FIELD_METADATA},
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC.append(
@@ -115,9 +115,9 @@ def relative_humidity_source(test_source):
 @pytest.fixture
 def specific_humidity_source(test_source):
     HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC = [
-        {"parameter.variable": "2sh", "data.values": Q2M_VALUES, **MOCK_FIELD_METADATA},
-        {"parameter.variable": "sp", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
-        {"parameter.variable": "2t", "data.values": T2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2sh", "parameter.units": "kg kg**-1", "data.values": Q2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "sp", "parameter.units": "Pa", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2t", "parameter.units": "K", "data.values": T2M_VALUES, **MOCK_FIELD_METADATA},
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC.append(
@@ -145,8 +145,8 @@ def specific_humidity_source(test_source):
 @pytest.fixture
 def dewpoint_temperature_source(test_source):
     HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC = [
-        {"parameter.variable": "2d", "data.values": D2M_VALUES, **MOCK_FIELD_METADATA},
-        {"parameter.variable": "sp", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2d", "parameter.units": "K", "data.values": D2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "sp", "parameter.units": "Pa", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC.append(
@@ -301,7 +301,9 @@ def test_relative_humidity_to_specific_humidity_from_file(test_source):
 
     template_field = source.ds.sel(**{"parameter.variable": "2d"})[0]
 
-    new_field = Field.from_numpy(input_relative_humidity, template=template_field, param="2r")
+    new_field = Field.from_numpy(
+        input_relative_humidity, template=template_field, **{"parameter.variable": "2r", "parameter.units": "%"}
+    )
     source.ds = FieldList.from_fields(list(source.ds) + [new_field])
 
     r_to_q_height = create_filter(

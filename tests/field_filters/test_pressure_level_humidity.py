@@ -43,10 +43,10 @@ R_VALUES = {
 @pytest.fixture
 def relative_humidity_source(test_source):
     PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC = [
-        {"parameter.variable": "r", "vertical.level": 850, "data.values": R_VALUES[850], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "t", "vertical.level": 850, "data.values": T_VALUES[850], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "r", "vertical.level": 1000, "data.values": R_VALUES[1000], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "t", "vertical.level": 1000, "data.values": T_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "r", "parameter.units": "%", "vertical.level": 850, "data.values": R_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "parameter.units": "K", "vertical.level": 850, "data.values": T_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "r", "parameter.units": "%", "vertical.level": 1000, "data.values": R_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "parameter.units": "K", "vertical.level": 1000, "data.values": T_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
     return test_source(PRESSURE_LEVEL_RELATIVE_HUMIDITY_SPEC)
 
@@ -54,10 +54,10 @@ def relative_humidity_source(test_source):
 @pytest.fixture
 def specific_humidity_source(test_source):
     PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC = [
-        {"parameter.variable": "q", "vertical.level": 850, "data.values": Q_VALUES[850], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "t", "vertical.level": 850, "data.values": T_VALUES[850], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "q", "vertical.level": 1000, "data.values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
-        {"parameter.variable": "t", "vertical.level": 1000, "data.values": T_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "q", "parameter.units": "kg kg**-1", "vertical.level": 850, "data.values": Q_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "parameter.units": "K", "vertical.level": 850, "data.values": T_VALUES[850], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "q", "parameter.units": "kg kg**-1", "vertical.level": 1000, "data.values": Q_VALUES[1000], **MOCK_FIELD_METADATA},
+        {"parameter.variable": "t", "parameter.units": "K", "vertical.level": 1000, "data.values": T_VALUES[1000], **MOCK_FIELD_METADATA},
     ]
     return test_source(PRESSURE_LEVEL_SPECIFIC_HUMIDITY_SPEC)
 

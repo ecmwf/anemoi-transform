@@ -19,6 +19,7 @@ live in :mod:`anemoi.transform.grib`; non-field earthkit-data utilities
 
 import datetime
 import logging
+import threading
 import warnings
 from abc import ABC
 from abc import abstractmethod
@@ -31,11 +32,27 @@ from earthkit.data import FieldList as _EkdFieldList
 from earthkit.data.core.order import build_remapping
 
 from anemoi.transform.data import DataContainer
+from anemoi.transform.units import Units
 
 LOG = logging.getLogger(__name__)
 
 # Sentinel returned by a Flavour when it has no value for a given metadata key.
 MISSING_METADATA = object()
+
+# Variable names for which a "missing units" warning has already been issued,
+# so :meth:`Field.check_units` warns at most once per variable name (guarded by
+# a lock, see the thread-safe-globals convention).
+_MISSING_UNITS_WARNED: set[str | None] = set()
+_MISSING_UNITS_WARNED_LOCK = threading.Lock()
+
+
+def _warn_missing_units_once(name: str | None) -> None:
+    """Warn once per variable name that a field carries no units to check."""
+    with _MISSING_UNITS_WARNED_LOCK:
+        if name in _MISSING_UNITS_WARNED:
+            return
+        _MISSING_UNITS_WARNED.add(name)
+    warnings.warn(f"Field {name!r} has no units ('parameter.units'); skipping units check", stacklevel=3)
 
 # Raw earthkit-data types, exposed under explicit names so they do not clash
 # with the wrapper ``Field`` / ``FieldList`` classes defined below (which are
@@ -228,6 +245,36 @@ class Field:
         the convention used throughout the pipelines.
         """
         return self._field.get("metadata.number", default=None) or 0
+
+    def check_units(self, expected: str) -> None:
+        """Check that the field's units match ``expected``.
+
+        The field's declared units (``parameter.units``) are compared with
+        ``expected`` in their canonical form (see
+        :class:`anemoi.transform.units.Units`), so equivalent spellings
+        (e.g. ``"m/s"`` and ``"m s**-1"``) are accepted.
+
+        A field with no declared units cannot be checked: a warning is issued
+        once per variable name (see :func:`_warn_missing_units_once`) and the
+        check passes. Declared units that differ from ``expected`` raise a
+        :class:`ValueError`.
+
+        Parameters
+        ----------
+        expected : str
+            The units the field is expected to carry, in any spelling.
+
+        Raises
+        ------
+        ValueError
+            If the field has declared units that differ from ``expected``.
+        """
+        units = self._field.get("parameter.units", default=None)
+        if units is None:
+            _warn_missing_units_once(self._field.get("parameter.variable", default=None))
+            return
+        if Units(units) != expected:
+            raise ValueError(f"Field {self._field}: expected units {expected!r}, got {units!r}")
 
     # === forwarded methods for Field class
 

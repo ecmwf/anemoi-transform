@@ -113,6 +113,11 @@ class SnowDepthM(MatchingFieldsFilter):
         snow_density.check_units("kg m**-3")
         sde = compute_snow_depth_m(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield self.new_field_from_numpy(
-            sde, template=snow_depth, **{"parameter.variable": self.snow_depth_m, "parameter.units": "m"}
+        yield Field.from_numpy(
+            sde,
+            template=snow_depth,
+            parameter={
+                "variable": self.snow_depth_m,
+                "units": "m",
+            },
         )

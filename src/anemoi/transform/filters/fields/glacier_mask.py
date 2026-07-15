@@ -63,8 +63,8 @@ class SnowDepthMasked(SingleFieldFilter):
         """
         snow_depth_masked = mask_glaciers(snow_depth.to_numpy(), self.glacier_mask)
 
-        return self.new_field_from_numpy(
+        return Field.from_numpy(
             snow_depth_masked,
             template=snow_depth,
-            **{"parameter.variable": self.snow_depth_masked},
+            parameter={"variable": self.snow_depth_masked},
         )

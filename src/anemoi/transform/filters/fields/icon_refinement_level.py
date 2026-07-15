@@ -75,7 +75,9 @@ class IconRefinement(Filter):
             data = field.to_numpy(flatten=True)
             data = data[..., self.nearest_grid_points]
             new_field = Field.from_latitudes_longitudes(
-                Field.from_numpy(data, template=field), latitudes=self.latitudes, longitudes=self.longitudes
+                Field.from_numpy(data, template=field),
+                latitudes=self.latitudes,
+                longitudes=self.longitudes,
             )
             new_field.resolution = f"mrl{self.refinement_level_c}"
             result.append(new_field)

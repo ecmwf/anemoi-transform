@@ -100,11 +100,22 @@ class WindComponents(MatchingFieldsFilter):
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(
-            speed, template=u_component, **{"parameter.variable": self.wind_speed, "parameter.units": "m s**-1"}
+        yield Field.from_numpy(
+            speed,
+            template=u_component,
+            parameter={
+                "variable": self.wind_speed,
+                "units": "m s**-1",
+            },
         )
-        yield self.new_field_from_numpy(
-            direction, template=v_component, **{"parameter.variable": self.wind_direction, "parameter.units": "degree"}
+
+        yield Field.from_numpy(
+            direction,
+            template=v_component,
+            parameter={
+                "variable": self.wind_direction,
+                "units": "degree",
+            },
         )
 
     def backward_transform(self, wind_speed: Field, wind_direction: Field) -> Iterator[Field]:
@@ -133,11 +144,15 @@ class WindComponents(MatchingFieldsFilter):
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(
-            u, template=wind_speed, **{"parameter.variable": self.u_component, "parameter.units": "m s**-1"}
+        yield Field.from_numpy(
+            u,
+            template=wind_speed,
+            parameter={"variable": self.u_component, "units": "m s**-1"},
         )
-        yield self.new_field_from_numpy(
-            v, template=wind_direction, **{"parameter.variable": self.v_component, "parameter.units": "m s**-1"}
+        yield Field.from_numpy(
+            v,
+            template=wind_direction,
+            parameter={"variable": self.v_component, "units": "m s**-1"},
         )
 
 

@@ -118,7 +118,13 @@ class RepeatMembers(Filter):
             array = f.to_numpy()
             for member in self.members:
                 number = member + 1
-                new_field = Field.from_numpy(array, template=f, **{"ensemble.member": number})
+                new_field = Field.from_numpy(
+                    array,
+                    template=f,
+                    ensemble={
+                        "member": number,
+                    },
+                )
                 result.append(new_field)
 
         return FieldList.from_fields(result)

@@ -154,10 +154,13 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
         )
 
         # Return the fields
-        yield self.new_field_from_numpy(
+        yield Field.from_numpy(
             relative_humidity_at_height_level,
             template=specific_humidity_at_height_level,
-            **{"parameter.variable": self.relative_humidity_at_height_level, "parameter.units": "%"},
+            parameter={
+                "variable": self.relative_humidity_at_height_level,
+                "units": "%",
+            },
         )
 
     def backward_transform(
@@ -178,10 +181,13 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
             p=pressure_at_height_level.to_numpy(),
         )
 
-        yield self.new_field_from_numpy(
+        yield Field.from_numpy(
             specific_humidity_at_height_level,
             template=relative_humidity_at_height_level,
-            **{"parameter.variable": self.specific_humidity_at_height_level, "parameter.units": "kg kg**-1"},
+            parameter={
+                "variable": self.specific_humidity_at_height_level,
+                "units": "kg kg**-1",
+            },
         )
 
 
@@ -329,10 +335,13 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         )
 
         # Return the fields
-        yield self.new_field_from_numpy(
+        yield Field.from_numpy(
             relative_humidity_at_height_level,
             template=specific_humidity_at_height_level,
-            **{"parameter.variable": self.relative_humidity_at_height_level, "parameter.units": "%"},
+            parameter={
+                "variable": self.relative_humidity_at_height_level,
+                "units": "%",
+            },
         )
 
     def backward_transform(
@@ -375,10 +384,13 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             p=pressure_at_height_level,
         )
 
-        yield self.new_field_from_numpy(
+        yield Field.from_numpy(
             specific_humidity_at_height_level,
             template=relative_humidity_at_height_level,
-            **{"parameter.variable": self.specific_humidity_at_height_level, "parameter.units": "kg kg**-1"},
+            parameter={
+                "variable": self.specific_humidity_at_height_level,
+                "units": "kg kg**-1",
+            },
         )
 
 
@@ -521,10 +533,13 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         )
 
         # Return the fields
-        yield self.new_field_from_numpy(
+        yield Field.from_numpy(
             dewpoint_temperature_at_height_level,
             template=specific_humidity_at_height_level,
-            **{"parameter.variable": self.dewpoint_temperature_at_height_level, "parameter.units": "K"},
+            parameter={
+                "variable": self.dewpoint_temperature_at_height_level,
+                "units": "K",
+            },
         )
 
     def backward_transform(
@@ -563,10 +578,13 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             td=dewpoint_temperature_at_height_level.to_numpy(), p=pressure_at_height_level
         )
 
-        yield self.new_field_from_numpy(
+        yield Field.from_numpy(
             specific_humidity_at_height_level,
             template=dewpoint_temperature_at_height_level,
-            **{"parameter.variable": self.specific_humidity_at_height_level, "parameter.units": "kg kg**-1"},
+            parameter={
+                "variable": self.specific_humidity_at_height_level,
+                "units": "kg kg**-1",
+            },
         )
 
 

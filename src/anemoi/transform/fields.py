@@ -23,6 +23,7 @@ import threading
 import warnings
 from abc import ABC
 from abc import abstractmethod
+from collections.abc import Iterator
 from typing import Any
 
 import earthkit.data as ekd
@@ -52,7 +53,11 @@ def _warn_missing_units_once(name: str | None) -> None:
         if name in _MISSING_UNITS_WARNED:
             return
         _MISSING_UNITS_WARNED.add(name)
-    warnings.warn(f"Field {name!r} has no units ('parameter.units'); skipping units check", stacklevel=3)
+    warnings.warn(
+        f"Field {name!r} has no units ('parameter.units'); skipping units check",
+        stacklevel=3,
+    )
+
 
 # Raw earthkit-data types, exposed under explicit names so they do not clash
 # with the wrapper ``Field`` / ``FieldList`` classes defined below (which are
@@ -86,7 +91,10 @@ def __getattr__(name: str) -> Any:
     imported on first access (PEP 562).
     """
     _lazy = {
-        "XArrayFieldList": ("earthkit.data.readers.xarray.fieldlist", "XArrayFieldList"),
+        "XArrayFieldList": (
+            "earthkit.data.readers.xarray.fieldlist",
+            "XArrayFieldList",
+        ),
     }
     if name in _lazy:
         import importlib
@@ -151,6 +159,34 @@ def metadata_key(key: str, default: str | None = None) -> str:
     if default is not None:
         return default
     raise ValueError(f"Unknown metadata key {key!r}. Known legacy keys: {sorted(_METADATA_KEY_MAPPING)}")
+
+
+def _flatten_metadata(metadata: dict[str, Any], prefix: str = "") -> Iterator[tuple[str, Any]]:
+    """Flatten nested metadata dicts into ``component.subkey`` path/value pairs.
+
+    A metadata value that is itself a ``dict`` is interpreted as a component
+    whose entries are its subkeys, so ``parameter={"variable": v, "units": u}``
+    expands to ``parameter.variable=v`` and ``parameter.units=u``. Non-dict
+    values are yielded unchanged. Nesting is handled recursively.
+
+    Parameters
+    ----------
+    metadata : dict of str to Any
+        The metadata mapping, possibly containing nested dict values.
+    prefix : str, optional
+        The component path accumulated so far (used for the recursion).
+
+    Yields
+    ------
+    tuple of (str, Any)
+        The dotted component path and its value.
+    """
+    for key, value in metadata.items():
+        full = f"{prefix}.{key}" if prefix else key
+        if isinstance(value, dict):
+            yield from _flatten_metadata(value, full)
+        else:
+            yield full, value
 
 
 def _unwrap_field(field: "Field | _EkdField") -> _EkdField:
@@ -359,7 +395,11 @@ class Field:
         template : Field
             The template field to use.
         **metadata : Any
-            Additional metadata for the new field.
+            Additional metadata for the new field, keyed by component path
+            (e.g. ``parameter.variable=...``) or by legacy key. A value that
+            is itself a ``dict`` is expanded as a component, so
+            ``parameter={"variable": v, "units": u}`` is equivalent to
+            ``**{"parameter.variable": v, "parameter.units": u}``.
 
         Returns
         -------
@@ -384,14 +424,17 @@ class Field:
             The metadata for the new field, keyed by component path
             (e.g. ``{"parameter.variable": ...}``) or by legacy key
             (translated via :func:`metadata_key`, with a deprecation
-            warning). Unknown bare keys raise ``ValueError``.
+            warning). A value that is itself a ``dict`` is expanded as a
+            component, so ``parameter={"variable": v, "units": u}`` is
+            equivalent to ``**{"parameter.variable": v, "parameter.units": u}``.
+            Unknown bare keys raise ``ValueError``.
 
         Returns
         -------
         Field
             The new field with the provided metadata.
         """
-        mapped_metadata = {metadata_key(key): value for key, value in metadata.items()}
+        mapped_metadata = {metadata_key(key): value for key, value in _flatten_metadata(metadata)}
         template = template if isinstance(template, cls) else cls(template)
         return template.set(**mapped_metadata)
 

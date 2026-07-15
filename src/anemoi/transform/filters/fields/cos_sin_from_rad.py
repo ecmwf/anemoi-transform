@@ -75,8 +75,20 @@ class CosSinFromRad(MatchingFieldsFilter):
         if (max := data.max()) > 2 * np.pi:
             raise ValueError(f"Param {self.param} is expected in radians in the range [-2pi, pi], but {max=}")
 
-        yield self.new_field_from_numpy(np.cos(data), template=param, **{"parameter.variable": self.cos_param})
-        yield self.new_field_from_numpy(np.sin(data), template=param, **{"parameter.variable": self.sin_param})
+        yield Field.from_numpy(
+            np.cos(data),
+            template=param,
+            parameter={
+                "variable": self.cos_param,
+            },
+        )
+        yield Field.from_numpy(
+            np.sin(data),
+            template=param,
+            parameter={
+                "variable": self.sin_param,
+            },
+        )
 
     def backward_transform(
         self,
@@ -99,7 +111,13 @@ class CosSinFromRad(MatchingFieldsFilter):
         """
         direction = np.arctan2(sin_param.to_numpy(), cos_param.to_numpy())
 
-        yield self.new_field_from_numpy(direction, template=cos_param, **{"parameter.variable": self.param})
+        yield Field.from_numpy(
+            direction,
+            template=cos_param,
+            parameter={
+                "variable": self.param,
+            },
+        )
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
         """Modify the data request to include the direction.

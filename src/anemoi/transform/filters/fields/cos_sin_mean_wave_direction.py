@@ -72,11 +72,19 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         data = mean_wave_direction.to_numpy()
         data = np.deg2rad(data)
 
-        yield self.new_field_from_numpy(
-            np.cos(data), template=mean_wave_direction, **{"parameter.variable": self.cos_mean_wave_direction}
+        yield Field.from_numpy(
+            np.cos(data),
+            template=mean_wave_direction,
+            parameter={
+                "variable": self.cos_mean_wave_direction,
+            },
         )
-        yield self.new_field_from_numpy(
-            np.sin(data), template=mean_wave_direction, **{"parameter.variable": self.sin_mean_wave_direction}
+        yield Field.from_numpy(
+            np.sin(data),
+            template=mean_wave_direction,
+            parameter={
+                "variable": self.sin_mean_wave_direction,
+            },
         )
 
     def backward_transform(
@@ -102,8 +110,10 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         mwd = np.where(mwd >= 360, mwd - 360, mwd)
         mwd = np.where(mwd < 0, mwd + 360, mwd)
 
-        yield self.new_field_from_numpy(
-            mwd, template=cos_mean_wave_direction, **{"parameter.variable": self.mean_wave_direction}
+        yield Field.from_numpy(
+            mwd,
+            template=cos_mean_wave_direction,
+            parameter={"variable": self.mean_wave_direction},
         )
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:

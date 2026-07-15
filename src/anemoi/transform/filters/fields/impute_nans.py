@@ -52,4 +52,4 @@ class ImputeNaNs(SingleFieldFilter):
     def forward_transform(self, field: Field) -> Field:
         values = field.to_numpy(flatten=True).copy()
         values[np.isnan(values)] = self.value
-        return self.new_field_from_numpy(values, template=field)
+        return Field.from_numpy(values, template=field)

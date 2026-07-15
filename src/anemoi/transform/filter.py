@@ -15,7 +15,6 @@ from collections.abc import Callable
 from functools import singledispatchmethod
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 from anemoi.transform import Field
@@ -219,9 +218,6 @@ class SingleFieldFilter(Filter):
     def backward_transform(self, field: Field) -> Field:
         """Apply the backward transformation to a field."""
         raise NotImplementedError("Field backward transform not implemented.")
-
-    def new_field_from_numpy(self, array: np.ndarray, *, template: Field, **metadata: dict) -> Field:
-        return Field.from_numpy(array, template=template, **metadata)
 
     def _validate_inputs(self) -> None:
         if not self.required_inputs:

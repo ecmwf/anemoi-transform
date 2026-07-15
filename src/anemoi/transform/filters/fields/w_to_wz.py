@@ -101,10 +101,13 @@ class VerticalVelocity(MatchingFieldsFilter):
         rho = (100 * level) / (287 * temperature.to_numpy() * (1 + 0.61 * humidity.to_numpy()) + 1e-8)
         wz = (-1.0 / (rho * g_gravitational_acceleration + 1e-8)) * vertical_velocity.to_numpy()
 
-        yield self.new_field_from_numpy(
+        yield Field.from_numpy(
             wz,
             template=vertical_velocity,
-            **{"parameter.variable": self.geometric_vertical_velocity, "parameter.units": "m s**-1"},
+            parameter={
+                "variable": self.geometric_vertical_velocity,
+                "units": "m s**-1",
+            },
         )
 
     def backward_transform(
@@ -136,8 +139,13 @@ class VerticalVelocity(MatchingFieldsFilter):
         rho = (100 * level) / (287 * temperature.to_numpy() * (1 + 0.61 * humidity.to_numpy()) + 1e-8)
         w = -1.0 * rho * g_gravitational_acceleration * geometric_vertical_velocity.to_numpy()
 
-        yield self.new_field_from_numpy(
-            w, template=geometric_vertical_velocity, **{"parameter.variable": self.vertical_velocity, "parameter.units": "Pa s**-1"}
+        yield Field.from_numpy(
+            w,
+            template=geometric_vertical_velocity,
+            parameter={
+                "variable": self.vertical_velocity,
+                "units": "Pa s**-1",
+            },
         )
 
 

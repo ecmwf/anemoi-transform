@@ -425,7 +425,9 @@ class MaskedRegrid:
             self.out_longitudes = in_longitudes[self.mask]
 
         return Field.from_latitudes_longitudes(
-            Field.from_numpy(data, template=field), latitudes=self.out_latitudes, longitudes=self.out_longitudes
+            Field.from_numpy(data, template=field),
+            latitudes=self.out_latitudes,
+            longitudes=self.out_longitudes,
         )
 
 

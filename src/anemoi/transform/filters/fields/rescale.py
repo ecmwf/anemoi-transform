@@ -8,7 +8,6 @@
 # nor does it submit to any jurisdiction.
 from abc import ABC
 from abc import abstractmethod
-from typing import Callable
 
 from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
@@ -37,8 +36,6 @@ class RescaleMixin(ABC):
     # identity — so a single filter can cover a whole unit-homogeneous group.
     param: "str | list[str]"
     rescaler: Rescaler
-    # intended to be inherited from SingleFieldFilter
-    new_field_from_numpy: Callable
 
     forward_units = None
     backward_units = None
@@ -55,8 +52,9 @@ class RescaleMixin(ABC):
         # units, not identity) so ``param`` may name several fields at once.
         # Only override units when the direction defines them, otherwise the
         # template's units are kept (passing units=None would clobber them).
-        metadata = {} if units is None else {"parameter.units": units}
-        return self.new_field_from_numpy(values, template=field, **metadata)
+        if units is None:
+            return Field.from_numpy(values, template=field)
+        return Field.from_numpy(values, template=field, parameter={"units": units})
 
     def forward_transform(self, field: Field) -> Field:
         """Apply the forward transformation (x to ax+b)."""

@@ -76,4 +76,4 @@ class Timeseries(MatchingFieldsFilter):
         for name in self.ds.data_vars:
             value = sel[name].values
             data = np.full_like(template_array, value)
-            yield self.new_field_from_numpy(data, template=template_param, **{"parameter.variable": name})
+            yield Field.from_numpy(data, template=template_param, parameter={"variable": name})

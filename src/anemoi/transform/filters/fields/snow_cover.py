@@ -123,6 +123,11 @@ class SnowCover(MatchingFieldsFilter):
         snow_density.check_units("kg m**-3")
         snow_cover = compute_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield self.new_field_from_numpy(
-            snow_cover, template=snow_depth, **{"parameter.variable": self.snow_cover, "parameter.units": "Fraction"}
+        yield Field.from_numpy(
+            snow_cover,
+            template=snow_depth,
+            parameter={
+                "variable": self.snow_cover,
+                "units": "Fraction",
+            },
         )

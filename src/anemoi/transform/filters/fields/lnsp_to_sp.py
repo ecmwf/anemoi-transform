@@ -42,9 +42,10 @@ class LnspToSp(SingleFieldFilter):
         Field
             The surface pressure.
         """
-        new_metadata = {"parameter.variable": self.surface_pressure, "parameter.units": "Pa"}
-        field = self.new_field_from_numpy(
-            np.exp(log_of_surface_pressure.to_numpy()), template=log_of_surface_pressure, **new_metadata
+        field = Field.from_numpy(
+            np.exp(log_of_surface_pressure.to_numpy()),
+            template=log_of_surface_pressure,
+            parameter={"variable": self.surface_pressure, "units": "Pa"},
         )
         return field.set(vertical={"level": None, "level_type": None})
 
@@ -62,9 +63,10 @@ class LnspToSp(SingleFieldFilter):
             The natural log of surface pressure.
         """
         surface_pressure.check_units("Pa")
-        orig_metadata = {"parameter.variable": self.log_of_surface_pressure}
-        return self.new_field_from_numpy(
-            np.log(surface_pressure.to_numpy()), template=surface_pressure, **orig_metadata
+        return Field.from_numpy(
+            np.log(surface_pressure.to_numpy()),
+            template=surface_pressure,
+            parameter={"variable": self.log_of_surface_pressure},
         )
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:

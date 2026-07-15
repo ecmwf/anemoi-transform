@@ -96,9 +96,15 @@ class RodeoOperaClipping(MatchingFieldsFilter):
 
         total_precipitation_cleaned = total_precipitation_cleaned / FACTOR_TP
 
-        yield self.new_field_from_numpy(
+        yield Field.from_numpy(
             total_precipitation_cleaned,
             template=total_precipitation,
-            **{"parameter.variable": self.total_precipitation},
+            parameter={"variable": self.total_precipitation},
         )
-        yield self.new_field_from_numpy(quality_clipped, template=quality, **{"parameter.variable": self.quality})
+        yield Field.from_numpy(
+            quality_clipped,
+            template=quality,
+            parameter={
+                "variable": self.quality,
+            },
+        )

@@ -20,8 +20,6 @@ from typing import Iterable
 from typing import Literal
 from typing import cast
 
-import numpy as np
-
 from anemoi.transform import Field
 from anemoi.transform import FieldList
 from anemoi.transform.filter import Filter
@@ -169,7 +167,8 @@ class MatchingFieldsFilter(Filter):
         def _forward_transform(*fields: Field) -> Iterator[Field]:
             kwargs = dict(zip(self.MATCHING.forward, fields, strict=True))
             return chain(
-                inputs_generator(self.MATCHING.inputs(direction="forward"), **kwargs), self.forward_transform(**kwargs)
+                inputs_generator(self.MATCHING.inputs(direction="forward"), **kwargs),
+                self.forward_transform(**kwargs),
             )
 
         group_by = (getattr(self, name) for name in self.MATCHING.forward)
@@ -245,41 +244,7 @@ class MatchingFieldsFilter(Filter):
         for matching in grouping.iterate(data, other=result.append):
             for f in transform(*matching):
                 result.append(f)
-        return self.new_fieldlist_from_list(result)
-
-    def new_field_from_numpy(self, array: np.ndarray, *, template: Field, **kwargs) -> Field:
-        """Create a new field from a numpy array.
-
-        Parameters
-        ----------
-        array : np.ndarray
-            Numpy array containing the field data.
-        template : Field
-            Template field to use for metadata.
-        **kwargs : Any
-            Additional keyword arguments for the new field.
-
-        Returns
-        -------
-        Field
-            New field created from the numpy array.
-        """
-        return Field.from_numpy(array, template=template, **kwargs)
-
-    def new_fieldlist_from_list(self, fields: list[Field]) -> FieldList:
-        """Create a new field list from a list of fields.
-
-        Parameters
-        ----------
-        fields : List[Field]
-            List of fields to create the field list from.
-
-        Returns
-        -------
-        FieldList
-            New field list created from the list of fields.
-        """
-        return FieldList.from_fields(fields)
+        return FieldList.from_fields(result)
 
     @abstractmethod
     def forward_transform(self, *fields: Field) -> Iterator[Field]:

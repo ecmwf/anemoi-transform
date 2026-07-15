@@ -54,9 +54,10 @@ class Orography(SingleFieldFilter):
             The surface geopotential in m²/s².
         """
         orography.check_units("m")
-        new_metadata = {"parameter.variable": self.geopotential, "parameter.units": "m**2 s**-2"}
-        return self.new_field_from_numpy(
-            orography.to_numpy() * g_gravitational_acceleration, template=orography, **new_metadata
+        return Field.from_numpy(
+            orography.to_numpy() * g_gravitational_acceleration,
+            template=orography,
+            parameter={"variable": self.geopotential, "units": "m**2 s**-2"},
         )
 
     def backward_transform(self, geopotential: Field) -> Field:
@@ -73,9 +74,13 @@ class Orography(SingleFieldFilter):
             The orography in m.
         """
         geopotential.check_units("m**2 s**-2")
-        orig_metadata = {"parameter.variable": self.orography, "parameter.units": "m"}
-        return self.new_field_from_numpy(
-            geopotential.to_numpy() / g_gravitational_acceleration, template=geopotential, **orig_metadata
+        return Field.from_numpy(
+            geopotential.to_numpy() / g_gravitational_acceleration,
+            template=geopotential,
+            parameter={
+                "variable": self.orography,
+                "units": "m",
+            },
         )
 
     def patch_data_request(self, data_request: Any) -> Any:

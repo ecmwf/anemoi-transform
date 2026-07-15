@@ -179,16 +179,15 @@ class MaskVariable(Filter):
         Field
             Transformed field.
         """
-        metadata = {}
         values = field.to_numpy(flatten=True)
         values[self.mask] = np.nan
 
         if self.rename is not None:
             param = field.parameter.variable()
             name = f"{param}_{self.rename}"
-            metadata["parameter.variable"] = name
+            return Field.from_numpy(values, template=field, parameter={"variable": name})
 
-        return Field.from_numpy(values, template=field, **metadata)
+        return Field.from_numpy(values, template=field)
 
     def _separate_mask_and_fields(self, fields: FieldList) -> tuple[np.ndarray, FieldList]:
         if self.mask_param is None:

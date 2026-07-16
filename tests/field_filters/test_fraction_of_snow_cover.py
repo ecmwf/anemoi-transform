@@ -10,22 +10,22 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters.fields.snow_cover import compute_snow_cover
+from anemoi.transform.filters.fields.fraction_of_snow_cover import compute_fraction_of_snow_cover
 
 
 @pytest.mark.skip("Test not implemented")
-def test_snow_cover() -> None:
-    """Test the compute_snow_cover function.
+def test_fraction_of_snow_cover() -> None:
+    """Test the compute_fraction_of_snow_cover function.
 
     Tests:
-    - Computing snow cover from given snow depth and snow density arrays.
-    - Asserting the computed snow cover matches the expected values.
+    - Computing fraction of snow cover from given snow depth and snow density arrays.
+    - Asserting the computed fraction of snow cover matches the expected values.
     """
     snow_depth: np.ndarray = np.array([1.0, 2.0, 3.0])
     snow_density: np.ndarray = np.array([0.1, 0.2, 0.3])
-    expected_snow_cover: np.ndarray = np.array([0.1, 0.4, 0.9])
-    snow_cover: np.ndarray = compute_snow_cover(snow_depth, snow_density)
-    np.testing.assert_allclose(snow_cover, expected_snow_cover)
+    expected_fscov: np.ndarray = np.array([0.1, 0.4, 0.9])
+    fscov: np.ndarray = compute_fraction_of_snow_cover(snow_depth, snow_density)
+    np.testing.assert_allclose(fscov, expected_fscov)
 
 
 if __name__ == "__main__":

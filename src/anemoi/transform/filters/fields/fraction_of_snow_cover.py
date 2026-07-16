@@ -17,8 +17,8 @@ from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
 
 
-def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.ndarray:
-    """Convert snow depth to snow cover.
+def compute_fraction_of_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.ndarray:
+    """Convert snow depth to fraction of snow cover.
 
     Parameters
     ----------
@@ -30,26 +30,26 @@ def compute_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.n
     Returns
     -------
     np.ndarray
-        The computed snow cover.
+        The computed fraction of snow cover.
     """
     tmp1 = (1000 * snow_depth) / snow_density
     tmp2 = np.clip(snow_density, 100, 400)
-    snow_cover = np.clip(np.tanh((4000 * tmp1) / tmp2), 0, 1)
-    snow_cover[snow_cover > 0.99] = 1.0
-    return snow_cover
+    fscov = np.clip(np.tanh((4000 * tmp1) / tmp2), 0, 1)
+    fscov[fscov > 0.99] = 1.0
+    return fscov
 
 
-@filter_registry.register("snow_cover")
-class SnowCover(MatchingFieldsFilter):
-    """A filter to compute snow cover from snow density and snow depth.
+@filter_registry.register("fraction_of_snow_cover")
+class FractionOfSnowCover(MatchingFieldsFilter):
+    """A filter to compute fraction of snow cover from snow density and snow depth.
 
     Notes
     -----
-    The ``snow cover`` (``scover``) is computed from ``snow depth`` (``sd``) and ``snow density`` (``rsn``) as:
+    The ``fraction of snow cover`` (``fscov``) is computed from ``snow depth`` (``sd``) and ``snow density`` (``rsn``) as:
 
     .. math::
 
-        \\text{scover}(sd,rsn) =
+        \\text{fscov}(sd,rsn) =
         \\operatorname{clip}\\left(
         \\tanh\\left(
         \\frac{4000 \\cdot \\tfrac{1000 \\cdot sd}{rsn}}
@@ -61,10 +61,10 @@ class SnowCover(MatchingFieldsFilter):
 
     .. math::
 
-        \\text{scover} =
+        \\text{fscov} =
         \\begin{cases}
-        1.0 & \\text{if } \\text{scover} > 0.99 \\\\[0.8em]
-        \\text{scover} & \\text{otherwise}
+        1.0 & \\text{if } \\text{fscov} > 0.99 \\\\[0.8em]
+        \\text{fscov} & \\text{otherwise}
         \\end{cases}
 
     with clipping defined as:
@@ -85,9 +85,9 @@ class SnowCover(MatchingFieldsFilter):
         *,
         snow_depth: str = "sd",
         snow_density: str = "rsn",
-        snow_cover: str = "snowc",
+        fraction_of_snow_cover: str = "fscov",
     ) -> None:
-        """Initialize the SnowCover filter.
+        """Initialize the FractionOfSnowCover filter.
 
         Parameters
         ----------
@@ -95,17 +95,17 @@ class SnowCover(MatchingFieldsFilter):
             The parameter name for snow depth, by default "sd".
         snow_density : str, optional
             The parameter name for snow density, by default "rsn".
-        snow_cover : str, optional
-            The parameter name for snow cover, by default "snowc".
+        fraction_of_snow_cover : str, optional
+            The parameter name for fraction of snow cover, by default "fscov".
         """
 
         self.snow_depth = snow_depth
         self.snow_density = snow_density
-        self.snow_cover = snow_cover
+        self.fraction_of_snow_cover = fraction_of_snow_cover
         super().__init__()
 
     def forward_transform(self, snow_depth: ekd.Field, snow_density: ekd.Field) -> Iterator[ekd.Field]:
-        """Convert snow depth and snow density to snow cover.
+        """Convert snow depth and snow density to fraction of snow cover.
 
         Parameters
         ----------
@@ -119,6 +119,6 @@ class SnowCover(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        snow_cover = compute_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
+        fscov = compute_fraction_of_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield self.new_field_from_numpy(snow_cover, template=snow_depth, param=self.snow_cover, units="Fraction")
+        yield self.new_field_from_numpy(fscov, template=snow_depth, param=self.fraction_of_snow_cover, units="Fraction")

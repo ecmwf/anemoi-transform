@@ -47,7 +47,8 @@ def _make_grids():
 
 def test_compress_flag_produces_identical_mask(tmp_path):
     """Regression (#200): compress=True must not change the resulting mask,
-    only how it's stored on disk."""
+    only how it's stored on disk.
+    """
     lam_lats, lam_lons, global_lats, global_lons = _make_grids()
 
     plain_path = tmp_path / "plain.npz"
@@ -77,7 +78,8 @@ def test_compress_flag_produces_identical_mask(tmp_path):
 def test_compress_flag_actually_shrinks_file(tmp_path):
     """A boolean mask over a 101x101 grid is highly redundant, so a real
     compressed write should end up smaller -- guards against a no-op
-    implementation that pops the kwarg but still calls plain np.savez."""
+    implementation that pops the kwarg but still calls plain np.savez.
+    """
     lam_lats, lam_lons, global_lats, global_lons = _make_grids()
 
     plain_path = tmp_path / "plain.npz"
@@ -105,7 +107,8 @@ def test_compress_flag_actually_shrinks_file(tmp_path):
 def test_compress_default_is_false_and_backwards_compatible(tmp_path):
     """Regression: existing callers that never pass `compress` (e.g. any
     external script built against the old signature) must keep working
-    exactly as before."""
+    exactly as before.
+    """
     lam_lats, lam_lons, global_lats, global_lons = _make_grids()
     output = tmp_path / "default.npz"
 
@@ -126,7 +129,8 @@ def test_compress_does_not_leak_into_global_on_lam_mask_kwargs(tmp_path):
     """Regression: `compress` must be popped from kwargs before they reach
     `global_on_lam_mask`, which has no such parameter -- passing it straight
     through would raise TypeError. Also checks a genuine kwarg (distance_km)
-    still passes through untouched alongside it."""
+    still passes through untouched alongside it.
+    """
     lam_lats, lam_lons, global_lats, global_lons = _make_grids()
     output = tmp_path / "with_distance.npz"
 
@@ -179,7 +183,8 @@ def test_run_forwards_compress_to_make_global_on_lam_mask(monkeypatch, tmp_path)
     """Regression: `run()` must thread args.compress through, not just
     `add_arguments()` -- a flag that parses fine but is silently dropped
     before reaching the static method would pass the two tests above while
-    the CLI still never compressed anything."""
+    the CLI still never compressed anything.
+    """
     captured = {}
 
     def fake_make_global_on_lam_mask(*args, **kwargs):

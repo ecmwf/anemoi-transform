@@ -63,6 +63,9 @@ urls.Issues = "https://github.com/ecmwf/anemoi-transform/issues"
 urls.Repository = "https://github.com/ecmwf/anemoi-transform/"
 scripts.anemoi-transform = "anemoi.transform.__main__:main"
 
+[tool.setuptools]
+package-data."anemoi.transform" = [ "py.typed" ]
+
 [tool.setuptools_scm]
 version_file = "src/anemoi/transform/_version.py"
 

@@ -25,7 +25,7 @@ class RadianceToBrightnessTemperature(Filter):
 
     - ``input_prefix``: prefix of the input column names
     - ``output_prefix``: prefix of the output column names
-    - ``mode``: ``cris_fsr`` or ``cris_nsr``
+    - ``mode``: ``cris_fsr``, ``cris_nsr`` or ``iasi``
 
     Examples
     --------
@@ -43,8 +43,8 @@ class RadianceToBrightnessTemperature(Filter):
     """
 
     def __init__(self, *, mode: str, input_prefix: str = "obsvalue_rad_", output_prefix: str = "obsvalue_rawbt_"):
-        if mode not in ("cris_fsr", "cris_nsr"):
-            raise ValueError(f"Invalid mode: {mode}. Must be 'cris_fsr' or 'cris_nsr'.")
+        if mode not in ("cris_fsr", "cris_nsr", "iasi"):
+            raise ValueError(f"Invalid mode: {mode}. Must be 'cris_fsr', 'cris_nsr' or 'iasi'.")
         self.mode = mode
         self.input_prefix = input_prefix
         self.output_prefix = output_prefix
@@ -79,6 +79,13 @@ class RadianceToBrightnessTemperature(Filter):
         nu[m3] = 2155.0 + 2.500 * (ch[m3] - 1147)
         return nu
 
+    @staticmethod
+    def _iasi_wavenumbers(ch):
+        """Vectorised IASI channel -> wavenumber [cm^-1]"""
+        ch = np.asarray(ch, dtype=np.float32)
+        nu = 645.0 + 0.25 * (ch - 1)  # see https://space.oscar.wmo.int/instruments/view/iasi
+        return nu
+
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         # Pick columns and parse channel numbers (vectorised)
         cols_mask = obs_df.columns.str.startswith(self.input_prefix)
@@ -101,6 +108,8 @@ class RadianceToBrightnessTemperature(Filter):
             nu = self._cris_fsr_wavenumbers(chans)  # [cm^-1]
         elif self.mode == "cris_nsr":
             nu = self._cris_nsr_wavenumbers(chans)  # [cm^-1]
+        elif self.mode == "iasi":
+            nu = self._iasi_wavenumbers(chans)  # [cm^-1]
         else:
             logging.error(f"radiance_to_brightness_temperature ERROR: Mode not supported {self.mode}")
 

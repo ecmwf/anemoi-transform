@@ -9,6 +9,23 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.5.0](https://github.com/ecmwf/anemoi-transform/compare/0.4.3...0.5.0) (2026-07-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rename snowc to fscov ([#326](https://github.com/ecmwf/anemoi-transform/issues/326))
+
+### Features
+
+* Add iasi mode to radiance_to_brightness_temperature ([#331](https://github.com/ecmwf/anemoi-transform/issues/331)) ([59209e5](https://github.com/ecmwf/anemoi-transform/commit/59209e5dce2517b2840c2ce79f57d1808ae91449))
+* Create and ship py.typed ([#332](https://github.com/ecmwf/anemoi-transform/issues/332)) ([0ae0154](https://github.com/ecmwf/anemoi-transform/commit/0ae015427b11c7909accc862742224c148d538f2))
+
+
+### Bug Fixes
+
+* Rename snowc to fscov ([#326](https://github.com/ecmwf/anemoi-transform/issues/326)) ([57de51e](https://github.com/ecmwf/anemoi-transform/commit/57de51e9e47c8b2c78444fd0884c45f038918780))
+
 ## [0.4.3](https://github.com/ecmwf/anemoi-transform/compare/0.4.2...0.4.3) (2026-07-15)
 
 

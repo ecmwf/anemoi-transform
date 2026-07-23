@@ -189,6 +189,12 @@ class MakeGlobalOnLamMask:
             type=str,
             help="A path in which to plot the mask.",
         )
+        command_parser.add_argument(
+            "-z",
+            "--compress",
+            action="store_true",
+            help="Compress the output NPZ file (uses numpy.savez_compressed).",
+        )
 
     def run(self, args: argparse.Namespace) -> None:
         """Run the command with the provided arguments.
@@ -210,6 +216,7 @@ class MakeGlobalOnLamMask:
             output=args.output,
             plot_path=args.plot,
             distance_km=args.distance_km,
+            compress=args.compress,
         )
 
     @staticmethod
@@ -236,8 +243,16 @@ class MakeGlobalOnLamMask:
 
         from anemoi.transform.spatial import global_on_lam_mask
 
+        # Popped out here (rather than an explicit keyword-only parameter) so
+        # the remaining kwargs (e.g. distance_km) still pass straight through
+        # to global_on_lam_mask unchanged.
+        compress = kwargs.pop("compress", False)
+
         mask = global_on_lam_mask(lam_lat, lam_lon, global_lat, global_lon, **kwargs)
-        np.savez(output, mask=mask)
+        if compress:
+            np.savez_compressed(output, mask=mask)
+        else:
+            np.savez(output, mask=mask)
         if plot_path:
             MakeGlobalOnLamMask._lat_lon_plot(global_lat[mask], global_lon[mask], plot_path)
 

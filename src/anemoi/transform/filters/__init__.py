@@ -61,4 +61,4 @@ def create_filter(context: Any, config: Any) -> Filter:
 
 
 _merge_registries()
-__all__ = ["filter_registry", "create_filter", "create_filter_by_name"]
+__all__ = ["create_filter", "create_filter_by_name", "filter_registry"]

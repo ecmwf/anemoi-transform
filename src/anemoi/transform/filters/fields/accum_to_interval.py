@@ -9,15 +9,12 @@
 
 from __future__ import annotations
 
-from typing import Dict
-from typing import Iterable
-from typing import List
+from collections.abc import Iterable
 
 import earthkit.data as ekd
 import numpy as np
 
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.fields import new_field_from_numpy, new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -72,7 +69,7 @@ class AccumToInterval(Filter):
 
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         # Group by identifier (name + level) so it works for sfc and pl/ml variables
-        groups: Dict[tuple, List[ekd.Field]] = {}
+        groups: dict[tuple, list[ekd.Field]] = {}
         for f in fields:
             groups.setdefault(self._identifier(f), []).append(f)
 
@@ -80,7 +77,7 @@ class AccumToInterval(Filter):
         for k, fl in groups.items():
             groups[k] = sorted(fl, key=lambda x: x.metadata("valid_datetime"))
 
-        out: List[ekd.Field] = []
+        out: list[ekd.Field] = []
         for (param_name, level, level_type), fl in groups.items():
             # Only transform targeted variables; pass-through others untouched
             if param_name not in self.variables or len(fl) == 0:

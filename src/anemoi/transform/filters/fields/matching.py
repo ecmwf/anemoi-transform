@@ -10,24 +10,18 @@
 
 import logging
 from abc import abstractmethod
-from collections.abc import Callable
-from collections.abc import Iterator
-from dataclasses import dataclass
-from dataclasses import replace
+from collections.abc import Callable, Iterable, Iterator
+from dataclasses import dataclass, replace
 from inspect import signature
 from itertools import chain
-from typing import Iterable
-from typing import Literal
-from typing import cast
+from typing import Literal, cast
 
 import earthkit.data as ekd
 import numpy as np
 
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.fields import new_field_from_numpy, new_fieldlist_from_list
 from anemoi.transform.filter import Filter
-from anemoi.transform.grouping import GroupByParam
-from anemoi.transform.grouping import GroupByParamVertical
+from anemoi.transform.grouping import GroupByParam, GroupByParamVertical
 
 LOG = logging.getLogger(__name__)
 
@@ -293,7 +287,6 @@ class MatchingFieldsFilter(Filter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        pass
 
     def backward_transform(self, *fields: ekd.Field) -> Iterator[ekd.Field]:
         """Backward transformation to be implemented by subclasses.

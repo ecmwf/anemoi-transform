@@ -13,8 +13,7 @@ from functools import lru_cache
 
 import numpy as np
 
-from . import Grid
-from . import grid_registry
+from . import Grid, grid_registry
 
 LOG = logging.getLogger(__name__)
 

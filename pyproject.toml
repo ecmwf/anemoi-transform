@@ -51,7 +51,7 @@ optional-dependencies.docs = [
   "requests",
   "ruamel-yaml>=0.16",
   "sphinx>=8.2",
-  "sphinx-argparse<0.5",
+  "sphinx-argparse<0.7",
   "sphinx-rtd-theme",
   "termcolor",
 ]

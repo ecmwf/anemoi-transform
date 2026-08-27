@@ -109,7 +109,7 @@ class SnowDepthM(MatchingFieldsFilter):
         Iterator[Field]
             Transformed fields containing snow depth in metres.
         """
-        snow_depth.check_units("m")
+        snow_depth.check_units("m of water equivalent")
         snow_density.check_units("kg m**-3")
         sde = compute_snow_depth_m(snow_depth.to_numpy(), snow_density.to_numpy())
 

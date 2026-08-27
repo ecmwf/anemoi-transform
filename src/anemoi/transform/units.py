@@ -20,6 +20,14 @@ if TYPE_CHECKING:
 # repeatedly (alternating with pint) until the string reaches a fixed point.
 UNITS_MAPPING = {
     "Numeric": "dimensionless",  # This is WMO, but Numeric will choke pint or cfunits
+    # GRIB/eccodes writes water equivalent dot-separated ("m.of.water.equivalent")
+    # while the parameter database uses spaces ("m of water equivalent"). pint can
+    # parse neither, so without this they would canonicalise to two different
+    # strings and compare unequal. Deliberately NOT mapped to "m": a depth of
+    # water equivalent is a mass per area (rho_snow/rho_water times the real snow
+    # depth), so treating it as a length would let snow depth in metres (sde,
+    # paramId 3066) pass a check meant for sd (paramId 141).
+    "m.of.water.equivalent": "m of water equivalent",
 }
 
 _UNIT_REGISTRY = None

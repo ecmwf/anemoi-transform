@@ -136,11 +136,11 @@ def test_apply_mask_return_mask(source):
 
 def test_apply_mask_fails_without_path_or_mask_param():
     """Test that an error is raised when neither path nor mask_param is provided."""
-    with pytest.raises(ValueError, match="Exactly one of `path` or `mask_param`"):
+    with pytest.raises(ValueError, match="Exactly one of `path`, `mask_param` or `self_mask`"):
         create_filter("apply_mask_fields", mask_value=0)
 
 
 def test_apply_mask_fails_with_both_path_and_mask_param():
     """Test that an error is raised when both path and mask_param are provided."""
-    with pytest.raises(ValueError, match="Exactly one of `path` or `mask_param`"):
+    with pytest.raises(ValueError, match="Exactly one of `path`, `mask_param` or `self_mask`"):
         create_filter("apply_mask", path="some_file", mask_param="lsm", mask_value=0)

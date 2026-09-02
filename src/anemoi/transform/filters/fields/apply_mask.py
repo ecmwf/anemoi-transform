@@ -210,7 +210,8 @@ class MaskVariable(Filter):
             Transformed field.
         """
         metadata = {}
-        values = field.to_numpy(flatten=True)
+        # copy: `to_numpy` can return a view, and masking in place would edit the source field
+        values = field.to_numpy(flatten=True).copy()
         values[self._compute_mask(values) if self.self_mask else self.mask] = np.nan
 
         if self.rename is not None:

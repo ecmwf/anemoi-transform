@@ -52,9 +52,7 @@ def source(test_source):
 
 def test_self_mask_is_computed_per_field(source):
     """Each field is masked by its own values, not by the first field's."""
-    apply_mask = create_filter(
-        "apply_mask", self_mask=True, param="cin", threshold=SENTINEL, threshold_operator="<="
-    )
+    apply_mask = create_filter("apply_mask", self_mask=True, param="cin", threshold=SENTINEL, threshold_operator="<=")
 
     input_fields = collect_fields_by_param(source)
     output_fields = collect_fields_by_param(source | apply_mask)
@@ -68,9 +66,7 @@ def test_self_mask_is_computed_per_field(source):
         assert not np.any(result[~np.isnan(result)] <= SENTINEL)
 
     # an unselected parameter keeps its sentinel
-    assert np.array_equal(
-        input_fields["t"][0].to_numpy(flatten=True), output_fields["t"][0].to_numpy(flatten=True)
-    )
+    assert np.array_equal(input_fields["t"][0].to_numpy(flatten=True), output_fields["t"][0].to_numpy(flatten=True))
 
 
 def test_self_mask_with_mask_value(source):

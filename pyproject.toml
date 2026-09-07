@@ -41,6 +41,7 @@ dependencies = [
   "earthkit-regrid>=0.4,<1",
   "healpy",
   "pandas<3",
+  "pyproj<3.8",               # 3.8.0 changes rotate_vector results (tests/field_filters/test_rotate_winds.py)
 ]
 optional-dependencies.all = [ "anemoi-transform[plots]" ]
 optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]

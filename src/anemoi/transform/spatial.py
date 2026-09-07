@@ -294,13 +294,6 @@ def _check_latlon_arrays(
 def longitude_extent(lons: NDArray[Any]) -> tuple[float, float]:
     """Return the ``(west, east)`` longitude extent of a set of points, handling the date line.
 
-    The extent is the smallest longitude interval (going eastwards from
-    ``west`` to ``east``) that contains all the points, i.e. the complement of
-    the largest gap between consecutive longitudes. ``east`` may be larger
-    than 360 when the points straddle the 0 meridian, e.g. points spanning
-    335..360 and 0..55 give ``(335.0, 415.0)``. Using ``min(lons)`` and
-    ``max(lons)`` instead would span the whole globe for such points.
-
     Parameters
     ----------
     lons : NDArray[Any]
@@ -328,13 +321,7 @@ def longitude_extent(lons: NDArray[Any]) -> tuple[float, float]:
 
 
 def _row_dot(a: NDArray[Any], b: NDArray[Any]) -> NDArray[Any]:
-    """Row-wise dot product of two ``(n, 3)`` arrays.
-
-    Implemented as a batched matrix product because it is bit-identical to
-    ``np.dot`` on each pair of rows (both go through the same BLAS kernel),
-    whereas ``einsum`` or ``(a * b).sum(axis=1)`` round differently and flip
-    the result for points lying exactly on a triangle edge.
-    """
+    """Row-wise dot product of two ``(n, 3)`` arrays."""
     return (a[:, None, :] @ b[:, :, None])[:, 0, 0]
 
 
@@ -346,10 +333,6 @@ def _rays_intersect_triangles(
     epsilon: float = 0.0000001,
 ) -> NDArray[np.bool_]:
     """Vectorised Möller–Trumbore ray/triangle intersection test.
-
-    All rays start at the origin (the centre of the Earth). This is
-    :meth:`Triangle3D.intersect` evaluated for one triangle per ray, for all
-    rays at once, with identical tolerance handling.
 
     Parameters
     ----------
@@ -402,11 +385,6 @@ def points_inside_triangulated_grid(
     indices: NDArray[Any],
 ) -> NDArray[np.bool_]:
     """Return which global points fall inside a triangle formed by their nearest LAM points.
-
-    For each global point, the ``neighbours`` nearest LAM points are combined
-    cyclically into triangles ``(k, k+1, k+2)``. A point is *inside* the LAM
-    if the ray from the centre of the Earth through it intersects any of
-    these triangles.
 
     Parameters
     ----------
@@ -464,15 +442,7 @@ def _search_radius(
     max_distance_km: int | float | None,
     spacing_factor: float = 3.0,
 ) -> float:
-    """Return the KD-tree search radius (unit-sphere chord) beyond which a global point cannot be masked.
-
-    A global point further than this from every LAM point is neither inside
-    the LAM (its nearest LAM points cannot form a triangle around it), nor
-    too close (``min_distance``), and it is unambiguously too far when
-    ``max_distance_km`` is set. Bounding the search keeps KD-tree queries for
-    far away points cheap: nearest-neighbour queries for points far from a
-    set lying on a surface are pathologically slow otherwise.
-    """
+    """Return the KD-tree search radius (unit-sphere chord) beyond which a global point cannot be masked."""
     radius = _chord(cropping_distance)
     radius = max(radius, float(min_distance))
     if max_distance_km is not None:
@@ -494,15 +464,7 @@ def _nearest_lam_points(
     neighbours: int,
     radius: float,
 ) -> tuple[NDArray[Any], NDArray[Any]]:
-    """Find the ``neighbours`` nearest LAM points of each global point.
-
-    A cheap query bounded by ``radius`` first identifies the global points
-    that have no LAM point within ``radius``; the bound prunes them
-    immediately. The remaining (near) points are then queried without a
-    bound, so their neighbours (including the tie-breaking between
-    equidistant LAM points) are identical to a plain unbounded query. Far
-    points get ``inf`` distances and ``len(lam_points)`` as indices.
-    """
+    """Find the ``neighbours`` nearest LAM points of each global point."""
     n_global = len(global_points)
     n_lam = len(lam_points)
 
@@ -538,15 +500,6 @@ def cutout_mask(
     -   inside of [lats, lons]
     -   too close to it (if min_distance_km is set)
     -   too far from it (if max_distance_km is set)
-
-    The global points considered are those within ``cropping_distance``
-    degrees of the LAM bounding box (computed with :func:`longitude_extent`,
-    so LAMs straddling the 0 meridian get a tight box). They are tested
-    against the triangles formed by their nearest LAM points with a
-    vectorised ray/triangle test, and the KD-tree search is bounded so that
-    points far from the LAM are pruned immediately. This runs in seconds for
-    an o1280 LAM against an n320 global grid, where a per-point Python loop
-    over an unbounded search took tens of minutes.
 
     Parameters
     ----------

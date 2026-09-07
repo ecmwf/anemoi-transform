@@ -291,6 +291,236 @@ def _check_latlon_arrays(
     assert lats.shape == lons.shape
 
 
+def longitude_extent(lons: NDArray[Any]) -> tuple[float, float]:
+    """Return the ``(west, east)`` longitude extent of a set of points, handling the date line.
+
+    The extent is the smallest longitude interval (going eastwards from
+    ``west`` to ``east``) that contains all the points, i.e. the complement of
+    the largest gap between consecutive longitudes. ``east`` may be larger
+    than 360 when the points straddle the 0 meridian, e.g. points spanning
+    335..360 and 0..55 give ``(335.0, 415.0)``. Using ``min(lons)`` and
+    ``max(lons)`` instead would span the whole globe for such points.
+
+    Parameters
+    ----------
+    lons : NDArray[Any]
+        Longitudes in degrees, in any convention (``[-180, 180)`` or ``[0, 360)``).
+
+    Returns
+    -------
+    tuple[float, float]
+        ``(west, east)`` in degrees with ``west`` in ``[0, 360)`` and ``west <= east < west + 360``.
+    """
+    unique = np.unique(np.mod(lons, 360.0))
+    if unique.size == 1:
+        return float(unique[0]), float(unique[0])
+
+    gaps = np.diff(unique)
+    wrap_gap = unique[0] + 360.0 - unique[-1]
+    largest = int(np.argmax(gaps))
+    if wrap_gap >= gaps[largest]:
+        # The largest gap is across the 0 meridian: no wrap-around needed
+        return float(unique[0]), float(unique[-1])
+
+    west = float(unique[largest + 1])
+    east = float(unique[largest]) + 360.0
+    return west, east
+
+
+def _row_dot(a: NDArray[Any], b: NDArray[Any]) -> NDArray[Any]:
+    """Row-wise dot product of two ``(n, 3)`` arrays.
+
+    Implemented as a batched matrix product because it is bit-identical to
+    ``np.dot`` on each pair of rows (both go through the same BLAS kernel),
+    whereas ``einsum`` or ``(a * b).sum(axis=1)`` round differently and flip
+    the result for points lying exactly on a triangle edge.
+    """
+    return (a[:, None, :] @ b[:, :, None])[:, 0, 0]
+
+
+def _rays_intersect_triangles(
+    ray_directions: NDArray[Any],
+    v0: NDArray[Any],
+    v1: NDArray[Any],
+    v2: NDArray[Any],
+    epsilon: float = 0.0000001,
+) -> NDArray[np.bool_]:
+    """Vectorised Möller–Trumbore ray/triangle intersection test.
+
+    All rays start at the origin (the centre of the Earth). This is
+    :meth:`Triangle3D.intersect` evaluated for one triangle per ray, for all
+    rays at once, with identical tolerance handling.
+
+    Parameters
+    ----------
+    ray_directions : NDArray[Any]
+        Array of shape ``(n, 3)`` with the direction of each ray.
+    v0, v1, v2 : NDArray[Any]
+        Arrays of shape ``(n, 3)`` with the vertices of the triangle tested
+        against each ray.
+    epsilon : float
+        Tolerance, same as :meth:`Triangle3D.intersect`.
+
+    Returns
+    -------
+    NDArray[np.bool_]
+        Boolean array of shape ``(n,)``, ``True`` where the ray intersects the
+        triangle.
+    """
+    edge1 = v1 - v0
+    edge2 = v2 - v0
+
+    h = np.cross(ray_directions, edge2)
+    a = _row_dot(edge1, h)
+
+    # Triangle3D.intersect returns False when -epsilon < a < epsilon
+    valid = ~((a > -epsilon) & (a < epsilon))
+
+    # Avoid divide-by-zero warnings for degenerate triangles; those rows are
+    # discarded by ``valid`` anyway.
+    safe_a = np.where(valid, a, 1.0)
+    f = 1.0 / safe_a
+
+    # Ray origin is the centre of the Earth, so s = origin - v0 = -v0
+    s = -v0
+    u = f * _row_dot(s, h)
+    valid &= (u >= 0.0) & (u <= 1.0)
+
+    q = np.cross(s, edge1)
+    v = f * _row_dot(ray_directions, q)
+    valid &= (v >= 0.0) & (u + v <= 1.0)
+
+    t = f * _row_dot(edge2, q)
+    valid &= t > epsilon
+
+    return valid
+
+
+def points_inside_triangulated_grid(
+    global_points: NDArray[Any],
+    lam_points: NDArray[Any],
+    indices: NDArray[Any],
+) -> NDArray[np.bool_]:
+    """Return which global points fall inside a triangle formed by their nearest LAM points.
+
+    For each global point, the ``neighbours`` nearest LAM points are combined
+    cyclically into triangles ``(k, k+1, k+2)``. A point is *inside* the LAM
+    if the ray from the centre of the Earth through it intersects any of
+    these triangles.
+
+    Parameters
+    ----------
+    global_points : NDArray[Any]
+        Array of shape ``(n, 3)`` with the unit-sphere xyz coordinates of the
+        global points.
+    lam_points : NDArray[Any]
+        Array of shape ``(m, 3)`` with the unit-sphere xyz coordinates of the
+        LAM points.
+    indices : NDArray[Any]
+        Array of shape ``(n, neighbours)`` with, for each global point, the
+        indices into ``lam_points`` of its nearest neighbours. Rows containing
+        an index ``>= m`` (a missing neighbour) are reported as not inside.
+
+    Returns
+    -------
+    NDArray[np.bool_]
+        Boolean array of shape ``(n,)``.
+    """
+    indices = np.asarray(indices)
+    if indices.ndim == 1:
+        indices = indices[:, None]
+
+    n, neighbours = indices.shape
+    inside = np.zeros(n, dtype=bool)
+    if n == 0:
+        return inside
+
+    complete = np.all(indices < len(lam_points), axis=1)
+
+    for j in range(neighbours):
+        # Only test the points not yet found inside (a point is inside as soon
+        # as one of its triangles is hit).
+        todo = np.flatnonzero(complete & ~inside)
+        if todo.size == 0:
+            break
+        v0 = lam_points[indices[todo, j]]
+        v1 = lam_points[indices[todo, (j + 1) % neighbours]]
+        v2 = lam_points[indices[todo, (j + 2) % neighbours]]
+        inside[todo] = _rays_intersect_triangles(global_points[todo], v0, v1, v2)
+
+    return inside
+
+
+def _chord(degrees: float) -> float:
+    """Chord length on the unit sphere subtended by an angle in degrees."""
+    return float(2.0 * np.sin(np.deg2rad(degrees) / 2.0))
+
+
+def _search_radius(
+    tree: Any,
+    lam_points: NDArray[Any],
+    cropping_distance: float,
+    min_distance: float,
+    max_distance_km: int | float | None,
+    spacing_factor: float = 3.0,
+) -> float:
+    """Return the KD-tree search radius (unit-sphere chord) beyond which a global point cannot be masked.
+
+    A global point further than this from every LAM point is neither inside
+    the LAM (its nearest LAM points cannot form a triangle around it), nor
+    too close (``min_distance``), and it is unambiguously too far when
+    ``max_distance_km`` is set. Bounding the search keeps KD-tree queries for
+    far away points cheap: nearest-neighbour queries for points far from a
+    set lying on a surface are pathologically slow otherwise.
+    """
+    radius = _chord(cropping_distance)
+    radius = max(radius, float(min_distance))
+    if max_distance_km is not None:
+        radius = max(radius, max_distance_km / R_earth_km)
+
+    if len(lam_points) > 1:
+        # Largest distance from a LAM point to its nearest LAM neighbour: any
+        # point inside the LAM is within a few of these of a LAM point.
+        spacing, _ = tree.query(lam_points, k=2)
+        radius = max(radius, spacing_factor * float(np.max(spacing[:, 1])))
+
+    return radius
+
+
+def _nearest_lam_points(
+    tree: Any,
+    lam_points: NDArray[Any],
+    global_points: NDArray[Any],
+    neighbours: int,
+    radius: float,
+) -> tuple[NDArray[Any], NDArray[Any]]:
+    """Find the ``neighbours`` nearest LAM points of each global point.
+
+    A cheap query bounded by ``radius`` first identifies the global points
+    that have no LAM point within ``radius``; the bound prunes them
+    immediately. The remaining (near) points are then queried without a
+    bound, so their neighbours (including the tie-breaking between
+    equidistant LAM points) are identical to a plain unbounded query. Far
+    points get ``inf`` distances and ``len(lam_points)`` as indices.
+    """
+    n_global = len(global_points)
+    n_lam = len(lam_points)
+
+    distances = np.full((n_global, neighbours), np.inf)
+    indices = np.full((n_global, neighbours), n_lam, dtype=np.intp)
+    if n_global == 0:
+        return distances, indices
+
+    nearest, _ = tree.query(global_points, k=1, distance_upper_bound=radius)
+    near = np.isfinite(np.asarray(nearest, dtype=float).reshape(-1))
+    if near.any():
+        d, i = tree.query(global_points[near], k=neighbours)
+        distances[near] = np.asarray(d, dtype=float).reshape(-1, neighbours)
+        indices[near] = np.asarray(i).reshape(-1, neighbours)
+
+    return distances, indices
+
+
 def cutout_mask(
     lats: NDArray[Any],
     lons: NDArray[Any],
@@ -308,6 +538,15 @@ def cutout_mask(
     -   inside of [lats, lons]
     -   too close to it (if min_distance_km is set)
     -   too far from it (if max_distance_km is set)
+
+    The global points considered are those within ``cropping_distance``
+    degrees of the LAM bounding box (computed with :func:`longitude_extent`,
+    so LAMs straddling the 0 meridian get a tight box). They are tested
+    against the triangles formed by their nearest LAM points with a
+    vectorised ray/triangle test, and the KD-tree search is bounded so that
+    points far from the LAM are pruned immediately. This runs in seconds for
+    an o1280 LAM against an n320 global grid, where a per-point Python loop
+    over an unbounded search took tens of minutes.
 
     Parameters
     ----------
@@ -348,8 +587,7 @@ def cutout_mask(
 
     north = np.amax(lats)
     south = np.amin(lats)
-    east = np.amax(lons)
-    west = np.amin(lons)
+    west, east = longitude_extent(lons)
 
     # Reduce the global grid to the area of interest
     effective_cropping_distance = cropping_distance
@@ -374,8 +612,6 @@ def cutout_mask(
         east + effective_cropping_distance,
     )
 
-    # return mask
-    # mask = np.array([True] * len(global_lats), dtype=bool)
     global_lats_masked = global_lats[mask]
     global_lons_masked = global_lons[mask]
 
@@ -392,36 +628,20 @@ def cutout_mask(
         global_points,
     )
 
-    # Use a cKDTree to find the nearest points
-    distances, indices = cKDTree(lam_points).query(global_points, k=neighbours)
+    tree = cKDTree(lam_points)
+    radius = _search_radius(tree, lam_points, effective_cropping_distance, min_distance, max_distance_km)
+    distances, indices = _nearest_lam_points(tree, lam_points, global_points, neighbours, radius)
 
-    # Centre of the Earth
-    zero = np.array([0.0, 0.0, 0.0])
+    inside = points_inside_triangulated_grid(global_points, lam_points, indices)
 
-    # After the loop, 'inside_lam' will contain a list point to EXCLUDE
-    inside_lam = []
+    nearest = distances.min(axis=1) if len(global_points) else np.empty(0)
+    close = nearest <= min_distance
 
-    for i, (global_point, distance, index) in enumerate(zip(global_points, distances, indices)):
+    too_far: bool | NDArray[Any] = False
+    if max_distance_km is not None:
+        too_far = nearest > (max_distance_km / R_earth_km)
 
-        # We check more than one triangle in case the global point
-        # is near the edge of triangle, (the lam point and global points are colinear)
-
-        inside = False
-        for j in range(neighbours):
-            t = Triangle3D(
-                lam_points[index[j]], lam_points[index[(j + 1) % neighbours]], lam_points[index[(j + 2) % neighbours]]
-            )
-            inside = t.intersect(zero, global_point)
-            if inside:
-                break
-
-        close = np.min(distance) <= min_distance
-
-        too_far: bool | NDArray[Any] = False
-        if max_distance_km is not None:
-            too_far = np.min(distance) > (max_distance_km / R_earth_km)
-
-        inside_lam.append(inside or close or too_far)
+    inside_lam = inside | close | too_far
 
     # Apply max_distance_km filter if specified
     too_far_mask: bool | NDArray[Any] = False

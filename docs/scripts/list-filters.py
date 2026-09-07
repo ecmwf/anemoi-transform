@@ -10,8 +10,7 @@ import rich
 from numpydoc.docscrape_sphinx import SphinxDocString
 from ruamel.yaml.comments import CommentedMap
 
-from anemoi.transform.documentation import Documenter
-from anemoi.transform.documentation import YAMLExample
+from anemoi.transform.documentation import Documenter, YAMLExample
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger("list-filters")

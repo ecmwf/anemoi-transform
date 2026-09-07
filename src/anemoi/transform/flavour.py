@@ -11,13 +11,9 @@ from collections import defaultdict
 from typing import Any
 
 import earthkit.data as ekd
-from anemoi.utils.rules import Rule
-from anemoi.utils.rules import RuleSet
+from anemoi.utils.rules import Rule, RuleSet
 
-from anemoi.transform.fields import MISSING_METADATA
-from anemoi.transform.fields import Flavour
-from anemoi.transform.fields import new_fieldlist_from_list
-from anemoi.transform.fields import new_flavoured_field
+from anemoi.transform.fields import MISSING_METADATA, Flavour, new_fieldlist_from_list, new_flavoured_field
 
 
 class RuleBasedFlavour(Flavour):

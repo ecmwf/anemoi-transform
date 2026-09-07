@@ -15,8 +15,7 @@ from earthkit.meteo import thermo
 
 from anemoi.transform.filters.fields import filter_registry
 
-from .matching import MatchingFieldsFilter
-from .matching import MatchingSpec
+from .matching import MatchingFieldsFilter, MatchingSpec
 
 EPS = 1.0e-4
 

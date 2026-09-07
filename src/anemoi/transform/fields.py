@@ -8,8 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 import logging
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any
 
 import earthkit.data as ekd
@@ -29,7 +28,6 @@ class Flavour(ABC):
     @abstractmethod
     def __call__(self, key: str, field: ekd.Field) -> Any:
         """Called during field metadata lookup, so it can be modified"""
-        pass
 
 
 def new_fieldlist_from_list(fields: list[Any]) -> SimpleFieldList:
@@ -116,7 +114,7 @@ class WrappedField:
         str
             The string representation of the `_field` attribute.
         """
-        return f"{self.__class__.__name__ }({repr(self._field)}, {self._repr_specific()})"
+        return f"{self.__class__.__name__ }({self._field!r}, {self._repr_specific()})"
 
     def _repr_specific(self) -> str:
         """Return a string representation of the specific field type.
@@ -254,7 +252,7 @@ class GeoMetadata(Geography):
 
     def mars_grid(self) -> None:
         """Get the MARS grid of the geography data."""
-        return None
+        return
 
     def latitudes(self, dtype: type | None = None) -> np.ndarray:
         """Get the latitudes of the geography data.
@@ -304,7 +302,7 @@ class GeoMetadata(Geography):
 
     def projection(self) -> None:
         """Get the projection of the geography data."""
-        return None
+        return
 
     def bounding_box(self) -> None:
         """Get the bounding box of the geography data."""

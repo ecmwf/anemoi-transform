@@ -8,11 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 import logging
-from abc import ABC
-from abc import abstractmethod
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Union
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Union
 
 if TYPE_CHECKING:
     from datetime import timedelta
@@ -93,7 +90,7 @@ class Variable(ABC):
         """
         return hash(self.name)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Check if two Variable instances are equal.
 
         Parameters
@@ -114,37 +111,31 @@ class Variable(ABC):
     @abstractmethod
     def is_pressure_level(self) -> bool:
         """Check if the variable is a pressure level."""
-        pass
 
     @property
     @abstractmethod
     def is_model_level(self) -> bool:
         """Check if the variable is a pressure level."""
-        pass
 
     @property
     @abstractmethod
     def is_surface_level(self) -> bool:
         """Check if the variable is on the surface."""
-        pass
 
     @property
     @abstractmethod
     def level(self) -> Any:
         """Get the level of the variable."""
-        pass
 
     @property
     @abstractmethod
     def is_constant_in_time(self) -> bool:
         """Check if the variable is constant in time."""
-        pass
 
     @property
     @abstractmethod
     def is_instantanous(self) -> bool:
         """Check if the variable is instantaneous."""
-        pass
 
     @property
     def is_valid_over_a_period(self) -> bool:
@@ -156,7 +147,6 @@ class Variable(ABC):
     @abstractmethod
     def time_processing(self):
         """Get the time processing type of the variable."""
-        pass
 
     @property
     @abstractmethod
@@ -164,13 +154,11 @@ class Variable(ABC):
         """Get the variable's period as a timedelta.
         For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
         """
-        pass
 
     @property
     @abstractmethod
     def is_accumulation(self) -> bool:
         """Check if the variable is an accumulation."""
-        pass
 
     @property
     def param(self) -> str:
@@ -182,19 +170,16 @@ class Variable(ABC):
     @abstractmethod
     def grib_keys(self) -> dict[str, Any]:
         """Get the GRIB keys for the variable."""
-        pass
 
     @property
     @abstractmethod
     def is_computed_forcing(self) -> bool:
         """Check if the variable is a computed forcing."""
-        pass
 
     @property
     @abstractmethod
     def units(self):
         """Get the units of the variable."""
-        pass
 
     def similarity(self, other: Any) -> int:
         """Compute the similarity between two variables. This is used when

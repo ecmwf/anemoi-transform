@@ -223,7 +223,7 @@ def _reference_cutout_mask(
         {"min_distance_km": 0.0, "neighbours": 3},
         {"cropping_distance": 0.5, "neighbours": 8},
         {"min_distance_km": 20.0, "max_distance_km": 500.0},
-        {"neighbours": 2},
+        {"neighbours": 3},
         {"cropping_distance": 0.0},
     ],
 )
@@ -247,6 +247,15 @@ def test_cutout_mask_matches_reference(kwargs):
     assert actual.shape == expected.shape
     np.testing.assert_array_equal(actual, expected)
     assert 0 < actual.sum() < actual.size
+
+
+@pytest.mark.parametrize("neighbours", [0, 1, 2])
+def test_cutout_mask_rejects_too_few_neighbours(neighbours):
+    """Nearest LAM points are used as triangle vertices, so at least 3 are required."""
+    glat, glon = np.meshgrid(np.arange(-10, 10.01, 2.0), np.arange(-10, 10.01, 2.0), indexing="ij")
+    llat, llon = np.meshgrid(np.arange(-3, 3.01, 0.5), np.arange(-3, 3.01, 0.5), indexing="ij")
+    with pytest.raises(AssertionError, match="at least 3"):
+        cutout_mask(llat.ravel(), llon.ravel(), glat.ravel(), glon.ravel(), neighbours=neighbours)
 
 
 @pytest.mark.parametrize("lam_spacing", [0.5, 1.0, 3.0])

@@ -466,14 +466,18 @@ def _search_radius(
 
 def _nearest_lam_points(
     tree: Any,
-    lam_points: NDArray[Any],
     global_points: NDArray[Any],
     neighbours: int,
     radius: float,
 ) -> tuple[NDArray[Any], NDArray[Any]]:
-    """Find the ``neighbours`` nearest LAM points of each global point."""
+    """Find the ``neighbours`` nearest LAM points of each global point.
+
+    ``tree`` is the KD-tree of the LAM points. Returned indices refer to the
+    points the tree was built from; a missing neighbour (none within ``radius``)
+    is reported with distance ``inf`` and index ``tree.n``.
+    """
     n_global = len(global_points)
-    n_lam = len(lam_points)
+    n_lam = tree.n
 
     distances = np.full((n_global, neighbours), np.inf)
     indices = np.full((n_global, neighbours), n_lam, dtype=np.intp)
@@ -538,7 +542,7 @@ def cutout_mask(
     assert cropping_distance >= 0.0, "cropping_distance must be non-negative"
     assert min_distance_km is None or min_distance_km >= 0.0, "min_distance_km must be non-negative"
     assert max_distance_km is None or max_distance_km >= 0.0, "max_distance_km must be non-negative"
-    assert neighbours > 0, "neighbours must be positive"
+    assert neighbours >= 3, "neighbours must be at least 3 (nearest LAM points are used as triangle vertices)"
 
     from scipy.spatial import cKDTree
 
@@ -590,7 +594,7 @@ def cutout_mask(
 
     tree = cKDTree(lam_points)
     radius = _search_radius(tree, lam_points, effective_cropping_distance, min_distance, max_distance_km)
-    distances, indices = _nearest_lam_points(tree, lam_points, global_points, neighbours, radius)
+    distances, indices = _nearest_lam_points(tree, global_points, neighbours, radius)
 
     inside = points_inside_triangulated_grid(global_points, lam_points, indices)
 

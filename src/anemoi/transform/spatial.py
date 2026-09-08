@@ -442,7 +442,14 @@ def _search_radius(
     max_distance_km: int | float | None,
     spacing_factor: float = 3.0,
 ) -> float:
-    """Return the KD-tree search radius (unit-sphere chord) beyond which a global point cannot be masked."""
+    """Return the KD-tree search radius (unit-sphere chord) beyond which a global point cannot be masked.
+
+    ``tree`` must have been built from ``lam_points``: the spacing estimate below
+    relies on the nearest neighbour of every query point being the point itself.
+    """
+    if tree.n != len(lam_points) or not np.array_equal(tree.data, lam_points):
+        raise ValueError("_search_radius: 'tree' must be a KD-tree built from 'lam_points'")
+
     radius = _chord(cropping_distance)
     radius = max(radius, float(min_distance))
     if max_distance_km is not None:

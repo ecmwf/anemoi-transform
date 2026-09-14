@@ -16,8 +16,7 @@ import xarray as xr
 
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
-from anemoi.transform.filters.tabular.support.utils import get_heights
-from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
+from anemoi.transform.filters.tabular.support.utils import get_heights, raise_if_df_missing_cols
 
 
 @filter_registry.register("fill_orography")
@@ -77,7 +76,7 @@ class FillHeights(Filter):
         heights = np.array(ds_orog[self.orography_altitude])
 
         logging.info("Finding NaN station heights...")
-        nan_idxs = np.argwhere(((np.isnan(stalt_arr)) | (stalt_arr == 9999.0))).flatten()
+        nan_idxs = np.argwhere((np.isnan(stalt_arr)) | (stalt_arr == 9999.0)).flatten()
         logging.info(f"Found {len(nan_idxs)} NaN values in station altitudes!")
         logging.info("Finding closest altitudes from orography file...")
         fill_heights = get_heights(

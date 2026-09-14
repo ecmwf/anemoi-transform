@@ -14,8 +14,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from anemoi.transform.constants import R_earth_km
-from anemoi.transform.constants import radian
+from anemoi.transform.constants import R_earth_km, radian
 
 LOG = logging.getLogger(__name__)
 
@@ -298,8 +297,8 @@ def cutout_mask(
     global_lons: NDArray[Any],
     cropping_distance: float = 2.0,
     neighbours: int = 5,
-    min_distance_km: int | float | None = None,
-    max_distance_km: int | float | None = None,
+    min_distance_km: float | None = None,
+    max_distance_km: float | None = None,
     plot: str | None = None,
 ) -> NDArray[Any]:
     """Return a mask for the points in [global_lats, global_lons] to mask out.

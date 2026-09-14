@@ -90,7 +90,7 @@ def test_apply_mask_fields(field_source, ekd_from_source, mask_name, rename, thr
         expected_mask = operator(expected_mask, threshold_options["threshold"])
     expected_mask_count = np.sum(expected_mask)
 
-    for param in DATA_VALUES.keys():
+    for param in DATA_VALUES:
         result_param = f"{param}_{rename}" if rename else param
         assert result_param in output_fields
         for input_field, output_field in zip(input_fields[param], output_fields[result_param]):

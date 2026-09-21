@@ -74,3 +74,42 @@ def test_flavour_map_applies_to_all_fields(sample_fieldlist):
     assert len(flavoured) == len(sample_fieldlist)
     assert [f.parameter.variable() for f in flavoured] == [f.parameter.variable() for f in sample_fieldlist]
     assert all(f.vertical.level() is None for f in flavoured)
+
+
+@pytest.fixture
+def non_grib_field():
+    """A field not backed by GRIB, e.g. one already rebuilt by a filter."""
+    import numpy as np
+
+    return ekd.from_source(
+        "list-of-dicts",
+        [
+            {
+                "parameter": {"variable": "2t"},
+                "data": {"values": np.array([1.0])},
+                "geography": {"latitudes": np.array([0.0]), "longitudes": np.array([0.0])},
+                "vertical": {"level_type": "surface"},
+            }
+        ],
+    ).to_fieldlist()[0]
+
+
+def test_flavour_matches_mars_keys_on_non_grib_field(non_grib_field):
+    """Rules keyed on MARS-style keys match fields without raw GRIB metadata.
+
+    Such fields have no "param" raw metadata key, only "parameter.variable".
+    """
+    with pytest.raises(KeyError):
+        non_grib_field.metadata("param")
+
+    flavour = RuleBasedFlavour([[{"param": "2t"}, {"levelist": None}]])
+    flavoured = flavour.apply(non_grib_field)
+
+    assert flavoured is not non_grib_field
+    assert flavoured.vertical.level() is None
+
+
+def test_flavour_non_matching_mars_key_on_non_grib_field(non_grib_field):
+    """A rule that does not match leaves the field untouched."""
+    flavour = RuleBasedFlavour([[{"param": "not-2t"}, {"levelist": None}]])
+    assert flavour.apply(non_grib_field) is non_grib_field

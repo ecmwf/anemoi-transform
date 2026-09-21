@@ -18,13 +18,20 @@ from anemoi.transform.fields import MISSING_METADATA
 from anemoi.transform.fields import Flavour
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.fields import new_flavoured_field
+from anemoi.transform.metadata import get_metadata
 
 
 class _FieldMetadataMapping:
-    """A Mapping-like wrapper around a field that supports key lookup via field.metadata(key).
+    """A Mapping-like wrapper around a field, for use with Rule.match().
 
-    This is used to provide a dict-like interface for Rule.match(), which expects
-    a Mapping with __contains__ and __getitem__.
+    Rule.match() expects a Mapping, using ``key in obj`` and ``obj[key]``.
+    earthkit-data fields support neither, and earthkit-data 1.0 removed the
+    no-argument ``field.metadata()`` call that used to return a dict-like object,
+    so the field has to be adapted.
+
+    Keys are resolved with :func:`anemoi.transform.metadata.get_metadata`, so
+    flavour rules can be written against raw metadata keys (e.g. GRIB keys such as
+    ``paramId``) as well as MARS-style keys (e.g. ``param``, ``levtype``).
     """
 
     def __init__(self, field: ekd.Field) -> None:
@@ -32,16 +39,13 @@ class _FieldMetadataMapping:
 
     def __contains__(self, key: str) -> bool:
         try:
-            self._field.metadata(key)
+            get_metadata(self._field, key)
             return True
-        except (KeyError, TypeError):
+        except KeyError:
             return False
 
     def __getitem__(self, key: str) -> Any:
-        try:
-            return self._field.metadata(key)
-        except (KeyError, TypeError):
-            raise KeyError(key)
+        return get_metadata(self._field, key)
 
 
 class RuleBasedFlavour(Flavour):

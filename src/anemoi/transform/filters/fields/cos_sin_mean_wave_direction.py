@@ -24,7 +24,7 @@ class CosSinWaveDirection(MatchingFieldsFilter):
     """A filter to convert mean wave direction to cos() and sin() and back."""
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("mean_wave_direction",),
         backward=("cos_mean_wave_direction", "sin_mean_wave_direction"),
     )

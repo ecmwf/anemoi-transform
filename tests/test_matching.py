@@ -22,7 +22,7 @@ from .utils import mock_field
 
 class AddFields(MatchingFieldsFilter):
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("a", "b"),
     )
 
@@ -102,7 +102,7 @@ def test_init_missing_params_raises():
 
         class BadFilter(MatchingFieldsFilter):
             MATCHING = MatchingSpec(
-                select="param",
+                select="parameter.variable",
                 forward=("a", "b"),
             )
 
@@ -145,7 +145,7 @@ def test_forward_transform_missing_params_raises():
 
         class BadForwardFilter(MatchingFieldsFilter):
             MATCHING = MatchingSpec(
-                select="param",
+                select="parameter.variable",
                 forward=("a", "b"),
             )
 
@@ -165,7 +165,7 @@ def test_backward_transform_missing_params_raises():
 
         class BadBackwardFilter(MatchingFieldsFilter):
             MATCHING = MatchingSpec(
-                select="param",
+                select="parameter.variable",
                 forward=("a",),
                 backward=("a", "b"),
             )
@@ -196,3 +196,15 @@ def test_metadata_mismatch_warning(caplog):
         f.forward(data)
 
     assert "Please ensure your filter is configured to match the input variables metadata" in caplog.text
+
+
+def test_matching_spec_default_select():
+    """`parameter.variable` is the default selection key."""
+    assert MatchingSpec(forward="a").select == "parameter.variable"
+
+
+@pytest.mark.parametrize("select", ["param", "levelist", "shortName"])
+def test_matching_spec_rejects_unsupported_select(select):
+    """Only selecting on `parameter.variable` is supported."""
+    with pytest.raises(NotImplementedError, match="parameter.variable"):
+        MatchingSpec(select=select, forward="a")

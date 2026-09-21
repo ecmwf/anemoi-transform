@@ -60,7 +60,7 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("specific_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"),
         backward=("relative_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"),
         vertical=False,
@@ -158,7 +158,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=(
             "specific_humidity_at_height_level",
             "temperature_at_height_level",
@@ -369,7 +369,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=(
             "specific_humidity_at_height_level",
             "surface_pressure",

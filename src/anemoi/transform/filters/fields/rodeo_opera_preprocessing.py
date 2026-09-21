@@ -127,7 +127,7 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("total_precipitation", "quality", "mask"),
     )
 

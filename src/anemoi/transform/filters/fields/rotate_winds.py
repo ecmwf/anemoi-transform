@@ -22,7 +22,7 @@ class RotateWinds(MatchingFieldsFilter):
     """A filter to rotate wind components from one projection to another."""
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("x_wind", "y_wind"),
         backward=("x_wind", "y_wind"),
     )

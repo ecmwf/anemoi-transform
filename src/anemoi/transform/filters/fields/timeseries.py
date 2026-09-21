@@ -26,7 +26,7 @@ class Timeseries(MatchingFieldsFilter):
     """A source to add a timeseries depending on time but not on location."""
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("template_param",),
     )
 

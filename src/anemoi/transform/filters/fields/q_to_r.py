@@ -34,7 +34,7 @@ class HumidityConversion(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("humidity", "temperature"),
         backward=("relative_humidity", "temperature"),
     )

@@ -126,7 +126,7 @@ class Rename(SingleFieldFilter):
             elif isinstance(value, dict):
                 renamers[key] = DictRename(key, value)
             else:
-                raise ValueError(f"Invalid value for rename: {key}: {value}")
+                raise TypeError(f"Invalid value for rename: {key}: {value}")
         self.renamers = tuple(renamers.values())
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:

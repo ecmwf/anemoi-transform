@@ -74,7 +74,10 @@ class GroupByParam:
 
         grouping_key = field.metadata(namespace="mars")
         if not grouping_key:
-            meta_keys = [k for k in field.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
+            # field.metadata() returns an earthkit metadata object, not a dict; iterating
+            # it directly is NOT equivalent to iterating its keys, so .keys() must stay.
+            all_keys = field.metadata().keys()
+            meta_keys = [k for k in all_keys if k not in ("latitudes", "longitudes", "values")]
             grouping_key = {k: field.metadata(k) for k in meta_keys}
             if not meta_keys:
                 raise NotImplementedError(f"GroupByParam: {field} has no sufficient metadata")
@@ -128,7 +131,7 @@ class GroupByParam:
             Iterator yielding tuples of grouped fields.
         """
         self._get_groups(data, other=other)
-        for _, group in self.groups.items():
+        for group in self.groups.values():
             if len(group) != len(self.params):
                 for p in data:
                     print(p)

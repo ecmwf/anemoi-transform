@@ -8,6 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+from typing import ClassVar
+
 import earthkit.data as ekd
 import numpy as np
 
@@ -39,7 +42,7 @@ class SnowDepthMasked(SingleFieldFilter):
     """A filter to mask about glacier in snow depth."""
 
     required_inputs = ("glacier_mask",)
-    optional_inputs = {"snow_depth": "sd", "snow_depth_masked": "sd_masked"}
+    optional_inputs: ClassVar[dict[str, Any]] = {"snow_depth": "sd", "snow_depth_masked": "sd_masked"}
 
     def prepare_filter(self):
         self.glacier_mask = ekd.from_source("file", self.glacier_mask)[0].to_numpy().astype(bool)

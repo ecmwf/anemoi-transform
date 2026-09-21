@@ -8,6 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import ClassVar
+
 import numpy as np
 import pandas as pd
 
@@ -48,7 +50,7 @@ class AddForcings(Filter):
 
     """
 
-    SUPPORTED_FORCINGS = {
+    SUPPORTED_FORCINGS: ClassVar[set[str]] = {
         "cos_julian_day",
         "sin_julian_day",
         "cos_sza",

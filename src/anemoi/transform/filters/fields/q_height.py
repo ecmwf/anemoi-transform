@@ -32,8 +32,8 @@ def _set_AB(model_level_AB: str | dict[str, NDArray]) -> tuple:
             model_level_AB = predefined_AB[model_level_AB]
         except KeyError:
             raise KeyError(
-                "%s is not in the list of predefined AB-coefficients. Possible options are %s."
-                % (model_level_AB, ", ".join(predefined_AB.keys()))
+                f"{model_level_AB} is not in the list of predefined AB-coefficients. "
+                f"Possible options are {', '.join(predefined_AB.keys())}."
             )
     if not isinstance(model_level_AB, dict):
         raise TypeError("model_level_AB must be a string or a dictionary.")
@@ -45,9 +45,7 @@ def _check_consistency(A: NDArray, B: NDArray, model_level_fields: dict[str, ekd
     assert A.shape == B.shape, "A and B coefficients must have same shape"
     for name, field in model_level_fields.items():
         # Assert that model levels are passed
-        assert all(item == "ml" for item in field.metadata("levtype")), "Field {} does not contain model levels".format(
-            name,
-        )
+        assert all(item == "ml" for item in field.metadata("levtype")), f"Field {name} does not contain model levels"
         # Assert that A and B coefficients have one more vertical level than the model level field
         assert (
             A.shape[-1] == field.to_numpy().shape[0] + 1
@@ -73,12 +71,7 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
         relative_humidity_at_height_level: str = "r",
         pressure_at_height_level: str = "pres",
         temperature_at_height_level: str = "t",
-        return_inputs: Literal["all", "none"] | list[str] = [
-            "specific_humidity_at_height_level",
-            "relative_humidity_at_height_level",
-            "temperature_at_height_level",
-            "pressure_at_height_level",
-        ],
+        return_inputs: Literal["all", "none"] | list[str] | None = None,
     ):
         """Initializes the filter for converting specific humidity (kg/kg) to relative humidity (%) at a specified height.
 
@@ -96,6 +89,13 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
             List of which filter inputs should be returned, by default ["specific_humidity_at_height_level", "relative_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"]
         """
 
+        if return_inputs is None:
+            return_inputs = [
+                "specific_humidity_at_height_level",
+                "relative_humidity_at_height_level",
+                "temperature_at_height_level",
+                "pressure_at_height_level",
+            ]
         self.return_inputs = return_inputs
         self.specific_humidity_at_height_level = specific_humidity_at_height_level
         self.relative_humidity_at_height_level = relative_humidity_at_height_level
@@ -187,12 +187,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         specific_humidity_at_model_levels: str = "q",
         temperature_at_model_levels: str = "t",
         model_level_AB: str | dict[str, NDArray],
-        return_inputs: Literal["all", "none"] | list[str] = [
-            "specific_humidity_at_height_level",
-            "relative_humidity_at_height_level",
-            "temperature_at_height_level",
-            "surface_pressure",
-        ],
+        return_inputs: Literal["all", "none"] | list[str] | None = None,
     ):
         """Initializes the filter for converting specific humidity (kg/kg) to relative humidity (%) at a specified height.
 
@@ -219,6 +214,13 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
             List of which filter inputs should be returned, by default ["specific_humidity_at_height_level", "relative_humidity_at_height_level", "temperature_at_height_level", "surface_pressure"]
         """
 
+        if return_inputs is None:
+            return_inputs = [
+                "specific_humidity_at_height_level",
+                "relative_humidity_at_height_level",
+                "temperature_at_height_level",
+                "surface_pressure",
+            ]
         self.return_inputs = return_inputs
         self.height = float(height)
         self.specific_humidity_at_height_level = specific_humidity_at_height_level
@@ -380,11 +382,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         specific_humidity_at_model_levels: str = "q",
         temperature_at_model_levels: str = "t",
         model_level_AB: str | dict,
-        return_inputs: Literal["all", "none"] | list[str] = [
-            "specific_humidity_at_height_level",
-            "dewpoint_temperature_at_height_level",
-            "surface_pressure",
-        ],
+        return_inputs: Literal["all", "none"] | list[str] | None = None,
     ):
         """Initializes the filter for transforming specific humidity at a given height to dewpoint temperature.
 
@@ -409,6 +407,12 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
             List of which filter inputs should be returned, by default ["specific_humidity_at_height_level", "relative_humidity_at_height_level", "temperature_at_height_level", "surface_pressure"]
         """
 
+        if return_inputs is None:
+            return_inputs = [
+                "specific_humidity_at_height_level",
+                "dewpoint_temperature_at_height_level",
+                "surface_pressure",
+            ]
         self.return_inputs = return_inputs
         self.height = float(height)
         self.specific_humidity_at_height_level = specific_humidity_at_height_level

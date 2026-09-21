@@ -17,6 +17,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("mask_infs")
 class MaskInfs(Filter):
@@ -58,7 +60,7 @@ class MaskInfs(Filter):
                 raise ValueError(f"No columns starting with '{self.column_prefix}' found in DataFrame.")
 
         for col in columns:
-            logging.info(f"Masking {col} with infinite values")
+            LOG.info(f"Masking {col} with infinite values")
             obs_df[col] = obs_df[col].mask(obs_df[col] == np.inf)
             obs_df[col] = obs_df[col].mask(obs_df[col] == -np.inf)
         return obs_df

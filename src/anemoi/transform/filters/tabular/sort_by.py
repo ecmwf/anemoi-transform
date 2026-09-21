@@ -16,6 +16,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("sort_by")
 class SortBy(Filter):
@@ -46,18 +48,18 @@ class SortBy(Filter):
         raise_if_df_missing_cols(df, self.columns)
         df_sorted = df.copy()
 
-        logging.info(f"Sorting by columns: {self.columns}")
+        LOG.info(f"Sorting by columns: {self.columns}")
 
         try:
             df_sorted = df_sorted.sort_values(by=self.columns, kind="stable")
-        except Exception as e:
-            logging.error(f"Error sorting DataFrame: {type(e).__name__}: {str(e)}")
+        except Exception as e:  # noqa: BLE001
+            LOG.error(f"Error sorting DataFrame: {type(e).__name__}: {e!s}")
             for col in self.columns:
                 try:
                     _ = df_sorted[col]
-                    logging.info(f"Successfully accessed column: {col}")
+                    LOG.info(f"Successfully accessed column: {col}")
                 except Exception as e:
-                    logging.error(f"Failed to access column {col}: {str(e)}")
+                    LOG.error(f"Failed to access column {col}: {e!s}")
                     raise
             return df_sorted
 

@@ -8,9 +8,6 @@
 # nor does it submit to any jurisdiction.
 
 
-from datetime import datetime
-from typing import Tuple
-
 import numpy as np
 
 
@@ -97,7 +94,7 @@ def calc_azimuth(latdeg, londeg, satlats, satlons):
     return azm
 
 
-def get_meteosat_loc(satids: np.ndarray, dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def get_meteosat_loc(satids: np.ndarray, dts: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Given an array of satellite IDs and an arrays of datetimes,
         returns the sub-satellite lat, lon for that satellite.
         Adapted from obd/bufr2odb/b2o_convert_asr.F90.
@@ -117,16 +114,16 @@ def get_meteosat_loc(satids: np.ndarray, dts: np.ndarray) -> Tuple[np.ndarray, n
     lons = np.zeros_like(satids)
     lats = np.zeros_like(satids)
 
-    mask = (satids == 55) & (dts > np.datetime64(datetime.strptime("20161020", "%Y%m%d")))
+    mask = (satids == 55) & (dts > np.datetime64("2016-10-20"))
     lons[mask] = 41.5
 
-    mask = (satids == 56) & (dts > np.datetime64(datetime.strptime("20220508", "%Y%m%d")))
+    mask = (satids == 56) & (dts > np.datetime64("2022-05-08"))
     lons[mask] = 45.5
 
-    mask = (satids == 57) & (dts < np.datetime64(datetime.strptime("20130124", "%Y%m%d")))
+    mask = (satids == 57) & (dts < np.datetime64("2013-01-24"))
     lons[mask] = -3.4
 
-    mask = (satids == 70) & (dts < np.datetime64(datetime.strptime("20151201", "%Y%m%d")))
+    mask = (satids == 70) & (dts < np.datetime64("2015-12-01"))
     lons[mask] = -3.4
 
     return lats, lons

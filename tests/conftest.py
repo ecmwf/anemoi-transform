@@ -62,7 +62,7 @@ def test_source(get_test_data: GetTestData) -> Callable[[str | list[dict]], Sour
         elif isinstance(dataset, list):
             ds = ekd.from_source("list-of-dicts", dataset)
         else:
-            raise ValueError("dataset must be a string or a list of dicts")
+            raise TypeError("dataset must be a string or a list of dicts")
         return source_registry.create("testing", dataset=ds)
 
     return _source

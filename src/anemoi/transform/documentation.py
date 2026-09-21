@@ -92,7 +92,7 @@ def parse_directive(lines: list[str]) -> tuple[str, dict[str, str], str]:
     name = name.strip()
 
     # Collect options and body
-    options = dict(_default=_default.strip())
+    options = {"_default": _default.strip()}
     body_lines = []
     in_options = True
 

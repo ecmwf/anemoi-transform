@@ -17,6 +17,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("remove_extreme_values")
 class RemoveExtremeValues(Filter):
@@ -80,7 +82,7 @@ class RemoveExtremeValues(Filter):
         obs_cols += ["latitude", "longitude"]
 
         verb = "Dropping" if self.method == "drop" else "Masking"
-        logging.info(f"{verb} rows with extreme values beyond ±{self.threshold}")
+        LOG.info(f"{verb} rows with extreme values beyond ±{self.threshold}")
 
         mask = obs_df[obs_cols].abs() > self.threshold
         if self.method == "drop":

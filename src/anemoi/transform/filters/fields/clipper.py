@@ -8,6 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import Any
+from typing import ClassVar
+
 import earthkit.data as ekd
 import numpy as np
 
@@ -55,7 +58,7 @@ class Clipper(SingleFieldFilter):
     """
 
     required_inputs = ("param",)
-    optional_inputs = {"minimum": None, "maximum": None}
+    optional_inputs: ClassVar[dict[str, Any]] = {"minimum": None, "maximum": None}
 
     def prepare_filter(self):
         if self.minimum is None and self.maximum is None:

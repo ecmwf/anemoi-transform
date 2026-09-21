@@ -19,7 +19,7 @@ def test_create_filters() -> None:
     for n in filter_registry.registered:
         try:
             filter_registry.create(n)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             LOG.error(f"Error creating filter {n}: {e}")
 
 

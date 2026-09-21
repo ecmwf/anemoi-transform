@@ -16,6 +16,8 @@ import pandas as pd
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("radiance_to_brightness_temperature")
 class RadianceToBrightnessTemperature(Filter):
@@ -111,7 +113,7 @@ class RadianceToBrightnessTemperature(Filter):
         elif self.mode == "iasi":
             nu = self._iasi_wavenumbers(chans)  # [cm^-1]
         else:
-            logging.error(f"radiance_to_brightness_temperature ERROR: Mode not supported {self.mode}")
+            LOG.error(f"radiance_to_brightness_temperature ERROR: Mode not supported {self.mode}")
 
         a = C1_W * (nu**3)  # shape (nch,)
         b = C2 * nu

@@ -13,6 +13,7 @@ from abc import abstractmethod
 from collections.abc import Callable
 from functools import singledispatchmethod
 from typing import Any
+from typing import ClassVar
 
 import earthkit.data as ekd
 import numpy as np
@@ -28,8 +29,6 @@ LOG = logging.getLogger(__name__)
 
 class Filter(Transform):
     """A filter transform that processes field data."""
-
-    pass
 
 
 class DispatchingFilter(Transform):
@@ -103,7 +102,7 @@ class SingleFieldFilter(Filter):
     """A filter that transforms fields individually (one at a time)."""
 
     required_inputs: tuple[str, ...] | list[str] | None = None
-    optional_inputs: dict[str, Any] = {}
+    optional_inputs: ClassVar[dict[str, Any]] = {}
 
     def __init__(self, **kwargs) -> None:
         """Initialize the SingleFieldFilter.
@@ -126,7 +125,6 @@ class SingleFieldFilter(Filter):
             if self.positive_number < 0:
                 raise ValueError("positive_number must be positive")
         """
-        pass
 
     def forward_select(self) -> dict[str, str | list[str] | tuple[str]]:
         """Provide an opportunity for subclasses to select specific fields for processing.
@@ -153,7 +151,6 @@ class SingleFieldFilter(Filter):
     @abstractmethod
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
         """Apply the transformation to a field. Must be implemented by subclasses."""
-        pass
 
     def backward_transform(self, field: ekd.Field) -> ekd.Field:
         """Apply the backward transformation to a field."""

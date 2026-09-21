@@ -68,7 +68,7 @@ def read_crosswalking_table(param: Any, param_dic: dict[int, dict[str, float]]) 
     List[np.ndarray]
         The arrays for each key in the crosswalking table.
     """
-    arrays = [np.array([param_dic[x][key] for x in param]) for key in param_dic[0].keys()]
+    arrays = [np.array([param_dic[x][key] for x in param]) for key in param_dic[0]]
     return arrays
 
 

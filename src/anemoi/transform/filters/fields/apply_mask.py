@@ -172,12 +172,11 @@ class MaskVariable(Filter):
         if (self.mask_value is None) == (self.threshold is None):
             raise ValueError("Exactly one of `mask_value` or `threshold` must be provided.")
 
-        if self.threshold is not None:
-            if self.threshold_operator not in OPERATORS:
-                raise ValueError(
-                    f"Invalid threshold operator: {self.threshold_operator}. "
-                    f"Valid operators are: {', '.join(OPERATORS.keys())}."
-                )
+        if self.threshold is not None and self.threshold_operator not in OPERATORS:
+            raise ValueError(
+                f"Invalid threshold operator: {self.threshold_operator}. "
+                f"Valid operators are: {', '.join(OPERATORS.keys())}."
+            )
 
         if self.path is not None:
             if self.path.endswith(".npy"):

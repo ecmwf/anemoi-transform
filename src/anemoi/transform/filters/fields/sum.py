@@ -102,19 +102,19 @@ class Sum(Filter):
             else:
                 result.append(f)
 
-        for keys, values in needed_fields.items():
+        for values in needed_fields.values():
 
             if len(values) != len(self.params):
                 raise ValueError("Missing fields")
 
             s = None
-            for k, v in values.items():
+            for v in values.values():
                 c = v.to_numpy(flatten=True)
                 if s is None:
                     s = c
                 else:
                     s += c
-            result.append(new_field_from_numpy(s, template=values[list(values.keys())[0]], param=self.output))
+            result.append(new_field_from_numpy(s, template=values[next(iter(values.keys()))], param=self.output))
 
         return new_fieldlist_from_list(result)
 

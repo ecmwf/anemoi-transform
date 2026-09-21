@@ -66,7 +66,7 @@ def as_griddata(grid: str | Field | dict[str, Any] | None) -> dict[str, Any] | N
 
     if isinstance(grid, Field):
         lat, lon = grid.grid_points()
-        return dict(latitudes=lat, longitudes=lon)
+        return {"latitudes": lat, "longitudes": lon}
 
     if isinstance(grid, dict) and "latitudes" in grid and "longitudes" in grid:
         return grid
@@ -284,10 +284,14 @@ class MIRMatrix:
             (loaded["matrix_data"], loaded["matrix_indices"], loaded["matrix_indptr"]), shape=loaded["matrix_shape"]
         )
 
-        self.in_grid: dict[str, np.ndarray] = dict(latitudes=loaded["in_latitudes"], longitudes=loaded["in_longitudes"])
-        self.out_grid: dict[str, np.ndarray] = dict(
-            latitudes=loaded["out_latitudes"], longitudes=loaded["out_longitudes"]
-        )
+        self.in_grid: dict[str, np.ndarray] = {
+            "latitudes": loaded["in_latitudes"],
+            "longitudes": loaded["in_longitudes"],
+        }
+        self.out_grid: dict[str, np.ndarray] = {
+            "latitudes": loaded["out_latitudes"],
+            "longitudes": loaded["out_longitudes"],
+        }
 
     def __call__(self, field: Field) -> NewLatLonField:
         """Interpolate the field data using the regrid matrix.

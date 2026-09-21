@@ -16,6 +16,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("geopotential_to_height_tabular")
 class GeopotentialToHeight(Filter):
@@ -47,6 +49,6 @@ class GeopotentialToHeight(Filter):
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         raise_if_df_missing_cols(obs_df, [self.geopotential])
-        logging.info("Converting height to geopotential")
+        LOG.info("Converting height to geopotential")
         obs_df[self.height] = obs_df[self.geopotential].apply(lambda x: x / 9.80665)
         return obs_df

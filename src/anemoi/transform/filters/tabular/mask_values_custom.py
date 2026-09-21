@@ -15,6 +15,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("mask_values_custom")
 class MaskValuesCustom(Filter):
@@ -47,7 +49,7 @@ class MaskValuesCustom(Filter):
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         raise_if_df_missing_cols(obs_df, self.config.keys())
         for col, condition_str in self.config.items():
-            logging.info(f"Masking {col} with custom condition: {condition_str}")
+            LOG.info(f"Masking {col} with custom condition: {condition_str}")
 
             try:
                 # Evaluate the condition as a pandas query to get boolean mask
@@ -58,10 +60,10 @@ class MaskValuesCustom(Filter):
                 obs_df[col] = obs_df[col].mask(mask)
 
                 n_masked = mask.sum()
-                logging.info(f"Masked {n_masked} values in {col} ({n_masked/len(obs_df)*100:.2f}%)")
+                LOG.info(f"Masked {n_masked} values in {col} ({n_masked/len(obs_df)*100:.2f}%)")
 
-            except Exception as e:
-                logging.error(f"Error evaluating custom mask condition for {col}: {e}")
+            except Exception as e:  # noqa: BLE001 - pandas .eval() raises many types; re-raised as ValueError below
+                LOG.error(f"Error evaluating custom mask condition for {col}: {e}")
                 raise ValueError(f"Invalid condition for column '{col}': {condition_str}. Error: {e}")
 
         return obs_df

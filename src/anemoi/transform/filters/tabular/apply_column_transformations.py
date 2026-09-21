@@ -8,6 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 
+from typing import ClassVar
+
 import numpy as np
 import pandas as pd
 
@@ -28,7 +30,7 @@ def cos_deg(x):
 
 
 class ColumnTransformation:
-    TRANSFORMATIONS = {
+    TRANSFORMATIONS: ClassVar[dict[str, object]] = {
         "log": np.log,
         "log1p": np.log1p,
         "safe_log": safe_log,
@@ -112,7 +114,7 @@ class ApplyColumnTransformations(Filter):
         # check config is valid
         for target_column, transform_spec in config.items():
             if not isinstance(transform_spec, dict):
-                raise ValueError(f"Invalid transformation specification for column {target_column}: {transform_spec}")
+                raise TypeError(f"Invalid transformation specification for column {target_column}: {transform_spec}")
             if "function" not in transform_spec:
                 raise ValueError(f"Invalid transformation specification for column {target_column}: {transform_spec}")
 

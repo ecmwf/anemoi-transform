@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 from typing import Any
+from typing import ClassVar
 
 import earthkit.data as ekd
 import numpy as np
@@ -19,7 +20,7 @@ from anemoi.transform.filters.fields import filter_registry
 class LnspToSp(SingleFieldFilter):
     """A filter to convert natural log of surface pressure (lnsp) to surface pressure (sp), and back."""
 
-    optional_inputs = {"log_of_surface_pressure": "lnsp", "surface_pressure": "sp"}
+    optional_inputs: ClassVar[dict[str, Any]] = {"log_of_surface_pressure": "lnsp", "surface_pressure": "sp"}
 
     def forward_select(self):
         # select only fields where the param is self.log_of_surface_pressure

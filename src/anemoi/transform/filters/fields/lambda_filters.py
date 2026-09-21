@@ -9,6 +9,8 @@
 
 import importlib
 from collections.abc import Callable
+from typing import Any
+from typing import ClassVar
 
 from earthkit.data.core.fieldlist import Field
 
@@ -58,7 +60,7 @@ class EarthkitFieldLambdaFilter(SingleFieldFilter):
     """
 
     required_inputs = ("fn", "param")
-    optional_inputs = {"fn_args": None, "fn_kwargs": None, "backward_fn": None}
+    optional_inputs: ClassVar[dict[str, Any]] = {"fn_args": None, "fn_kwargs": None, "backward_fn": None}
 
     def prepare_filter(self):
         if self.fn_args is None:
@@ -67,14 +69,14 @@ class EarthkitFieldLambdaFilter(SingleFieldFilter):
             self.fn_kwargs = {}
 
         if not isinstance(self.fn_args, list):
-            raise ValueError("Expected 'fn_args' to be a list. " f"Got {self.fn_args} instead.")
+            raise TypeError("Expected 'fn_args' to be a list. " f"Got {self.fn_args} instead.")
         if not isinstance(self.fn_kwargs, dict):
-            raise ValueError("Expected 'fn_kwargs' to be a dictionary. " f"Got {self.fn_kwargs} instead.")
+            raise TypeError("Expected 'fn_kwargs' to be a dictionary. " f"Got {self.fn_kwargs} instead.")
 
         if not isinstance(self.fn, str):
-            raise ValueError("Expected 'fn' to be a string. " f"Got {self.fn} instead.")
+            raise TypeError("Expected 'fn' to be a string. " f"Got {self.fn} instead.")
         if not isinstance(self.backward_fn, str):
-            raise ValueError("Expected 'backward_fn' to be a string. " f"Got {self.backward_fn} instead.")
+            raise TypeError("Expected 'backward_fn' to be a string. " f"Got {self.backward_fn} instead.")
 
         self.fn = self._import_fn(self.fn)
         self.backward_fn = self._import_fn(self.backward_fn)

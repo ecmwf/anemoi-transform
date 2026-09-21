@@ -16,6 +16,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("mask_dewpoint_temperature")
 class MaskDewpointTemperature(Filter):
@@ -63,7 +65,7 @@ class MaskDewpointTemperature(Filter):
             required_cols.append(self.specific_humidity)
         raise_if_df_missing_cols(obs_df, required_cols)
 
-        logging.info(
+        LOG.info(
             "Masking dewpoint temperature column if the temperature column is less than the dewpoint temperature column"
         )
         mask = obs_df[self.temperature] < obs_df[self.dewpoint_temperature]

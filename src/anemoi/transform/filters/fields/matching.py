@@ -11,12 +11,12 @@
 import logging
 from abc import abstractmethod
 from collections.abc import Callable
+from collections.abc import Iterable
 from collections.abc import Iterator
 from dataclasses import dataclass
 from dataclasses import replace
 from inspect import signature
 from itertools import chain
-from typing import Iterable
 from typing import Literal
 from typing import cast
 
@@ -241,8 +241,7 @@ class MatchingFieldsFilter(Filter):
 
         result: list[ekd.Field] = []
         for matching in grouping.iterate(data, other=result.append):
-            for f in transform(*matching):
-                result.append(f)
+            result.extend(transform(*matching))
         return self.new_fieldlist_from_list(result)
 
     def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, **kwargs) -> ekd.Field:
@@ -293,7 +292,6 @@ class MatchingFieldsFilter(Filter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        pass
 
     def backward_transform(self, *fields: ekd.Field) -> Iterator[ekd.Field]:
         """Backward transformation to be implemented by subclasses.

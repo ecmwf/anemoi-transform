@@ -17,6 +17,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("exclude_dates")
 class ExcludeDates(Filter):
@@ -81,7 +83,7 @@ class ExcludeDates(Filter):
 
         for column, date_ranges in self.excluded_dates.items():
             for start_dt, end_dt in date_ranges:
-                logging.info(f"Excluding dates for column '{column}' when date is between {start_dt} and {end_dt}.")
+                LOG.info(f"Excluding dates for column '{column}' when date is between {start_dt} and {end_dt}.")
 
                 # Create a mask based on the 'date' column.
                 mask = (obs_df["date"] >= start_dt) & (obs_df["date"] < end_dt)

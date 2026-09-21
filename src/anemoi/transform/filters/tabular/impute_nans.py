@@ -16,6 +16,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("impute_nans_tabular")
 class ImputeNaNs(Filter):
@@ -77,5 +79,5 @@ class ImputeNaNs(Filter):
         else:
             subset = None
 
-        logging.info(f"Dropping rows with all NaN values on df with length: {len(obs_df)}")
+        LOG.info(f"Dropping rows with all NaN values on df with length: {len(obs_df)}")
         return obs_df.fillna(self.value)

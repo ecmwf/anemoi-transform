@@ -64,7 +64,7 @@ def source_multiple_params(test_source):
     source = test_source(FIELD_SPECS)
 
     input_fields = collect_fields_by_param(source)
-    first_param = list(input_fields.keys())[0]
+    first_param = next(iter(input_fields.keys()))
 
     output_fields = {}
     for param in ["a", "t", None]:

@@ -15,6 +15,8 @@ import pandas as pd
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("mask_outside_range")
 class MaskOutsideRange(Filter):
@@ -52,7 +54,7 @@ class MaskOutsideRange(Filter):
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         for column, range in self.config.items():
             min_val, max_val = range
-            logging.info(f"Masking {column} with condition: {min_val} <= {column} <= {max_val}")
+            LOG.info(f"Masking {column} with condition: {min_val} <= {column} <= {max_val}")
             obs_df[column] = obs_df[column].mask(
                 (obs_df[column] < min_val if min_val is not None else False)
                 | (obs_df[column] > max_val if max_val is not None else False)

@@ -16,6 +16,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("clip_tabular")
 class Clip(Filter):
@@ -55,6 +57,6 @@ class Clip(Filter):
         raise_if_df_missing_cols(obs_df, self.config.keys())
 
         for col, clip_range in self.config.items():
-            logging.info(f"Clipping {col} to {clip_range}")
+            LOG.info(f"Clipping {col} to {clip_range}")
             obs_df.loc[:, col] = obs_df[col].clip(*clip_range)
         return obs_df

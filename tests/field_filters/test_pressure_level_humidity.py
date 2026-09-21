@@ -134,7 +134,7 @@ def test_pressure_level_specific_humidity_to_relative_humidity_from_file(test_so
 
     # test pipeline output matches known good output
     fields = sorted(output_fields["r"], key=lambda f: f.metadata("levelist"))
-    fields = map(lambda f: f.to_numpy(), fields)
+    fields = (f.to_numpy() for f in fields)
     result = np.stack(list(fields)).flatten()
 
     expected_relative_humidity = test_source("anemoi-transform/filters/era_r.npy").ds.to_numpy().flatten()
@@ -211,7 +211,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity_from_file_arome(t
 
     # test pipeline output matches known good output
     fields = sorted(output_fields["q"], key=lambda f: f.metadata("levelist"))
-    fields = map(lambda f: f.to_numpy(), fields)
+    fields = (f.to_numpy() for f in fields)
     result = np.stack(list(fields))
     result = result.flatten()
 
@@ -242,7 +242,7 @@ def test_pressure_level_relative_humidity_to_specific_humidity_from_file(test_so
 
     # test pipeline output matches known good output
     fields = sorted(output_fields["q"], key=lambda f: f.metadata("levelist"))
-    fields = map(lambda f: f.to_numpy(), fields)
+    fields = (f.to_numpy() for f in fields)
     result = np.stack(list(fields)).flatten()
 
     expected_specific_humidity = test_source("anemoi-transform/filters/cerra_q.npy").ds.to_numpy().flatten()

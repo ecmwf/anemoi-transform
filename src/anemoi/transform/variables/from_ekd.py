@@ -38,7 +38,7 @@ class VariableFromEarthkit(Variable):
         """
         super().__init__(name)
         metadata = field.metadata(namespace=namespace)
-        self.delegate = Variable.from_dict(name, dict(mars=metadata))
+        self.delegate = Variable.from_dict(name, {"mars": metadata})
         self.field = field
 
     @property

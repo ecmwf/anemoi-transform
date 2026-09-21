@@ -7,6 +7,8 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+from typing import ClassVar
+
 import numpy as np
 import pytest
 from anemoi.utils.testing import skip_if_offline
@@ -68,7 +70,7 @@ def test_singlefieldfilter_defaults_for_optional_inputs():
     """Test that the SingleFieldFilter set optional inputs to their default values if not provided."""
 
     class TestFilter(SingleFieldFilter):
-        optional_inputs = {"temperature": "2t"}
+        optional_inputs: ClassVar[dict[str, str]] = {"temperature": "2t"}
 
         def forward_transform(self, field):
             pass
@@ -80,7 +82,7 @@ def test_singlefieldfilter_defaults_are_overrideable():
     """Test that the SingleFieldFilter optional inputs can be overridden."""
 
     class TestFilter(SingleFieldFilter):
-        optional_inputs = {"temperature": "2t"}
+        optional_inputs: ClassVar[dict[str, str]] = {"temperature": "2t"}
 
         def forward_transform(self, field):
             pass

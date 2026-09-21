@@ -100,7 +100,7 @@ def compare_npz_files(file1, file2):
         data2.keys()
     ), f"Keys in NPZ files do not match {set(data1.keys())} and {set(data2.keys())}"
 
-    for key in data1.keys():
+    for key in data1:
         assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"
 
 

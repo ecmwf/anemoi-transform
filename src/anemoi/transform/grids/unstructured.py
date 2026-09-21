@@ -150,7 +150,7 @@ class UnstructuredGridField:
         Dict[str, np.ndarray]
             Dictionary containing latitude and longitude arrays.
         """
-        return dict(lat=self.geography.latitudes, lon=self.geography.longitudes)
+        return {"lat": self.geography.latitudes, "lon": self.geography.longitudes}
 
 
 class UnstructuredGridFieldList(FieldArray):

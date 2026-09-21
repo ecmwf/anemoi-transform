@@ -11,6 +11,7 @@ import logging
 from abc import ABC
 from abc import abstractmethod
 from typing import Any
+from typing import ClassVar
 
 import earthkit.data as ekd
 import numpy as np
@@ -29,7 +30,6 @@ class Flavour(ABC):
     @abstractmethod
     def __call__(self, key: str, field: ekd.Field) -> Any:
         """Called during field metadata lookup, so it can be modified"""
-        pass
 
 
 def new_fieldlist_from_list(fields: list[Any]) -> SimpleFieldList:
@@ -116,7 +116,7 @@ class WrappedField:
         str
             The string representation of the `_field` attribute.
         """
-        return f"{self.__class__.__name__ }({repr(self._field)}, {self._repr_specific()})"
+        return f"{self.__class__.__name__ }({self._field!r}, {self._repr_specific()})"
 
     def _repr_specific(self) -> str:
         """Return a string representation of the specific field type.
@@ -225,7 +225,7 @@ class GeoMetadata(Geography):
         tuple
             The shape of the geography data.
         """
-        return tuple([len(self.owner._latitudes)])
+        return (len(self.owner._latitudes),)
 
     def resolution(self) -> str:
         """Get the resolution of the geography data.
@@ -254,7 +254,7 @@ class GeoMetadata(Geography):
 
     def mars_grid(self) -> None:
         """Get the MARS grid of the geography data."""
-        return None
+        return
 
     def latitudes(self, dtype: type | None = None) -> np.ndarray:
         """Get the latitudes of the geography data.
@@ -304,7 +304,7 @@ class GeoMetadata(Geography):
 
     def projection(self) -> None:
         """Get the projection of the geography data."""
-        return None
+        return
 
     def bounding_box(self) -> None:
         """Get the bounding box of the geography data."""
@@ -357,7 +357,7 @@ class NewLatLonField(WrappedField):
             A dictionary containing the latitudes and longitudes.
         """
         assert flatten
-        return dict(lat=self._latitudes, lon=self._longitudes)
+        return {"lat": self._latitudes, "lon": self._longitudes}
 
     def metadata(self, *args: Any, **kwargs: Any) -> Any:
         """Get the metadata of the field.
@@ -421,7 +421,7 @@ class NewGridField(WrappedField):
         """
         assert flatten
         coords = self._grid.latlon()
-        return dict(lat=coords[0], lon=coords[1])
+        return {"lat": coords[0], "lon": coords[1]}
 
     def __repr__(self) -> str:
         """Get the string representation of the field.
@@ -628,10 +628,9 @@ class NewClonedField(WrappedField):
             The metadata of the cloned field.
         """
         if len(args) == 1:
-            if args[0] in self._metadata:
-                if callable(self._metadata[args[0]]):
-                    proc = self._metadata[args[0]]
-                    self._metadata[args[0]] = proc(self._field, args[0], self._field.metadata())
+            if args[0] in self._metadata and callable(self._metadata[args[0]]):
+                proc = self._metadata[args[0]]
+                self._metadata[args[0]] = proc(self._field, args[0], self._field.metadata())
 
             if args[0] in self._metadata:
                 return self._metadata[args[0]]
@@ -767,7 +766,7 @@ def new_flavoured_field(field: Any, flavour: Flavour) -> NewFlavouredField:
 class FieldSelection:
     """A class for specifying which fields to process."""
 
-    ALLOWED_KEYS = {"param", "levelist"}
+    ALLOWED_KEYS: ClassVar[set[str]] = {"param", "levelist"}
 
     def __init__(self, **kwargs):
         self._spec = kwargs

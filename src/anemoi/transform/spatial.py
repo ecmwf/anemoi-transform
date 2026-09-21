@@ -227,10 +227,7 @@ class Triangle3D:
 
         t = f * np.dot(self.v2 - self.v0, q)
 
-        if t > epsilon:
-            return True
-
-        return False
+        return t > epsilon
 
 
 def cropping_mask(
@@ -439,7 +436,7 @@ def _search_radius(
     lam_points: NDArray[Any],
     cropping_distance: float,
     min_distance: float,
-    max_distance_km: int | float | None,
+    max_distance_km: float | None,
     spacing_factor: float = 3.0,
 ) -> float:
     """Return the KD-tree search radius (unit-sphere chord) beyond which a global point cannot be masked.
@@ -501,8 +498,8 @@ def cutout_mask(
     global_lons: NDArray[Any],
     cropping_distance: float = 2.0,
     neighbours: int = 5,
-    min_distance_km: int | float | None = None,
-    max_distance_km: int | float | None = None,
+    min_distance_km: float | None = None,
+    max_distance_km: float | None = None,
     plot: str | None = None,
 ) -> NDArray[Any]:
     """Return a mask for the points in [global_lats, global_lons] to mask out.
@@ -715,7 +712,7 @@ def global_on_lam_mask(
 
     # Use a cKDTree to find the nearest points with a distance limit
     indices = cKDTree(global_points).query_ball_point(lam_points, distance)
-    indices = np.array(sorted(set(i for sublist in indices for i in sublist)))
+    indices = np.array(sorted({i for sublist in indices for i in sublist}))
 
     return indices
 

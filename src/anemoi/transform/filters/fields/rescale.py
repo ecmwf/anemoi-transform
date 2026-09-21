@@ -8,7 +8,7 @@
 # nor does it submit to any jurisdiction.
 from abc import ABC
 from abc import abstractmethod
-from typing import Callable
+from collections.abc import Callable
 
 import earthkit.data as ekd
 

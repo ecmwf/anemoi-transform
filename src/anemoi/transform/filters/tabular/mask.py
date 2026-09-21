@@ -17,6 +17,8 @@ from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
+LOG = logging.getLogger(__name__)
+
 OPERATORS = {
     ">": np.greater,
     "<": np.less,
@@ -63,7 +65,7 @@ class MaskValues(Filter):
         self.config = {}
         for col, condition in config.items():
             if not isinstance(condition, dict):
-                raise ValueError(f"Mask condition for column {col} must be a dictionary, ")
+                raise TypeError(f"Mask condition for column {col} must be a dictionary, ")
 
             if "value" not in condition:
                 raise ValueError(f"Mask condition for column {col} must contain a 'value' key.")
@@ -82,6 +84,6 @@ class MaskValues(Filter):
         for col, condition in self.config.items():
             mask_value = condition["value"]
             operator = condition["operator"]
-            logging.info(f"Masking {col} where values {operator.__name__} {mask_value}")
+            LOG.info(f"Masking {col} where values {operator.__name__} {mask_value}")
             obs_df[col] = obs_df[col].mask(operator(obs_df[col], mask_value))
         return obs_df

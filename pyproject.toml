@@ -71,6 +71,26 @@ package-data."anemoi.transform" = [ "py.typed" ]
 [tool.setuptools_scm]
 version_file = "src/anemoi/transform/_version.py"
 
+[tool.ruff]
+line-length = 120
+# This library represents time as numpy/pandas datetime64, which cannot carry a
+# timezone: the data model is naive-UTC throughout. The flake8-datetimez rules
+# assume timezone-aware datetimes are always wanted, which does not hold here --
+# making these values tz-aware breaks comparison against datetime64[ns] columns
+# and conversion via np.datetime64().
+lint.ignore = [ "DTZ" ]
+# Modules in commands/ are auto-registered as CLI subcommands by filename (see
+# commands/__init__.py), so the filenames define the public interface -- e.g.
+# "anemoi-transform get-grid". Hyphens are required and renaming them to satisfy
+# N999 would be a breaking change to the command line. Applied to the whole
+# directory so new commands do not need to be listed here individually.
+lint.per-file-ignores."src/anemoi/transform/commands/*.py" = [ "N999" ]
+# Ruff's default rule set is used. Import sorting must stay consistent with the
+# isort pre-commit hook, which runs with --force-single-line-imports; without
+# this, ruff and isort rewrite each other's output and pre-commit never reaches
+# a fixed point.
+lint.isort.force-single-line = true
+
 [tool.mypy]
 exclude = [
   "docs/*",

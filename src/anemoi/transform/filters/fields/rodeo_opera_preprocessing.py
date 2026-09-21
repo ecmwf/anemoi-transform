@@ -89,7 +89,7 @@ def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[n
 
     quality[mask == _UNDETECTED] = 0
 
-    if not np.isnan(tp).sum() == np.isnan(quality).sum():
+    if np.isnan(tp).sum() != np.isnan(quality).sum():
         msg = f"Mismatch between NaNs on tp {np.isnan(tp).sum()} and qi {np.isnan(quality).sum()}"
         LOG.warning(msg)
 

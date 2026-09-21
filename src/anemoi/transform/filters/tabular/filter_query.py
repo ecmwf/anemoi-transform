@@ -14,6 +14,8 @@ import pandas as pd
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 
+LOG = logging.getLogger(__name__)
+
 
 @filter_registry.register("filter_query")
 class FilterQuery(Filter):
@@ -74,7 +76,7 @@ class FilterQuery(Filter):
         self.query = query
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
-        logging.info(f"Filtering rows with query: {self.query}")
+        LOG.info(f"Filtering rows with query: {self.query}")
         initial_len = len(obs_df)
 
         try:
@@ -83,10 +85,10 @@ class FilterQuery(Filter):
 
             final_len = len(obs_df)
             n_dropped = initial_len - final_len
-            logging.info(f"Dropped {n_dropped} rows ({n_dropped/initial_len*100:.2f}%). Kept {final_len} rows.")
+            LOG.info(f"Dropped {n_dropped} rows ({n_dropped/initial_len*100:.2f}%). Kept {final_len} rows.")
 
-        except Exception as e:
-            logging.error(f"Error evaluating query filter: {e}")
+        except Exception as e:  # noqa: BLE001 - pandas .query() raises many types; re-raised as ValueError below
+            LOG.error(f"Error evaluating query filter: {e}")
             raise ValueError(f"Invalid query expression: {self.query}. Error: {e}")
 
         return obs_df

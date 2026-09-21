@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 from typing import Any
+from typing import ClassVar
 
 import earthkit.data as ekd
 
@@ -31,7 +32,7 @@ class Orography(SingleFieldFilter):
 
     """
 
-    optional_inputs = {"orography": "orog", "geopotential": "z"}
+    optional_inputs: ClassVar[dict[str, Any]] = {"orography": "orog", "geopotential": "z"}
 
     def forward_select(self):
         # select only fields where the param is self.orography

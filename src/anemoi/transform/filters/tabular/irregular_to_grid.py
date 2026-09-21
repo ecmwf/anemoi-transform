@@ -176,14 +176,13 @@ class IrregularToGrid(Filter):
             for param, arr in grids.items():
                 field_dicts.append(
                     {
-                        "param": param,
-                        "values": arr[t],
-                        "latitudes": latitudes,
-                        "longitudes": longitudes,
-                        "valid_datetime": valid_dt,
+                        "parameter": {"variable": param},
+                        "data": {"values": arr[t]},
+                        "geography": {"latitudes": latitudes, "longitudes": longitudes},
+                        "time": {"valid_datetime": valid_dt},
                     }
                 )
-        return ekd.from_source("list-of-dicts", field_dicts)
+        return ekd.from_source("list-of-dicts", field_dicts).to_fieldlist()
 
     @staticmethod
     def _fill_grids(

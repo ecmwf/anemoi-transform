@@ -15,9 +15,9 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 from ..utils import collect_fields_by_param
 
 INPUT_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20.0, 30.0, 40.0],
-    "valid_datetime": "2018-08-01T12:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20.0],
+    "time.valid_datetime": "2018-08-01T12:00:00Z",
 }
 
 MOCK_VALUES = np.array([1.0, 2.0, 3.0])
@@ -26,23 +26,23 @@ MOCK_VALUES = np.array([1.0, 2.0, 3.0])
 @pytest.fixture
 def source(test_source):
     FIELD_SPECS = [
-        {"param": "t", "levelist": 500, "values": MOCK_VALUES.copy(), **INPUT_METADATA},
+        {"parameter.variable": "t", "vertical.level": 500, "data.values": MOCK_VALUES.copy(), **INPUT_METADATA},
         {
-            "param": "t",
-            "levelist": 850,
-            "values": MOCK_VALUES.copy() * 2,
+            "parameter.variable": "t",
+            "vertical.level": 850,
+            "data.values": MOCK_VALUES.copy() * 2,
             **INPUT_METADATA,
         },
         {
-            "param": "z",
-            "levelist": 500,
-            "values": MOCK_VALUES.copy() * 3,
+            "parameter.variable": "z",
+            "vertical.level": 500,
+            "data.values": MOCK_VALUES.copy() * 3,
             **INPUT_METADATA,
         },
         {
-            "param": "z",
-            "levelist": 850,
-            "values": MOCK_VALUES.copy() * 4,
+            "parameter.variable": "z",
+            "vertical.level": 850,
+            "data.values": MOCK_VALUES.copy() * 4,
             **INPUT_METADATA,
         },
     ]
@@ -71,8 +71,8 @@ def test_drop_by_levelist(source):
     assert len(output_fields["t"]) == 1
     assert len(output_fields["z"]) == 1
 
-    assert output_fields["t"][0].metadata("levelist") == 850
-    assert output_fields["z"][0].metadata("levelist") == 850
+    assert output_fields["t"][0].vertical.level() == 850
+    assert output_fields["z"][0].vertical.level() == 850
 
 
 def test_drop_by_param_and_levelist(source):
@@ -86,7 +86,7 @@ def test_drop_by_param_and_levelist(source):
     assert len(output_fields["t"]) == 1
     assert len(output_fields["z"]) == 2
 
-    assert output_fields["t"][0].metadata("levelist") == 500
+    assert output_fields["t"][0].vertical.level() == 500
 
 
 def test_drop_preserves_values(source):
@@ -96,7 +96,7 @@ def test_drop_preserves_values(source):
     output_fields = collect_fields_by_param(pipeline)
 
     for field in output_fields["z"]:
-        level = field.metadata("levelist")
+        level = field.vertical.level()
         if level == 500:
             np.testing.assert_array_equal(field.to_numpy(flatten=True), MOCK_VALUES * 3)
         elif level == 850:
@@ -117,8 +117,8 @@ def test_drop_no_match(source):
 
 def test_drop_all_fields(test_source):
     FIELD_SPECS = [
-        {"param": "t", "values": MOCK_VALUES.copy(), **INPUT_METADATA},
-        {"param": "t", "values": MOCK_VALUES.copy() * 2, **INPUT_METADATA},
+        {"parameter.variable": "t", "data.values": MOCK_VALUES.copy(), **INPUT_METADATA},
+        {"parameter.variable": "t", "data.values": MOCK_VALUES.copy() * 2, **INPUT_METADATA},
     ]
     source = test_source(FIELD_SPECS)
     drop = create_filter("drop", param="t")

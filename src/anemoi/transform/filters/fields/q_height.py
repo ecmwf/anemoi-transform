@@ -238,14 +238,29 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         surface_pressure: NDArray,
     ) -> NDArray:
 
-        return vertical.pressure_at_height_levels(
-            height=self.height,
-            t=temperature_at_model_levels,
-            q=specific_humidity_at_model_levels,
-            sp=surface_pressure,
+        pressure_at_model_levels = vertical.pressure_on_hybrid_levels(
+            surface_pressure,
             A=self.A,
             B=self.B,
+            output="full",
         )
+
+        # a single target height is requested, so drop the leading level dimension
+        return vertical.interpolate_hybrid_to_height_levels(
+            pressure_at_model_levels,
+            self.height,
+            temperature_at_model_levels,
+            specific_humidity_at_model_levels,
+            0,
+            surface_pressure,
+            self.A,
+            self.B,
+            h_type="geopotential",
+            h_reference="ground",
+            interpolation="linear",
+            aux_bottom_data=surface_pressure,
+            aux_bottom_h=0.0,
+        )[0]
 
     def forward_transform(
         self,
@@ -427,14 +442,29 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         surface_pressure: NDArray,
     ) -> NDArray:
 
-        return vertical.pressure_at_height_levels(
-            height=self.height,
-            t=temperature_at_model_levels,
-            q=specific_humidity_at_model_levels,
-            sp=surface_pressure,
+        pressure_at_model_levels = vertical.pressure_on_hybrid_levels(
+            surface_pressure,
             A=self.A,
             B=self.B,
+            output="full",
         )
+
+        # a single target height is requested, so drop the leading level dimension
+        return vertical.interpolate_hybrid_to_height_levels(
+            pressure_at_model_levels,
+            self.height,
+            temperature_at_model_levels,
+            specific_humidity_at_model_levels,
+            0,
+            surface_pressure,
+            self.A,
+            self.B,
+            h_type="geopotential",
+            h_reference="ground",
+            interpolation="linear",
+            aux_bottom_data=surface_pressure,
+            aux_bottom_h=0.0,
+        )[0]
 
     def forward_transform(
         self,

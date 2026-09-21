@@ -1,4 +1,4 @@
-# (C) Copyright 2024 Anemoi contributors.
+# (C) Copyright 2024-2026 Anemoi contributors.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -187,7 +187,8 @@ class SingleFieldFilter(Filter):
 
     @staticmethod
     def _map_transform(transform_function: Callable, fields: ekd.FieldList) -> ekd.FieldList:
-        return new_fieldlist_from_list([transform_function(field) for field in fields])
+        fieldlist = [transform_function(field) for field in fields]
+        return new_fieldlist_from_list([f for f in fieldlist if f is not None])
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         def transform(field: ekd.Field) -> ekd.Field:

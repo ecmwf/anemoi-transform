@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
+import pytest
 from anemoi.utils.dates import as_timedelta
 
 from anemoi.transform.variables import Variable
@@ -46,3 +47,71 @@ if __name__ == "__main__":
         if name.startswith("test_") and callable(obj):
             print(f"Running {name}...")
             obj()
+
+
+def _earthkit_field(level_type: str, level: int | None = None):
+    """Build a minimal earthkit field with the given vertical level type."""
+    import earthkit.data as ekd
+    import numpy as np
+
+    return ekd.from_source(
+        "list-of-dicts",
+        [
+            {
+                "parameter": {"variable": "t"},
+                "data": {"values": np.array([1.0])},
+                "geography": {"latitudes": np.array([0.0]), "longitudes": np.array([0.0])},
+                "vertical": {"level_type": level_type, "level": level},
+            }
+        ],
+    ).to_fieldlist()[0]
+
+
+@pytest.mark.parametrize(
+    "level_type,expected",
+    [
+        ("surface", "sfc"),
+        ("pressure", "pl"),
+        ("hybrid", "ml"),
+        ("potential_vorticity", "pv"),
+        ("potential_temperature", "pt"),
+        # MARS represents these as surface
+        ("height_above_ground_level", "sfc"),
+        ("depth_below_land_level", "sfc"),
+        # no MARS equivalent - treated as unset
+        ("snow", None),
+        ("mean_sea", None),
+        ("entire_atmosphere", None),
+    ],
+)
+def test_variable_from_earthkit_level_type(level_type, expected) -> None:
+    """earthkit-data level types are converted to MARS level types."""
+    variable = Variable.from_earthkit("t", _earthkit_field(level_type, 500))
+    assert variable.mars.get("levtype") == expected
+
+
+def test_variable_from_earthkit_level_type_properties() -> None:
+    """Unmapped level types leave the level properties undetermined (None)."""
+    assert Variable.from_earthkit("t", _earthkit_field("surface")).is_surface_level is True
+    assert Variable.from_earthkit("t", _earthkit_field("pressure", 500)).is_pressure_level is True
+    assert Variable.from_earthkit("t", _earthkit_field("hybrid", 1)).is_model_level is True
+
+    unmapped = Variable.from_earthkit("t", _earthkit_field("snow"))
+    assert unmapped.is_surface_level is None
+    assert unmapped.is_pressure_level is None
+    assert unmapped.is_model_level is None
+
+
+def test_variable_level_type_mapping_keys_are_known() -> None:
+    """The level type mapping must be keyed on real earthkit-data level type names.
+
+    earthkit-data's get_level_type() silently registers unknown names rather than
+    raising, so a typo in a key would simply never match and fail silently.
+    """
+    from earthkit.data.field.component.level_type import LevelTypes
+
+    from anemoi.transform.variables.from_dict import VariableFromEarthkit
+
+    known_names = {level_type.value.name for level_type in LevelTypes}
+    unknown = set(VariableFromEarthkit._LEVEL_TYPE_MAPPING) - known_names
+    assert not unknown, f"Unknown earthkit level type names: {sorted(unknown)}"

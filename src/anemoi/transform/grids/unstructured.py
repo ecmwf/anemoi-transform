@@ -98,11 +98,7 @@ def _new_grid_field(geography: "Geography") -> Any:
     """
     # The grid is unstructured: latitudes and longitudes are parallel arrays holding
     # one coordinate pair per grid point, so the number of values is the number of
-    # points, not the product of the two. earthkit-data infers this from the size of
-    # "values": latitudes.size gives a 1D unstructured field, whereas
-    # latitudes.size * longitudes.size would be read as a meshed (structured) grid.
-    # (Note this differs from "distinct_latitudes"/"distinct_longitudes", which do
-    # describe a mesh.)
+    # points, not the product of the two.
     return from_source(
         "list-of-dicts",
         [

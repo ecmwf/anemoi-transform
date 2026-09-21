@@ -75,7 +75,7 @@ def _load(url_or_path: str, param: str) -> tuple[np.ndarray, str]:
         source = "file"
 
     ds = from_source(source, url_or_path).to_fieldlist()
-    ds = ds.sel(param=param)
+    ds = ds.sel(**{"parameter.variable": param})
 
     assert len(ds) == 1, f"{url_or_path} {param}, expected one field, got {len(ds)}"
     ds = ds[0]
@@ -83,74 +83,38 @@ def _load(url_or_path: str, param: str) -> tuple[np.ndarray, str]:
     return ds.to_numpy(flatten=True), ds.metadata("uuidOfHGrid")
 
 
-class UnstructuredGridField:
-    """An unstructured field.
+def _new_grid_field(geography: "Geography") -> Any:
+    """Create an earthkit-data field carrying only an unstructured grid.
 
     Parameters
     ----------
     geography : Geography
         Geography object containing latitude and longitude information.
+
+    Returns
+    -------
+    Any
+        A field defined on the given grid, with zero values.
     """
-
-    def __init__(self, geography: Geography) -> None:
-        self.geography = geography
-
-    def metadata(self, *args: Any, default: Any = None, **kwargs: Any) -> Any:
-        """Retrieves metadata for the field.
-
-        Parameters
-        ----------
-        *args : Any
-            Positional arguments for metadata retrieval.
-        default : Any, optional
-            Default value if no metadata is found.
-        **kwargs : Any
-            Keyword arguments for metadata retrieval.
-
-        Returns
-        -------
-        Any
-            Metadata value or default if not found.
-        """
-        if len(args) == 0 and len(kwargs) == 0:
-            return self
-
-        return default
-
-    def grid_points(self) -> tuple[np.ndarray, np.ndarray]:
-        """Returns the grid points (latitudes and longitudes).
-
-        Returns
-        -------
-        Tuple[np.ndarray, np.ndarray]
-            Tuple containing arrays of latitudes and longitudes.
-        """
-        return self.geography.latitudes, self.geography.longitudes
-
-    @property
-    def resolution(self) -> str:
-        """Resolution of the grid."""
-        return "unknown"
-
-    @property
-    def shape(self) -> tuple[int, ...]:
-        """Shape of the grid."""
-        return self.geography.shape()
-
-    def to_latlon(self, flatten: bool = False) -> dict[str, np.ndarray]:
-        """Converts the grid to latitude and longitude.
-
-        Parameters
-        ----------
-        flatten : bool, optional
-            Whether to flatten the arrays, by default False.
-
-        Returns
-        -------
-        Dict[str, np.ndarray]
-            Dictionary containing latitude and longitude arrays.
-        """
-        return dict(lat=self.geography.latitudes, lon=self.geography.longitudes)
+    # The grid is unstructured: latitudes and longitudes are parallel arrays holding
+    # one coordinate pair per grid point, so the number of values is the number of
+    # points, not the product of the two. earthkit-data infers this from the size of
+    # "values": latitudes.size gives a 1D unstructured field, whereas
+    # latitudes.size * longitudes.size would be read as a meshed (structured) grid.
+    # (Note this differs from "distinct_latitudes"/"distinct_longitudes", which do
+    # describe a mesh.)
+    return from_source(
+        "list-of-dicts",
+        [
+            {
+                "geography": {
+                    "latitudes": geography.latitudes,
+                    "longitudes": geography.longitudes,
+                },
+                "data": {"values": np.zeros(geography.latitudes.size)},
+            }
+        ],
+    ).to_fieldlist()[0]
 
 
 class UnstructuredGridFieldList(SimpleFieldList):
@@ -188,7 +152,7 @@ class UnstructuredGridFieldList(SimpleFieldList):
         if latitudes_uuid != longitudes_uuid:
             raise ValueError(f"uuidOfHGrid mismatch: lat={latitudes_uuid} != lon={longitudes_uuid}")
 
-        return cls([UnstructuredGridField(Geography(latitudes, longitudes))])
+        return cls([_new_grid_field(Geography(latitudes, longitudes))])
 
     @classmethod
     def from_values(cls, *, latitudes: Any, longitudes: Any) -> "UnstructuredGridFieldList":
@@ -212,4 +176,4 @@ class UnstructuredGridFieldList(SimpleFieldList):
         if isinstance(longitudes, (list, tuple)):
             longitudes = np.array(longitudes)
 
-        return cls([UnstructuredGridField(Geography(latitudes, longitudes))])
+        return cls([_new_grid_field(Geography(latitudes, longitudes))])

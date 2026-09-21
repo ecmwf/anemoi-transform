@@ -9,7 +9,9 @@
 
 
 import earthkit.data as ekd
+import numpy as np
 import pytest
+from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.grids import UnstructuredGridFieldList
 from anemoi.transform.grids.named import lookup
@@ -21,7 +23,9 @@ longitudes_url = "http://icon-downloads.mpimet.mpg.de/grids/public/edzw/icon_ext
 tlon = "tlon"
 
 
-def do_not_test_unstructured_from_url() -> None:
+@skip_if_offline
+@pytest.mark.slow
+def test_unstructured_from_url() -> None:
     """Test the UnstructuredGridFieldList class for loading data from URLs.
 
     Tests:
@@ -33,7 +37,7 @@ def do_not_test_unstructured_from_url() -> None:
 
     assert len(ds) == 1
 
-    lats, lons = ds[0].geography.latlons()
+    lats, lons = ds[0].geography.latlons(flatten=True)
 
     assert len(lats) == len(lons)
 
@@ -42,9 +46,64 @@ def do_not_test_unstructured_from_url() -> None:
         ds,
         date="2015-08-05",
         param=["cos_latitude", "sin_latitude"],
-    )
+    ).to_fieldlist()
 
     assert len(forcings) == 2
+
+
+def test_unstructured_from_values() -> None:
+    """Test UnstructuredGridFieldList.from_values and its use as a forcings source.
+
+    This mirrors how anemoi-inference builds computed forcings, and runs offline
+    so it guards the earthkit-data field protocol without needing the network.
+    """
+    latitudes = np.array([10.0, 0.0, -10.0])
+    longitudes = np.array([20.0, 30.0, 40.0])
+
+    ds = UnstructuredGridFieldList.from_values(latitudes=latitudes, longitudes=longitudes)
+
+    assert isinstance(ds, UnstructuredGridFieldList)
+    assert len(ds) == 1
+
+    lats, lons = ds[0].geography.latlons(flatten=True)
+    np.testing.assert_array_equal(lats, latitudes)
+    np.testing.assert_array_equal(lons, longitudes)
+
+    # the field must be usable as a grid template by the forcings source
+    forcings = ekd.from_source(
+        "forcings",
+        ds,
+        date=["2015-08-05"],
+        param=["cos_latitude", "sin_latitude"],
+    ).to_fieldlist()
+
+    assert len(forcings) == 2
+    assert [f.parameter.variable() for f in forcings] == ["cos_latitude", "sin_latitude"]
+    np.testing.assert_allclose(forcings[0].to_numpy(), np.cos(np.deg2rad(latitudes)))
+    np.testing.assert_allclose(forcings[1].to_numpy(), np.sin(np.deg2rad(latitudes)))
+
+
+def test_unstructured_from_values_accepts_lists() -> None:
+    """Lists are accepted and converted to arrays."""
+    ds = UnstructuredGridFieldList.from_values(latitudes=[10.0, 0.0], longitudes=[20.0, 30.0])
+
+    lats, lons = ds[0].geography.latlons(flatten=True)
+    np.testing.assert_array_equal(lats, np.array([10.0, 0.0]))
+    np.testing.assert_array_equal(lons, np.array([20.0, 30.0]))
+
+
+def test_unstructured_multiple_dates() -> None:
+    """The forcings source returns one field per parameter and date.
+
+    This is the assertion anemoi-inference makes in ComputedForcings.
+    """
+    ds = UnstructuredGridFieldList.from_values(latitudes=[10.0, 0.0], longitudes=[20.0, 30.0])
+
+    dates = ["2015-08-05", "2015-08-06"]
+    params = ["cos_julian_day", "insolation"]
+    forcings = ekd.from_source("forcings", ds, date=dates, param=params).to_fieldlist()
+
+    assert len(forcings) == len(params) * len(dates)
 
 
 def test_lookup_o96() -> None:

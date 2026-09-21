@@ -18,10 +18,18 @@ import numpy as np
 LOG = logging.getLogger(__name__)
 
 
+MISSING_METADATA = object()
+
+
 class Flavour(ABC):
     @abstractmethod
     def __call__(self, key: str, field: ekd.Field) -> Any:
         """Called during field metadata lookup, so it can be modified"""
+        pass
+
+    @abstractmethod
+    def keys(self) -> Any:
+        """The metadata keys this flavour may override."""
         pass
 
 
@@ -176,8 +184,31 @@ def new_field_from_latitudes_longitudes(
 
 
 def new_flavoured_field(field: ekd.Field, flavour: Flavour) -> ekd.Field:
-    """Create a new field with a flavour."""
-    raise NotImplementedError("Not implemented yet.")
+    """Create a new field with the metadata overridden by a flavour.
+
+    Parameters
+    ----------
+    field : ekd.Field
+        The field to apply the flavour to.
+    flavour : Flavour
+        The flavour providing the metadata overrides.
+
+    Returns
+    -------
+    ekd.Field
+        The field with the flavour applied, or the original field if the
+        flavour does not match it.
+    """
+    metadata = {}
+    for key in flavour.keys():
+        value = flavour(key, field)
+        if value is not MISSING_METADATA:
+            metadata[key] = value
+
+    if not metadata:
+        return field
+
+    return new_field_with_metadata(field, **metadata)
 
 
 class FieldSelection:

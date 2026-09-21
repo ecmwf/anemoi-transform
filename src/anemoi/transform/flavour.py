@@ -98,6 +98,16 @@ class RuleBasedFlavour(Flavour):
         """
         return new_fieldlist_from_list([self.apply(field) for field in fieldlist])
 
+    def keys(self) -> Any:
+        """The metadata keys this flavour may override.
+
+        Returns
+        -------
+        Any
+            The keys targeted by the flavour rules.
+        """
+        return self.rules.keys()
+
     def __call__(self, key: str, field: ekd.Field) -> Any:
         """Called when the field metadata is queried.
 

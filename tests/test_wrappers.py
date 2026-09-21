@@ -124,7 +124,7 @@ def test_new_field_with_valid_datetime(field_step_6):
 
 
 def test_new_field_with_metadata_update_param(field):
-    # new_field_with_metadata works similar to new_field_from_numpy except
+    # new_field_with_metadata works similarly to new_field_from_numpy except
     # it does not allow for updating the data
     result = new_field_with_metadata(field, param="foo")
     assert isinstance(result, ekd.Field)
@@ -139,7 +139,7 @@ def test_new_field_with_metadata_update_param(field):
 
 
 def test_new_field_with_metadata_update_param_and_levelist(field):
-    # new_field_with_metadata works similar to new_field_from_numpy except
+    # new_field_with_metadata works similarly to new_field_from_numpy except
     # it does not allow for updating the data
     result = new_field_with_metadata(field, param="foo", levelist=99)
     assert isinstance(result, ekd.Field)

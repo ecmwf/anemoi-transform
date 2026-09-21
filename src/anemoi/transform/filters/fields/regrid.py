@@ -84,16 +84,16 @@ def as_griddata(grid: str | ekd.Field | dict[str, Any] | None) -> dict[str, Any]
 
 @filter_registry.register("regrid")
 class RegridFilter(Filter):
-    """A filter to regrid fields using earthkit-regrid.
+    """A filter to regrid fields using earthkit-geo.
 
     When building a dataset for a specific model, it is possible that the
     source grid or resolution does not fit the needs. In that case, it is
     possible to add a filter to interpolate the data to a target grid. It
     will call the ``regrid`` function from `earthkit-geo
-    <https://earthkit-geo.readthedocs.io/en/latest/interpolate.html>`_ if
+    <https://earthkit-geo.readthedocs.io/en/latest/concepts/regridding/precomputed/regrid_array.html#precomputed-regrid-array>`_ if
     the keys ``method``, ``in_grid`` and ``out_grid`` are provided and if a
     `pre-generated matrix
-    <https://earthkit-geo.readthedocs.io/en/latest/inventory/index.html>`_
+    <https://earthkit-geo.readthedocs.io/en/latest/concepts/regridding/precomputed/inventory/index.html#precomputed-inventory>`_
     exists for this transformation. Otherwise, it is possible to provide a
     ``regrid matrix`` previously generated with :ref:`make-regrid-file`.
     The generated matrix is an NPZ file containing the

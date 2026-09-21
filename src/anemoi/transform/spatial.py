@@ -438,7 +438,7 @@ def _search_radius(
     lam_points: NDArray[Any],
     cropping_distance: float,
     min_distance: float,
-    max_distance_km: int | float | None,
+    max_distance_km: float | None,
     spacing_factor: float = 3.0,
 ) -> float:
     """Return the KD-tree search radius (unit-sphere chord) beyond which a global point cannot be masked.

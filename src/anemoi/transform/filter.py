@@ -28,7 +28,6 @@ class Filter(Transform):
     """A filter transform that processes field data."""
 
 
-
 class DispatchingFilter(Transform):
     """A filter transform that processes either tabular or field data."""
 

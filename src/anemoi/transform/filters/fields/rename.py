@@ -14,32 +14,7 @@ import earthkit.data as ekd
 from anemoi.transform.fields import new_field_with_metadata
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
-
-# Mapping from old metadata keys to component-based accessor paths
-_KEY_MAPPING = {
-    "param": "parameter.variable",
-    "levelist": "vertical.level",
-    "levtype": "vertical.level_type",
-    "step": "time.step",
-    "valid_datetime": "time.valid_datetime",
-    "number": "ensemble.member",
-}
-
-
-def _get_metadata(field, key):
-    """Get metadata value by key, trying original metadata keys first, then component API."""
-    try:
-        return field.metadata(key)
-    except (KeyError, TypeError):
-        pass
-
-    # Try the mapped component key
-    mapped = _KEY_MAPPING.get(key)
-    if mapped is not None:
-        try:
-            return field.get(mapped)
-        except (KeyError, TypeError) as e:
-            raise KeyError(f"Cannot get metadata for key '{key}'") from e
+from anemoi.transform.metadata import get_metadata
 
 
 class FormatRename:
@@ -55,13 +30,13 @@ class FormatRename:
 
     def rename(self, field):
         try:
-            md = _get_metadata(field, self.what)
+            md = get_metadata(field, self.what)
         except KeyError:
             return field
         if md is None:
             return field
 
-        values = [_get_metadata(field, b) for b in self.bits]
+        values = [get_metadata(field, b) for b in self.bits]
 
         kwargs = dict(zip(self.format_keys, values))
         kwargs = {self.what: self.format.format(**kwargs)}
@@ -75,7 +50,7 @@ class DictRename:
 
     def rename(self, field):
         try:
-            md = _get_metadata(field, self.what)
+            md = get_metadata(field, self.what)
         except KeyError:
             return field
         if md is None:

@@ -15,6 +15,9 @@ from typing import Any
 import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform.metadata import mars_keys
+from anemoi.transform.metadata import mars_to_component
+
 LOG = logging.getLogger(__name__)
 
 
@@ -118,23 +121,12 @@ def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
     ekd.Field
         The new field with the provided metadata.
     """
-    key_mapping = {
-        "valid_datetime": "time.valid_datetime",
-        "base_datetime": "time.base_datetime",
-        "step": "time.step",
-        "param": "parameter.variable",
-        "units": "parameter.units",
-        "levtype": "vertical.level_type",
-        "levelist": "vertical.level",
-        "number": "ensemble.member",
-    }
-
-    unknown_keys = set(metadata.keys()) - set(key_mapping.keys())
+    unknown_keys = set(metadata.keys()) - mars_keys()
     if unknown_keys:
-        raise ValueError(f"Unknown metadata keys: {unknown_keys}. Allowed keys are: {set(key_mapping.keys())}")
+        raise ValueError(f"Unknown metadata keys: {unknown_keys}. Allowed keys are: {set(mars_keys())}")
 
     # map metadata keys to new locations
-    mapped_metadata = {key_mapping[key]: value for key, value in metadata.items()}
+    mapped_metadata = {mars_to_component(key): value for key, value in metadata.items()}
     return template.set(**mapped_metadata)
 
 

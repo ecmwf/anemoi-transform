@@ -15,6 +15,7 @@ from typing import Union
 
 from anemoi.utils.dates import as_timedelta
 
+from anemoi.transform.metadata import mars_to_component
 from anemoi.transform.units import Units
 from anemoi.transform.variables import Variable
 
@@ -173,14 +174,11 @@ class VariableFromDict(VariableFromMarsVocabulary):
 class VariableFromEarthkit(VariableFromMarsVocabulary):
     """A variable that is defined by an EarthKit field."""
 
-    # Mapping from original metadata keys to earthkit component accessors
-    _MARS_KEY_MAPPING = {
-        "param": "parameter.variable",
-        "levtype": "vertical.level_type",
-        "levelist": "vertical.level",
-        "step": "time.step",
-        "number": "ensemble.member",
-    }
+    # The subset of MARS keys that belong in the MARS vocabulary namespace.
+    # Note "units" is deliberately excluded: it is handled separately below and
+    # stored outside the "mars" dict.
+    _MARS_KEYS = ("param", "levtype", "levelist", "step", "number")
+    _MARS_KEY_MAPPING = {key: mars_to_component(key) for key in _MARS_KEYS}
 
     # Mapping from earthkit 1.0 level type names to MARS-style abbreviations
     _LEVEL_TYPE_MAPPING = {

@@ -99,7 +99,7 @@ def test_fieldselection_match_same_param():
 def test_fieldselection_match_fail_missing_key():
     """Test FieldSelection match fails when a selection key is missing on the field."""
     field = mock_field(**{"parameter.variable": "t"})
-    selection = FieldSelection(**{"parameter.variable": "2t", "vertical.level": 850})
+    selection = FieldSelection(**{"parameter.variable": "t", "vertical.level": 850})
     assert not selection.match(field)
 
 

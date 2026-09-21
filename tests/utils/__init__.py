@@ -34,33 +34,25 @@ def assert_fields_equal(field_a, field_b, exclude_keys=None):
         "vertical.level",
     ]
 
-    if exclude_keys is None:
-        exclude_keys = []
-    exclude_keys = set(exclude_keys)
-
-    # TODO: remove this?
-    # workaround for unreliable __contains__ in potentially wrapped objects
-    def metadata_contains(field, key):
-        try:
-            field.get(key)
-            return True
-        except KeyError:
-            return False
+    exclude_keys = set(exclude_keys) if exclude_keys else set()
 
     for key in set(METADATA_KEYS) - exclude_keys:
-        try:
-            assert field_a.get(key) == field_b.get(key)
-        except ValueError:
-            # if ValueError, assume not just scalar values - use numpy for comparison
-            assert np.allclose(field_a.get(key), field_b.get(key))
-        except KeyError:
-            in_a = metadata_contains(field_a, key)
-            in_b = metadata_contains(field_b, key)
-            if in_a ^ in_b:
-                field = "field_a" if in_a else "field_b"
-                raise AssertionError(f"Metadata key: {key} only in {field}")
+        # field.get() returns None for keys a field does not have, rather than raising
+        value_a = field_a.get(key)
+        value_b = field_b.get(key)
+
+        if value_a is None and value_b is None:
             # not all keys will be in all fields
             continue
+
+        if (value_a is None) != (value_b is None):
+            field = "field_a" if value_b is None else "field_b"
+            raise AssertionError(f"Metadata key: {key} only in {field}")
+
+        if isinstance(value_a, np.ndarray) or isinstance(value_b, np.ndarray):
+            assert np.allclose(value_a, value_b), f"Metadata key: {key} differs"
+        else:
+            assert value_a == value_b, f"Metadata key: {key} differs: {value_a} != {value_b}"
 
     assert np.allclose(field_a.to_numpy(), field_b.to_numpy(), equal_nan=True)
 

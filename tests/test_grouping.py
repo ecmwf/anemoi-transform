@@ -73,10 +73,20 @@ def test_group_by_param(sample_fields):
         assert len(group) == len(match_params)
         # ensure order is the same
         assert [field.parameter.variable() for field in group] == match_params
+        metadata = []
         for field in group:
             num_matching += 1
             # check field is unchanged
             assert field in sample_fields
+
+            # get metadata via component API (namespace="mars" removed in ekd 1.0)
+            m = {
+                "step": field.time.step(),
+                "valid_datetime": field.time.valid_datetime(),
+            }
+            metadata.append(m)
+        # rest of the metadata the same within a group
+        assert all(m == metadata[0] for m in metadata[1:])
 
     assert num_matching + len(other) == len(sample_fields)
     for field in other:

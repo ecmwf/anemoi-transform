@@ -40,7 +40,7 @@ dependencies = [
   "earthkit-meteo>=0.4.1,<1",
   "earthkit-regrid>=0.4,<1",
   "healpy",
-  "pandas<3",
+  "pandas<4",
   # https://github.com/ecmwf/anemoi-transform/issues/345
   "pyproj<3.8",
 ]

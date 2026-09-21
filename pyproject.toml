@@ -40,6 +40,8 @@ dependencies = [
   "earthkit-regrid>=0.4,<1",
   "healpy",
   "pandas<3",
+  # https://github.com/ecmwf/anemoi-transform/issues/345
+  "pyproj<3.8",
 ]
 optional-dependencies.all = [ "anemoi-transform[plots]" ]
 optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]

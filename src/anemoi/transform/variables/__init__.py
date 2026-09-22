@@ -69,7 +69,7 @@ class Variable(ABC):
         Any
             The created Variable instance.
         """
-        from anemoi.transform.variables.from_ekd import VariableFromEarthkit
+        from anemoi.transform.variables.from_dict import VariableFromEarthkit
 
         return VariableFromEarthkit(name, field)
 

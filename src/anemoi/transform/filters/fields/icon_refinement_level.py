@@ -63,7 +63,7 @@ class IconRefinement(Filter):
             from anemoi.utils.grids import nearest_grid_points
 
             # We assume all fields have the same grid
-            latitudes, longitudes = fields[0].grid_points()
+            latitudes, longitudes = fields[0].geography.latlons()
             self.nearest_grid_points = nearest_grid_points(
                 latitudes,
                 longitudes,

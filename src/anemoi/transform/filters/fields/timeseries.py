@@ -26,7 +26,7 @@ class Timeseries(MatchingFieldsFilter):
     """A source to add a timeseries depending on time but not on location."""
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("template_param",),
     )
 
@@ -68,7 +68,7 @@ class Timeseries(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        dt = template_param.metadata("valid_datetime")
+        dt = template_param.time.valid_datetime()
         template_array = template_param.to_numpy()
 
         sel = self.ds.sel(time=dt)

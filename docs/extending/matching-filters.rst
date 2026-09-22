@@ -20,8 +20,8 @@ which fields the filter expects as inputs, and how to group them.
 ``MatchingSpec`` accepts the following arguments:
 
 ``select``
-   The metadata key used to identify fields. Currently only ``"param"``
-   is supported.
+   The metadata key used to identify fields. Currently only
+   ``"parameter.variable"`` is supported.
 
 ``forward``
    A tuple of names that identify the fields required by the forward
@@ -61,7 +61,7 @@ Example
 
    class MyFilter(MatchingFieldsFilter):
        MATCHING = MatchingSpec(
-           select="param",
+           select="parameter.variable",
            forward=("humidity", "temperature"),
            backward=("relative_humidity", "temperature"),
        )
@@ -218,7 +218,7 @@ setting controls whether input fields are also returned:
 
    class MyFilter(MatchingFieldsFilter):
        MATCHING = MatchingSpec(
-           select="param",
+           select="parameter.variable",
            forward=("a", "b"),
            backward=("c",),
        )

@@ -45,7 +45,7 @@ def _check_consistency(A: NDArray, B: NDArray, model_level_fields: dict[str, ekd
     assert A.shape == B.shape, "A and B coefficients must have same shape"
     for name, field in model_level_fields.items():
         # Assert that model levels are passed
-        assert all(item == "ml" for item in field.metadata("levtype")), "Field {} does not contain model levels".format(
+        assert all(f.vertical.level_type() == "hybrid" for f in field), "Field {} does not contain model levels".format(
             name,
         )
         # Assert that A and B coefficients have one more vertical level than the model level field
@@ -60,7 +60,7 @@ class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("specific_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"),
         backward=("relative_humidity_at_height_level", "temperature_at_height_level", "pressure_at_height_level"),
         vertical=False,
@@ -158,7 +158,7 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=(
             "specific_humidity_at_height_level",
             "temperature_at_height_level",
@@ -238,14 +238,29 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         surface_pressure: NDArray,
     ) -> NDArray:
 
-        return vertical.pressure_at_height_levels(
-            height=self.height,
-            t=temperature_at_model_levels,
-            q=specific_humidity_at_model_levels,
-            sp=surface_pressure,
+        pressure_at_model_levels = vertical.pressure_on_hybrid_levels(
+            surface_pressure,
             A=self.A,
             B=self.B,
+            output="full",
         )
+
+        # a single target height is requested, so drop the leading level dimension
+        return vertical.interpolate_hybrid_to_height_levels(
+            pressure_at_model_levels,
+            self.height,
+            temperature_at_model_levels,
+            specific_humidity_at_model_levels,
+            0,
+            surface_pressure,
+            self.A,
+            self.B,
+            h_type="geopotential",
+            h_reference="ground",
+            interpolation="linear",
+            aux_bottom_data=surface_pressure,
+            aux_bottom_h=0.0,
+        )[0]
 
     def forward_transform(
         self,
@@ -354,7 +369,7 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=(
             "specific_humidity_at_height_level",
             "surface_pressure",
@@ -427,14 +442,29 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         surface_pressure: NDArray,
     ) -> NDArray:
 
-        return vertical.pressure_at_height_levels(
-            height=self.height,
-            t=temperature_at_model_levels,
-            q=specific_humidity_at_model_levels,
-            sp=surface_pressure,
+        pressure_at_model_levels = vertical.pressure_on_hybrid_levels(
+            surface_pressure,
             A=self.A,
             B=self.B,
+            output="full",
         )
+
+        # a single target height is requested, so drop the leading level dimension
+        return vertical.interpolate_hybrid_to_height_levels(
+            pressure_at_model_levels,
+            self.height,
+            temperature_at_model_levels,
+            specific_humidity_at_model_levels,
+            0,
+            surface_pressure,
+            self.A,
+            self.B,
+            h_type="geopotential",
+            h_reference="ground",
+            interpolation="linear",
+            aux_bottom_data=surface_pressure,
+            aux_bottom_h=0.0,
+        )[0]
 
     def forward_transform(
         self,

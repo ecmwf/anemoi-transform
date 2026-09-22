@@ -15,6 +15,7 @@ from typing import Union
 
 from anemoi.utils.dates import as_timedelta
 
+from anemoi.transform.metadata import mars_to_component
 from anemoi.transform.units import Units
 from anemoi.transform.variables import Variable
 
@@ -168,6 +169,101 @@ class VariableFromDict(VariableFromMarsVocabulary):
             The data defining the variable.
         """
         super().__init__(name, data)
+
+
+class VariableFromEarthkit(VariableFromMarsVocabulary):
+    """A variable that is defined by an EarthKit field."""
+
+    # The subset of MARS keys that belong in the MARS vocabulary namespace.
+    # Note "units" is deliberately excluded: it is handled separately below and
+    # stored outside the "mars" dict.
+    _MARS_KEYS = ("param", "levtype", "levelist", "step", "number")
+    _MARS_KEY_MAPPING = {key: mars_to_component(key) for key in _MARS_KEYS}
+
+    # Mapping from earthkit-data level type names to MARS-style abbreviations.
+    # NB the keys must be earthkit-data level type *names*: get_level_type() silently
+    # registers unknown names instead of raising, so a typo here would simply never
+    # match. test_variable_level_type_mapping_keys_are_known guards against that.
+    _LEVEL_TYPE_MAPPING = {
+        "surface": "sfc",
+        "pressure": "pl",
+        "hybrid": "ml",
+        "depth_below_land_level": "sfc",
+        "height_above_ground_level": "sfc",
+        "potential_vorticity": "pv",
+        "potential_temperature": "pt",
+    }
+
+    def __init__(self, name: str, field: Any) -> None:
+        """Initialize the variable with a name and field.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        field : Any
+            The EarthKit field defining the variable.
+        """
+        # Build a MARS-like metadata dict from the field's component API
+        mars_data = {}
+        for mars_key, component_key in self._MARS_KEY_MAPPING.items():
+            try:
+                mars_data[mars_key] = field.get(component_key)
+            except (KeyError, TypeError):
+                pass
+        mars_data["param"] = name
+
+        data = {"mars": mars_data}
+
+        # Convert earthkit level type to MARS-style abbreviation
+        if "levtype" in mars_data:
+            levtype = mars_data["levtype"]
+            if levtype in self._LEVEL_TYPE_MAPPING:
+                mars_data["levtype"] = self._LEVEL_TYPE_MAPPING[levtype]
+            else:
+                # Remove unknown/unmapped level types so they are treated as None
+                del mars_data["levtype"]
+
+        # Get units from the field if available
+        try:
+            units = field.get("parameter.units")
+            if units is not None:
+                data["units"] = str(units)
+        except (KeyError, TypeError):
+            pass
+
+        # Try to extract time processing info from the field
+        try:
+            statistical_process = field.get("time.statistical_process")
+            if statistical_process is not None:
+                data["process"] = statistical_process
+        except (KeyError, TypeError):
+            pass
+
+        super().__init__(name, data)
+        self.field = field
+        # Track whether we actually got process info from the field
+        self._has_process_info = "process" in data
+
+    @property
+    def is_instantanous(self) -> bool:
+        """Check if the variable is instantaneous.
+
+        Returns None if this information is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().is_instantanous
+
+    @property
+    def period(self):
+        """Get the variable's period.
+
+        Returns None if time processing info is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().period
 
 
 class PostProcessedVariable(VariableFromMarsVocabulary):

@@ -34,15 +34,13 @@ class _FieldMetadataMapping:
     ``paramId``) as well as MARS-style keys (e.g. ``param``, ``levtype``).
     """
 
+    _MISSING = object()
+
     def __init__(self, field: ekd.Field) -> None:
         self._field = field
 
     def __contains__(self, key: str) -> bool:
-        try:
-            get_metadata(self._field, key)
-            return True
-        except KeyError:
-            return False
+        return get_metadata(self._field, key, default=self._MISSING) is not self._MISSING
 
     def __getitem__(self, key: str) -> Any:
         return get_metadata(self._field, key)

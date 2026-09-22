@@ -121,3 +121,33 @@ if __name__ == "__main__":
     from anemoi.utils.testing import run_tests
 
     run_tests(globals())
+
+
+def test_new_field_from_grid() -> None:
+    """Test that new_field_from_grid applies a Grid's latitudes and longitudes."""
+    from anemoi.transform.fields import new_field_from_grid
+    from anemoi.transform.grids import Grid
+
+    latitudes = np.array([1.0, 2.0])
+    longitudes = np.array([3.0, 4.0])
+
+    class _FakeGrid(Grid):
+        def latlon(self):
+            return latitudes, longitudes
+
+    template = ekd.from_source(
+        "list-of-dicts",
+        [
+            {
+                "parameter": {"variable": "2t"},
+                "data": {"values": np.zeros(2)},
+                "geography": {"latitudes": np.zeros(2), "longitudes": np.zeros(2)},
+            }
+        ],
+    ).to_fieldlist()[0]
+
+    field = new_field_from_grid(template, _FakeGrid())
+
+    lats, lons = field.geography.latlons(flatten=True)
+    np.testing.assert_allclose(lats, latitudes)
+    np.testing.assert_allclose(lons, longitudes)

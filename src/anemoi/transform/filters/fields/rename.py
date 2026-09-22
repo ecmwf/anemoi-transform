@@ -29,10 +29,7 @@ class FormatRename:
         self.format_keys = [b.replace(":", self._delimiter) for b in self.bits]
 
     def rename(self, field):
-        try:
-            md = get_metadata(field, self.what)
-        except KeyError:
-            return field
+        md = get_metadata(field, self.what, default=None)
         if md is None:
             return field
 
@@ -49,10 +46,7 @@ class DictRename:
         self.renaming = renaming
 
     def rename(self, field):
-        try:
-            md = get_metadata(field, self.what)
-        except KeyError:
-            return field
+        md = get_metadata(field, self.what, default=None)
         if md is None:
             return field
 

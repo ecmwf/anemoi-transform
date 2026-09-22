@@ -39,6 +39,9 @@ _COMPONENT_TO_MARS: dict[str, str] = {v: k for k, v in _MARS_TO_COMPONENT.items(
 # Sentinel so that None can be passed as a default.
 _RAISE = object()
 
+# earthkit-data namespace for arbitrary, non-standard metadata.
+LABELS_NAMESPACE = "labels"
+
 
 def mars_to_component(key: str, default: Any = _RAISE) -> Any:
     """Map a MARS-style metadata key to its earthkit-data component key.
@@ -116,36 +119,90 @@ def component_keys() -> frozenset[str]:
     return frozenset(_COMPONENT_TO_MARS)
 
 
-def get_metadata(field: ekd.Field, key: str) -> Any:
+def key_to_component(key: str) -> str:
+    """Map a user-supplied metadata key to the key to use with ``field.set()``.
+
+    Three kinds of key are accepted:
+
+    * a MARS-style key (e.g. ``param``) is mapped to its component key
+      (``parameter.variable``);
+    * an already-namespaced component key (e.g. ``parameter.variable``,
+      ``geography.latitudes``) is passed through unchanged;
+    * anything else is treated as an arbitrary user label and stored under the
+      ``labels`` namespace (e.g. ``anemoi_origin`` -> ``labels.anemoi_origin``).
+
+    Note the dotted form ``labels.x`` must be used rather than ``labels={...}``:
+    the former merges into the existing labels, the latter replaces them.
+
+    Parameters
+    ----------
+    key : str
+        The metadata key.
+
+    Returns
+    -------
+    str
+        The key to pass to ``field.set()``.
+    """
+    if "." in key:
+        return key
+    return mars_to_component(key, default=f"{LABELS_NAMESPACE}.{key}")
+
+
+def get_metadata(field: ekd.Field, key: str, default: Any = _RAISE) -> Any:
     """Get a metadata value from a field by key.
 
-    Raw metadata keys (e.g. GRIB keys such as ``shortName``) are tried first, then
-    the key is mapped to its earthkit-data component key, if there is one.
+    Keys are resolved in order: as a raw metadata key (e.g. a GRIB key such as
+    ``shortName``), then as an earthkit-data component key (mapping MARS-style
+    keys such as ``param`` on the way), then in the ``labels`` namespace.
+
+    An already-namespaced key (e.g. ``metadata.centre``, ``parameter.variable``)
+    is looked up directly with ``field.get()``: ``field.metadata()`` accepts bare
+    keys only, as it prefixes the ``metadata`` namespace itself, and the ``labels``
+    fallback would change the namespace the caller explicitly asked for.
+
+    Note that ``field.get()`` returns None both for a key the field does not have
+    and for a key whose value is None, so the two cannot be told apart here; a
+    None value is treated as "not found" and resolution continues.
 
     Parameters
     ----------
     field : ekd.Field
         The field to read the metadata from.
     key : str
-        The metadata key. Can be a raw metadata key, a MARS-style key, or an
-        earthkit-data component key.
+        The metadata key. Can be a raw metadata key, a MARS-style key, an
+        earthkit-data component key, or a user label.
+    default : Any, optional
+        Value to return if the key cannot be resolved. If not given, a KeyError
+        is raised.
 
     Returns
     -------
     Any
-        The metadata value.
+        The metadata value, or ``default``.
 
     Raises
     ------
     KeyError
-        If the key cannot be resolved for this field.
+        If the key cannot be resolved and no default was given.
     """
-    try:
-        return field.metadata(key)
-    except (KeyError, TypeError):
-        pass
+    bare = "." not in key
 
-    try:
-        return field.get(mars_to_component(key, default=key))
-    except (KeyError, TypeError) as e:
-        raise KeyError(f"Cannot get metadata for key '{key}'") from e
+    if bare:
+        try:
+            return field.metadata(key)
+        except KeyError:
+            pass
+
+    candidates = [mars_to_component(key, default=key)]
+    if bare:
+        candidates.append(f"{LABELS_NAMESPACE}.{key}")
+
+    for candidate in candidates:
+        value = field.get(candidate)
+        if value is not None:
+            return value
+
+    if default is _RAISE:
+        raise KeyError(f"Cannot get metadata for key '{key}'")
+    return default

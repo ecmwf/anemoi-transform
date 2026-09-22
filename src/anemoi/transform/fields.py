@@ -10,13 +10,16 @@ import datetime
 import logging
 from abc import ABC
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from typing import Any
 
 import earthkit.data as ekd
 import numpy as np
 
-from anemoi.transform.metadata import mars_keys
-from anemoi.transform.metadata import mars_to_component
+from anemoi.transform.metadata import key_to_component
+
+if TYPE_CHECKING:
+    from anemoi.transform.grids import Grid
 
 LOG = logging.getLogger(__name__)
 
@@ -53,12 +56,12 @@ def new_fieldlist_from_list(fields: list[ekd.Field]) -> ekd.FieldList:
 
 
 def new_empty_fieldlist() -> ekd.FieldList:
-    """Create a new empty SimpleFieldList.
+    """Create a new empty FieldList.
 
     Returns
     -------
-    SimpleFieldList
-        A new empty SimpleFieldList.
+    ekd.FieldList
+        A new empty FieldList.
     """
     return ekd.create_fieldlist()
 
@@ -109,6 +112,11 @@ def new_field_with_valid_datetime(template: ekd.Field, date: Any) -> ekd.Field:
 def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
     """Create a new field with metadata.
 
+    Keys are resolved by :func:`anemoi.transform.metadata.key_to_component`: MARS-style
+    keys (``param``) are mapped to their component key, already-namespaced
+    component keys (``parameter.variable``) are used as-is, and anything else is
+    stored as an arbitrary user label under the ``labels`` namespace.
+
     Parameters
     ----------
     template : ekd.Field
@@ -121,13 +129,7 @@ def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
     ekd.Field
         The new field with the provided metadata.
     """
-    unknown_keys = set(metadata.keys()) - mars_keys()
-    if unknown_keys:
-        raise ValueError(f"Unknown metadata keys: {unknown_keys}. Allowed keys are: {set(mars_keys())}")
-
-    # map metadata keys to new locations
-    mapped_metadata = {mars_to_component(key): value for key, value in metadata.items()}
-    return template.set(**mapped_metadata)
+    return template.set(**{key_to_component(key): value for key, value in metadata.items()})
 
 
 def new_field_with_units(template: ekd.Field, units: str) -> ekd.Field:
@@ -173,6 +175,25 @@ def new_field_from_latitudes_longitudes(
             "geography.longitudes": longitudes,
         }
     )
+
+
+def new_field_from_grid(template: ekd.Field, grid: "Grid") -> ekd.Field:
+    """Create a new field from a grid.
+
+    Parameters
+    ----------
+    template : ekd.Field
+        The template field to use.
+    grid : Grid
+        The grid for the new field.
+
+    Returns
+    -------
+    ekd.Field
+        The new field with the latitudes and longitudes of the given grid.
+    """
+    latitudes, longitudes = grid.latlon()
+    return new_field_from_latitudes_longitudes(template, latitudes, longitudes)
 
 
 def new_flavoured_field(field: ekd.Field, flavour: Flavour) -> ekd.Field:

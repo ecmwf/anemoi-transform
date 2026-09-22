@@ -143,3 +143,45 @@ def test_cutout_mask_large_grid():
     assert np.any(mask)
     # Some points should not be masked
     assert not np.all(mask)
+
+
+@pytest.mark.parametrize("neighbours", [0, 1, 2])
+def test_cutout_mask_rejects_too_few_neighbours(neighbours):
+    """Nearest LAM points are used as triangle vertices, so at least 3 are required."""
+    glat, glon = np.meshgrid(np.arange(-10, 10.01, 2.0), np.arange(-10, 10.01, 2.0), indexing="ij")
+    llat, llon = np.meshgrid(np.arange(-3, 3.01, 0.5), np.arange(-3, 3.01, 0.5), indexing="ij")
+    with pytest.raises(AssertionError, match="at least 3"):
+        cutout_mask(llat.ravel(), llon.ravel(), glat.ravel(), glon.ravel(), neighbours=neighbours)
+
+
+def test_longitude_extent():
+    from anemoi.transform.spatial import longitude_extent
+
+    assert longitude_extent(np.array([10.0, 20.0, 30.0])) == (10.0, 30.0)
+    # Straddling the 0 meridian, [0, 360) convention
+    assert longitude_extent(np.array([335.0, 350.0, 0.0, 20.0, 55.0])) == (335.0, 415.0)
+    # Straddling the 0 meridian, [-180, 180) convention
+    assert longitude_extent(np.array([-25.0, -10.0, 0.0, 20.0, 55.0])) == (335.0, 415.0)
+    # Straddling the date line
+    assert longitude_extent(np.array([170.0, 180.0, -170.0])) == (170.0, 190.0)
+    assert longitude_extent(np.array([42.0])) == (42.0, 42.0)
+
+
+def test_cutout_mask_lam_across_zero_meridian():
+    """A LAM straddling the 0 meridian with longitudes in [0, 360) is handled like any other LAM.
+
+    The mask must not depend on where the longitude origin sits: rotating the
+    whole configuration by 180 degrees gives a LAM that does not straddle the
+    0 meridian and must produce the identical mask.
+    """
+    rng = np.random.default_rng(2)
+    glat, glon = np.meshgrid(np.arange(-50, 50.01, 2.0), np.arange(0, 360, 2.0), indexing="ij")
+    glat, glon = glat.ravel(), glon.ravel()
+    llat, llon = np.meshgrid(np.arange(-15, 15.01, 0.5), np.arange(-25, 35.01, 0.5), indexing="ij")
+    llat = llat.ravel() + rng.normal(0, 0.05, llat.size)
+    llon = np.mod(llon.ravel() + rng.normal(0, 0.05, llon.size), 360.0)
+
+    actual = cutout_mask(llat, llon, glat, glon)
+    rotated = cutout_mask(llat, np.mod(llon + 180, 360), glat, np.mod(glon + 180, 360))
+    np.testing.assert_array_equal(actual, rotated)
+    assert 0 < actual.sum() < actual.size

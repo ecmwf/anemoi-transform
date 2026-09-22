@@ -161,7 +161,8 @@ class GroupByParamVertical(GroupByParam):
 
             key = frozenset(key.items())
 
-            if level is None or level_type != "hybrid":
+            # Surface fields report level=0, not None, so exclude them explicitly.
+            if level is None or level_type == "surface":
                 if param in self.groups[key]:
                     raise ValueError(f"Duplicate component {param} for {key}")
                 self.groups[key][param] = f

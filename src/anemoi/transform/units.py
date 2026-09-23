@@ -28,6 +28,13 @@ UNITS_MAPPING = {
     # depth), so treating it as a length would let snow depth in metres (sde,
     # paramId 3066) pass a check meant for sd (paramId 141).
     "m.of.water.equivalent": "m of water equivalent",
+    # The raw GRIB "units" key is space-separated ("Degree true"), but a field
+    # whose component metadata has been overridden (e.g. by a transform filter)
+    # loses access to that raw key and falls back to the component vocabulary's
+    # "parameter.units", which renders it dot-separated ("Degree.true"). pint
+    # can parse neither spelling, so without this they would canonicalise to
+    # two different strings and compare unequal.
+    "Degree.true": "Degree true",
 }
 
 _UNIT_REGISTRY = None

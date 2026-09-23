@@ -142,6 +142,38 @@ def specific_humidity_source(test_source):
 
 
 @pytest.fixture
+def specific_humidity_source_descending_levels(test_source):
+    # As specific_humidity_source, but with the model level fields supplied in
+    # descending level order, so that the filter has to sort them itself.
+    HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC = [
+        {"parameter.variable": "2sh", "data.values": Q2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "sp", "data.values": SP_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2t", "data.values": T2M_VALUES, **MOCK_FIELD_METADATA},
+    ]
+    for level, values in sorted(T_VALUES.items(), reverse=True):
+        HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC.append(
+            {
+                "parameter.variable": "t",
+                "vertical.level_type": "hybrid",
+                "vertical.level": level,
+                "data.values": values,
+                **MOCK_FIELD_METADATA,
+            }
+        )
+    for level, values in sorted(Q_VALUES.items(), reverse=True):
+        HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC.append(
+            {
+                "parameter.variable": "q",
+                "vertical.level_type": "hybrid",
+                "vertical.level": level,
+                "data.values": values,
+                **MOCK_FIELD_METADATA,
+            }
+        )
+    return test_source(HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC)
+
+
+@pytest.fixture
 def dewpoint_temperature_source(test_source):
     HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC = [
         {"parameter.variable": "2d", "data.values": D2M_VALUES, **MOCK_FIELD_METADATA},
@@ -223,6 +255,46 @@ def test_specific_humidity_to_relative_humidity(specific_humidity_source):
 
     input_fields = collect_fields_by_param(specific_humidity_source)
     output_fields = collect_fields_by_param(pipeline)
+
+    # check for expected params
+    assert set(input_fields) == {"2sh", "2t", "sp", "t", "q"}
+    assert set(output_fields) == {"2sh", "2t", "sp", "2r"}
+
+    # test unchanged fields agree
+    for param in ("2sh", "2t", "sp"):
+        for input_field, output_field in zip(input_fields[param], output_fields[param]):
+            assert_fields_equal(input_field, output_field)
+
+    # test pipeline output matches known good output
+    result = output_fields["2r"][0].to_numpy()
+    expected_relative_humidity = R2M_VALUES
+    np.testing.assert_allclose(result, expected_relative_humidity)
+
+
+def test_specific_humidity_to_relative_humidity_descending_model_levels(
+    specific_humidity_source_descending_levels,
+):
+    # Regression test: the filter must sort the model levels itself, so the
+    # result cannot depend on the order the model level fields arrive in.
+    q_to_r_height = create_filter(
+        "q_to_r_height",
+        height=2,
+        specific_humidity_at_height_level="2sh",
+        relative_humidity_at_height_level="2r",
+        temperature_at_height_level="2t",
+        surface_pressure="sp",
+        specific_humidity_at_model_levels="q",
+        temperature_at_model_levels="t",
+        model_level_AB=AB_coefficients,
+    )
+    pipeline = specific_humidity_source_descending_levels | q_to_r_height
+
+    input_fields = collect_fields_by_param(specific_humidity_source_descending_levels)
+    output_fields = collect_fields_by_param(pipeline)
+
+    # check the model levels really are supplied in descending order
+    assert [field.vertical.level() for field in input_fields["t"]] == sorted(T_VALUES, reverse=True)
+    assert [field.vertical.level() for field in input_fields["q"]] == sorted(Q_VALUES, reverse=True)
 
     # check for expected params
     assert set(input_fields) == {"2sh", "2t", "sp", "t", "q"}

@@ -283,8 +283,10 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         )
 
         # Make sure model levels are ordered ascending (highest level first):
-        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
-        temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
+        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(
+            **{"vertical.level": "ascending"}
+        )
+        temperature_at_model_levels = temperature_at_model_levels.order_by(**{"vertical.level": "ascending"})
 
         pressure_at_height_level = self._get_pressure_at_height_level(
             temperature_at_model_levels.to_numpy(),
@@ -330,8 +332,10 @@ class SpecificToRelativeAtHeightLevel(MatchingFieldsFilter):
         )
 
         # Make sure model levels are ordered ascending (highest level first):
-        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
-        temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
+        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(
+            **{"vertical.level": "ascending"}
+        )
+        temperature_at_model_levels = temperature_at_model_levels.order_by(**{"vertical.level": "ascending"})
 
         pressure_at_height_level = self._get_pressure_at_height_level(
             temperature_at_model_levels.to_numpy(),
@@ -486,8 +490,10 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         )
 
         # Make sure model levels are ordered ascending (highest level first):
-        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
-        temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
+        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(
+            **{"vertical.level": "ascending"}
+        )
+        temperature_at_model_levels = temperature_at_model_levels.order_by(**{"vertical.level": "ascending"})
 
         pressure_at_height_level = self._get_pressure_at_height_level(
             temperature_at_model_levels.to_numpy(),
@@ -529,8 +535,10 @@ class SpecificToDewpointAtHeightLevel(MatchingFieldsFilter):
         )
 
         # Make sure model levels are ordered ascending (highest level first):
-        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(level="ascending")
-        temperature_at_model_levels = temperature_at_model_levels.order_by(level="ascending")
+        specific_humidity_at_model_levels = specific_humidity_at_model_levels.order_by(
+            **{"vertical.level": "ascending"}
+        )
+        temperature_at_model_levels = temperature_at_model_levels.order_by(**{"vertical.level": "ascending"})
 
         pressure_at_height_level = self._get_pressure_at_height_level(
             temperature_at_model_levels.to_numpy(),

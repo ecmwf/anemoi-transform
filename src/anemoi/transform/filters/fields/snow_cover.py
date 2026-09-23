@@ -124,15 +124,15 @@ class SnowCover(MatchingFieldsFilter):
         snow_density.check_units("kg m**-3")
         snow_cover = compute_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        field =  Field.from_numpy(
+        yield Field.from_numpy(
             snow_cover,
             template=snow_depth,
+            name=self.snow_cover,
             parameter={
                 "variable": self.snow_cover,
                 "units": "Fraction",
             },
         )
-        yield field.with_name(self.snow_cover)
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
         """Make sure snow depth and snow density are both requested.

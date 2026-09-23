@@ -8,6 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 from collections.abc import Iterator
+from typing import Any
 
 import numpy as np
 
@@ -123,7 +124,7 @@ class SnowCover(MatchingFieldsFilter):
         snow_density.check_units("kg m**-3")
         snow_cover = compute_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield Field.from_numpy(
+        field =  Field.from_numpy(
             snow_cover,
             template=snow_depth,
             parameter={
@@ -131,3 +132,39 @@ class SnowCover(MatchingFieldsFilter):
                 "units": "Fraction",
             },
         )
+        yield field.with_name(self.snow_cover)
+
+    def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
+        """Make sure snow depth and snow density are both requested.
+
+        Snow cover is not archived; it is computed by this filter. Because it
+        is created from a snow depth template, its stored MARS metadata requests
+        snow depth (``param: sd``). The request is therefore patched when it
+        contains either snow cover or snow depth: snow cover is removed and snow
+        depth and snow density are added if not already present.
+
+        Parameters
+        ----------
+        data_request : dict[str, Any]
+            The original data request.
+
+        Returns
+        -------
+        dict[str, Any]
+            The modified data request.
+        """
+        param = data_request.get("param")
+        if param is None:
+            return data_request
+
+        params = [param] if isinstance(param, str) else list(param)
+        if self.snow_cover not in params and self.snow_depth not in params:
+            return data_request
+
+        params = [p for p in params if p != self.snow_cover]
+        for p in (self.snow_depth, self.snow_density):
+            if p not in params:
+                params.append(p)
+
+        data_request["param"] = params
+        return data_request

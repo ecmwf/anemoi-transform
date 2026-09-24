@@ -42,7 +42,13 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The surface pressure.
         """
-        new_metadata = {"param": self.surface_pressure, "levelist": None, "level": None, "units": "Pa"}
+        new_metadata = {
+            "param": self.surface_pressure,
+            "levelist": None,
+            "level": None,
+            "levtype": "sfc",
+            "units": "Pa",
+        }
 
         return self.new_field_from_numpy(
             np.exp(log_of_surface_pressure.to_numpy()), template=log_of_surface_pressure, **new_metadata
@@ -61,7 +67,7 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The natural log of surface pressure.
         """
-        orig_metadata = {"param": self.log_of_surface_pressure, "units": "Numeric"}
+        orig_metadata = {"param": self.log_of_surface_pressure, "levtype": "ml", "units": "Numeric"}
 
         return self.new_field_from_numpy(
             np.log(surface_pressure.to_numpy()), template=surface_pressure, **orig_metadata

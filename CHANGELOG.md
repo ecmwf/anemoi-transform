@@ -9,6 +9,34 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.5.0](https://github.com/ecmwf/anemoi-transform/compare/0.4.3...0.5.0) (2026-09-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rename snowc to fscov ([#326](https://github.com/ecmwf/anemoi-transform/issues/326))
+
+### Features
+
+* Add -z/--compress for global-on-lam-mask NPZ output ([#349](https://github.com/ecmwf/anemoi-transform/issues/349)) ([7aae476](https://github.com/ecmwf/anemoi-transform/commit/7aae47618002288525c1cb62444380b93fbc045c))
+* Add iasi mode to radiance_to_brightness_temperature ([#331](https://github.com/ecmwf/anemoi-transform/issues/331)) ([59209e5](https://github.com/ecmwf/anemoi-transform/commit/59209e5dce2517b2840c2ce79f57d1808ae91449))
+* Add self-masking option for apply_mask_fields ([#342](https://github.com/ecmwf/anemoi-transform/issues/342)) ([8388920](https://github.com/ecmwf/anemoi-transform/commit/8388920b5c4048d8c652c19d5113953c43a22cbc))
+* Create and ship py.typed ([#332](https://github.com/ecmwf/anemoi-transform/issues/332)) ([0ae0154](https://github.com/ecmwf/anemoi-transform/commit/0ae015427b11c7909accc862742224c148d538f2))
+* **filter:** Add soil_to_levtype_sol field filter ([#354](https://github.com/ecmwf/anemoi-transform/issues/354)) ([1e075db](https://github.com/ecmwf/anemoi-transform/commit/1e075dbada68a96dbc85fc059ef9dc950e169650))
+* Fix levtype for sp in filter ([#353](https://github.com/ecmwf/anemoi-transform/issues/353)) ([aba6e36](https://github.com/ecmwf/anemoi-transform/commit/aba6e3666cc6e05a432c6941bc7e510ff4e474e6))
+* Fix units for sp vs lnsp ([#352](https://github.com/ecmwf/anemoi-transform/issues/352)) ([5042dd2](https://github.com/ecmwf/anemoi-transform/commit/5042dd23bba63e0b2985409e456efe71fbe82524))
+* Pin-pyproj-3.8 ([#348](https://github.com/ecmwf/anemoi-transform/issues/348)) ([86bf397](https://github.com/ecmwf/anemoi-transform/commit/86bf39703cc019180f658ba14314ab1bfbebe033))
+
+
+### Bug Fixes
+
+* Rename snowc to fscov ([#326](https://github.com/ecmwf/anemoi-transform/issues/326)) ([57de51e](https://github.com/ecmwf/anemoi-transform/commit/57de51e9e47c8b2c78444fd0884c45f038918780))
+
+
+### Performance Improvements
+
+* Optimize cutout mask build ([#343](https://github.com/ecmwf/anemoi-transform/issues/343)) ([31e3a33](https://github.com/ecmwf/anemoi-transform/commit/31e3a3350c84a49152e64b6619d43f7bf3d1da85))
+
 ## [0.4.3](https://github.com/ecmwf/anemoi-transform/compare/0.4.2...0.4.3) (2026-07-15)
 
 

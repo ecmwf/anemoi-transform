@@ -9,7 +9,6 @@
 
 
 from datetime import datetime
-from typing import Tuple
 
 import numpy as np
 
@@ -97,7 +96,7 @@ def calc_azimuth(latdeg, londeg, satlats, satlons):
     return azm
 
 
-def get_meteosat_loc(satids: np.ndarray, dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def get_meteosat_loc(satids: np.ndarray, dts: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Given an array of satellite IDs and an arrays of datetimes,
         returns the sub-satellite lat, lon for that satellite.
         Adapted from obd/bufr2odb/b2o_convert_asr.F90.

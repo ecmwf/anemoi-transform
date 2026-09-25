@@ -37,7 +37,7 @@ SOIL_LEVTYPE = "sol"
 
 def _build_inverse_mapping(
     mapping: dict[str, dict[str, Any]],
-) -> dict[tuple[str, int], str]:
+) -> dict[tuple[str, int], dict[str, str | None]]:
     """Build the inverse mapping from ``(param, levelist)`` to a named soil parameter.
 
     Parameters
@@ -48,12 +48,18 @@ def _build_inverse_mapping(
 
     Returns
     -------
-    dict[tuple[str, int], str]
-        A mapping from ``(param, levelist)`` tuples to the named soil parameter.
+    dict[tuple[str, int], dict[str, str | None]]
+        A mapping from ``(param, levelist)`` tuples to the named soil parameter metadata.
     """
-    inverse: dict[tuple[str, int], str] = {}
+    inverse: dict[tuple[str, int], dict[str, str | None]] = {}
     for named, spec in mapping.items():
-        inverse[(spec["param"], int(spec["levelist"]))] = named
+        new_metadata = {
+            "param": named,
+            "levtype": None,
+            "levelist": None,
+            "level": None,
+        }
+        inverse[(spec["param"], int(spec["levelist"]))] = new_metadata
     return inverse
 
 
@@ -84,7 +90,7 @@ class SoilMapping(SingleFieldFilter):
     """
 
     def prepare_filter(self) -> None:
-        self.mapping = SOIL_MAPPING.copy()
+        self.mapping = {K: {**v, "levtype": SOIL_LEVTYPE} for K, v in SOIL_MAPPING.copy().items()}
         self.inverse_mapping = _build_inverse_mapping(self.mapping)
         self.named_params = list(self.mapping)
         self.generic_params = sorted({spec["param"] for spec in self.mapping.values()})
@@ -111,14 +117,7 @@ class SoilMapping(SingleFieldFilter):
             The field with the generic ``param``, ``levtype`` and ``levelist``.
         """
         param = field.metadata("param")
-        spec = self.mapping[param]
-
-        new_metadata = {
-            "param": spec["param"],
-            "levtype": SOIL_LEVTYPE,
-            "levelist": spec["levelist"],
-            "level": spec["levelist"],
-        }
+        new_metadata = self.mapping[param]
         return self.new_field_from_numpy(field.to_numpy(), template=field, **new_metadata)
 
     def backward_transform(self, field: ekd.Field) -> ekd.Field:
@@ -132,7 +131,7 @@ class SoilMapping(SingleFieldFilter):
         Returns
         -------
         ekd.Field
-            The field with the named soil parameter (e.g. ``stl1``).
+            The field with the named soil parameter metadata (e.g. ``stl1``).
         """
         param = field.metadata("param")
         levelist = field.metadata("levelist", default=field.metadata("level", default=None))
@@ -141,18 +140,10 @@ class SoilMapping(SingleFieldFilter):
             # Not enough information to map back, pass through unchanged.
             return field
 
-        key = (param, int(levelist))
-        named = self.inverse_mapping.get(key)
-        if named is None:
+        named_metadata = self.inverse_mapping.get((param, int(levelist)))
+        if named_metadata is None:
             return field
-
-        new_metadata = {
-            "param": named,
-            "levtype": None,
-            "levelist": None,
-            "level": None,
-        }
-        return self.new_field_from_numpy(field.to_numpy(), template=field, **new_metadata)
+        return self.new_field_from_numpy(field.to_numpy(), template=field, **named_metadata)
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
         """Modify the data request to retrieve the generic soil parameters.

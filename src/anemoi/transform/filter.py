@@ -244,7 +244,8 @@ class SingleFieldFilter(Filter):
 
     @staticmethod
     def _map_transform(transform_function: Callable, fields: FieldList) -> FieldList:
-        return FieldList.from_fields([transform_function(field) for field in fields])
+        fieldlist = [transform_function(field) for field in fields]
+        return FieldList.from_fields([f for f in fieldlist if f is not None])
 
     def forward(self, data: FieldList) -> FieldList:
         def transform(field: Field) -> Field:

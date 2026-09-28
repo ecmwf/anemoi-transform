@@ -35,9 +35,19 @@ R_VALUES = thermo.relative_humidity_from_specific_humidity(t=T_VALUES, q=Q_VALUE
 def specific_humidity_source(test_source):
     return test_source(
         [
-            {"parameter.variable": "q", "parameter.units": "kg kg**-1", "data.values": Q_VALUES.copy(), **MOCK_FIELD_METADATA},
+            {
+                "parameter.variable": "q",
+                "parameter.units": "kg kg**-1",
+                "data.values": Q_VALUES.copy(),
+                **MOCK_FIELD_METADATA,
+            },
             {"parameter.variable": "t", "parameter.units": "K", "data.values": T_VALUES.copy(), **MOCK_FIELD_METADATA},
-            {"parameter.variable": "pres", "parameter.units": "Pa", "data.values": P_VALUES.copy(), **MOCK_FIELD_METADATA},
+            {
+                "parameter.variable": "pres",
+                "parameter.units": "Pa",
+                "data.values": P_VALUES.copy(),
+                **MOCK_FIELD_METADATA,
+            },
         ]
     )
 
@@ -48,7 +58,12 @@ def relative_humidity_source(test_source):
         [
             {"parameter.variable": "r", "parameter.units": "%", "data.values": R_VALUES.copy(), **MOCK_FIELD_METADATA},
             {"parameter.variable": "t", "parameter.units": "K", "data.values": T_VALUES.copy(), **MOCK_FIELD_METADATA},
-            {"parameter.variable": "pres", "parameter.units": "Pa", "data.values": P_VALUES.copy(), **MOCK_FIELD_METADATA},
+            {
+                "parameter.variable": "pres",
+                "parameter.units": "Pa",
+                "data.values": P_VALUES.copy(),
+                **MOCK_FIELD_METADATA,
+            },
         ]
     )
 

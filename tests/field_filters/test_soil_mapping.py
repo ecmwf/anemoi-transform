@@ -46,7 +46,10 @@ SOIL_CASES = {
 @pytest.fixture
 def soil_source(test_source):
     """A source of the named soil parameters (no levtype/levelist)."""
-    spec = [{"parameter.variable": name, "data.values": values, **MOCK_FIELD_METADATA} for name, (_, _, values) in SOIL_CASES.items()]
+    spec = [
+        {"parameter.variable": name, "data.values": values, **MOCK_FIELD_METADATA}
+        for name, (_, _, values) in SOIL_CASES.items()
+    ]
     return test_source(spec)
 
 

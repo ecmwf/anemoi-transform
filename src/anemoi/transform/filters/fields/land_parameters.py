@@ -10,9 +10,9 @@
 from collections.abc import Iterator
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -112,35 +112,67 @@ class LandParameters(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        high_veg_type: ekd.Field,
-        low_veg_type: ekd.Field,
-        soil_type: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        high_veg_type: Field,
+        low_veg_type: Field,
+        soil_type: Field,
+    ) -> Iterator[Field]:
         """Get static parameters from table based on soil/vegetation type.
 
         Parameters
         ----------
-        high_veg_type : ekd.Field
+        high_veg_type : Field
             High vegetation type.
-        low_veg_type : ekd.Field
+        low_veg_type : Field
             Low vegetation type.
-        soil_type : ekd.Field
+        soil_type : Field
             Soil type.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             An iterator over the new fields with static parameters.
         """
         hveg_rsmin, hveg_cov, hveg_z0m = read_crosswalking_table(high_veg_type.to_numpy(), VEG_TYPE_DIC)
         lveg_rsmin, lveg_cov, lveg_z0m = read_crosswalking_table(low_veg_type.to_numpy(), VEG_TYPE_DIC)
         theta_pwp, theta_cap = read_crosswalking_table(soil_type.to_numpy(), SOIL_TYPE_DIC)
 
-        yield self.new_field_from_numpy(hveg_rsmin, template=high_veg_type, param=self.hveg_rsmin)
-        yield self.new_field_from_numpy(hveg_cov, template=high_veg_type, param=self.hveg_cov)
-        yield self.new_field_from_numpy(hveg_z0m, template=high_veg_type, param=self.hveg_z0m)
-        yield self.new_field_from_numpy(lveg_rsmin, template=low_veg_type, param=self.lveg_rsmin)
-        yield self.new_field_from_numpy(lveg_cov, template=low_veg_type, param=self.lveg_cov)
-        yield self.new_field_from_numpy(lveg_z0m, template=low_veg_type, param=self.lveg_z0m)
-        yield self.new_field_from_numpy(theta_pwp, template=soil_type, param=self.theta_pwp)
-        yield self.new_field_from_numpy(theta_cap, template=soil_type, param=self.theta_cap)
+        yield Field.from_numpy(
+            hveg_rsmin,
+            template=high_veg_type,
+            parameter={"variable": self.hveg_rsmin},
+        )
+        yield Field.from_numpy(
+            hveg_cov,
+            template=high_veg_type,
+            parameter={"variable": self.hveg_cov},
+        )
+        yield Field.from_numpy(
+            hveg_z0m,
+            template=high_veg_type,
+            parameter={"variable": self.hveg_z0m},
+        )
+        yield Field.from_numpy(
+            lveg_rsmin,
+            template=low_veg_type,
+            parameter={"variable": self.lveg_rsmin},
+        )
+        yield Field.from_numpy(
+            lveg_cov,
+            template=low_veg_type,
+            parameter={"variable": self.lveg_cov},
+        )
+        yield Field.from_numpy(
+            lveg_z0m,
+            template=low_veg_type,
+            parameter={"variable": self.lveg_z0m},
+        )
+        yield Field.from_numpy(
+            theta_pwp,
+            template=soil_type,
+            parameter={"variable": self.theta_pwp},
+        )
+        yield Field.from_numpy(
+            theta_cap,
+            template=soil_type,
+            parameter={"variable": self.theta_cap},
+        )

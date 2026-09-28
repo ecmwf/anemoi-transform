@@ -9,9 +9,9 @@
 import logging
 from collections.abc import Iterator
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -164,24 +164,24 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        total_precipitation: ekd.Field,
-        quality: ekd.Field,
-        mask: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        total_precipitation: Field,
+        quality: Field,
+        mask: Field,
+    ) -> Iterator[Field]:
         """Pre-process Rodeo Opera data.
 
         Parameters
         ----------
-        total_precipitation : ekd.Field
+        total_precipitation : Field
             The tp data.
-        quality : ekd.Field
+        quality : Field
             The quality data.
-        mask : ekd.Field
+        mask : Field
             The mask data.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Transformed fields.
         """
         # 1st - apply masking
@@ -196,10 +196,18 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
             max_total_precipitation=self.max_total_precipitation,
         )
 
-        yield self.new_field_from_numpy(
-            total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
+        yield Field.from_numpy(
+            total_precipitation_cleaned,
+            template=total_precipitation,
+            parameter={"variable": self.total_precipitation},
         )
-        yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
+        yield Field.from_numpy(
+            quality_clipped,
+            template=quality,
+            parameter={
+                "variable": self.quality,
+            },
+        )
 
         if self.return_mask:
             yield mask

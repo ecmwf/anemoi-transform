@@ -7,9 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import earthkit.data as ekd
 import pandas as pd
 
+from anemoi.transform import FieldList
 from anemoi.transform.filter import DispatchingFilter
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.fields.remove_nans import RemoveNaNs as RemoveNaNsFields
@@ -33,7 +33,7 @@ class RemoveNaNs(DispatchingFilter):
             self.tabular_filter = None
             self.field_filter = RemoveNaNsFields(**config)
 
-    def forward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward_fields(self, data: FieldList) -> FieldList:
         if self.field_filter is None:
             raise ValueError("Ambigious config for RemoveNaNs filter.")
         return self.field_filter.forward(data)

@@ -285,10 +285,9 @@ def test_irregular_to_grid(mock_define_grid, small_grid, config, df, expected_ar
     assert len(result) == len(expected_times) * len(columns)
 
     for field in result:
-        param = field.metadata("param")
-        vdt = field.metadata("valid_datetime")
-        vdt = pd.Timestamp(vdt)
-        field_lats, field_lons = field.grid_points()
+        param = field.param
+        vdt = pd.Timestamp(field.valid_datetime)
+        field_lats, field_lons = field.geography.latlons(flatten=True)
 
         assert param in columns
         assert vdt in expected_times

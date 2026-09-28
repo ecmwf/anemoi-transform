@@ -11,9 +11,9 @@
 import logging
 from collections.abc import Iterator
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -55,20 +55,20 @@ class Timeseries(MatchingFieldsFilter):
         self.template_param = template_param
         super().__init__()
 
-    def forward_transform(self, template_param: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, template_param: Field) -> Iterator[Field]:
         """Convert snow depth and snow density to snow cover.
 
         Parameters
         ----------
-        template_param : ekd.Field
+        template_param : Field
             Template field to transform.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Transformed fields.
         """
-        dt = template_param.metadata("valid_datetime")
+        dt = template_param.time.valid_datetime()
         template_array = template_param.to_numpy()
 
         sel = self.ds.sel(time=dt)
@@ -76,4 +76,4 @@ class Timeseries(MatchingFieldsFilter):
         for name in self.ds.data_vars:
             value = sel[name].values
             data = np.full_like(template_array, value)
-            yield self.new_field_from_numpy(data, template=template_param, param=name)
+            yield Field.from_numpy(data, template=template_param, parameter={"variable": name})

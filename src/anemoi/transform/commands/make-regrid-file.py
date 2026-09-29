@@ -143,9 +143,9 @@ class MakeMIRMatrix:
     def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **mir_kwargs):
 
         import numpy as np
-        from earthkit.regrid.utils.mir import mir_make_matrix
-
-        sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=mir, **mir_kwargs)
+        from earthkit.geo.utils.mir import mir_make_matrix
+        sparse_array = mir_make_matrix(in_lat=lat1, in_lon=lon1, out_lat=lat2, 
+                                       out_lon=lon2, output=None, mir=mir, **mir_kwargs)
 
         np.savez(
             output,

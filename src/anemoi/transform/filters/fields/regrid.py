@@ -63,7 +63,7 @@ def as_griddata(grid: str | ekd.Field | dict[str, Any] | None) -> dict[str, Any]
         return None
 
     if isinstance(grid, ekd.Field):
-        lat, lon = grid.geography.latlons()
+        lat, lon = grid.geography.latlons(flatten=True)
         return dict(latitudes=lat, longitudes=lon)
 
     if isinstance(grid, dict) and "latitudes" in grid and "longitudes" in grid:
@@ -422,7 +422,7 @@ class MaskedRegrid:
         data = data[..., self.mask]
 
         if self.out_latitudes is None or self.out_longitudes is None:
-            in_latitudes, in_longitudes = field.geography.latlons()
+            in_latitudes, in_longitudes = field.geography.latlons(flatten=True)
             self.out_latitudes = in_latitudes[self.mask]
             self.out_longitudes = in_longitudes[self.mask]
 

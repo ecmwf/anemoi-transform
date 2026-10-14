@@ -25,11 +25,15 @@ def test_rescale(fieldlist: ekd.FieldList) -> None:
     """
 
     before_filter = {field.parameter.variable(): field.to_numpy().copy() for field in fieldlist}
+    units_before = {field.parameter.variable(): field.parameter.units() for field in fieldlist}
 
     # rescale from K to °C
     k_to_deg = create_filter("rescale", scale=1.0, offset=-273.15, param="2t")
     rescaled = k_to_deg.forward(fieldlist)
     after_forward = {field.parameter.variable(): field.to_numpy().copy() for field in rescaled}
+
+    # rescale does not know the units, so it must not overwrite them
+    assert {field.parameter.variable(): field.parameter.units() for field in rescaled} == units_before
 
     # and back
     rescaled_back = k_to_deg.backward(rescaled)

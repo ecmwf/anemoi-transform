@@ -15,6 +15,7 @@ from typing import Union
 
 from anemoi.utils.dates import as_timedelta
 
+from anemoi.transform.metadata import LEVEL_TYPE_TO_LEVTYPE
 from anemoi.transform.metadata import mars_to_component
 from anemoi.transform.units import Units
 from anemoi.transform.variables import Variable
@@ -181,18 +182,7 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
     _MARS_KEY_MAPPING = {key: mars_to_component(key) for key in _MARS_KEYS}
 
     # Mapping from earthkit-data level type names to MARS-style abbreviations.
-    # NB the keys must be earthkit-data level type *names*: get_level_type() silently
-    # registers unknown names instead of raising, so a typo here would simply never
-    # match. test_variable_level_type_mapping_keys_are_known guards against that.
-    _LEVEL_TYPE_MAPPING = {
-        "surface": "sfc",
-        "pressure": "pl",
-        "hybrid": "ml",
-        "depth_below_land_level": "sfc",
-        "height_above_ground_level": "sfc",
-        "potential_vorticity": "pv",
-        "potential_temperature": "pt",
-    }
+    _LEVEL_TYPE_MAPPING = LEVEL_TYPE_TO_LEVTYPE
 
     def __init__(self, name: str, field: Any) -> None:
         """Initialize the variable with a name and field.

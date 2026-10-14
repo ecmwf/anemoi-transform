@@ -83,6 +83,31 @@ def test_get_metadata_missing_key(sample_field):
     assert get_metadata(sample_field, "no_such_key", default="fallback") == "fallback"
 
 
+def test_levtype_translated_to_and_from_level_type(sample_field):
+    """MARS levtype values are translated to earthkit-data level types and back."""
+    assert get_metadata(sample_field, "levtype") == "sfc"
+
+    # once a mapped key is set, levtype is read from the vertical component
+    renamed = new_field_with_metadata(sample_field, param="foo")
+    assert renamed.vertical.level_type() == "surface"
+    assert get_metadata(renamed, "levtype") == "sfc"
+
+    for levtype, level_type in [("sfc", "surface"), ("pl", "pressure"), ("ml", "hybrid")]:
+        new_field = new_field_with_metadata(sample_field, levtype=levtype)
+        assert new_field.vertical.level_type() == level_type
+        assert get_metadata(new_field, "levtype") == levtype
+
+    # MARS files height above ground under sfc
+    new_field = new_field_with_metadata(sample_field, **{"vertical.level_type": "height_above_ground_level"})
+    assert get_metadata(new_field, "levtype") == "sfc"
+
+    # level types without an equivalent are left unchanged
+    new_field = new_field_with_metadata(sample_field, levtype="o2d")
+    assert new_field.vertical.level_type() == "o2d"
+    assert get_metadata(new_field, "levtype") == "o2d"
+    assert get_metadata(new_field, "vertical.level_type") == "o2d"
+
+
 def test_field_arbitrary_metadata_accumulates(sample_field):
     """Successive calls add labels rather than replacing the whole namespace."""
     new_field = new_field_with_metadata(sample_field, anemoi_origin="mars")

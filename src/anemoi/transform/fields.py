@@ -17,6 +17,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.metadata import key_to_component
+from anemoi.transform.metadata import mars_value_to_component
 
 if TYPE_CHECKING:
     from anemoi.transform.grids import Grid
@@ -129,7 +130,9 @@ def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
     ekd.Field
         The new field with the provided metadata.
     """
-    return template.set(**{key_to_component(key): value for key, value in metadata.items()})
+    return template.set(
+        **{key_to_component(key): mars_value_to_component(key, value) for key, value in metadata.items()}
+    )
 
 
 def new_field_with_units(template: ekd.Field, units: str) -> ekd.Field:

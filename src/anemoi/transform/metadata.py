@@ -36,6 +36,25 @@ _MARS_TO_COMPONENT: dict[str, str] = {
 # earthkit-data component key -> MARS-style metadata key.
 _COMPONENT_TO_MARS: dict[str, str] = {v: k for k, v in _MARS_TO_COMPONENT.items()}
 
+# MARS levtype -> earthkit-data level type name.
+_LEVTYPE_TO_LEVEL_TYPE: dict[str, str] = {
+    "sfc": "surface",
+    "pl": "pressure",
+    "ml": "hybrid",
+    "pv": "potential_vorticity",
+    "pt": "potential_temperature",
+}
+
+# earthkit-data level type name -> MARS levtype. MARS files some other level types under "sfc" too.
+# NB the keys must be earthkit-data level type *names*: get_level_type() silently
+# registers unknown names instead of raising, so a typo here would simply never
+# match. test_variable_level_type_mapping_keys_are_known guards against that.
+LEVEL_TYPE_TO_LEVTYPE: dict[str, str] = {
+    **{v: k for k, v in _LEVTYPE_TO_LEVEL_TYPE.items()},
+    "depth_below_land_level": "sfc",
+    "height_above_ground_level": "sfc",
+}
+
 # Sentinel so that None can be passed as a default.
 _RAISE = object()
 
@@ -117,6 +136,52 @@ def component_keys() -> frozenset[str]:
         The known component keys.
     """
     return frozenset(_COMPONENT_TO_MARS)
+
+
+def mars_value_to_component(key: str, value: Any) -> Any:
+    """Translate the value of a MARS-style key to the earthkit-data vocabulary.
+
+    Only ``levtype`` values differ (e.g. ``sfc`` -> ``surface``). Other values,
+    and level types without an earthkit-data equivalent, are returned unchanged.
+
+    Parameters
+    ----------
+    key : str
+        The MARS-style metadata key.
+    value : Any
+        The MARS-style value.
+
+    Returns
+    -------
+    Any
+        The value to set on the component.
+    """
+    if key == "levtype":
+        return _LEVTYPE_TO_LEVEL_TYPE.get(value, value)
+    return value
+
+
+def component_value_to_mars(key: str, value: Any) -> Any:
+    """Translate a component value to the vocabulary of the MARS-style key ``key``.
+
+    Only ``levtype`` values differ (e.g. ``surface`` -> ``sfc``). Other values,
+    and level types without a MARS equivalent, are returned unchanged.
+
+    Parameters
+    ----------
+    key : str
+        The MARS-style metadata key.
+    value : Any
+        The component value.
+
+    Returns
+    -------
+    Any
+        The MARS-style value.
+    """
+    if key == "levtype":
+        return LEVEL_TYPE_TO_LEVTYPE.get(value, value)
+    return value
 
 
 def key_to_component(key: str) -> str:
@@ -201,6 +266,8 @@ def get_metadata(field: ekd.Field, key: str, default: Any = _RAISE) -> Any:
     for candidate in candidates:
         value = field.get(candidate)
         if value is not None:
+            if candidate == mars_to_component(key, default=None):
+                value = component_value_to_mars(key, value)
             return value
 
     if default is _RAISE:

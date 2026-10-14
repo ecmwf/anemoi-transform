@@ -11,6 +11,7 @@ import earthkit.data as ekd
 import pytest
 
 from anemoi.transform.flavour import RuleBasedFlavour
+from anemoi.transform.variables import Variable
 
 
 @pytest.fixture
@@ -44,6 +45,18 @@ def test_flavour_matching_rule_overrides_metadata(sample_field):
     assert flavoured.vertical.level() is None
     # unrelated metadata is preserved
     assert flavoured.parameter.variable() == sample_field.parameter.variable()
+
+
+def test_flavour_setting_levtype_keeps_surface_level(sample_field):
+    """A rule that sets levtype keeps the field a surface field."""
+    flavour = RuleBasedFlavour([[{"levtype": "sfc"}, {"levtype": "sfc", "levelist": None}]])
+    flavoured = flavour.apply(sample_field)
+
+    assert flavoured.vertical.level_type() == "surface"
+    variable = Variable.from_earthkit("2t", flavoured)
+    assert variable.is_surface_level is True
+    assert variable.is_pressure_level is False
+    assert variable.grib_keys["levtype"] == "sfc"
 
 
 def test_flavour_can_rename_param(sample_field):

@@ -14,6 +14,7 @@ import numpy as np
 
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
+from anemoi.transform.metadata import mars_value_to_component
 
 
 class LnspToSp(SingleFieldFilter):
@@ -42,11 +43,12 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The surface pressure.
         """
-        new_metadata = {"param": self.surface_pressure}
+        new_metadata = {"param": self.surface_pressure, "units": "Pa"}
         field = self.new_field_from_numpy(
             np.exp(log_of_surface_pressure.to_numpy()), template=log_of_surface_pressure, **new_metadata
         )
-        return field.set(vertical={"level": None})
+        # Set the whole vertical component: vertical.* keys cannot be set on a field without one.
+        return field.set(vertical={"level": None, "level_type": mars_value_to_component("levtype", "sfc")})
 
     def backward_transform(self, surface_pressure: ekd.Field) -> ekd.Field:
         """Convert surface surface pressure to ln(surface_pressure).
@@ -61,9 +63,16 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The natural log of surface pressure.
         """
-        orig_metadata = {"param": self.log_of_surface_pressure}
-        return self.new_field_from_numpy(
+        orig_metadata = {"param": self.log_of_surface_pressure, "units": "Numeric"}
+        field = self.new_field_from_numpy(
             np.log(surface_pressure.to_numpy()), template=surface_pressure, **orig_metadata
+        )
+        # Set the whole vertical component: vertical.* keys cannot be set on a field without one.
+        return field.set(
+            vertical={
+                "level": surface_pressure.get("vertical.level"),
+                "level_type": mars_value_to_component("levtype", "ml"),
+            }
         )
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:

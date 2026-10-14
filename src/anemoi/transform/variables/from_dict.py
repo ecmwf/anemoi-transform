@@ -184,6 +184,13 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
     # Mapping from earthkit-data level type names to MARS-style abbreviations.
     _LEVEL_TYPE_MAPPING = LEVEL_TYPE_TO_LEVTYPE
 
+    # Mapping from earthkit-data time methods to the anemoi time processing names.
+    _TIME_METHOD_MAPPING = {
+        "accum": "accumulation",
+        "avg": "average",
+        "max": "maximum",
+    }
+
     def __init__(self, name: str, field: Any) -> None:
         """Initialize the variable with a name and field.
 
@@ -222,11 +229,12 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
         except (KeyError, TypeError):
             pass
 
-        # Try to extract time processing info from the field
+        # Try to extract time processing info from the field. earthkit-data reports
+        # unknown GRIB step types as "instant", so "instant" is not trusted either.
         try:
-            statistical_process = field.get("time.statistical_process")
-            if statistical_process is not None:
-                data["process"] = statistical_process
+            time_method = field.get("proc.time_method")
+            if time_method in self._TIME_METHOD_MAPPING:
+                data["process"] = self._TIME_METHOD_MAPPING[time_method]
         except (KeyError, TypeError):
             pass
 
@@ -244,6 +252,16 @@ class VariableFromEarthkit(VariableFromMarsVocabulary):
         if not self._has_process_info:
             return None
         return super().is_instantanous
+
+    @property
+    def is_accumulation(self) -> bool:
+        """Check if the variable is an accumulation.
+
+        Returns None if this information is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().is_accumulation
 
     @property
     def period(self):

@@ -115,3 +115,22 @@ def test_variable_level_type_mapping_keys_are_known() -> None:
     known_names = {level_type.value.name for level_type in LevelTypes}
     unknown = set(VariableFromEarthkit._LEVEL_TYPE_MAPPING) - known_names
     assert not unknown, f"Unknown earthkit level type names: {sorted(unknown)}"
+
+
+def test_variable_from_earthkit_accumulation() -> None:
+    """Accumulations are detected from the field, and unknown time processing is None."""
+    import earthkit.data as ekd
+
+    from anemoi.transform.fields import new_field_with_metadata
+
+    t2m = ekd.from_source("sample", "test.grib").to_fieldlist()[0]
+    assert Variable.from_earthkit("2t", t2m).is_accumulation is None
+
+    tp = t2m.set(**{"metadata.stepType": "accum"})
+    variable = Variable.from_earthkit("tp", tp)
+    assert variable.is_accumulation is True
+    assert variable.time_processing == "accumulation"
+
+    # survives setting mapped keys, which drops the raw GRIB metadata
+    renamed = new_field_with_metadata(tp, param="tp")
+    assert Variable.from_earthkit("tp", renamed).is_accumulation is True

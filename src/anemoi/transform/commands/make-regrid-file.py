@@ -140,12 +140,13 @@ class MakeMIRMatrix:
         )
 
     @staticmethod
-    def make_mir_matrix(lat1, lon1, lat2, lon2, output=None, mir="mir", **mir_kwargs):
+    def make_mir_matrix(in_lat, in_lon, out_lat, out_lon, output=None, mir="mir", **mir_kwargs):
 
         import numpy as np
         from earthkit.geo.utils.mir import mir_make_matrix
-        sparse_array = mir_make_matrix(in_lat=lat1, in_lon=lon1, out_lat=lat2, 
-                                       out_lon=lon2, output=None, mir=mir, **mir_kwargs)
+        sparse_array = mir_make_matrix(in_lat=in_lat, in_lon=in_lon, out_lat=out_lat, 
+                                       out_lon=out_lon, output=None, mir=mir, **mir_kwargs)
+        
 
         np.savez(
             output,
@@ -153,10 +154,10 @@ class MakeMIRMatrix:
             matrix_indices=sparse_array.indices,
             matrix_indptr=sparse_array.indptr,
             matrix_shape=sparse_array.shape,
-            in_latitudes=lat1,
-            in_longitudes=lon1,
-            out_latitudes=lat2,
-            out_longitudes=lon2,
+            in_latitudes=in_lat,
+            in_longitudes=in_lon,
+            out_latitudes=out_lat,
+            out_longitudes=out_lon,
         )
 
 

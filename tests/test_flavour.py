@@ -126,3 +126,18 @@ def test_flavour_non_matching_mars_key_on_non_grib_field(non_grib_field):
     """A rule that does not match leaves the field untouched."""
     flavour = RuleBasedFlavour([[{"param": "not-2t"}, {"levelist": None}]])
     assert flavour.apply(non_grib_field) is non_grib_field
+
+
+def test_flavour_warns_once_per_unresolvable_key(sample_fieldlist, caplog):
+    """A rule key that cannot be resolved logs a warning once, not once per field.
+
+    Modifying a GRIB field drops its raw GRIB keys, so a rule on ``shortName`` silently stops matching.
+    """
+    modified = [f.set({"parameter.variable": f.parameter.variable()}) for f in sample_fieldlist]
+    flavour = RuleBasedFlavour([[{"shortName": "2t"}, {"levelist": None}]])
+
+    with caplog.at_level("WARNING", logger="anemoi.transform.flavour"):
+        flavoured = flavour.map(ekd.create_fieldlist(modified))
+
+    assert all(f.vertical.level() == 0 for f in flavoured)
+    assert len([r for r in caplog.records if "'shortName'" in r.getMessage()]) == 1

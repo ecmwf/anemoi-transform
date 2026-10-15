@@ -157,7 +157,9 @@ output fields:
 ``new_field_from_numpy(array, *, template, **kwargs)``
    Creates a new ``ekd.Field`` from a NumPy array, copying metadata
    from ``template``. Any additional keyword arguments (e.g.
-   ``param="r"``) override the corresponding metadata values.
+   ``param="r"``) override the corresponding metadata values. The new
+   field takes its shape from the geography of ``template``, so the
+   array must have as many values as ``template`` has points.
 
 ``new_fieldlist_from_list(fields)``
    Creates a new ``ekd.FieldList`` from a list of ``ekd.Field`` objects.

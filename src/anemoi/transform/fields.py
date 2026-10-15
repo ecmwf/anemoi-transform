@@ -70,6 +70,13 @@ def new_empty_fieldlist() -> ekd.FieldList:
 def new_field_from_numpy(array: np.ndarray, *, template: ekd.Field, **metadata: Any) -> ekd.Field:
     """Create a new field from a numpy array.
 
+    The shape of the new field follows the geography of the template, not the
+    shape of the array: a flat array on a 2-D grid gives a 2-D field, and a 2-D
+    array on an unstructured geography gives a 1-D field. The array must have as
+    many values as the template has points. To change the points, set the new
+    geography first with :func:`new_field_from_latitudes_longitudes`; flat
+    coordinates give a 1-D field.
+
     Parameters
     ----------
     array : np.ndarray

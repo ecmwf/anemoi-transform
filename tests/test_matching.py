@@ -203,8 +203,23 @@ def test_matching_spec_default_select():
     assert MatchingSpec(forward="a").select == "parameter.variable"
 
 
-@pytest.mark.parametrize("select", ["param", "levelist", "shortName"])
+@pytest.mark.parametrize("select", ["levelist", "shortName"])
 def test_matching_spec_rejects_unsupported_select(select):
     """Only selecting on `parameter.variable` is supported."""
     with pytest.raises(NotImplementedError, match="parameter.variable"):
         MatchingSpec(select=select, forward="a")
+
+
+def test_matching_spec_param_is_deprecated_alias():
+    """`param` still works as a deprecated alias of `parameter.variable`."""
+    with pytest.warns(DeprecationWarning, match="parameter.variable"):
+
+        class AddFieldsParam(AddFields):
+            MATCHING = MatchingSpec(select="param", forward=("a", "b"))
+
+    assert AddFieldsParam.MATCHING.select == "parameter.variable"
+
+    a = mock_field(**{"parameter.variable": "a", "time.valid_datetime": "2000-01-01T00:00Z", "vertical.level": 850})
+    b = mock_field(**{"parameter.variable": "b", "time.valid_datetime": "2000-01-01T00:00Z", "vertical.level": 850})
+    result = AddFieldsParam(a="a", b="b").forward(ekd.create_fieldlist([a, b]))
+    assert [f.parameter.variable() for f in result] == ["c"]

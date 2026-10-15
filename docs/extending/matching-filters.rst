@@ -21,7 +21,8 @@ which fields the filter expects as inputs, and how to group them.
 
 ``select``
    The metadata key used to identify fields. Currently only
-   ``"parameter.variable"`` is supported.
+   ``"parameter.variable"`` is supported. ``"param"`` is accepted as a
+   deprecated alias.
 
 ``forward``
    A tuple of names that identify the fields required by the forward

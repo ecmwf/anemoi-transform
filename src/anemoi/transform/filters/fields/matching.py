@@ -9,6 +9,7 @@
 
 
 import logging
+import warnings
 from abc import abstractmethod
 from collections.abc import Callable
 from collections.abc import Iterator
@@ -34,7 +35,7 @@ LOG = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class MatchingSpec:
-    select: Literal["parameter.variable"] = "parameter.variable"
+    select: Literal["parameter.variable", "param"] = "parameter.variable"
     forward: tuple[str, ...] = ()
     backward: tuple[str, ...] = ()
     return_inputs: Literal["all", "none"] | tuple[str, ...] = "none"
@@ -50,6 +51,14 @@ class MatchingSpec:
             raise TypeError(f"Expected str or iterable, got {type(x)}") from e
 
     def __post_init__(self) -> None:
+        if self.select == "param":
+            warnings.warn(
+                "MatchingSpec(select='param') is deprecated, use select='parameter.variable' instead.",
+                DeprecationWarning,
+                stacklevel=3,
+            )
+            object.__setattr__(self, "select", "parameter.variable")
+
         if self.select != "parameter.variable":
             raise NotImplementedError("Only 'select=parameter.variable' is supported for now.")
 

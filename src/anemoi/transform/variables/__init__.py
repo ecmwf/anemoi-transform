@@ -14,10 +14,13 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Union
 
+from anemoi.utils.logs import OnceLogger
+
 if TYPE_CHECKING:
     from datetime import timedelta
 
 LOG = logging.getLogger(__name__)
+LOG_ONCE = OnceLogger(LOG)
 
 
 class Variable(ABC):
@@ -285,7 +288,7 @@ class Variable(ABC):
             if check_units:
                 if self.units != other.units:
                     if self.units is None or other.units is None:
-                        LOG.warning(
+                        LOG_ONCE.warning(
                             f"{self}: one of the variables has missing units: {self.units} vs {other.units}. Assuming they are compatible."
                         )
                     else:
@@ -294,7 +297,7 @@ class Variable(ABC):
             if check_time_processing:
                 if self.time_processing != other.time_processing:
                     if self.time_processing is None or other.time_processing is None:
-                        LOG.warning(
+                        LOG_ONCE.warning(
                             f"{self}: time processing types are not compatible: {self.time_processing} vs {other.time_processing}. Ignoring this incompatibility."
                         )
                     else:
@@ -303,7 +306,7 @@ class Variable(ABC):
             if check_period:
                 if self.period != other.period:
                     if self.period is None or other.period is None:
-                        LOG.warning(
+                        LOG_ONCE.warning(
                             f"{self}: periods are not compatible: {self.period} vs {other.period}. Ignoring this incompatibility."
                         )
                     else:
@@ -312,7 +315,7 @@ class Variable(ABC):
             if check_type_of_level:
                 if self.is_pressure_level != other.is_pressure_level:
                     if self.is_pressure_level is None or other.is_pressure_level is None:
-                        LOG.warning(
+                        LOG_ONCE.warning(
                             f"{self}: pressure level status is not compatible: {self.is_pressure_level} vs {other.is_pressure_level}. Ignoring this incompatibility."
                         )
                     else:
@@ -320,7 +323,7 @@ class Variable(ABC):
 
                 if self.is_model_level != other.is_model_level:
                     if self.is_model_level is None or other.is_model_level is None:
-                        LOG.warning(
+                        LOG_ONCE.warning(
                             f"{self}: model level status is not compatible: {self.is_model_level} vs {other.is_model_level}. Ignoring this incompatibility."
                         )
                     else:
@@ -328,7 +331,7 @@ class Variable(ABC):
 
                 if self.is_surface_level != other.is_surface_level:
                     if self.is_surface_level is None or other.is_surface_level is None:
-                        LOG.warning(
+                        LOG_ONCE.warning(
                             f"{self}: surface level status is not compatible: {self.is_surface_level} vs {other.is_surface_level}. Ignoring this incompatibility."
                         )
                     else:

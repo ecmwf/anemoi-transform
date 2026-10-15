@@ -230,6 +230,12 @@ def get_metadata(field: ekd.Field, key: str, default: Any = _RAISE) -> Any:
     and for a key whose value is None, so the two cannot be told apart here; a
     None value is treated as "not found" and resolution continues.
 
+    Raw GRIB keys are only available until the field's metadata is changed: after
+    a ``set()`` of any component key (e.g. through :func:`new_field_with_metadata`,
+    a flavour, or a new geography), keys such as ``shortName`` or ``paramId`` are
+    no longer found. Use ``param`` (or ``parameter.variable``) for the variable
+    name, which is kept. Setting only the data values or labels keeps the raw keys.
+
     Parameters
     ----------
     field : ekd.Field

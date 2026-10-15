@@ -43,7 +43,7 @@ class RodeoOperaClipping(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("total_precipitation", "quality"),
     )
 

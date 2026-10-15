@@ -24,7 +24,7 @@ class CosSinFromRad(MatchingFieldsFilter):
     """A filter to convert any variable in radians to cos() and sin() and back."""
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("param",),
         backward=("cos_param", "sin_param"),
     )

@@ -18,6 +18,7 @@ from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
+from anemoi.transform.grouping import grouping_dict_all
 
 LOG = logging.getLogger(__name__)
 
@@ -84,16 +85,16 @@ class Sum(Filter):
         needed_fields: dict[tuple[Hashable, ...], dict[str, ekd.Field]] = defaultdict(dict)
 
         for f in fields:
-            key = f.metadata(namespace="mars")
-            param = key.pop("param", None)
+            key = grouping_dict_all(f)
+            param = key.pop("parameter.variable")
             if self.ignore_level:
-                ll = key.pop("levelist", None)
+                ll = key.pop("vertical.level", None)
                 LOG.debug(f"Removing levelist ({ll}) from matching key for variable: {param}")
 
             if param is None:
-                param = f.metadata("param")
+                param = f.parameter.variable()
             if param in self.params:
-                key = tuple(key.items())
+                key = frozenset(key.items())
 
                 if param in needed_fields[key]:
                     raise ValueError(f"Duplicate field {param} for {key}")

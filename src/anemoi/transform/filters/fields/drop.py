@@ -26,9 +26,9 @@ class Drop(SingleFieldFilter):
         """
         self.selection_criteria = {}
         if param is not None:
-            self.selection_criteria["param"] = param
+            self.selection_criteria["parameter.variable"] = param
         if levelist is not None:
-            self.selection_criteria["levelist"] = levelist
+            self.selection_criteria["vertical.level"] = levelist
         super().__init__()
 
     def forward_select(self):

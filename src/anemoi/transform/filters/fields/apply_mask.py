@@ -183,7 +183,7 @@ class MaskVariable(Filter):
             if self.path.endswith(".npy"):
                 mask = np.load(self.path)
             else:
-                mask = ekd.from_source("file", self.path)[0].to_numpy(flatten=True)
+                mask = ekd.from_source("file", self.path).to_fieldlist()[0].to_numpy(flatten=True)
             self.mask = self._compute_mask(mask)
 
     def _compute_mask(self, mask_values: np.ndarray) -> np.ndarray:
@@ -193,7 +193,7 @@ class MaskVariable(Filter):
 
     def forward_select(self):
         if self.param is not None:
-            return {"param": self.param}
+            return {"parameter.variable": self.param}
         return {}
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
@@ -215,7 +215,7 @@ class MaskVariable(Filter):
         values[self._compute_mask(values) if self.self_mask else self.mask] = np.nan
 
         if self.rename is not None:
-            param = field.metadata("param")
+            param = field.parameter.variable()
             name = f"{param}_{self.rename}"
             metadata["param"] = name
 
@@ -232,7 +232,7 @@ class MaskVariable(Filter):
         mask_field = None
         remaining = []
         for field in fields:
-            is_mask_field = field.metadata("param") == self.mask_param
+            is_mask_field = field.parameter.variable() == self.mask_param
             if is_mask_field:
                 if mask_field is None:
                     # store first instance of mask field

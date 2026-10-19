@@ -10,9 +10,9 @@
 from collections.abc import Iterator
 from typing import Literal
 
-import earthkit.data as ekd
 import earthkit.meteo.thermo.array as thermo
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 
 from .matching import MatchingFieldsFilter
@@ -66,19 +66,37 @@ class HumidityConversion(MatchingFieldsFilter):
         self.humidity = humidity
         super().__init__()
 
-    def forward_transform(self, humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, humidity: Field, temperature: Field) -> Iterator[Field]:
         """This will return the relative humidity along with temperature from specific humidity and temperature"""
-        pressure = 100 * float(humidity.metadata("levelist"))
+        humidity.check_units("kg kg**-1")
+        temperature.check_units("K")
+        pressure = 100 * float(humidity.vertical.level())
         rh = thermo.relative_humidity_from_specific_humidity(temperature.to_numpy(), humidity.to_numpy(), pressure)
-        yield self.new_field_from_numpy(rh, template=humidity, param=self.relative_humidity)
+        yield Field.from_numpy(
+            rh,
+            template=humidity,
+            parameter={
+                "variable": self.relative_humidity,
+                "units": "%",
+            },
+        )
 
-    def backward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
+    def backward_transform(self, relative_humidity: Field, temperature: Field) -> Iterator[Field]:
         """This will return specific humidity along with temperature from relative humidity and temperature"""
-        pressure = 100 * float(temperature.metadata("levelist"))  # levels are measured in hectopascals
+        relative_humidity.check_units("%")
+        temperature.check_units("K")
+        pressure = 100 * float(temperature.vertical.level())  # levels are measured in hectopascals
         q = thermo.specific_humidity_from_relative_humidity(
             temperature.to_numpy(), relative_humidity.to_numpy(), pressure
         )
-        yield self.new_field_from_numpy(q, template=relative_humidity, param=self.humidity)
+        yield Field.from_numpy(
+            q,
+            template=relative_humidity,
+            parameter={
+                "variable": self.humidity,
+                "units": "kg kg**-1",
+            },
+        )
 
 
 filter_registry.register("q_to_r", HumidityConversion)

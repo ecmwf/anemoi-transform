@@ -7,9 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import earthkit.data as ekd
 import pandas as pd
 
+from anemoi.transform import FieldList
 from anemoi.transform.filter import DispatchingFilter
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.fields.drop import Drop as DropFields
@@ -25,7 +25,7 @@ class Drop(DispatchingFilter):
         else:
             self.filter = DropFields(**config)
 
-    def forward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward_fields(self, data: FieldList) -> FieldList:
         return self.filter.forward(data)
 
     def forward_tabular(self, data: pd.DataFrame) -> pd.DataFrame:

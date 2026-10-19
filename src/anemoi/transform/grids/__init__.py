@@ -16,8 +16,6 @@ from typing import Any
 import numpy as np
 from anemoi.utils.registry import Registry
 
-from anemoi.transform.grids.unstructured import UnstructuredGridFieldList
-
 grid_registry = Registry(__name__)
 
 
@@ -54,6 +52,3 @@ def create_grid(context: Any, config: Any) -> Grid:
     grid = grid_registry.from_config(config)
     grid.context = context
     return grid
-
-
-__all__ = ["UnstructuredGridFieldList"]

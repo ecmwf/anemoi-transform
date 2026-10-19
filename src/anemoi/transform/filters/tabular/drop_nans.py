@@ -13,13 +13,13 @@ from typing import Literal
 
 import pandas as pd
 
-from anemoi.transform.filter import Filter
+from anemoi.transform.filter import TabularFilter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
 @filter_registry.register("drop_nans_tabular")
-class DropNaNs(Filter):
+class DropNaNs(TabularFilter):
     """Drop rows from a DataFrame where any/all selected columns are NaN.
 
     The configuration can contain either a list of column names to be

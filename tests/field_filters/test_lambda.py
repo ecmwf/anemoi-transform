@@ -10,16 +10,17 @@
 import sys
 from pathlib import Path
 
-import earthkit.data as ekd
 import numpy.testing as npt
 from anemoi.utils.testing import skip_if_offline
 
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 sys.path.append(Path(__file__).parents[1].as_posix())
 
 
-def do_something(field: ekd.Field, a: float) -> ekd.Field:
+def do_something(field: Field, a: float) -> Field:
     """Multiply field values by a constant.
 
     Parameters
@@ -34,10 +35,10 @@ def do_something(field: ekd.Field, a: float) -> ekd.Field:
     Any
         The modified field.
     """
-    return field.clone(values=field.values * a)
+    return field.set(**{"data.values": field.values * a})
 
 
-def undo_something(field: ekd.Field, a: float) -> ekd.Field:
+def undo_something(field: Field, a: float) -> Field:
     """Divide field values by a constant.
 
     Parameters
@@ -52,20 +53,20 @@ def undo_something(field: ekd.Field, a: float) -> ekd.Field:
     Any
         The modified field.
     """
-    return field.clone(values=field.values / a)
+    return field.set(**{"data.values": field.values / a})
 
 
 @skip_if_offline
-def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
+def test_earthkitfieldlambda(fieldlist: FieldList) -> None:
     """Test the EarthkitFieldLambdaFilter, applying a lambda filter to scale field values and then undoing the operation.
 
     Parameters
     ----------
-    fieldlist : ekd.FieldList
+    fieldlist : FieldList
         The fieldlist to use for testing.
     """
 
-    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
+    before_filter = {field.parameter.variable(): field.to_numpy().copy() for field in fieldlist}
     filter = create_filter(
         "earthkitfieldlambda",
         fn="tests.field_filters.test_lambda.do_something",
@@ -75,10 +76,10 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
     )
 
     transformed = filter.forward(fieldlist)
-    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in transformed}
+    after_forward = {field.parameter.variable(): field.to_numpy().copy() for field in transformed}
 
     untransformed = filter.backward(transformed)
-    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in untransformed}
+    after_backward = {field.parameter.variable(): field.to_numpy().copy() for field in untransformed}
 
     for param in ("sp", "2t"):
         # round trip works

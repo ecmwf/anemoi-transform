@@ -9,9 +9,9 @@
 
 from collections.abc import Iterator
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -116,57 +116,57 @@ class Oras6Clipping(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        siue: ekd.Field,
-        sivn: ekd.Field,
-        siconc: ekd.Field,
-        icesalt: ekd.Field,
-        sihc: ekd.Field,
-        snhc: ekd.Field,
-        sipf: ekd.Field,
-        sitemptop: ekd.Field,
-        sntemp: ekd.Field,
-        snvol: ekd.Field,
-        sivol: ekd.Field,
-        sialb: ekd.Field,
-        vasit: ekd.Field,
-        tos: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        siue: Field,
+        sivn: Field,
+        siconc: Field,
+        icesalt: Field,
+        sihc: Field,
+        snhc: Field,
+        sipf: Field,
+        sitemptop: Field,
+        sntemp: Field,
+        snvol: Field,
+        sivol: Field,
+        sialb: Field,
+        vasit: Field,
+        tos: Field,
+    ) -> Iterator[Field]:
         """Mask sea ice-related variables where concentration is low.
 
         Parameters
         ----------
-        siue : ekd.Field
+        siue : Field
             Eastward sea ice velocity.
-        sivn : ekd.Field
+        sivn : Field
             Northward sea ice velocity.
-        siconc : ekd.Field
+        siconc : Field
             Sea ice concentration.
-        icesalt : ekd.Field
+        icesalt : Field
             Sea ice salinity.
-        sihc : ekd.Field
+        sihc : Field
             Sea ice heat content.
-        snhc : ekd.Field
+        snhc : Field
             Snow heat content.
-        sipf : ekd.Field
+        sipf : Field
             Sea ice pressure field.
-        sitemptop : ekd.Field
+        sitemptop : Field
             Sea ice top temperature.
-        sntemp : ekd.Field
+        sntemp : Field
             Snow temperature.
-        snvol : ekd.Field
+        snvol : Field
             Snow volume.
-        sivol : ekd.Field
+        sivol : Field
             Sea ice volume.
-        sialb : ekd.Field
+        sialb : Field
             Sea ice albedo.
-        vasit : ekd.Field
+        vasit : Field
             Vertically integrated sea ice temperature.
-        tos : ekd.Field
+        tos : Field
             Temperature of the surface.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Transformed fields with masked values.
         """
 
@@ -215,17 +215,17 @@ class Oras6Clipping(MatchingFieldsFilter):
         # to avoid unrealistic values in the ocean model.
         tos_np[tos_np <= MINTF] = MINTF
 
-        yield self.new_field_from_numpy(siconc_np, template=siconc, param=self.siconc)
-        yield self.new_field_from_numpy(siue_np, template=siue, param=self.siue)
-        yield self.new_field_from_numpy(sivn_np, template=sivn, param=self.sivn)
-        yield self.new_field_from_numpy(icesalt_np, template=icesalt, param=self.icesalt)
-        yield self.new_field_from_numpy(sihc_np, template=sihc, param=self.sihc)
-        yield self.new_field_from_numpy(snhc_np, template=snhc, param=self.snhc)
-        yield self.new_field_from_numpy(sipf_np, template=sipf, param=self.sipf)
-        yield self.new_field_from_numpy(sitemptop_np, template=sitemptop, param=self.sitemptop)
-        yield self.new_field_from_numpy(sntemp_np, template=sntemp, param=self.sntemp)
-        yield self.new_field_from_numpy(snvol_np, template=snvol, param=self.snvol)
-        yield self.new_field_from_numpy(sivol_np, template=sivol, param=self.sivol)
-        yield self.new_field_from_numpy(sialb_np, template=sialb, param=self.sialb)
-        yield self.new_field_from_numpy(vasit_np, template=vasit, param=self.vasit)
-        yield self.new_field_from_numpy(tos_np, template=tos, param=self.tos)
+        yield Field.from_numpy(siconc_np, template=siconc, parameter={"variable": self.siconc})
+        yield Field.from_numpy(siue_np, template=siue, parameter={"variable": self.siue})
+        yield Field.from_numpy(sivn_np, template=sivn, parameter={"variable": self.sivn})
+        yield Field.from_numpy(icesalt_np, template=icesalt, parameter={"variable": self.icesalt})
+        yield Field.from_numpy(sihc_np, template=sihc, parameter={"variable": self.sihc})
+        yield Field.from_numpy(snhc_np, template=snhc, parameter={"variable": self.snhc})
+        yield Field.from_numpy(sipf_np, template=sipf, parameter={"variable": self.sipf})
+        yield Field.from_numpy(sitemptop_np, template=sitemptop, parameter={"variable": self.sitemptop})
+        yield Field.from_numpy(sntemp_np, template=sntemp, parameter={"variable": self.sntemp})
+        yield Field.from_numpy(snvol_np, template=snvol, parameter={"variable": self.snvol})
+        yield Field.from_numpy(sivol_np, template=sivol, parameter={"variable": self.sivol})
+        yield Field.from_numpy(sialb_np, template=sialb, parameter={"variable": self.sialb})
+        yield Field.from_numpy(vasit_np, template=vasit, parameter={"variable": self.vasit})
+        yield Field.from_numpy(tos_np, template=tos, parameter={"variable": self.tos})

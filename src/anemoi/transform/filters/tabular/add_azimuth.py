@@ -10,14 +10,14 @@
 
 import pandas as pd
 
-from anemoi.transform.filter import Filter
+from anemoi.transform.filter import TabularFilter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.sat_view_angles import calc_azimuth
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
 @filter_registry.register("add_azimuth")
-class AddAzimuth(Filter):
+class AddAzimuth(TabularFilter):
     """Adds a column to the DataFrame containing the viewing azimuth angle
     calculated from the latitude, longitude and the spacecraft latitude,
     spacecraft longitude.

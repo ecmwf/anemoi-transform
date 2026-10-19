@@ -8,10 +8,11 @@
 # nor does it submit to any jurisdiction.
 
 from collections.abc import Iterator
+from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -104,21 +105,66 @@ class FractionOfSnowCover(MatchingFieldsFilter):
         self.fraction_of_snow_cover = fraction_of_snow_cover
         super().__init__()
 
-    def forward_transform(self, snow_depth: ekd.Field, snow_density: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, snow_depth: Field, snow_density: Field) -> Iterator[Field]:
         """Convert snow depth and snow density to fraction of snow cover.
 
         Parameters
         ----------
-        snow_depth : ekd.Field
+        snow_depth : Field
             The snow depth data.
-        snow_density : ekd.Field
+        snow_density : Field
             The snow density data.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Transformed fields.
         """
+        snow_depth.check_units("m of water equivalent")
+        snow_density.check_units("kg m**-3")
         fscov = compute_fraction_of_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield self.new_field_from_numpy(fscov, template=snow_depth, param=self.fraction_of_snow_cover, units="Fraction")
+        yield Field.from_numpy(
+            fscov,
+            template=snow_depth,
+            name=self.fraction_of_snow_cover,
+            parameter={
+                "variable": self.fraction_of_snow_cover,
+                "units": "Fraction",
+            },
+        )
+
+    def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
+        """Make sure snow depth and snow density are both requested.
+
+        Fraction of snow cover is not archived; it is computed by this filter. Because it
+        is created from a snow depth template, its stored MARS metadata requests
+        snow depth (``param: sd``). The request is therefore patched when it
+        contains either fraction of snow cover or snow depth: fraction of snow cover is removed and snow
+        depth and snow density are added if not already present.
+
+        Parameters
+        ----------
+        data_request : dict[str, Any]
+            The original data request.
+
+        Returns
+        -------
+        dict[str, Any]
+            The modified data request.
+        """
+        param = data_request.get("param")
+        if param is None:
+            return data_request
+
+        params = [param] if isinstance(param, str) else list(param)
+        if self.fraction_of_snow_cover not in params and self.snow_depth not in params:
+            return data_request
+
+        params = [p for p in params if p != self.fraction_of_snow_cover]
+        for p in (self.snow_depth, self.snow_density):
+            if p not in params:
+                params.append(p)
+
+        data_request["param"] = params
+        return data_request

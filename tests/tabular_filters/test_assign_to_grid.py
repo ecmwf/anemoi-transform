@@ -32,17 +32,17 @@ def test_assign_to_grid_healpix():
     assert tuple(result.columns) == tuple(df.columns) + ("grid_index_h16", "distance")
     assert result.shape == (len(df), len(df.columns) + 2)
     expected = {
-        "grid_index_h16": [3032, 3039, 2871, 1440, 1472, 1472, 24, 31, 199],
+        "grid_index_h16": [3032, 3040, 3047, 1440, 1472, 1567, 24, 32, 39],
         "distance": [
             16.101259,
             16.170669,
-            186.739335,
+            16.101259,
             2.390108,
             2.388015,
-            179.915849,
+            2.7125,
             16.101259,
             16.170669,
-            186.739335,
+            16.101259,
         ],
     }
     for col_name, expected_values in expected.items():
@@ -66,17 +66,17 @@ def test_assign_to_grid_o96():
     assert tuple(result.columns) == tuple(df.columns) + ("grid_index_o96", "distance")
     assert result.shape == (len(df), len(df.columns) + 2)
     expected = {
-        "grid_index_o96": [40300, 40310, 40310, 20160, 20360, 20360, 0, 10, 10],
+        "grid_index_o96": [40300, 40310, 40139, 20160, 20360, 20559, 0, 10, 223],
         "distance": [
             0.623840,
             0.615772,
-            179.901054,
+            10.194240,
             0.478106,
             0.467531,
-            179.900608,
+            0.926599,
             0.623840,
             0.615772,
-            179.901054,
+            10.194240,
         ],
     }
     for col_name, expected_values in expected.items():

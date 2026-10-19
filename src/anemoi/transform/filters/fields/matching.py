@@ -9,6 +9,7 @@
 
 
 import logging
+import warnings
 from abc import abstractmethod
 from collections.abc import Callable
 from collections.abc import Iterator
@@ -34,7 +35,7 @@ LOG = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class MatchingSpec:
-    select: Literal["param"] = "param"
+    select: Literal["parameter.variable", "param"] = "parameter.variable"
     forward: tuple[str, ...] = ()
     backward: tuple[str, ...] = ()
     return_inputs: Literal["all", "none"] | tuple[str, ...] = "none"
@@ -50,8 +51,16 @@ class MatchingSpec:
             raise TypeError(f"Expected str or iterable, got {type(x)}") from e
 
     def __post_init__(self) -> None:
-        if self.select != "param":
-            raise NotImplementedError("Only 'select=param' is supported for now.")
+        if self.select == "param":
+            warnings.warn(
+                "MatchingSpec(select='param') is deprecated, use select='parameter.variable' instead.",
+                DeprecationWarning,
+                stacklevel=3,
+            )
+            object.__setattr__(self, "select", "parameter.variable")
+
+        if self.select != "parameter.variable":
+            raise NotImplementedError("Only 'select=parameter.variable' is supported for now.")
 
         object.__setattr__(self, "forward", self._to_tuple_of_str(self.forward))
         object.__setattr__(self, "backward", self._to_tuple_of_str(self.backward))
@@ -235,8 +244,7 @@ class MatchingFieldsFilter(Filter):
             grouping = GroupByParamVertical(group_by)
         else:
             grouping = GroupByParam(group_by)
-
-        input_params = set(data.metadata(self.MATCHING.select))
+        input_params = set(f.get(self.MATCHING.select) for f in data)
         self._check_metadata_match(input_params, group_by)
 
         result: list[ekd.Field] = []

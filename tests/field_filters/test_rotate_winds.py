@@ -15,9 +15,10 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "geography.projTargetString": "+proj=eqc +ellps=WGS84 +a=6378137.0 +lon_0=0.0 +to_meter=111319.4907932736 +no_defs +type=crs",
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 U_VALUES = np.array([[-3.26786804, -2.90458679], [-4.28153992, -10.75224304], [-6.29130554, -4.17704773]])
@@ -30,8 +31,8 @@ ROTATED_V_VALUES = np.array([[6.53807895, 4.7517623], [1.1696167, 1.73797607], [
 @pytest.fixture
 def wind_source(test_source):
     WIND_SPEC = [
-        {"param": "10u", "values": U_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "10v", "values": V_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "10u", "data.values": U_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "10v", "data.values": V_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(WIND_SPEC)
 
@@ -39,8 +40,8 @@ def wind_source(test_source):
 @pytest.fixture
 def rotated_wind_source(test_source):
     ROTATED_WIND_SPEC = [
-        {"param": "10u", "values": ROTATED_U_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "10v", "values": ROTATED_V_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "10u", "data.values": ROTATED_U_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "10v", "data.values": ROTATED_V_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(ROTATED_WIND_SPEC)
 

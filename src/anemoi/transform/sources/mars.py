@@ -43,7 +43,7 @@ class Mars(Source):
         ekd.Source
             The data fetched from MARS.
         """
-        return ekd.from_source("mars", **data)
+        return ekd.from_source("mars", **data).to_fieldlist()
 
     def __ror__(self, data: dict[str, Any]) -> Source:
         """Enable the use of the pipe operator with this source.

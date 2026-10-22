@@ -38,9 +38,9 @@ OPERATORS = {
 
 @filter_registry.register("apply_mask_fields")
 class MaskVariable(Filter):
-    """A filter to mask variables using a mask from a file or from a field in the pipeline.
+    """A filter to mask variables using a mask from a file, from a field in the pipeline, or from their own values.
 
-    The values of every filtered field are set to NaN when they are either:
+    The values of every filtered field are set to NaN where the mask is either:
 
     - equal to ``mask_value`` if provided, or
     - meeting a ``threshold`` condition if provided.
@@ -50,7 +50,11 @@ class MaskVariable(Filter):
     The mask can be provided either as an external file via ``path``, or as a
     parameter name already present in the pipeline via ``mask_param``. When
     ``mask_param`` is used, the mask field is consumed and removed from the
-    output.
+    output. In both cases the mask is computed once and applied to every filtered
+    field, so it suits a mask that does not vary between fields.
+
+    With ``self_mask``, each field is masked by its own values instead, evaluated
+    per field.
 
     The ``param`` keyword can be used to specify which variables to mask. If
     not provided, all variables will be masked. It can be a single variable
@@ -104,6 +108,20 @@ class MaskVariable(Filter):
                 threshold_operator: "<=" # Operator to use for thresholding
                 threshold: 0.5 # Will set to NaN all values where mask <= 0.5
 
+    Masking a field by its own values:
+
+    .. code-block:: yaml
+
+        input:
+          pipe:
+            - source: # Can be `mars`, `netcdf`, etc.
+                param: cin
+            - apply_mask:
+                self_mask: true
+                param: cin        # Required: which variables to mask
+                threshold_operator: "<="
+                threshold: -999   # Will set to NaN all values <= -999
+
     Notes
     -----
 
@@ -116,6 +134,7 @@ class MaskVariable(Filter):
         *,
         path: str | None = None,
         mask_param: str | None = None,
+        self_mask: bool = False,
         mask_value: float | None = None,
         threshold: float | None = None,
         threshold_operator: str = ">",
@@ -125,6 +144,7 @@ class MaskVariable(Filter):
     ) -> None:
         self.path = path
         self.mask_param = mask_param
+        self.self_mask = self_mask
         self.mask_value = mask_value
         self.threshold = threshold
         self.threshold_operator = threshold_operator
@@ -137,8 +157,17 @@ class MaskVariable(Filter):
     def prepare_filter(self):
         """Set up the MaskVariable filter."""
 
-        if (self.path is None) == (self.mask_param is None):
-            raise ValueError("Exactly one of `path` or `mask_param` must be provided.")
+        provided = [self.path is not None, self.mask_param is not None, bool(self.self_mask)]
+        if sum(provided) != 1:
+            raise ValueError("Exactly one of `path`, `mask_param` or `self_mask` must be provided.")
+
+        if self.self_mask:
+            if self.param is None:
+                # Without `param` the selection matches every field, so the condition
+                # would be applied to unrelated variables.
+                raise ValueError("`param` must be provided together with `self_mask`.")
+            if self.return_mask:
+                raise ValueError("`return_mask` is only used together with `mask_param`.")
 
         if (self.mask_value is None) == (self.threshold is None):
             raise ValueError("Exactly one of `mask_value` or `threshold` must be provided.")
@@ -181,8 +210,9 @@ class MaskVariable(Filter):
             Transformed field.
         """
         metadata = {}
-        values = field.to_numpy(flatten=True)
-        values[self.mask] = np.nan
+        # copy: `to_numpy` can return a view, and masking in place would edit the source field
+        values = field.to_numpy(flatten=True).copy()
+        values[self._compute_mask(values) if self.self_mask else self.mask] = np.nan
 
         if self.rename is not None:
             param = field.metadata("param")
@@ -191,7 +221,11 @@ class MaskVariable(Filter):
 
         return new_field_from_numpy(values, template=field, **metadata)
 
-    def _separate_mask_and_fields(self, fields: ekd.FieldList) -> tuple[np.ndarray, ekd.FieldList]:
+    def _separate_mask_and_fields(self, fields: ekd.FieldList) -> tuple[np.ndarray | None, ekd.FieldList]:
+        if self.self_mask:
+            # the mask is computed from each field in turn, in forward_transform
+            return None, fields
+
         if self.mask_param is None:
             return self.mask, fields
 

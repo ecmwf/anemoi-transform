@@ -629,7 +629,7 @@ class FieldList(DataContainer):
         return cls(ekd.from_source("list-of-dicts", dicts).to_fieldlist())
 
     @classmethod
-    def from_source(cls, name: str, *args, **kwargs) -> "FieldList":
+    def from_source(cls, name: str, *args, read_all: bool = False, **kwargs) -> "FieldList":
         """Create a :class:`FieldList` from an earthkit-data source.
 
         Wrapped ``Field``/``FieldList`` arguments are unwrapped before they
@@ -643,6 +643,8 @@ class FieldList(DataContainer):
             ``"forcings"``, ...).
         *args : Any
             Positional arguments for the source.
+        read_all : bool, optional
+            Read a stream source fully into memory. Only stream sources accept it.
         **kwargs : Any
             Keyword arguments for the source.
 
@@ -659,7 +661,9 @@ class FieldList(DataContainer):
         # lazily-computed fields (observed with the "forcings" source), so
         # only convert when the source hasn't already produced one.
         if not isinstance(result, _EkdFieldList):
-            result = result.to_fieldlist()
+            # `read_all` moved to to_fieldlist() in earthkit-data 1.0, where only
+            # stream sources take it; file sources have no such parameter.
+            result = result.to_fieldlist(**({"read_all": True} if read_all else {}))
         return cls(result)
 
     @classmethod

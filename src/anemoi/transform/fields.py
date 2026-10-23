@@ -385,7 +385,7 @@ class Field:
         return cls(_EkdField.from_components(**kwargs))
 
     @classmethod
-    def from_numpy(cls, array: np.ndarray, *, template: "Field", **metadata: Any) -> "Field":
+    def from_numpy(cls, array: np.ndarray, *, template: "Field", name=None, **metadata: Any) -> "Field":
         """Create a new field from a numpy array.
 
         Parameters
@@ -394,6 +394,8 @@ class Field:
             The data for the new field.
         template : Field
             The template field to use.
+        name : str, optional
+            The name to attach to the new field (sets the ``labels.name`` label).
         **metadata : Any
             Additional metadata for the new field, keyed by component path
             (e.g. ``parameter.variable=...``) or by legacy key. A value that
@@ -407,8 +409,12 @@ class Field:
             The new field created from the numpy array and template.
         """
         result = cls(_unwrap_field(template).set(**{"data.values": array}))
+
         if metadata:
             result = cls.with_new_metadata(result, **metadata)
+
+        if name is not None:
+            result = cls.with_name(result, name)
 
         return result
 

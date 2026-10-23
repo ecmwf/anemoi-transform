@@ -75,13 +75,16 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         yield Field.from_numpy(
             np.cos(data),
             template=mean_wave_direction,
+            name=self.cos_mean_wave_direction,
             parameter={
                 "variable": self.cos_mean_wave_direction,
             },
         )
+
         yield Field.from_numpy(
             np.sin(data),
             template=mean_wave_direction,
+            name=self.sin_mean_wave_direction,
             parameter={
                 "variable": self.sin_mean_wave_direction,
             },
@@ -113,6 +116,7 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         yield Field.from_numpy(
             mwd,
             template=cos_mean_wave_direction,
+            name=self.mean_wave_direction,
             parameter={"variable": self.mean_wave_direction},
         )
 

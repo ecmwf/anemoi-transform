@@ -47,7 +47,7 @@ class LnspToSp(SingleFieldFilter):
             template=log_of_surface_pressure,
             parameter={"variable": self.surface_pressure, "units": "Pa"},
         )
-        return field.set(vertical={"level": None, "level_type": None})
+        return field.set(vertical={"level": None, "level_type": "surface"})
 
     def backward_transform(self, surface_pressure: Field) -> Field:
         """Convert surface surface pressure to ln(surface_pressure).
@@ -63,11 +63,12 @@ class LnspToSp(SingleFieldFilter):
             The natural log of surface pressure.
         """
         surface_pressure.check_units("Pa")
-        return Field.from_numpy(
+        field = Field.from_numpy(
             np.log(surface_pressure.to_numpy()),
             template=surface_pressure,
-            parameter={"variable": self.log_of_surface_pressure},
+            parameter={"variable": self.log_of_surface_pressure, "units": "Numeric"},
         )
+        return field.set(vertical={"level_type": "hybrid"})
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
         """Modify the data request to include the other parameter.

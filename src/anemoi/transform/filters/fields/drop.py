@@ -8,8 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
-import earthkit.data as ekd
-
+from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
 
 
@@ -26,9 +25,9 @@ class Drop(SingleFieldFilter):
         """
         self.selection_criteria = {}
         if param is not None:
-            self.selection_criteria["param"] = param
+            self.selection_criteria["parameter.variable"] = param
         if levelist is not None:
-            self.selection_criteria["levelist"] = levelist
+            self.selection_criteria["vertical.level"] = levelist
         super().__init__()
 
     def forward_select(self):
@@ -37,10 +36,10 @@ class Drop(SingleFieldFilter):
     def backward_select(self):
         return self.selection_criteria
 
-    def forward_transform(self, drop_field: ekd.Field) -> None:
+    def forward_transform(self, drop_field: Field) -> None:
         """Drop fields based on metadata selection."""
         return None
 
-    def backward_transform(self, drop_field: ekd.Field) -> None:
+    def backward_transform(self, drop_field: Field) -> None:
         """Drop fields based on metadata selection."""
         return None

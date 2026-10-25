@@ -11,7 +11,7 @@
 import pandas as pd
 import pytest
 
-from anemoi.transform.fields import WrappedField
+from anemoi.transform import Field
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
 
@@ -45,10 +45,11 @@ def test_rename_field(grib_source):
     pipeline = grib_source | rename
 
     for original, result in zip(grib_source, pipeline):
-        assert isinstance(result, WrappedField)
-        if original.metadata("param") == "z":
-            assert result.metadata("param") == "geopotential"
-        elif original.metadata("param") == "t":
-            assert result.metadata("param") == "temperature"
+        assert isinstance(result, Field)
+        # Renaming 'param' names the field (labels.name); metadata is untouched.
+        if original.parameter.variable() == "z":
+            assert result.name == "geopotential"
+        elif original.parameter.variable() == "t":
+            assert result.name == "temperature"
         else:
             raise RuntimeError(f"Unexpected param: {original.metadata('param')}")

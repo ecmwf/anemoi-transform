@@ -10,12 +10,10 @@
 
 import logging
 
-import earthkit.data as ekd
 import tqdm
 
-from anemoi.transform.fields import new_field_from_latitudes_longitudes
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -72,17 +70,17 @@ class RemoveNaNs(Filter):
         self._latitudes = None
         self._longitudes = None
 
-    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, fields: FieldList) -> FieldList:
         """Mask out NaNs in the fields.
 
         Parameters
         ----------
-        fields : ekd.FieldList
+        fields : FieldList
             List of fields to be processed.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             List of fields with NaNs masked out.
         """
         import numpy as np
@@ -92,7 +90,7 @@ class RemoveNaNs(Filter):
                 first = fields[0]
             else:
                 for first in fields:
-                    if first.metadata("param") == self.param:
+                    if first.parameter.variable() == self.param:
                         break
                 else:
                     raise ValueError(f"{self.param=} not found in\n{fields.ls}")
@@ -100,20 +98,20 @@ class RemoveNaNs(Filter):
             data = first.to_numpy(flatten=True)
             self._mask = ~np.isnan(data)
 
-            latitudes, longitudes = first.grid_points()
-            self._latitudes = latitudes[self._mask]
-            self._longitudes = longitudes[self._mask]
+            latitudes, longitudes = first.geography.latlons()
+            self._latitudes = latitudes.flatten()[self._mask]
+            self._longitudes = longitudes.flatten()[self._mask]
 
         result = []
         for field in tqdm.tqdm(fields, desc="Remove NaNs"):
 
             data = field.to_numpy(flatten=True)
             result.append(
-                new_field_from_latitudes_longitudes(
-                    new_field_from_numpy(data[self._mask], template=field),
+                Field.from_latitudes_longitudes(
+                    Field.from_numpy(data[self._mask], template=field),
                     latitudes=self._latitudes,
                     longitudes=self._longitudes,
                 )
             )
 
-        return new_fieldlist_from_list(result)
+        return FieldList.from_fields(result)

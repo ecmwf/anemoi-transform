@@ -8,8 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 
-import earthkit.data as ekd
-
+from anemoi.transform import FieldList
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -21,8 +20,8 @@ class NoOp(Filter):
     def __init__(self):
         super().__init__()
 
-    def forward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, data: FieldList) -> FieldList:
         return data
 
-    def backward(self, data: ekd.FieldList) -> ekd.FieldList:
+    def backward(self, data: FieldList) -> FieldList:
         return data

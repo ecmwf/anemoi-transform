@@ -7,9 +7,9 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import earthkit.data as ekd
 import pandas as pd
 
+from anemoi.transform import FieldList
 from anemoi.transform.filter import DispatchingFilter
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.fields.impute_nans import ImputeNaNs as ImputeNaNsFields
@@ -34,7 +34,7 @@ class ImputeNaNs(DispatchingFilter):
             self.tabular_filter = None
             self.field_filter = ImputeNaNsFields(**config)
 
-    def forward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
+    def forward_fields(self, data: FieldList) -> FieldList:
         if self.field_filter is None:
             raise ValueError("Ambiguous config for ImputeNaNs field filter.")
         return self.field_filter.forward(data)

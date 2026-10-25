@@ -9,8 +9,9 @@
 
 from typing import Any
 
-import earthkit.data as ekd
+from earthkit.data.field.component.vertical import Vertical
 
+from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -31,13 +32,17 @@ SOIL_MAPPING: dict[str, dict[str, Any]] = {
     "swvl3": {"param": "vsw", "levelist": 3},
 }
 
-# Soil ``levtype`` used by the generic representation.
+# Soil ``levtype`` used by the generic representation in MARS requests.
 SOIL_LEVTYPE = "sol"
+
+# Soil level type used by the generic representation in the field's vertical
+# component (the earthkit-data name for GRIB ``soilLayer``, i.e. ``levtype=sol``).
+SOIL_LEVEL_TYPE = "soil_layer"
 
 
 def _build_inverse_mapping(
     mapping: dict[str, dict[str, Any]],
-) -> dict[tuple[str, int], dict[str, str | None]]:
+) -> dict[tuple[str, int], str]:
     """Build the inverse mapping from ``(param, levelist)`` to a named soil parameter.
 
     Parameters
@@ -48,18 +53,12 @@ def _build_inverse_mapping(
 
     Returns
     -------
-    dict[tuple[str, int], dict[str, str | None]]
-        A mapping from ``(param, levelist)`` tuples to the named soil parameter metadata.
+    dict[tuple[str, int], str]
+        A mapping from ``(param, levelist)`` tuples to the named soil parameter.
     """
-    inverse: dict[tuple[str, int], dict[str, str | None]] = {}
+    inverse: dict[tuple[str, int], str] = {}
     for named, spec in mapping.items():
-        new_metadata = {
-            "param": named,
-            "levtype": None,
-            "levelist": None,
-            "level": None,
-        }
-        inverse[(spec["param"], int(spec["levelist"]))] = new_metadata
+        inverse[(spec["param"], int(spec["levelist"]))] = named
     return inverse
 
 
@@ -97,53 +96,55 @@ class SoilMapping(SingleFieldFilter):
 
     def forward_select(self) -> dict[str, list[str]]:
         # Select only the named soil parameters (which carry no levtype/levelist).
-        return {"param": self.named_params}
+        return {"parameter.variable": self.named_params}
 
     def backward_select(self) -> dict[str, list[str]]:
         # Select only the generic soil parameters (which carry levtype/levelist).
-        return {"param": self.generic_params}
+        return {"parameter.variable": self.generic_params}
 
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+    def forward_transform(self, field: Field) -> Field:
         """Convert a named soil parameter to its generic representation.
 
         Parameters
         ----------
-        field : ekd.Field
+        field : Field
             The field with a named soil parameter (e.g. ``stl1``).
 
         Returns
         -------
-        ekd.Field
+        Field
             The field with the generic ``param``, ``levtype`` and ``levelist``.
         """
-        param = field.metadata("param")
-        new_metadata = self.mapping[param]
-        return self.new_field_from_numpy(field.to_numpy(), template=field, **new_metadata)
+        spec = self.mapping[field.parameter.variable()]
+        result = Field.from_numpy(field.to_numpy(), template=field, parameter={"variable": spec["param"]})
+        # Named soil fields carry no vertical component, so it is replaced as a whole.
+        return result.set(vertical=Vertical.from_dict({"level": spec["levelist"], "level_type": SOIL_LEVEL_TYPE}))
 
-    def backward_transform(self, field: ekd.Field) -> ekd.Field:
+    def backward_transform(self, field: Field) -> Field:
         """Convert a generic soil parameter back to its named representation.
 
         Parameters
         ----------
-        field : ekd.Field
+        field : Field
             The field with a generic soil ``param`` and a ``levelist``.
 
         Returns
         -------
-        ekd.Field
+        Field
             The field with the named soil parameter metadata (e.g. ``stl1``).
         """
-        param = field.metadata("param")
-        levelist = field.metadata("levelist", default=field.metadata("level", default=None))
+        param = field.parameter.variable()
+        levelist = field.get("vertical.level", default=None)
 
         if levelist is None:
             # Not enough information to map back, pass through unchanged.
             return field
 
-        named_metadata = self.inverse_mapping.get((param, int(levelist)))
-        if named_metadata is None:
+        named = self.inverse_mapping.get((param, int(levelist)))
+        if named is None:
             return field
-        return self.new_field_from_numpy(field.to_numpy(), template=field, **named_metadata)
+        result = Field.from_numpy(field.to_numpy(), template=field, parameter={"variable": named})
+        return result.set(vertical={"level": None, "level_type": None})
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
         """Modify the data request to retrieve the generic soil parameters.

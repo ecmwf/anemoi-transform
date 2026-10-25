@@ -10,11 +10,11 @@
 import logging
 from datetime import datetime
 
-import earthkit.data as ekd
 import numpy as np
 import pandas as pd
 from anemoi.utils.window import Window
 
+from anemoi.transform import FieldList
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 @filter_registry.register("irregular_to_grid")
 class IrregularToGrid(Filter):
-    """Convert irregular observations within a time window to an ekd.FieldList of gridded fields.
+    """Convert irregular observations within a time window to a FieldList of gridded fields.
 
     For each target time step, observations are selected from a configurable window
     and the best observation per grid point is chosen based on proximity to the target
@@ -109,7 +109,7 @@ class IrregularToGrid(Filter):
             raise ValueError("nan_score_weight must be in the range [0.0, 1.0]")
         self.nan_score_weight = nan_score_weight
 
-    def forward(self, df: pd.DataFrame) -> ekd.FieldList:
+    def forward(self, df: pd.DataFrame) -> FieldList:
         """Convert irregular values (e.g. observations) within a time window to gridded arrays.
 
         Parameters:
@@ -120,7 +120,7 @@ class IrregularToGrid(Filter):
 
         Returns:
         --------
-        ekd.FieldList
+        FieldList
             The gridded fields computed from the DataFrame.
         """
         # Ensure date column is datetime-like
@@ -169,21 +169,20 @@ class IrregularToGrid(Filter):
         latitudes: np.ndarray,
         longitudes: np.ndarray,
         grids: dict[str, np.ndarray],
-    ) -> ekd.FieldList:
+    ) -> FieldList:
         field_dicts = []
         for t, time in enumerate(times):
             valid_dt = pd.Timestamp(time).to_pydatetime()
             for param, arr in grids.items():
                 field_dicts.append(
                     {
-                        "param": param,
                         "values": arr[t],
-                        "latitudes": latitudes,
-                        "longitudes": longitudes,
-                        "valid_datetime": valid_dt,
+                        "parameter": {"variable": param},
+                        "time": {"valid_datetime": valid_dt},
+                        "geography": {"latitudes": latitudes, "longitudes": longitudes},
                     }
                 )
-        return ekd.from_source("list-of-dicts", field_dicts)
+        return FieldList.from_dicts(field_dicts)
 
     @staticmethod
     def _fill_grids(

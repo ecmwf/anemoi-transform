@@ -10,11 +10,11 @@
 
 import pandas as pd
 
-from anemoi.transform.filter import Filter
+from anemoi.transform.filter import TabularFilter
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
-class Drop(Filter):
+class Drop(TabularFilter):
     """Drop one or more columns from a DataFrame.
 
     The configuration should be a dictionary with the key ``columns`` containing

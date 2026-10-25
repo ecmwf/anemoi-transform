@@ -10,10 +10,10 @@
 
 from collections.abc import Iterator
 
-import earthkit.data as ekd
 from earthkit.meteo.wind.array import polar_to_xy
 from earthkit.meteo.wind.array import xy_to_polar
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -74,22 +74,25 @@ class WindComponents(MatchingFieldsFilter):
         assert not self.radians, "Radians not (yet) supported"
         super().__init__()
 
-    def forward_transform(self, u_component: ekd.Field, v_component: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, u_component: Field, v_component: Field) -> Iterator[Field]:
         """Convert U and V wind components to wind speed and direction.
 
         Parameters
         ----------
-        u_component : ekd.Field
+        u_component : Field
             The U component of the wind.
-        v_component : ekd.Field
+        v_component : Field
             The V component of the wind.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             The wind speed field.
             The wind direction field.
         """
+
+        u_component.check_units("m s**-1")
+        v_component.check_units("m s**-1")
 
         speed, direction = xy_to_polar(
             u_component.to_numpy(),
@@ -97,25 +100,43 @@ class WindComponents(MatchingFieldsFilter):
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(speed, template=u_component, param=self.wind_speed)
-        yield self.new_field_from_numpy(direction, template=v_component, param=self.wind_direction)
+        yield Field.from_numpy(
+            speed,
+            template=u_component,
+            parameter={
+                "variable": self.wind_speed,
+                "units": "m s**-1",
+            },
+        )
 
-    def backward_transform(self, wind_speed: ekd.Field, wind_direction: ekd.Field) -> Iterator[ekd.Field]:
+        yield Field.from_numpy(
+            direction,
+            template=v_component,
+            parameter={
+                "variable": self.wind_direction,
+                "units": "degree",
+            },
+        )
+
+    def backward_transform(self, wind_speed: Field, wind_direction: Field) -> Iterator[Field]:
         """Convert wind speed and direction to U and V components.
 
         Parameters
         ----------
-        wind_speed : ekd.Field
+        wind_speed : Field
             The wind speed field.
-        wind_direction : ekd.Field
+        wind_direction : Field
             The wind direction field.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             The U component of the wind.
             The V component of the wind.
         """
+
+        wind_speed.check_units("m s**-1")
+        wind_direction.check_units("degree")
 
         u, v = polar_to_xy(
             wind_speed.to_numpy(),
@@ -123,8 +144,16 @@ class WindComponents(MatchingFieldsFilter):
             convention=self.convention,
         )
 
-        yield self.new_field_from_numpy(u, template=wind_speed, param=self.u_component)
-        yield self.new_field_from_numpy(v, template=wind_direction, param=self.v_component)
+        yield Field.from_numpy(
+            u,
+            template=wind_speed,
+            parameter={"variable": self.u_component, "units": "m s**-1"},
+        )
+        yield Field.from_numpy(
+            v,
+            template=wind_direction,
+            parameter={"variable": self.v_component, "units": "m s**-1"},
+        )
 
 
 filter_registry.register("uv_to_ddff", WindComponents)

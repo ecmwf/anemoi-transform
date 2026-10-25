@@ -27,7 +27,8 @@ def test_apply_column_transformations():
     }
     df = pd.DataFrame(
         {
-            "col1": [0.0, 1.0, 2.0, 3.0, 4.0],
+            # 'log' needs strictly positive values (log(0) warns; see 'safe_log')
+            "col1": [0.5, 1.0, 2.0, 3.0, 4.0],
             "col2": [0.0, 1.0, 2.0, 3.0, 4.0],
             "col3": [0.0, 1.0, 2.0, 3.0, 4.0],
             "col4": [0.0, 1.0, 2.0, 3.0, 4.0],
@@ -128,7 +129,8 @@ def test_apply_column_transformations_missing_column():
     }
     df = pd.DataFrame(
         {
-            "col1": [0.0, 1.0, 2.0, 3.0, 4.0],
+            # 'log' needs strictly positive values (log(0) warns; see 'safe_log')
+            "col1": [0.5, 1.0, 2.0, 3.0, 4.0],
             # col2 is missing
         }
     )

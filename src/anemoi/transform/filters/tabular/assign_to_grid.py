@@ -11,12 +11,12 @@
 import pandas as pd
 from scipy.spatial import cKDTree
 
-from anemoi.transform.filter import Filter
+from anemoi.transform.filter import TabularFilter
 from anemoi.transform.filters.tabular import filter_registry
 
 
 @filter_registry.register("assign_to_grid")
-class AssignToGrid(Filter):
+class AssignToGrid(TabularFilter):
     """Adds a new column (``grid_index_{grid}``) to the DataFrame which represents
     the index of the nearest grid point, based on the latitude/longitude
     coordinates.

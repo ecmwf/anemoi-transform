@@ -10,9 +10,9 @@
 from collections.abc import Iterator
 from typing import Literal
 
-import earthkit.data as ekd
 from earthkit.meteo import thermo
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 
 from .matching import MatchingFieldsFilter
@@ -55,20 +55,41 @@ class DewPoint(MatchingFieldsFilter):
         self.dewpoint = dewpoint
         super().__init__()
 
-    def forward_transform(self, relative_humidity: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(self, relative_humidity: Field, temperature: Field) -> Iterator[Field]:
         """Return the dewpoint temperature (Td, in K) along with temperature (K) and relative humidity (in %)"""
+
+        relative_humidity.check_units("%")
+        temperature.check_units("K")
 
         relative_humidity_values = relative_humidity.to_numpy()
         relative_humidity_values[relative_humidity_values == 0] = EPS
         td = thermo.dewpoint_from_relative_humidity(t=temperature.to_numpy(), r=relative_humidity_values)
-        yield self.new_field_from_numpy(td, template=relative_humidity, param=self.dewpoint)
 
-    def backward_transform(self, dewpoint: ekd.Field, temperature: ekd.Field) -> Iterator[ekd.Field]:
+        yield Field.from_numpy(
+            td,
+            template=relative_humidity,
+            parameter={
+                "variable": self.dewpoint,
+                "units": "K",
+            },
+        )
+
+    def backward_transform(self, dewpoint: Field, temperature: Field) -> Iterator[Field]:
         """This will return the relative humidity (in %) from temperature (in K) and dewpoint (Td, in K),
         along with temperature and dewpoint
         """
+        dewpoint.check_units("K")
+        temperature.check_units("K")
         rh = thermo.relative_humidity_from_dewpoint(t=temperature.to_numpy(), td=dewpoint.to_numpy())
-        yield self.new_field_from_numpy(rh, template=temperature, param=self.relative_humidity)
+
+        yield Field.from_numpy(
+            rh,
+            template=temperature,
+            parameter={
+                "variable": self.relative_humidity,
+                "units": "%",
+            },
+        )
 
 
 filter_registry.register("r_to_d", DewPoint)

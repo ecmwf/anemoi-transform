@@ -10,8 +10,7 @@
 import importlib
 from collections.abc import Callable
 
-from earthkit.data.core.fieldlist import Field
-
+from anemoi.transform import Field
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -80,7 +79,7 @@ class EarthkitFieldLambdaFilter(SingleFieldFilter):
         self.backward_fn = self._import_fn(self.backward_fn)
 
     def forward_select(self):
-        return {"param": self.param}
+        return {"parameter.variable": self.param}
 
     def forward_transform(self, field: Field) -> Field:
         """Apply the forward lambda function to a field."""

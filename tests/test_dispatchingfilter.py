@@ -7,21 +7,21 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-import earthkit.data as ekd
 import pandas as pd
 import pytest
 
+from anemoi.transform import FieldList
 from anemoi.transform.filter import DispatchingFilter
 
 TEST_CASES = [
     pytest.param(pd.DataFrame(), id="dataframe"),
-    pytest.param(ekd.FieldList(), id="fieldlist"),
+    pytest.param(FieldList(), id="fieldlist"),
     pytest.param(None, id="other"),
 ]
 
 
 class ForwardField:
-    def forward_fields(self, fields: ekd.FieldList) -> ekd.FieldList:
+    def forward_fields(self, fields: FieldList) -> FieldList:
         return "fieldlist"
 
 
@@ -31,7 +31,7 @@ class ForwardTabular:
 
 
 class BackwardField:
-    def backward_fields(self, fields: ekd.FieldList) -> ekd.FieldList:
+    def backward_fields(self, fields: FieldList) -> FieldList:
         return "fieldlist reversed"
 
 
@@ -47,7 +47,7 @@ def test_dispatchingfilter_forward_fields_only(data):
 
     filter = ForwardFieldsOnly()
     match data:
-        case ekd.FieldList():
+        case FieldList():
             assert filter(data) == "fieldlist"
         case pd.DataFrame() | None:
             with pytest.raises(TypeError):
@@ -63,7 +63,7 @@ def test_dispatchingfilter_forward_tabular_only(data):
     match data:
         case pd.DataFrame():
             assert filter(data) == "dataframe"
-        case ekd.FieldList() | None:
+        case FieldList() | None:
             with pytest.raises(TypeError):
                 filter(data)
 
@@ -75,7 +75,7 @@ def test_dispatchingfilter_forward_both(data):
 
     filter = ForwardBoth()
     match data:
-        case ekd.FieldList():
+        case FieldList():
             assert filter(data) == "fieldlist"
         case pd.DataFrame():
             assert filter(data) == "dataframe"
@@ -98,7 +98,7 @@ def test_dispatchingfilter_backward_fields_only(data):
 
     filter = BackwardFieldsOnly().reverse()
     match data:
-        case ekd.FieldList():
+        case FieldList():
             assert filter(data) == "fieldlist reversed"
         case pd.DataFrame() | None:
             with pytest.raises(NotImplementedError):
@@ -114,7 +114,7 @@ def test_dispatchingfilter_backward_tabular_only(data):
     match data:
         case pd.DataFrame():
             assert filter(data) == "dataframe reversed"
-        case ekd.FieldList() | None:
+        case FieldList() | None:
             with pytest.raises(NotImplementedError):
                 filter(data)
 
@@ -126,7 +126,7 @@ def test_dispatchingfilter_backward_both(data):
 
     filter = BackwardBoth().reverse()
     match data:
-        case ekd.FieldList():
+        case FieldList():
             assert filter(data) == "fieldlist reversed"
         case pd.DataFrame():
             assert filter(data) == "dataframe reversed"

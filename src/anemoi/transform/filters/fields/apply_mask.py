@@ -9,12 +9,11 @@
 
 import logging
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
+from anemoi.transform import FieldList
 from anemoi.transform.fields import FieldSelection
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -183,7 +182,7 @@ class MaskVariable(Filter):
             if self.path.endswith(".npy"):
                 mask = np.load(self.path)
             else:
-                mask = ekd.from_source("file", self.path)[0].to_numpy(flatten=True)
+                mask = FieldList.from_source("file", self.path)[0].to_numpy(flatten=True)
             self.mask = self._compute_mask(mask)
 
     def _compute_mask(self, mask_values: np.ndarray) -> np.ndarray:
@@ -193,35 +192,34 @@ class MaskVariable(Filter):
 
     def forward_select(self):
         if self.param is not None:
-            return {"param": self.param}
+            return {"parameter.variable": self.param}
         return {}
 
-    def forward_transform(self, field: ekd.Field) -> ekd.Field:
+    def forward_transform(self, field: Field) -> Field:
         """Apply the forward transformation to the field.
 
         Parameters
         ----------
-        field : ekd.Field
+        field : Field
             Input field to be transformed.
 
         Returns
         -------
-        ekd.Field
+        Field
             Transformed field.
         """
-        metadata = {}
         # copy: `to_numpy` can return a view, and masking in place would edit the source field
         values = field.to_numpy(flatten=True).copy()
         values[self._compute_mask(values) if self.self_mask else self.mask] = np.nan
 
         if self.rename is not None:
-            param = field.metadata("param")
+            param = field.parameter.variable()
             name = f"{param}_{self.rename}"
-            metadata["param"] = name
+            return Field.from_numpy(values, template=field, parameter={"variable": name})
 
-        return new_field_from_numpy(values, template=field, **metadata)
+        return Field.from_numpy(values, template=field)
 
-    def _separate_mask_and_fields(self, fields: ekd.FieldList) -> tuple[np.ndarray | None, ekd.FieldList]:
+    def _separate_mask_and_fields(self, fields: FieldList) -> tuple[np.ndarray | None, FieldList]:
         if self.self_mask:
             # the mask is computed from each field in turn, in forward_transform
             return None, fields
@@ -232,7 +230,7 @@ class MaskVariable(Filter):
         mask_field = None
         remaining = []
         for field in fields:
-            is_mask_field = field.metadata("param") == self.mask_param
+            is_mask_field = field.parameter.variable() == self.mask_param
             if is_mask_field:
                 if mask_field is None:
                     # store first instance of mask field
@@ -248,10 +246,10 @@ class MaskVariable(Filter):
 
         mask = self._compute_mask(mask_field.to_numpy(flatten=True))
 
-        fields = new_fieldlist_from_list(remaining)
+        fields = FieldList.from_fields(remaining)
         return mask, fields
 
-    def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
+    def forward(self, fields: FieldList) -> FieldList:
         """Apply the mask to the data.
 
         When ``mask_param`` is set, the mask field is extracted from the
@@ -259,12 +257,12 @@ class MaskVariable(Filter):
 
         Parameters
         ----------
-        fields : ekd.FieldList
+        fields : FieldList
             Input data to be transformed.
 
         Returns
         -------
-        ekd.FieldList
+        FieldList
             Transformed data with mask applied.
         """
 
@@ -276,4 +274,4 @@ class MaskVariable(Filter):
                 field = self.forward_transform(field)
             result.append(field)
 
-        return new_fieldlist_from_list(result)
+        return FieldList.from_fields(result)

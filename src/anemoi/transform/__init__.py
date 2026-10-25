@@ -14,3 +14,12 @@ try:
 except ImportError:  # pragma: no cover
     # Local copy or not installed with setuptools
     __version__ = "999"
+
+
+from . import units  # noqa: F401  installs the conditional earthkit "(0 - 1)" units work-around
+from .data import DataContainer
+from .fields import Field
+from .fields import FieldList
+from .frames import Frame
+
+__all__ = ["DataContainer", "Field", "FieldList", "Frame", "__version__"]

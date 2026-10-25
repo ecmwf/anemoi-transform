@@ -11,9 +11,9 @@
 from collections.abc import Iterator
 from typing import Any
 
-import earthkit.data as ekd
 import numpy as np
 
+from anemoi.transform import Field
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
 from anemoi.transform.filters.fields.matching import MatchingSpec
@@ -55,18 +55,18 @@ class CosSinFromRad(MatchingFieldsFilter):
 
     def forward_transform(
         self,
-        param: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        param: Field,
+    ) -> Iterator[Field]:
         """Convert a direction variable to its cosine and sine components.
 
         Parameters
         ----------
-        param : ekd.Field
+        param : Field
             The direction field.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Fields of cosine and sine of the direction.
         """
         data = param.to_numpy()
@@ -75,31 +75,49 @@ class CosSinFromRad(MatchingFieldsFilter):
         if (max := data.max()) > 2 * np.pi:
             raise ValueError(f"Param {self.param} is expected in radians in the range [-2pi, pi], but {max=}")
 
-        yield self.new_field_from_numpy(np.cos(data), template=param, param=self.cos_param)
-        yield self.new_field_from_numpy(np.sin(data), template=param, param=self.sin_param)
+        yield Field.from_numpy(
+            np.cos(data),
+            template=param,
+            parameter={
+                "variable": self.cos_param,
+            },
+        )
+        yield Field.from_numpy(
+            np.sin(data),
+            template=param,
+            parameter={
+                "variable": self.sin_param,
+            },
+        )
 
     def backward_transform(
         self,
-        cos_param: ekd.Field,
-        sin_param: ekd.Field,
-    ) -> Iterator[ekd.Field]:
+        cos_param: Field,
+        sin_param: Field,
+    ) -> Iterator[Field]:
         """Convert cosine and sine components back to direction in radians in the range [-pi, pi).
 
         Parameters
         ----------
-        cos_param : ekd.Field
+        cos_param : Field
             The cosine of the direction field.
-        sin_param : ekd.Field
+        sin_param : Field
             The sine of the  direction field.
 
         Returns
         -------
-        Iterator[ekd.Field]
+        Iterator[Field]
             Field of the direction.
         """
         direction = np.arctan2(sin_param.to_numpy(), cos_param.to_numpy())
 
-        yield self.new_field_from_numpy(direction, template=cos_param, param=self.param)
+        yield Field.from_numpy(
+            direction,
+            template=cos_param,
+            parameter={
+                "variable": self.param,
+            },
+        )
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
         """Modify the data request to include the direction.

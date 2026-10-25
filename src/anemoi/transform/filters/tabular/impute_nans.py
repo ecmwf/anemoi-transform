@@ -12,13 +12,13 @@ import logging
 
 import pandas as pd
 
-from anemoi.transform.filter import Filter
+from anemoi.transform.filter import TabularFilter
 from anemoi.transform.filters.tabular import filter_registry
 from anemoi.transform.filters.tabular.support.utils import raise_if_df_missing_cols
 
 
 @filter_registry.register("impute_nans_tabular")
-class ImputeNaNs(Filter):
+class ImputeNaNs(TabularFilter):
     """Fill NaN values in a DataFrame with a fixed or per-column value.
 
     The configuration can contain either a list of column names to be

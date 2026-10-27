@@ -235,3 +235,14 @@ def test_stats_per_day_and_group():
     stats = out.stats(["obsvalue_rawbt_1", "n_obs"], "satid").set_index(["group", "column"])
     assert stats.loc[(3, "obsvalue_rawbt_1"), "count"] == 1 and stats.loc[(3, "n_obs"), "sum"] == 3
     assert (stats["day"] == pd.Timestamp("2020-01-01")).all()
+
+
+def test_prefix_names_every_output():
+    variables = small_config().variables.model_dump(exclude_unset=True) | {"prefix": "iasi_"}
+    cfg = small_config(variables=variables, maps=["iasi_obsvalue_rawbt_1"])
+    out = grid_windows(cfg, rows(cfg, 500, ["2020-01-01 05:00"]), DAY, WINDOW, FREQ)
+    assert set(out.arrays) == {"iasi_" + n for n in cfg.variables.outputs()}
+    assert out.arrays["iasi_obsvalue_rawbt_1"][1, 500] == 250 and out.sums["maps"][0, 0, 500] == 1
+    assert "iasi_n_obs" in out.picked and "satid" in out.picked  # the group column keeps its input name
+    with pytest.raises(ValueError, match="maps"):
+        small_config(variables=variables, maps=["obsvalue_rawbt_1"])

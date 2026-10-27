@@ -210,7 +210,7 @@ def _grid_windows(cfg, df, steps, window, freq) -> GriddedWindows:
             arrays[name][i] = x
     sums = {"cover": np.zeros(n), "maps": np.zeros((len(cfg.maps), 3, n)), "qc": np.zeros((2, n))}
     if df.empty:
-        return GriddedWindows(arrays, pd.DataFrame(), pd.DataFrame(columns=["group", "step", "n"]), sums)
+        return _final(GriddedWindows(arrays, pd.DataFrame(), pd.DataFrame(columns=["group", "step", "n"]), sums), cfg)
     df, keep, counts = qc.apply(cfg.qc, df.reset_index(drop=True), v.channels, cfg.group_by)
     obs_lat, obs_lon = df["latitude"].to_numpy(np.float64), df["longitude"].to_numpy(np.float64)
     cell = grids.cell_index(cfg.grid, obs_lat, obs_lon)
@@ -227,9 +227,25 @@ def _grid_windows(cfg, df, steps, window, freq) -> GriddedWindows:
             arrays[name][i, cells] = x
         sums["cover"][cells] += 1
         for k, name in enumerate(cfg.maps):
+            name = name[len(v.prefix) :]  # maps are stored names
             ok = np.isfinite(values[name])
             x = values[name][ok].astype(np.float64)
             for j, w in enumerate((None, x, x**2)):
                 sums["maps"][k, j] += np.bincount(cells[ok], weights=w, minlength=n)
         picked.append(pd.DataFrame(values).assign(**{"step": time, cfg.group_by: cell_group}))
-    return GriddedWindows(arrays, pd.concat(picked, ignore_index=True), counts, sums)
+    picked = pd.concat(picked, ignore_index=True)
+    return _final(GriddedWindows(arrays, picked, counts, sums), cfg)
+
+
+def _final(out: GriddedWindows, cfg: Gridding) -> GriddedWindows:
+    """The outputs under their stored names (variables.prefix). picked keeps the group column
+    under its input name too, as stats() groups by it."""
+    v = cfg.variables
+    if v.prefix:
+        out.arrays = {v.final(k): a for k, a in out.arrays.items()}
+        if not out.picked.empty:
+            names = {k: v.final(k) for k in v.observed()}
+            group = out.picked[cfg.group_by]
+            out.picked = out.picked.rename(columns=names)
+            out.picked[cfg.group_by] = group
+    return out

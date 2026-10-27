@@ -132,6 +132,8 @@ class Variables(Strict):
     wavenumbers: Wavenumbers | None = None  # needed by select.mean_of: radiance
     # output names: a key ending in "_" renames a prefix (bt_ -> obsvalue_rawbt_)
     rename: dict[str, str] = Field(default_factory=dict)
+    # put before every output name, after rename (derived and forcings too): e.g. "iasi_"
+    prefix: str = ""
 
     def out_name(self, column: str) -> str:
         if column in self.rename:
@@ -148,6 +150,10 @@ class Variables(Strict):
 
     def outputs(self) -> list[str]:
         return self.observed() + list(self.forcings)
+
+    def final(self, name: str) -> str:
+        """The stored name of an output (observed() / outputs() name it before the prefix)."""
+        return self.prefix + name
 
 
 class Gridding(Strict):
@@ -172,8 +178,8 @@ class Gridding(Strict):
         outputs = v.outputs()
         if len(set(outputs)) != len(outputs):
             raise ValueError("two variables share an output name")
-        if unknown := set(self.maps) - set(v.observed()):
-            raise ValueError(f"maps names no observed output: {sorted(unknown)}")
+        if unknown := set(self.maps) - {v.final(n) for n in v.observed()}:
+            raise ValueError(f"maps names no observed output (with the prefix): {sorted(unknown)}")
         pd.Timedelta(self.select.pass_gap)
         return self
 

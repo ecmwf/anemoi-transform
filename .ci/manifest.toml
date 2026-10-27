@@ -22,6 +22,8 @@ runs-on = "arc-runner-normal"
 container = "eccr.ecmwf.int/public-ci-images/ubuntu24.04-base:latest"
 platform = "ubuntu-24.04"
 extras = "all,tests"
+# arc-runner-normal has a limit of 4 CPUs.
+pytest-args = "-n 4"
 
 [[matrix.test.include]]
 python-version = "3.11"

@@ -8,7 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 """Per-cell candidates and their reduction to one value per cell: sorts and run starts,
-no groupby, so a day of IASI (millions of rows) takes seconds."""
+no groupby, so a day of IASI (millions of rows) takes seconds.
+"""
 
 import numpy as np
 

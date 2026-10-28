@@ -48,7 +48,8 @@ class GriddedWindows:
 
     def stats(self, columns: list[str], by: str) -> pd.DataFrame:
         """Per (day of T, group, column) count, nan_count, sum, sum_sq, min and max of the
-        selected values: sums merge exactly, so any period's mean and std follow."""
+        selected values: sums merge exactly, so any period's mean and std follow.
+        """
         if self.picked.empty:
             return pd.DataFrame(columns=["day", "group", "column", "count", "nan_count", "sum", "sum_sq", "min", "max"])
         keys = [self.picked["step"].dt.floor("D").rename("day"), self.picked[by].rename("group")]
@@ -140,7 +141,8 @@ def cell_values(
     north: np.ndarray,
 ) -> tuple[np.ndarray, dict[str, np.ndarray], np.ndarray]:
     """(cells, {output name: float32 per cell}, group per cell) from one window's rows idx:
-    the candidates of each cell (select.candidate_groups), reduced to one value per cell."""
+    the candidates of each cell (select.candidate_groups), reduced to one value per cell.
+    """
     s, v = cfg.select, cfg.variables
     gap = pd.Timedelta(s.pass_gap).value
     same = group[idx] if s.reduce == "mean" else None  # a superob never mixes groups
@@ -174,7 +176,8 @@ def cell_values(
 
 def _copy_on_write():
     """pandas < 3 copies the whole input frame on every assign / reset_index (+1 GB per copy
-    for a day of IASI); copy-on-write, the pandas 3 default, copies only what changes."""
+    for a day of IASI); copy-on-write, the pandas 3 default, copies only what changes.
+    """
     if int(pd.__version__.split(".")[0]) >= 3:
         return contextlib.nullcontext()
     return pd.option_context("mode.copy_on_write", True)

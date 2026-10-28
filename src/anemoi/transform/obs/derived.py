@@ -25,7 +25,8 @@ PLANCK_C2 = 1.4387768775e-2  # h c / k [m K]
 
 def scan_position(fov: np.ndarray, scan: Scan) -> np.ndarray:
     """(k - c) / c in [-1, 1] for position k = fov // group_size, c = (n - 1) / 2: negative =
-    left of the flight track (instrument frame: no flip between ascending and descending)."""
+    left of the flight track (instrument frame: no flip between ascending and descending).
+    """
     k = fov.astype(np.int64) // scan.group_size
     if k.size and (k.min() < 0 or k.max() >= scan.n_positions):
         raise ValueError(f"{scan.column} {fov.min()}..{fov.max()} maps outside [0, {scan.n_positions})")

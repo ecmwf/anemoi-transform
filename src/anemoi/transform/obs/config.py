@@ -8,7 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 """What a gridded observation variable holds: QC, selection and variables (a recipe's
-``grid_observations`` block, less the window and dates the dataset supplies)."""
+``grid_observations`` block, less the window and dates the dataset supplies).
+"""
 
 from typing import Literal
 
@@ -91,7 +92,8 @@ class Wavenumbers(Strict):
 
 class KnownBad(Strict):
     """Values set missing: `columns` of the groups listed (all if empty) from start
-    (inclusive) to end (exclusive; open if unset)."""
+    (inclusive) to end (exclusive; open if unset).
+    """
 
     columns: list[str]
     groups: list[int] = Field(default_factory=list)
@@ -102,7 +104,8 @@ class KnownBad(Strict):
 
 class Qc(Strict):
     """Applied in this order: flags (rows out), range (values out), known_bad (values out),
-    require_complete (rows with any channel missing out)."""
+    require_complete (rows with any channel missing out).
+    """
 
     flags: dict[str, list[int]] = Field(default_factory=dict)  # keep rows whose column is one of the values
     range: dict[str, tuple[float, float]] = Field(default_factory=dict)  # values outside [lo, hi] become missing
@@ -112,7 +115,8 @@ class Qc(Strict):
 
 class Scan(Strict):
     """Scan position from a field-of-view column: position k = fov // group_size in
-    [0, n_positions); first_side = the side of the flight track position 0 views."""
+    [0, n_positions); first_side = the side of the flight track position 0 views.
+    """
 
     column: str = "fov"
     n_positions: int

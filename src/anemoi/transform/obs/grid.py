@@ -64,7 +64,8 @@ def cell_offsets_km(
     grid: str, lat: np.ndarray, lon: np.ndarray, cell: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """(distance, east, north) [km] of each obs from its cell centre: great-circle distance,
-    and the obs projected on the centre's tangent plane (no wrap at the dateline or poles)."""
+    and the obs projected on the centre's tangent plane (no wrap at the dateline or poles).
+    """
     glat, glon = (np.radians(g[cell]) for g in grid_points(grid))
     p = to_xyz(lat, lon)
     centre = np.column_stack([np.cos(glat) * np.cos(glon), np.cos(glat) * np.sin(glon), np.sin(glat)])

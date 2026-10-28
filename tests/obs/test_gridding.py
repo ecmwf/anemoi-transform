@@ -75,7 +75,8 @@ def rows(cfg, cell, times, fov=0, bt=250.0):
 
 def pass_rows(cfg):
     """Cell 500, T = 06Z: MetOp-B (3) at 05:04 and 05:05 (the latest), MetOp-C (5) at 05:00
-    (same pass, other satellite), MetOp-B at 01:00 (an older pass)."""
+    (same pass, other satellite), MetOp-B at 01:00 (an older pass).
+    """
     times = ["2020-01-01 05:04", "2020-01-01 05:05", "2020-01-01 05:00", "2020-01-01 01:00"]
     df = rows(cfg, 500, times, bt=[250.0, 260.0, 300.0, 200.0])
     df["satid"] = pd.array([3, 3, 5, 3], dtype="Int32")

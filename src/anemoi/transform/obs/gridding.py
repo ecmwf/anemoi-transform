@@ -218,8 +218,10 @@ def _grid_windows(cfg, df, steps, window, freq) -> GriddedWindows:
         return _final(GriddedWindows(arrays, pd.DataFrame(), pd.DataFrame(columns=["group", "step", "n"]), sums), cfg)
     df, keep, counts = qc.apply(cfg.qc, df.reset_index(drop=True), v.channels, cfg.group_by)
     obs_lat, obs_lon = df["latitude"].to_numpy(np.float64), df["longitude"].to_numpy(np.float64)
-    cell = grids.cell_index(cfg.grid, obs_lat, obs_lon)
-    dist, east, north = grids.cell_offsets_km(cfg.grid, obs_lat, obs_lon, cell)
+    lat_u, lon_u, inverse = grids.unique_positions(obs_lat, obs_lon)
+    cell_u = grids.cell_index(cfg.grid, lat_u, lon_u)
+    cell = cell_u[inverse]
+    dist, east, north = (x[inverse] for x in grids.cell_offsets_km(cfg.grid, lat_u, lon_u, cell_u))
     t = df["date"].to_numpy().astype("datetime64[ns]").astype(np.int64)
     group = df[cfg.group_by].to_numpy(np.int64)
     sums["qc"][0] = np.bincount(cell, minlength=n)

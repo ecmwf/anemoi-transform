@@ -75,7 +75,8 @@ def rows(cfg, cell, times, fov=0, bt=250.0):
 
 def pass_rows(cfg):
     """Cell 500, T = 06Z: MetOp-B (3) at 05:04 and 05:05 (the latest), MetOp-C (5) at 05:00
-    (same pass, other satellite), MetOp-B at 01:00 (an older pass)."""
+    (same pass, other satellite), MetOp-B at 01:00 (an older pass).
+    """
     times = ["2020-01-01 05:04", "2020-01-01 05:05", "2020-01-01 05:00", "2020-01-01 01:00"]
     df = rows(cfg, 500, times, bt=[250.0, 260.0, 300.0, 200.0])
     df["satid"] = pd.array([3, 3, 5, 3], dtype="Int32")
@@ -246,3 +247,12 @@ def test_prefix_names_every_output():
     assert "iasi_n_obs" in out.picked and "satid" in out.picked  # the group column keeps its input name
     with pytest.raises(ValueError, match="maps"):
         small_config(variables=variables, maps=["obsvalue_rawbt_1"])
+
+
+def test_unique_positions_round_trip():
+    from anemoi.transform.obs.grid import unique_positions
+
+    lat = np.array([10.0, 20.0, 10.0, 10.0, -0.0])
+    lon = np.array([5.0, 5.0, 5.0, 6.0, 7.0])
+    ulat, ulon, inverse = unique_positions(lat, lon)
+    assert len(ulat) == 4 and (ulat[inverse] == lat).all() and (ulon[inverse] == lon).all()

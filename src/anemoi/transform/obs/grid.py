@@ -60,11 +60,25 @@ def cell_index(grid: str, lat: np.ndarray, lon: np.ndarray) -> np.ndarray:
     return idx.astype(np.int32)
 
 
+def unique_positions(lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """(lat, lon, inverse): the distinct positions and, per input, the index of its own, so
+    per-position work is done once when positions repeat (gridded inputs: every hour holds
+    the same cells).
+    """
+    import pandas as pd
+
+    lat_code, lat_unique = pd.factorize(lat, use_na_sentinel=False)
+    lon_code, lon_unique = pd.factorize(lon, use_na_sentinel=False)
+    inverse, pairs = pd.factorize(lat_code.astype(np.int64) * len(lon_unique) + lon_code)
+    return lat_unique[pairs // len(lon_unique)], lon_unique[pairs % len(lon_unique)], inverse
+
+
 def cell_offsets_km(
     grid: str, lat: np.ndarray, lon: np.ndarray, cell: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """(distance, east, north) [km] of each obs from its cell centre: great-circle distance,
-    and the obs projected on the centre's tangent plane (no wrap at the dateline or poles)."""
+    and the obs projected on the centre's tangent plane (no wrap at the dateline or poles).
+    """
     glat, glon = (np.radians(g[cell]) for g in grid_points(grid))
     p = to_xyz(lat, lon)
     centre = np.column_stack([np.cos(glat) * np.cos(glon), np.cos(glat) * np.sin(glon), np.sin(glat)])

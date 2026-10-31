@@ -24,9 +24,9 @@ def apply(
 ) -> tuple[pd.DataFrame, np.ndarray, pd.DataFrame]:
     """(rows with masked values, keep mask, counts).
 
-    counts: one row per (group, step) with n = rows (flag:<col>, incomplete, in, kept) or
-    values (range:<col>, known_bad:<i>) removed by that step. A row failing several flags
-    counts under the first.
+    counts: one row per (group, step) with n = rows (flag:<col>, bits:<col>, incomplete, in,
+    kept) or values (value_flag:<channel>, range:<col>, known_bad:<i>) removed by that step.
+    A row failing several flags counts under the first.
     """
     keep = np.ones(len(df), bool)
     group = df[group_by].to_numpy(dtype=np.int64)
@@ -35,7 +35,19 @@ def apply(
         ok = df[column].isin(values).to_numpy()
         steps.append((f"flag:{column}", keep & ~ok))
         keep &= ok
+    for column, mask in qc.bits.items():
+        ok = (df[column].to_numpy(dtype=np.int64) & mask) == 0
+        steps.append((f"bits:{column}", keep & ~ok))
+        keep &= ok
     masked = {}
+    for channel, column in qc.value_flags.items():
+        v = df[channel].to_numpy(dtype=np.float32, na_value=np.nan)
+        out = np.isfinite(v) & (df[column].to_numpy(dtype=np.int64) != 0)
+        steps.append((f"value_flag:{channel}", keep & out))
+        masked[channel] = np.where(out, np.nan, v)
+    if masked:
+        df = df.assign(**masked)
+        masked = {}
     for column, (lo, hi) in qc.range.items():
         v = df[column].to_numpy(dtype=np.float32, na_value=np.nan)
         out = (v < lo) | (v > hi)
@@ -56,8 +68,10 @@ def apply(
         n_values = np.zeros(len(df), np.int64)
         n_values[keep & rows] = len(bad.columns)
         steps.append((f"known_bad:{i}", n_values))
-    if qc.require_complete:
-        complete = np.isfinite(df[channels].to_numpy(dtype=np.float32, na_value=np.nan)).all(1)
+    required = qc.required(channels)
+    if required != []:
+        present = np.isfinite(df[required or channels].to_numpy(dtype=np.float32, na_value=np.nan))
+        complete = present.any(1) if required is None else present.all(1)
         steps.append(("incomplete", keep & ~complete))
         keep &= complete
     steps.append(("kept", keep))

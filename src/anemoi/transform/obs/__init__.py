@@ -14,10 +14,14 @@ building real-time inference input share it.
 Input rows are a DataFrame with ``date``, ``latitude``, ``longitude`` and the columns the
 :class:`~anemoi.transform.obs.config.Gridding` names; output is one float32 array of
 (window, grid point) per variable (:func:`~anemoi.transform.obs.gridding.grid_windows`).
+Rows of several inputs (instruments, products) are joined first by
+:func:`~anemoi.transform.obs.inputs.combine`.
 """
 
 from anemoi.transform.obs.config import Gridding
 from anemoi.transform.obs.gridding import GriddedWindows
 from anemoi.transform.obs.gridding import grid_windows
+from anemoi.transform.obs.inputs import Input
+from anemoi.transform.obs.inputs import combine
 
-__all__ = ["Gridding", "GriddedWindows", "grid_windows"]
+__all__ = ["Gridding", "GriddedWindows", "Input", "combine", "grid_windows"]

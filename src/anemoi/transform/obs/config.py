@@ -8,7 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 """What a gridded observation variable holds: QC, selection and variables (a recipe's
-``grid_observations`` block, less the window and dates the dataset supplies)."""
+``grid_observations`` block, less the window and dates the dataset supplies).
+"""
 
 from typing import Literal
 
@@ -91,7 +92,8 @@ class Wavenumbers(Strict):
 
 class KnownBad(Strict):
     """Values set missing: `columns` of the groups listed (all if empty) from start
-    (inclusive) to end (exclusive; open if unset)."""
+    (inclusive) to end (exclusive; open if unset).
+    """
 
     columns: list[str]
     groups: list[int] = Field(default_factory=list)
@@ -101,18 +103,33 @@ class KnownBad(Strict):
 
 
 class Qc(Strict):
-    """Applied in this order: flags (rows out), range (values out), known_bad (values out),
-    require_complete (rows with any channel missing out)."""
+    """Applied in this order: flags and bits (rows out), value_flags, range and known_bad
+    (values out), require_complete (rows out).
+    """
 
     flags: dict[str, list[int]] = Field(default_factory=dict)  # keep rows whose column is one of the values
+    # rows out where column & mask != 0 (bit fields, e.g. AAPP qualind bit 31: 2147483648)
+    bits: dict[str, int] = Field(default_factory=dict)
+    # channel -> flag column: the channel's value is missing where its flag is non-zero
+    value_flags: dict[str, str] = Field(default_factory=dict)
     range: dict[str, tuple[float, float]] = Field(default_factory=dict)  # values outside [lo, hi] become missing
     known_bad: list[KnownBad] = Field(default_factory=list)
-    require_complete: bool = True
+    # true: every channel present; "any": at least one; a list: those channels; false: no rule
+    require_complete: bool | Literal["any"] | list[str] = True
+
+    def required(self, channels: list[str]) -> list[str] | None:
+        """The channels a row must all have, or None for "any"."""
+        if self.require_complete == "any":
+            return None
+        if self.require_complete is True:
+            return channels
+        return list(self.require_complete or [])
 
 
 class Scan(Strict):
     """Scan position from a field-of-view column: position k = fov // group_size in
-    [0, n_positions); first_side = the side of the flight track position 0 views."""
+    [0, n_positions); first_side = the side of the flight track position 0 views.
+    """
 
     column: str = "fov"
     n_positions: int
@@ -126,7 +143,9 @@ class Variables(Strict):
     columns: list[str] = Field(default_factory=list)
     derived: list[Literal[DERIVED]] = Field(default_factory=list)
     forcings: list[Literal[FORCINGS]] = Field(default_factory=list)
-    scan: Scan | None = None  # needed by scan_pos and signed_sin_vza
+    # needed by scan_pos and signed_sin_vza; "input": the rows carry scan_pos, computed per
+    # input (anemoi.transform.obs.inputs.Input.scan) when the inputs scan differently
+    scan: Scan | Literal["input"] | None = None
     # channels whose spread over the cell's candidates is stored as <output name>_std
     spread: list[str] = Field(default_factory=list)
     wavenumbers: Wavenumbers | None = None  # needed by select.mean_of: radiance
@@ -175,6 +194,10 @@ class Gridding(Strict):
             raise ValueError("select.mean_of: radiance needs variables.wavenumbers")
         if unknown := set(v.spread) - set(v.channels):
             raise ValueError(f"spread names no channel: {sorted(unknown)}")
+        if unknown := set(self.qc.value_flags) - set(v.channels):
+            raise ValueError(f"qc.value_flags names no channel: {sorted(unknown)}")
+        if isinstance(self.qc.require_complete, list) and (unknown := set(self.qc.require_complete) - set(v.channels)):
+            raise ValueError(f"qc.require_complete names no channel: {sorted(unknown)}")
         outputs = v.outputs()
         if len(set(outputs)) != len(outputs):
             raise ValueError("two variables share an output name")
@@ -186,13 +209,16 @@ class Gridding(Strict):
     def input_columns(self) -> list[str]:
         """The input columns gridding reads."""
         v = self.variables
-        need = ["date", "latitude", "longitude", self.group_by, *self.qc.flags, *self.qc.range]
+        need = ["date", "latitude", "longitude", self.group_by, *self.qc.flags, *self.qc.bits]
+        need += [*self.qc.value_flags.values(), *self.qc.range]
         need += [*v.columns, *v.channels]
         need += [c for bad in self.qc.known_bad for c in bad.columns]
         if {"cos_vza", "signed_sin_vza"} & set(v.derived):
             need.append("zenith")
         if "cos_sza_obs" in v.derived:
             need.append("solar_zenith")
-        if v.scan is not None:
+        if v.scan == "input":
+            need.append("scan_pos")
+        elif v.scan is not None:
             need.append(v.scan.column)
         return list(dict.fromkeys(need))

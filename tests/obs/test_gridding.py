@@ -54,7 +54,7 @@ def small_config(**block) -> Gridding:
 def mean_config(**rule) -> Gridding:
     variables = small_config().variables.model_dump(exclude_unset=True)
     variables["derived"] = [*variables["derived"], "cos_sza_obs"]
-    variables |= {"spread": ["bt_1"], "wavenumbers": {"first": 645.0, "step": 0.25}}
+    variables |= {"spread": ["bt_1"], "wavenumbers": {"first": 645.0, "step": 0.25}, "solar_zenith": "solar_zenith"}
     return small_config(select={"candidates": "latest_pass", "reduce": "mean"} | rule, variables=variables)
 
 
@@ -203,6 +203,33 @@ def test_mean_superob_averages_the_latest_satellite_of_the_latest_pass():
     sparse = mean_config(min_obs=3)
     arrays = grid_windows(sparse, pass_rows(sparse), DAY, WINDOW, FREQ).arrays
     assert np.isnan(arrays["obsvalue_rawbt_1"][step]).all()
+
+
+def test_max_spread_empties_cells_whose_candidates_disagree():
+    # the superob of 250 and 260 has a spread of 5 K
+    for limit, kept in ((4.0, False), (5.0, True)):
+        cfg = mean_config(max_spread={"bt_1": limit})
+        arrays = grid_windows(cfg, pass_rows(cfg), DAY, WINDOW, FREQ).arrays
+        assert np.isfinite(arrays["obsvalue_rawbt_1"][1, 500]) == kept
+        assert np.isfinite(arrays["cos_sza"][1, 500])  # forcings stay
+    with pytest.raises(ValueError, match="max_spread names no channel"):
+        mean_config(max_spread={"bt_2": 1.0})
+
+
+def test_cos_sza_obs_computed_from_the_obs_time_and_position():
+    cfg = mean_config()
+    variables = cfg.variables.model_dump(exclude_unset=True)
+    del variables["solar_zenith"]
+    cfg = small_config(select=cfg.select.model_dump(exclude_unset=True), variables=variables)
+    assert "solar_zenith" not in cfg.input_columns()
+    df = pass_rows(cfg).drop(columns="solar_zenith")
+    arrays = grid_windows(cfg, df, DAY, WINDOW, FREQ).arrays
+    lat, lon = grid_points(cfg.grid)
+    expect = [derived.cos_sza_at(pd.Series(pd.to_datetime([t])), lat[500:501], lon[500:501])[0] for t in df["date"][:2]]
+    assert arrays["cos_sza_obs"][1, 500] == pytest.approx(np.mean(expect), abs=1e-6)
+    # unclipped: noon and midnight on the equator at the equinox
+    times = pd.Series(pd.to_datetime(["2020-03-20 12:00", "2020-03-20 00:00"]))
+    assert derived.cos_sza_at(times, np.zeros(2), np.zeros(2)) == pytest.approx([1, -1], abs=0.01)
 
 
 def test_nearest_picks_across_satellites_and_spread_covers_the_pass():

@@ -113,6 +113,13 @@ def row_values(
     elif v.scan is not None:
         scan_pos = derived.scan_position(pick[v.scan.column].to_numpy(np.int64), v.scan)
     zenith = pick["zenith"].to_numpy(np.float32) if "zenith" in pick else None
+
+    def cos_sza_obs():
+        if v.solar_zenith:
+            return np.cos(np.radians(pick[v.solar_zenith].to_numpy(np.float64)))
+        lat, lon = (pick[c].to_numpy(np.float64) for c in ("latitude", "longitude"))
+        return derived.cos_sza_at(pick["date"], lat, lon)
+
     every = {
         "time_delta": lambda: hours,
         "time_delta_norm": lambda: hours / freq_h,
@@ -123,7 +130,7 @@ def row_values(
         "offset_north_km": lambda: north[rows],
         "offset_east_norm": lambda: east[rows] / spacing,
         "offset_north_norm": lambda: north[rows] / spacing,
-        "cos_sza_obs": lambda: np.cos(np.radians(pick["solar_zenith"].to_numpy(np.float64))),
+        "cos_sza_obs": cos_sza_obs,
     }
     names = [n for n in v.derived if n != "n_obs"]
     return out | {n: np.asarray(every[n](), np.float32) for n in names}
@@ -166,12 +173,16 @@ def cell_values(
             out[name] = derived.radiance_to_bt(out[name], wavenumber)
     else:
         out = row_values(cfg, df, first, time, freq, east, north)
+    spread = {}
+    for c in dict.fromkeys([*v.spread, *s.max_spread]):
+        spread[c] = select.group_std(df[c].to_numpy(dtype=np.float64, na_value=np.nan)[rows], starts)
     for c in v.spread:
-        x = df[c].to_numpy(dtype=np.float64, na_value=np.nan)[rows]
-        out[f"{v.out_name(c)}_std"] = select.group_std(x, starts)
+        out[f"{v.out_name(c)}_std"] = spread[c]
     if "n_obs" in v.derived:
         out["n_obs"] = n_obs
     keep = n_obs >= s.min_obs
+    for c, limit in s.max_spread.items():
+        keep &= ~(spread[c] > limit)
     out = {k: np.asarray(x, np.float32)[keep] for k, x in out.items()}
     return cell[first][keep], out, group[first][keep]
 

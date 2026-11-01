@@ -60,13 +60,21 @@ def solar_declination(julian_day: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return declination, time_correction
 
 
-def cos_sza(julian_day, hours, lat, lon) -> np.ndarray:
-    """Cosine of the solar zenith angle, clipped at 0 (night)."""
+def cos_sza(julian_day, hours, lat, lon, clip: bool = True) -> np.ndarray:
+    """Cosine of the solar zenith angle, clipped at 0 (night) unless clip is false."""
     declination, time_correction = solar_declination(julian_day)
     declination, lat = np.radians(declination), np.radians(lat)
     hour_angle = np.radians((hours - 12) * 15 + lon + time_correction)
     cos = np.sin(declination) * np.sin(lat) + np.cos(declination) * np.cos(lat) * np.cos(hour_angle)
-    return np.clip(cos, 0, None)
+    return np.clip(cos, 0, None) if clip else cos
+
+
+def cos_sza_at(times: pd.Series, lat: np.ndarray, lon: np.ndarray) -> np.ndarray:
+    """Unclipped cos_sza at each obs' own time and position (cos_sza_obs)."""
+    t = np.asarray(times, dtype="datetime64[ns]")
+    julian_day = (t - t.astype("datetime64[Y]")) / np.timedelta64(1, "D")
+    hours = (t - t.astype("datetime64[D]")) / np.timedelta64(1, "h")
+    return cos_sza(julian_day, hours, lat, lon, clip=False)
 
 
 def forcings(names: list[str], time: pd.Timestamp, lat: np.ndarray, lon: np.ndarray) -> dict:

@@ -31,7 +31,9 @@ DERIVED = (
     "offset_east_norm",  # offsets / the grid's mean spacing (grid.mean_spacing_km)
     "offset_north_norm",
     "n_obs",  # candidates the cell's value was chosen from (or averaged)
-    "cos_sza_obs",  # cos of the obs' own solar zenith angle, unclipped (night < 0)
+    # cos of the obs' own solar zenith angle, unclipped (night < 0): computed from the obs'
+    # time and position, or from variables.solar_zenith
+    "cos_sza_obs",
 )
 # Known functions of (T, grid point), filled in every cell (anemoi.transform.obs.derived)
 FORCINGS = (
@@ -65,6 +67,9 @@ class Select(Strict):
     pass_gap: str = "15min"
     reduce: Literal["nearest", "latest", "mean"]
     min_obs: int = 1  # cells with fewer candidates stay empty
+    # channel -> K: cells whose candidates' spread (population std) of the channel exceeds it
+    # stay empty (stripes, mis-navigated scans); a cell without the channel is kept
+    max_spread: dict[str, float] = Field(default_factory=dict)
     # mean only: average channels as radiance (variables.wavenumbers), stored as the BT of
     # the mean radiance; bt averages the BTs
     mean_of: Literal["bt", "radiance"] = "bt"
@@ -148,6 +153,9 @@ class Variables(Strict):
     scan: Scan | Literal["input"] | None = None
     # channels whose spread over the cell's candidates is stored as <output name>_std
     spread: list[str] = Field(default_factory=list)
+    # cos_sza_obs from this column [deg] (as reported); unset: computed from the obs' time,
+    # latitude and longitude (derived.cos_sza), so it needs no column and is never stale
+    solar_zenith: str | None = None
     wavenumbers: Wavenumbers | None = None  # needed by select.mean_of: radiance
     # output names: a key ending in "_" renames a prefix (bt_ -> obsvalue_rawbt_)
     rename: dict[str, str] = Field(default_factory=dict)
@@ -194,6 +202,8 @@ class Gridding(Strict):
             raise ValueError("select.mean_of: radiance needs variables.wavenumbers")
         if unknown := set(v.spread) - set(v.channels):
             raise ValueError(f"spread names no channel: {sorted(unknown)}")
+        if unknown := set(self.select.max_spread) - set(v.channels):
+            raise ValueError(f"select.max_spread names no channel: {sorted(unknown)}")
         if unknown := set(self.qc.value_flags) - set(v.channels):
             raise ValueError(f"qc.value_flags names no channel: {sorted(unknown)}")
         if isinstance(self.qc.require_complete, list) and (unknown := set(self.qc.require_complete) - set(v.channels)):
@@ -215,8 +225,8 @@ class Gridding(Strict):
         need += [c for bad in self.qc.known_bad for c in bad.columns]
         if {"cos_vza", "signed_sin_vza"} & set(v.derived):
             need.append("zenith")
-        if "cos_sza_obs" in v.derived:
-            need.append("solar_zenith")
+        if "cos_sza_obs" in v.derived and v.solar_zenith:
+            need.append(v.solar_zenith)
         if v.scan == "input":
             need.append("scan_pos")
         elif v.scan is not None:

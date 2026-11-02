@@ -33,13 +33,15 @@ classifiers = [
 ]
 dynamic = [ "version" ]
 dependencies = [
-  "anemoi-utils>=0.5.4",
+  "anemoi-utils>=0.5.14",
   "cfunits",
   "earthkit-data>=0.12.4,<1",
   "earthkit-geo>=1", #TODO: update when earthkit geo PR about mir-make-matrix is merged
   "earthkit-meteo>=0.4.1,<1",
   "healpy",
   "pandas<3",
+  # https://github.com/ecmwf/anemoi-transform/issues/345
+  "pyproj<3.8",
 ]
 optional-dependencies.all = [ "anemoi-transform[plots]" ]
 optional-dependencies.dev = [ "anemoi-transform[all,docs,tests]" ]
@@ -50,7 +52,7 @@ optional-dependencies.docs = [
   "requests",
   "ruamel-yaml>=0.16",
   "sphinx>=8.2",
-  "sphinx-argparse<0.5",
+  "sphinx-argparse<0.7",
   "sphinx-rtd-theme",
   "termcolor",
 ]

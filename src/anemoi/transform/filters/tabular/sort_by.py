@@ -51,13 +51,13 @@ class SortBy(Filter):
         try:
             df_sorted = df_sorted.sort_values(by=self.columns, kind="stable")
         except Exception as e:
-            logging.error(f"Error sorting DataFrame: {type(e).__name__}: {str(e)}")
+            logging.error(f"Error sorting DataFrame: {type(e).__name__}: {e!s}")
             for col in self.columns:
                 try:
                     _ = df_sorted[col]
                     logging.info(f"Successfully accessed column: {col}")
                 except Exception as e:
-                    logging.error(f"Failed to access column {col}: {str(e)}")
+                    logging.error(f"Failed to access column {col}: {e!s}")
                     raise
             return df_sorted
 

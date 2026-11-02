@@ -11,15 +11,13 @@ from typing import Literal
 
 import earthkit.data as ekd
 import numpy as np
-from earthkit.meteo import thermo
-from earthkit.meteo import vertical
+from earthkit.meteo import thermo, vertical
 from numpy.typing import NDArray
 
 from anemoi.transform.constants import model_level_AB as predefined_AB
 from anemoi.transform.filters.fields import filter_registry
 
-from .matching import MatchingFieldsFilter
-from .matching import MatchingSpec
+from .matching import MatchingFieldsFilter, MatchingSpec
 
 # Protection against zero relative or specific humidity when calculating dewpoint temperature
 EPS_SPECIFIC = 1.0e-8
@@ -45,9 +43,7 @@ def _check_consistency(A: NDArray, B: NDArray, model_level_fields: dict[str, ekd
     assert A.shape == B.shape, "A and B coefficients must have same shape"
     for name, field in model_level_fields.items():
         # Assert that model levels are passed
-        assert all(item == "ml" for item in field.metadata("levtype")), "Field {} does not contain model levels".format(
-            name,
-        )
+        assert all(item == "ml" for item in field.metadata("levtype")), f"Field {name} does not contain model levels"
         # Assert that A and B coefficients have one more vertical level than the model level field
         assert (
             A.shape[-1] == field.to_numpy().shape[0] + 1

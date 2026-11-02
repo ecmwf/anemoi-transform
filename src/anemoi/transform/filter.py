@@ -18,9 +18,7 @@ import earthkit.data as ekd
 import numpy as np
 import pandas as pd
 
-from anemoi.transform.fields import FieldSelection
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.fields import FieldSelection, new_field_from_numpy, new_fieldlist_from_list
 from anemoi.transform.transform import Transform
 
 LOG = logging.getLogger(__name__)
@@ -29,7 +27,6 @@ LOG = logging.getLogger(__name__)
 class Filter(Transform):
     """A filter transform that processes field data."""
 
-    pass
 
 
 class DispatchingFilter(Transform):
@@ -126,7 +123,6 @@ class SingleFieldFilter(Filter):
             if self.positive_number < 0:
                 raise ValueError("positive_number must be positive")
         """
-        pass
 
     def forward_select(self) -> dict[str, str | list[str] | tuple[str]]:
         """Provide an opportunity for subclasses to select specific fields for processing.
@@ -153,7 +149,6 @@ class SingleFieldFilter(Filter):
     @abstractmethod
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
         """Apply the transformation to a field. Must be implemented by subclasses."""
-        pass
 
     def backward_transform(self, field: ekd.Field) -> ekd.Field:
         """Apply the backward transformation to a field."""

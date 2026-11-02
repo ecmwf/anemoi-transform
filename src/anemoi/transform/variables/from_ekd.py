@@ -8,9 +8,7 @@
 # nor does it submit to any jurisdiction.
 
 import logging
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Union
+from typing import TYPE_CHECKING, Any, Union
 
 from anemoi.transform.units import Units
 from anemoi.transform.variables import Variable

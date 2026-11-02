@@ -39,8 +39,8 @@ class Drop(SingleFieldFilter):
 
     def forward_transform(self, drop_field: ekd.Field) -> None:
         """Drop fields based on metadata selection."""
-        return None
+        return
 
     def backward_transform(self, drop_field: ekd.Field) -> None:
         """Drop fields based on metadata selection."""
-        return None
+        return

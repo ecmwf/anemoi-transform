@@ -14,11 +14,11 @@ from earthkit.meteo.constants.constants import g as g_gravitational_acceleration
 from earthkit.meteo.constants.constants import radian
 
 __all__ = [
-    "g_gravitational_acceleration",
-    "R_universal_gas_constant",
-    "model_level_AB",
-    "R_earth_km",
     "L_1_degree_earth_arc_length_km",
+    "R_earth_km",
+    "R_universal_gas_constant",
+    "g_gravitational_acceleration",
+    "model_level_AB",
 ]
 
 R_earth_km = R_earth_meter / 1000

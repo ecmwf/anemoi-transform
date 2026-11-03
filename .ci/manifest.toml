@@ -21,8 +21,6 @@ job-script = "./.ci/test.sh.j2"
 runs-on = "ubuntu-24.04"
 platform = "gh-ubuntu-24.04"
 extras = "all,tests"
-# ubuntu-24.04 has 4 vCPUs.
-pytest-args = "-n 4"
 
 [[matrix.test.include]]
 python-version = "3.11"

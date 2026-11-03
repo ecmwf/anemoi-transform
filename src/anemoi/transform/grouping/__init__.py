@@ -174,3 +174,30 @@ class GroupByParamVertical(GroupByParam):
                 levels[key][param].append(level)
             self.groups_params.add(param)
         LOG.info(f"Params groups: {self.groups_params}")
+
+
+class GroupByParamIgnoreLevel(GroupByParam):
+    """GroupByParam that ignores the vertical level in the grouping key."""
+
+    def _get_groups(self, data, *, other=None):
+        from anemoi.transform.grouping import _lost
+
+        other = other or _lost
+        assert callable(other), type(other)
+        self.groups = defaultdict(dict)
+        self.groups_params = set()
+        for f in data:
+            key, extras = self._get_grouping_key(
+                f,
+                extract_from_grouping_key=["param"],
+                remove_from_grouping_key=["variable", "levelist", "levtype"],
+            )
+            param = extras["param"]
+            if param not in self.params:
+                other(f)
+                continue
+            key = frozenset(key.items())
+            if param in self.groups[key]:
+                raise ValueError(f"Duplicate component {param} for {key}")
+            self.groups[key][param] = f
+            self.groups_params.add(param)

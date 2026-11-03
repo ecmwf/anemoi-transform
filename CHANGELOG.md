@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.5.1](https://github.com/ecmwf/anemoi-transform/compare/0.5.0...0.5.1) (2026-10-15)
+
+
+### Features
+
+* **variables:** Log incompatibility warnings only once ([#358](https://github.com/ecmwf/anemoi-transform/issues/358)) ([a26b5bc](https://github.com/ecmwf/anemoi-transform/commit/a26b5bc49e4078dcd12d93f520ff46ffba97b1d5))
+
 ## [0.5.0](https://github.com/ecmwf/anemoi-transform/compare/0.4.3...0.5.0) (2026-09-25)
 
 

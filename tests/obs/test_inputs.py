@@ -116,3 +116,35 @@ def test_bits_value_flags_and_required_channels():
     with pytest.raises(ValueError, match="require_complete"):
         config(qc={"require_complete": ["bt_9"]})
     assert set(config(qc={"bits": {"qualind": 1}, "value_flags": {"bt_1": "q1"}}).input_columns()) >= {"qualind", "q1"}
+
+
+def test_input_qc_on_its_own_columns():
+    cfg = config()
+    flagged = Input(
+        channels={"bt_a": "bt_1", "bt_b": "bt_2"},
+        scan=OLD.scan,
+        qc={"bits": {"pixel_qc": 2}, "value_flags": {"bt_a": "issue_a"}, "range": {"zen": [0, 90]}},
+    )
+    old = frame(500, ["2020-01-01 05:00"] * 4, 204, 0, bt_a=210.0, bt_b=220.0).assign(
+        pixel_qc=[0, 2, 0, 0], issue_a=[0, 0, 1, 0], zen=[10.0, 10.0, np.nan, 178.0]
+    )
+    assert flagged.columns(cfg)[-3:] == ["pixel_qc", "issue_a", "zen"]
+    df = combine(cfg, [(flagged, old)])
+    assert list(df.columns) == cfg.input_columns()  # the flag columns are not passed on
+    # a missing zenith passes the range
+    assert df["bt_1"].isna().tolist() == [False, True, True, True]
+    assert df["bt_2"].isna().tolist() == [False, True, False, True]
+    _, keep, counts = qc.apply(cfg.qc, df, cfg.variables.channels)
+    assert keep.tolist() == [True, False, True, False]
+    assert counts.set_index(["group", "step"])["n"][204, "incomplete"] == 2
+    # a row out of the input qc has its scan position unchecked (fov -1 out of range)
+    bad_fov = old.assign(fov=[0, 0, 0, -1])
+    with pytest.raises(ValueError, match="maps outside"):
+        combine(cfg, [(OLD, bad_fov)])
+    fenced = Input(channels={"bt_a": "bt_1", "bt_b": "bt_2"}, scan=OLD.scan, qc={"range": {"fov": [0, 10]}})
+    df = combine(cfg, [(fenced, bad_fov)])
+    assert df["scan_pos"].isna().tolist() == [False, False, False, True]
+    with pytest.raises(ValueError, match="no column this input fills"):
+        Input(channels={"bt_a": "bt_1"}, scan=OLD.scan, qc={"value_flags": {"bt_b": "q"}}).columns(cfg)
+    with pytest.raises(ValueError, match="require_complete"):
+        flagged.columns(config(qc={"require_complete": False}))

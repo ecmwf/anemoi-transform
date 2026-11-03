@@ -26,6 +26,33 @@ from anemoi.transform.obs.config import Scan
 from anemoi.transform.obs.config import Strict
 
 
+class InputQc(Strict):
+    """An input's own flag rules, on its own column names (inputs carry different flag
+    columns): rows failing flags, bits or range lose every channel, value_flags mask one value
+    ({input column: flag column}). Applied before the dataset's qc, whose require_complete
+    then drops (and counts as incomplete) the rows left without a channel.
+    """
+
+    flags: dict[str, list[int]] = Field(default_factory=dict)  # keep rows whose column is one of the values
+    bits: dict[str, int] = Field(default_factory=dict)  # rows out where column & mask != 0
+    value_flags: dict[str, str] = Field(default_factory=dict)  # value missing where its flag is non-zero
+    range: dict[str, tuple[float, float]] = Field(default_factory=dict)  # rows out where column is outside [lo, hi]
+
+    def columns(self) -> list[str]:
+        return list(dict.fromkeys([*self.flags, *self.bits, *self.value_flags.values(), *self.range]))
+
+    def row_ok(self, df: pd.DataFrame) -> np.ndarray:
+        ok = np.ones(len(df), bool)
+        for column, values in self.flags.items():
+            ok &= df[column].isin(values).to_numpy()
+        for column, mask in self.bits.items():
+            ok &= (df[column].to_numpy(dtype=np.int64) & mask) == 0
+        for column, (lo, hi) in self.range.items():
+            v = df[column].to_numpy(dtype=np.float64, na_value=np.nan)
+            ok &= ~((v < lo) | (v > hi))
+        return ok
+
+
 class Input(Strict):
     """How one input's rows join the dataset.
 
@@ -35,6 +62,7 @@ class Input(Strict):
     from its same-named column (unset), those listed, or {input column: dataset channel}.
     group_offset: added to the group column, e.g. 10000 to tell a CDR's satellites from the
     real-time stream's. scan: this input's scan geometry, when the dataset's is "input".
+    qc: this input's own flag rules (InputQc).
     """
 
     dates: tuple[str | None, str | None] = (None, None)
@@ -42,6 +70,7 @@ class Input(Strict):
     channels: list[str] | dict[str, str] | None = None
     group_offset: int = 0
     scan: Scan | None = None
+    qc: InputQc | None = None
 
     @model_validator(mode="after")
     def _check(self):
@@ -74,6 +103,12 @@ class Input(Strict):
             raise ValueError('variables.scan is "input": every input needs its scan')
         if self.scan is not None and cfg.variables.scan != "input":
             raise ValueError('an input scan needs variables.scan: "input"')
+        if self.qc is not None:
+            if cfg.qc.require_complete is False:
+                raise ValueError("an input qc needs qc.require_complete: its rows out are rows without channels")
+            sources = {self.source_of(c) for c in channels} - {None}
+            if unknown := set(self.qc.value_flags) - sources:
+                raise ValueError(f"input qc value_flags name no column this input fills: {sorted(unknown)}")
 
     def columns(self, cfg: Gridding) -> list[str]:
         """The input columns to read for cfg.input_columns()."""
@@ -87,6 +122,8 @@ class Input(Strict):
                 column = self.scan.column
             if column is not None:
                 out.append(column)
+        if self.qc is not None:
+            out += self.qc.columns()
         return list(dict.fromkeys(out))
 
     def prepare(self, cfg: Gridding, df: pd.DataFrame) -> pd.DataFrame:
@@ -101,13 +138,28 @@ class Input(Strict):
         if self.groups:
             keep &= df[cfg.group_by].isin(self.groups).to_numpy()
         df = df[keep].reset_index(drop=True)
+        row_ok = np.ones(len(df), bool)
+        if self.qc is not None:
+            row_ok = self.qc.row_ok(df)
+            masked = {}
+            for column in {self.source_of(c) for c in cfg.variables.channels} - {None}:
+                v = df[column].to_numpy(dtype=np.float32, na_value=np.nan)
+                out = ~row_ok
+                if column in self.qc.value_flags:
+                    out = out | (df[self.qc.value_flags[column]].to_numpy(dtype=np.int64) != 0)
+                masked[column] = np.where(out, np.nan, v)
+            df = df.assign(**masked)
         out = {}
         for column in cfg.input_columns():
             if column in cfg.variables.channels:
                 source = self.source_of(column)
                 out[column] = df[source] if source else np.full(len(df), np.nan, np.float32)
             elif column == "scan_pos" and cfg.variables.scan == "input":
-                out[column] = derived.scan_position(df[self.scan.column].to_numpy(np.int64), self.scan)
+                # rows out (input qc) lose every channel and drop: their position is not checked
+                # (od ai MetOp-A 2006-11 has fov -1)
+                pos = np.full(len(df), np.nan, np.float32)
+                pos[row_ok] = derived.scan_position(df[self.scan.column].to_numpy(np.int64)[row_ok], self.scan)
+                out[column] = pos
             elif column == cfg.group_by:
                 out[column] = df[column].astype(np.int64) + self.group_offset
             else:

@@ -275,9 +275,6 @@ class MIRMatrix:
 
         self.check = check
 
-        if self.check:
-            LOG.warning("Check is not supported by MIRMatrix")
-
         loaded = dict(np.load(matrix))
 
         self.matrix: csr_array = csr_array(
@@ -303,8 +300,12 @@ class MIRMatrix:
             The interpolated field.
         """
         if self.check:
-            # TODO: Check that the field is on the same grid as the in_grid
-            pass
+            latitudes, longitudes = field.grid_points()
+            if latitudes.shape != self.in_grid["latitudes"].shape or not (
+                np.allclose(latitudes, self.in_grid["latitudes"])
+                and np.allclose(longitudes, self.in_grid["longitudes"])
+            ):
+                raise ValueError("Field is not on the same grid as the matrix in_grid")
 
         data = field.to_numpy(flatten=True)
         data = self.matrix @ data

@@ -71,15 +71,15 @@ package-data."anemoi.transform" = [ "py.typed" ]
 [tool.setuptools_scm]
 version_file = "src/anemoi/transform/_version.py"
 
-[tool.pytest]
-ini_options.addopts = "-n logical --maxprocesses=16"
-
 [tool.mypy]
 exclude = [
   "docs/*",
 ]
 disable_error_code = [ "import-untyped" ]
 strict = false
+
+[tool.pytest]
+ini_options.addopts = "-n logical --maxprocesses=16"
 
 [tool.pydocstringformatter]
 write = true

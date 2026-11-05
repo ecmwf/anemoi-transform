@@ -58,7 +58,7 @@ optional-dependencies.docs = [
   "termcolor",
 ]
 optional-dependencies.plots = [ "matplotlib" ]
-optional-dependencies.tests = [ "pytest", "pytest-skip-slow" ]
+optional-dependencies.tests = [ "pytest", "pytest-skip-slow", "pytest-xdist" ]
 urls.Documentation = "https://anemoi-transform.readthedocs.io/"
 urls.Homepage = "https://github.com/ecmwf/anemoi-transform/"
 urls.Issues = "https://github.com/ecmwf/anemoi-transform/issues"
@@ -77,6 +77,9 @@ exclude = [
 ]
 disable_error_code = [ "import-untyped" ]
 strict = false
+
+[tool.pytest]
+ini_options.addopts = "-n logical --maxprocesses=16"
 
 [tool.pydocstringformatter]
 write = true

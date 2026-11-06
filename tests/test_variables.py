@@ -134,3 +134,20 @@ def test_variable_from_earthkit_accumulation() -> None:
     # survives setting mapped keys, which drops the raw GRIB metadata
     renamed = new_field_with_metadata(tp, param="tp")
     assert Variable.from_earthkit("tp", renamed).is_accumulation is True
+
+
+@pytest.mark.parametrize(
+    "units1, units2, compatible",
+    [
+        ("K", "K", True),
+        ("K", "kelvin", True),
+        ("kg m-2", "kilogram / meter ** 2", True),
+        ("K", "degC", False),
+        ("Pa", "hPa", False),
+    ],
+)
+def test_variable_compatible_units(units1, units2, compatible) -> None:
+    """Units compare by meaning, so a spelling change (e.g. from earthkit-data 1.x) does not break compatibility."""
+    t1 = Variable.from_dict("t", {"mars": {"param": "t", "levtype": "sfc"}, "units": units1})
+    t2 = Variable.from_dict("t", {"mars": {"param": "t", "levtype": "sfc"}, "units": units2})
+    assert t1.compatible(t2) is compatible

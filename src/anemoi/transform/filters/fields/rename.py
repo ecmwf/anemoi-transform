@@ -14,6 +14,7 @@ import earthkit.data as ekd
 from anemoi.transform.fields import new_field_with_metadata
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
+from anemoi.transform.metadata import get_metadata
 
 
 class FormatRename:
@@ -28,18 +29,11 @@ class FormatRename:
         self.format_keys = [b.replace(":", self._delimiter) for b in self.bits]
 
     def rename(self, field):
-        md = field.metadata(self.what, default=None)
+        md = get_metadata(field, self.what, default=None)
         if md is None:
             return field
 
-        values = field.metadata(*self.bits)
-        values = (
-            [
-                values,
-            ]
-            if isinstance(values, str)
-            else values
-        )
+        values = [get_metadata(field, b) for b in self.bits]
 
         kwargs = dict(zip(self.format_keys, values))
         kwargs = {self.what: self.format.format(**kwargs)}
@@ -52,7 +46,7 @@ class DictRename:
         self.renaming = renaming
 
     def rename(self, field):
-        md = field.metadata(self.what, default=None)
+        md = get_metadata(field, self.what, default=None)
         if md is None:
             return field
 

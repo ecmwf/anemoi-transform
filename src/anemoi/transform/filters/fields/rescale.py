@@ -44,12 +44,13 @@ class RescaleMixin(ABC):
         raise NotImplementedError("prepare_filter must be implemented by subclasses.")
 
     def forward_select(self):
-        return {"param": self.param}
+        return {"parameter.variable": self.param}
 
     def forward_transform(self, param: ekd.Field) -> ekd.Field:
         """Apply the forward transformation (x to ax+b)."""
         rescaled = self.rescaler.forward(param.to_numpy())
-        return self.new_field_from_numpy(rescaled, template=param, param=self.param, units=self.forward_units)
+        units = {} if self.forward_units is None else {"units": self.forward_units}
+        return self.new_field_from_numpy(rescaled, template=param, param=self.param, **units)
 
     def backward_transform(self, param: ekd.Field) -> ekd.Field:
         """Apply the backward transformation (ax+b to x)."""

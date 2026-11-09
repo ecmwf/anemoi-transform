@@ -27,9 +27,7 @@ def test_radiance_to_brightness_temperature():
             "obsvalue_rad_1": [0.01, 0.1, 1.0],
         }
     )
-    radiance_to_brightness_temperature = create_filter(
-        "radiance_to_brightness_temperature", **config
-    )
+    radiance_to_brightness_temperature = create_filter("radiance_to_brightness_temperature", **config)
     result = radiance_to_brightness_temperature(df.copy())
 
     assert isinstance(result, pd.DataFrame)
@@ -47,9 +45,7 @@ def test_radiance_to_brightness_temperature_missing_columns():
         "mode": "cris_fsr",
     }
     df = pd.DataFrame({"foo": [0.01, 0.1, 1.0]})
-    radiance_to_brightness_temperature = create_filter(
-        "radiance_to_brightness_temperature", **config
-    )
+    radiance_to_brightness_temperature = create_filter("radiance_to_brightness_temperature", **config)
     with pytest.raises(ValueError):
         _ = radiance_to_brightness_temperature(df.copy())
 

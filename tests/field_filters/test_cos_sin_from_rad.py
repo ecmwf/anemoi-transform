@@ -11,7 +11,8 @@ import pytest
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
-from ..utils import assert_fields_equal, collect_fields_by_param
+from ..utils import assert_fields_equal
+from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -19,17 +20,11 @@ MOCK_FIELD_METADATA = {
     "valid_datetime": "2018-08-01T09:00:00Z",
 }
 
-RAD_VALUES = np.array(
-    [[2.67687254, 2.59108576], [1.83746659, 1.73104875], [1.1348185, 2.23051268]]
-)
+RAD_VALUES = np.array([[2.67687254, 2.59108576], [1.83746659, 1.73104875], [1.1348185, 2.23051268]])
 
-COS_RAD_VALUES = np.array(
-    [[-0.89394704, -0.85225947], [-0.26352086, -0.15956740], [0.42229696, -0.61289275]]
-)
+COS_RAD_VALUES = np.array([[-0.89394704, -0.85225947], [-0.26352086, -0.15956740], [0.42229696, -0.61289275]])
 
-SIN_RAD_VALUES = np.array(
-    [[0.44817262, 0.52311930], [0.96465370, 0.98718704], [0.90645754, 0.79016611]]
-)
+SIN_RAD_VALUES = np.array([[0.44817262, 0.52311930], [0.96465370, 0.98718704], [0.90645754, 0.79016611]])
 
 
 @pytest.fixture

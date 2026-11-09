@@ -49,12 +49,8 @@ def sample_fields():
 
 @pytest.fixture
 def sample_fields_vertical():
-    surface_fields = field_generator(
-        step=[0, 1], levtype=["sfc"], param=["2q", "2r", "2t", "sp"]
-    )
-    vertical_fields = field_generator(
-        step=[0, 1], levtype=["ml"], param=["q", "t"], levelist=[1, 2, 3]
-    )
+    surface_fields = field_generator(step=[0, 1], levtype=["sfc"], param=["2q", "2r", "2t", "sp"])
+    vertical_fields = field_generator(step=[0, 1], levtype=["ml"], param=["q", "t"], levelist=[1, 2, 3])
     return surface_fields + vertical_fields
 
 

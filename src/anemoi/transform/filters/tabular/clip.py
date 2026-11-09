@@ -46,13 +46,9 @@ class Clip(Filter):
             raise ValueError("No columns to clip were specified.")
         for column, clip_range in config.items():
             if not isinstance(clip_range, (list, tuple)) or len(clip_range) != 2:
-                raise ValueError(
-                    f"Invalid clip range for column {column}: {clip_range}"
-                )
+                raise ValueError(f"Invalid clip range for column {column}: {clip_range}")
             if not all(isinstance(v, (int, float)) or v is None for v in clip_range):
-                raise ValueError(
-                    f"Clip range values for column {column} must be numeric or None: {clip_range}"
-                )
+                raise ValueError(f"Clip range values for column {column} must be numeric or None: {clip_range}")
         self.config = config
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:

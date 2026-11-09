@@ -56,9 +56,7 @@ class Orography(SingleFieldFilter):
         """
         new_metadata = {"param": self.geopotential}
         return self.new_field_from_numpy(
-            orography.to_numpy() * g_gravitational_acceleration,
-            template=orography,
-            **new_metadata,
+            orography.to_numpy() * g_gravitational_acceleration, template=orography, **new_metadata
         )
 
     def backward_transform(self, geopotential: ekd.Field) -> ekd.Field:
@@ -76,9 +74,7 @@ class Orography(SingleFieldFilter):
         """
         orig_metadata = {"param": self.orography}
         return self.new_field_from_numpy(
-            geopotential.to_numpy() / g_gravitational_acceleration,
-            template=geopotential,
-            **orig_metadata,
+            geopotential.to_numpy() / g_gravitational_acceleration, template=geopotential, **orig_metadata
         )
 
     def patch_data_request(self, data_request: Any) -> Any:
@@ -89,22 +85,12 @@ class Orography(SingleFieldFilter):
         param = param if isinstance(param, list) else [param]
 
         if self.geopotential in param and self.orography in param:
-            raise ValueError(
-                "Data request cannot contain both orography and geopotential parameters."
-            )
+            raise ValueError("Data request cannot contain both orography and geopotential parameters.")
 
-        if self.geopotential in param and (
-            data_request.get("levtype", "") == "pl" or data_request.get("levelist", [])
-        ):
-            data_request["param"] = [
-                self.orography if p == self.geopotential else p for p in param
-            ]
-        elif self.orography in param and (
-            data_request.get("levtype", "") == "pl" or data_request.get("levelist", [])
-        ):
-            data_request["param"] = [
-                self.geopotential if p == self.orography else p for p in param
-            ]
+        if self.geopotential in param and (data_request.get("levtype", "") == "pl" or data_request.get("levelist", [])):
+            data_request["param"] = [self.orography if p == self.geopotential else p for p in param]
+        elif self.orography in param and (data_request.get("levtype", "") == "pl" or data_request.get("levelist", [])):
+            data_request["param"] = [self.geopotential if p == self.orography else p for p in param]
         return data_request
 
 

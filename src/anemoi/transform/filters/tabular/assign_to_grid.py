@@ -42,10 +42,8 @@ class AssignToGrid(Filter):
         self.grid = grid
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
-        from anemoi.transform.filters.tabular.support.superob import (
-            define_grid,
-            define_healpix_grid,
-        )
+        from anemoi.transform.filters.tabular.support.superob import define_grid
+        from anemoi.transform.filters.tabular.support.superob import define_healpix_grid
 
         # Define output grid based on grid type
         if self.grid[0] == "h":
@@ -63,6 +61,4 @@ class AssignToGrid(Filter):
         distances, spatial_indices = tree.query(obs_df[["latitude", "longitude"]])
 
         # Add grid_index column (spatial only, no temporal component)
-        return obs_df.assign(
-            **{f"grid_index_{self.grid}": spatial_indices}, distance=distances
-        )
+        return obs_df.assign(**{f"grid_index_{self.grid}": spatial_indices}, distance=distances)

@@ -8,8 +8,11 @@
 # nor does it submit to any jurisdiction.
 
 import logging
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Union
+from abc import ABC
+from abc import abstractmethod
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Union
 
 from anemoi.utils.logs import OnceLogger
 
@@ -93,7 +96,7 @@ class Variable(ABC):
         """
         return hash(self.name)
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Check if two Variable instances are equal.
 
         Parameters
@@ -114,31 +117,37 @@ class Variable(ABC):
     @abstractmethod
     def is_pressure_level(self) -> bool:
         """Check if the variable is a pressure level."""
+        pass
 
     @property
     @abstractmethod
     def is_model_level(self) -> bool:
         """Check if the variable is a pressure level."""
+        pass
 
     @property
     @abstractmethod
     def is_surface_level(self) -> bool:
         """Check if the variable is on the surface."""
+        pass
 
     @property
     @abstractmethod
     def level(self) -> Any:
         """Get the level of the variable."""
+        pass
 
     @property
     @abstractmethod
     def is_constant_in_time(self) -> bool:
         """Check if the variable is constant in time."""
+        pass
 
     @property
     @abstractmethod
     def is_instantanous(self) -> bool:
         """Check if the variable is instantaneous."""
+        pass
 
     @property
     def is_valid_over_a_period(self) -> bool:
@@ -150,6 +159,7 @@ class Variable(ABC):
     @abstractmethod
     def time_processing(self):
         """Get the time processing type of the variable."""
+        pass
 
     @property
     @abstractmethod
@@ -157,11 +167,13 @@ class Variable(ABC):
         """Get the variable's period as a timedelta.
         For instantaneous variables, returns a timedelta of 0. For non-instantaneous variables, returns `None` if this information is missing.
         """
+        pass
 
     @property
     @abstractmethod
     def is_accumulation(self) -> bool:
         """Check if the variable is an accumulation."""
+        pass
 
     @property
     def param(self) -> str:
@@ -173,16 +185,19 @@ class Variable(ABC):
     @abstractmethod
     def grib_keys(self) -> dict[str, Any]:
         """Get the GRIB keys for the variable."""
+        pass
 
     @property
     @abstractmethod
     def is_computed_forcing(self) -> bool:
         """Check if the variable is a computed forcing."""
+        pass
 
     @property
     @abstractmethod
     def units(self):
         """Get the units of the variable."""
+        pass
 
     def similarity(self, other: Any) -> int:
         """Compute the similarity between two variables. This is used when
@@ -264,9 +279,7 @@ class Variable(ABC):
                     )
 
         check_units = not _ignore("ignore_units", ignore_units)
-        check_time_processing = not _ignore(
-            "ignore_time_processing", ignore_time_processing
-        )
+        check_time_processing = not _ignore("ignore_time_processing", ignore_time_processing)
         check_period = not _ignore("ignore_processing_period", ignore_processing_period)
         check_type_of_level = not _ignore("ignore_type_of_level", ignore_type_of_level)
 
@@ -279,9 +292,7 @@ class Variable(ABC):
                             f"{self}: one of the variables has missing units: {self.units} vs {other.units}. Assuming they are compatible."
                         )
                     else:
-                        return (
-                            f"Units are not compatible: {self.units} vs {other.units}"
-                        )
+                        return f"Units are not compatible: {self.units} vs {other.units}"
 
             if check_time_processing:
                 if self.time_processing != other.time_processing:
@@ -303,10 +314,7 @@ class Variable(ABC):
 
             if check_type_of_level:
                 if self.is_pressure_level != other.is_pressure_level:
-                    if (
-                        self.is_pressure_level is None
-                        or other.is_pressure_level is None
-                    ):
+                    if self.is_pressure_level is None or other.is_pressure_level is None:
                         LOG_ONCE.warning(
                             f"{self}: pressure level status is not compatible: {self.is_pressure_level} vs {other.is_pressure_level}. Ignoring this incompatibility."
                         )
@@ -336,9 +344,7 @@ class Variable(ABC):
         return (True, None) if return_reason else True
 
     @classmethod
-    def check_compatibility(
-        cls, variables1: dict, variables2: dict, *args, **kwargs
-    ) -> None:
+    def check_compatibility(cls, variables1: dict, variables2: dict, *args, **kwargs) -> None:
         options = {}
         for arg in args:
             if isinstance(arg, dict):
@@ -352,15 +358,11 @@ class Variable(ABC):
         keys2 = set(variables2.keys())
 
         if keys1 != keys2:
-            raise ValueError(
-                f"Variable compatibility: missing={keys1 - keys2}, added={keys2 - keys1}"
-            )
+            raise ValueError(f"Variable compatibility: missing={keys1-keys2}, added={keys2-keys1}")
 
         reasons = []
         for k in keys1:
-            compatible, reason = variables1[k].compatible(
-                variables2[k], return_reason=True, **options
-            )
+            compatible, reason = variables1[k].compatible(variables2[k], return_reason=True, **options)
             if not compatible:
                 reasons.append(f"{k}: {reason}")
 

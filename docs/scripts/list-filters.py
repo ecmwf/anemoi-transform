@@ -10,23 +10,20 @@ import rich
 from numpydoc.docscrape_sphinx import SphinxDocString
 from ruamel.yaml.comments import CommentedMap
 
-from anemoi.transform.documentation import Documenter, YAMLExample
+from anemoi.transform.documentation import Documenter
+from anemoi.transform.documentation import YAMLExample
 from anemoi.transform.filters import filter_registry
 
 LOG = logging.getLogger("list-filters")
 
 parser = argparse.ArgumentParser(description="List available filters")
-parser.add_argument(
-    "--target-dir",
-    type=str,
-    required=True,
-    help="Directory where to write the filter documentation",
-)
+parser.add_argument("--target-dir", type=str, required=True, help="Directory where to write the filter documentation")
 parser.add_argument("--index", type=str, required=True, help="Path to the index file")
 args = parser.parse_args()
 
 
 class ScriptDocumenter(Documenter):
+
     def __init__(self, name):
         super().__init__()
         self.name = name
@@ -35,10 +32,7 @@ class ScriptDocumenter(Documenter):
         if hasattr(cls, "optional_inputs"):
             return inspect.Signature(
                 inspect.Parameter(
-                    name=name,
-                    default=value,
-                    annotation=type(value),
-                    kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    name=name, default=value, annotation=type(value), kind=inspect.Parameter.POSITIONAL_OR_KEYWORD
                 )
                 for name, value in cls.optional_inputs.items()
             )
@@ -70,10 +64,7 @@ class ScriptDocumenter(Documenter):
             }
         )
 
-        s.yaml_add_eol_comment(
-            "Replace `source` with actual data source, e.g., 'mars', 'netcdf', etc.",
-            "source",
-        )
+        s.yaml_add_eol_comment("Replace `source` with actual data source, e.g., 'mars', 'netcdf', etc.", "source")
 
         return dataset_example
 
@@ -92,6 +83,7 @@ class ScriptDocumenter(Documenter):
 filters = []
 
 for f in filter_registry.registered:
+
     rich.print(f"Processing filter '{f}'")
 
     filter = filter_registry.lookup(f, return_none=True)
@@ -105,6 +97,7 @@ for f in filter_registry.registered:
     os.path.exists(args.target_dir) or os.makedirs(args.target_dir)
 
     with open(f"{args.target_dir}/{f}.rst", "w") as docfile:
+
         print(file=docfile)
         print(f".. _{f}-filter:", file=docfile)
         print(file=docfile)
@@ -132,12 +125,11 @@ for f in filter_registry.registered:
 
         print(txt, file=docfile)
 
-relative_target_dir = os.path.relpath(
-    os.path.realpath(args.target_dir), os.path.realpath(os.path.dirname(args.index))
-)
+relative_target_dir = os.path.relpath(os.path.realpath(args.target_dir), os.path.realpath(os.path.dirname(args.index)))
 
 
 with open(args.index, "w") as docfile:
+
     print(file=docfile)
     print(".. _list-of-filters:", file=docfile)
     print(file=docfile)

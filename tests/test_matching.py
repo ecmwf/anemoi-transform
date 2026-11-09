@@ -13,7 +13,8 @@ from collections.abc import Iterator
 import earthkit.data as ekd
 import pytest
 
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 from .utils import mock_field
 
@@ -183,7 +184,4 @@ def test_metadata_mismatch_warning(caplog):
     with caplog.at_level("WARNING"):
         f.forward(data)
 
-    assert (
-        "Please ensure your filter is configured to match the input variables metadata"
-        in caplog.text
-    )
+    assert "Please ensure your filter is configured to match the input variables metadata" in caplog.text

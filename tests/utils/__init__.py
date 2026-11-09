@@ -87,11 +87,7 @@ class SelectAndAddFieldSource(Source):
                 fields.append(f)
                 params.append(f.metadata("param"))
         for f in self._additional_fields:
-            if (
-                self.params
-                and f.metadata("param") in self.params
-                and f.metadata("param") not in params
-            ):
+            if self.params and f.metadata("param") in self.params and f.metadata("param") not in params:
                 fields.append(f)
         return new_fieldlist_from_list(fields)
 
@@ -100,14 +96,12 @@ def compare_npz_files(file1, file2):
     data1 = np.load(file1)
     data2 = np.load(file2)
 
-    assert set(data1.keys()) == set(data2.keys()), (
-        f"Keys in NPZ files do not match {set(data1.keys())} and {set(data2.keys())}"
-    )
+    assert set(data1.keys()) == set(
+        data2.keys()
+    ), f"Keys in NPZ files do not match {set(data1.keys())} and {set(data2.keys())}"
 
     for key in data1.keys():
-        assert (data1[key] == data2[key]).all(), (
-            f"Data for key {key} does not match between {file1} and {file2}"
-        )
+        assert (data1[key] == data2[key]).all(), f"Data for key {key} does not match between {file1} and {file2}"
 
 
 def mock_field(**metadata):

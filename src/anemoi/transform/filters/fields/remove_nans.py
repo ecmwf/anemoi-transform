@@ -13,11 +13,9 @@ import logging
 import earthkit.data as ekd
 import tqdm
 
-from anemoi.transform.fields import (
-    new_field_from_latitudes_longitudes,
-    new_field_from_numpy,
-    new_fieldlist_from_list,
-)
+from anemoi.transform.fields import new_field_from_latitudes_longitudes
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -50,9 +48,7 @@ class RemoveNaNs(Filter):
 
     """
 
-    def __init__(
-        self, *, method: str = "mask", check: bool = False, param: str | None = None
-    ):
+    def __init__(self, *, method: str = "mask", check: bool = False, param: str | None = None):
         """Initialize the RemoveNaNs filter.
 
         Parameters
@@ -110,6 +106,7 @@ class RemoveNaNs(Filter):
 
         result = []
         for field in tqdm.tqdm(fields, desc="Remove NaNs"):
+
             data = field.to_numpy(flatten=True)
             result.append(
                 new_field_from_latitudes_longitudes(

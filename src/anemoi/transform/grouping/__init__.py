@@ -10,7 +10,8 @@
 
 import logging
 from collections import defaultdict
-from collections.abc import Callable, Iterator
+from collections.abc import Callable
+from collections.abc import Iterator
 from typing import Any
 
 from earthkit.data import SimpleFieldList
@@ -67,51 +68,35 @@ class GroupByParam:
 
     @staticmethod
     def _get_grouping_key(
-        field,
-        extract_from_grouping_key: list[str],
-        remove_from_grouping_key: list[str] | None = None,
+        field, extract_from_grouping_key: list[str], remove_from_grouping_key: list[str] | None = None
     ):
         remove_from_grouping_key = remove_from_grouping_key or []
 
         grouping_key = field.metadata(namespace="mars")
         if not grouping_key:
-            meta_keys = [
-                k
-                for k in field.metadata().keys()
-                if k not in ("latitudes", "longitudes", "values")
-            ]
+            meta_keys = [k for k in field.metadata().keys() if k not in ("latitudes", "longitudes", "values")]
             grouping_key = {k: field.metadata(k) for k in meta_keys}
             if not meta_keys:
-                raise NotImplementedError(
-                    f"GroupByParam: {field} has no sufficient metadata"
-                )
+                raise NotImplementedError(f"GroupByParam: {field} has no sufficient metadata")
 
         extracted_keys = {}
         for key in extract_from_grouping_key:
-            extracted_keys[key] = grouping_key.pop(
-                key, field.metadata().get(key, default=None)
-            )
+            extracted_keys[key] = grouping_key.pop(key, field.metadata().get(key, default=None))
 
         for key in remove_from_grouping_key:
             grouping_key.pop(key, None)
 
         if len(extracted_keys) != len(extract_from_grouping_key):
-            raise ValueError(
-                f"Expected {extract_from_grouping_key} keys to extract, got {extracted_keys}"
-            )
+            raise ValueError(f"Expected {extract_from_grouping_key} keys to extract, got {extracted_keys}")
         return grouping_key, extracted_keys
 
-    def _get_groups(
-        self, data: list[Any], *, other: Callable[[Any], None] = _lost
-    ) -> None:
+    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
         self.groups: dict[frozenset[Any], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
         for f in data:
             key, extras = self._get_grouping_key(
-                f,
-                extract_from_grouping_key=["param"],
-                remove_from_grouping_key=["variable"],
+                f, extract_from_grouping_key=["param"], remove_from_grouping_key=["variable"]
             )
             param = extras["param"]
 
@@ -127,9 +112,7 @@ class GroupByParam:
             self.groups_params.add(param)
         LOG.info(f"Params groups: {self.groups_params}")
 
-    def iterate(
-        self, data: list[Any], *, other: Callable[[Any], None] = _lost
-    ) -> Iterator[tuple[Any, ...]]:
+    def iterate(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> Iterator[tuple[Any, ...]]:
         """Iterate over the data and group fields by parameters.
 
         Parameters
@@ -149,29 +132,21 @@ class GroupByParam:
             if len(group) != len(self.params):
                 for p in data:
                     print(p)
-                raise ValueError(
-                    f"Missing component. Want {sorted(self.params)}, got {sorted(group.keys())}"
-                )
+                raise ValueError(f"Missing component. Want {sorted(self.params)}, got {sorted(group.keys())}")
 
             yield tuple(group[p] for p in self.params)
 
 
 class GroupByParamVertical(GroupByParam):
-    def _get_groups(
-        self, data: list[Any], *, other: Callable[[Any], None] = _lost
-    ) -> None:
+    def _get_groups(self, data: list[Any], *, other: Callable[[Any], None] = _lost) -> None:
         assert callable(other), type(other)
         self.groups: dict[frozenset[Any], dict[str, Any]] = defaultdict(dict)
         self.groups_params = set()
-        levels: dict[frozenset[Any], dict[str, Any]] = defaultdict(
-            lambda: defaultdict(list)
-        )
+        levels: dict[frozenset[Any], dict[str, Any]] = defaultdict(lambda: defaultdict(list))
 
         for f in data:
             key, extras = self._get_grouping_key(
-                f,
-                extract_from_grouping_key=["param", "levelist"],
-                remove_from_grouping_key=["variable", "levtype"],
+                f, extract_from_grouping_key=["param", "levelist"], remove_from_grouping_key=["variable", "levtype"]
             )
             param = extras["param"]
             level = extras["levelist"]
@@ -189,9 +164,7 @@ class GroupByParamVertical(GroupByParam):
             else:
                 if param in self.groups[key]:
                     if level in levels[key][param]:
-                        raise ValueError(
-                            f"Duplicate component {param} for {key} and level {level}"
-                        )
+                        raise ValueError(f"Duplicate component {param} for {key} and level {level}")
                     else:
                         self.groups[key][param].append(f)
                 else:

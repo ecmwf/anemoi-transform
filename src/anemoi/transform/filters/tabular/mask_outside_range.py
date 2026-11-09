@@ -43,22 +43,16 @@ class MaskOutsideRange(Filter):
 
         for column, mask_range in config.items():
             if not isinstance(mask_range, (list, tuple)) or len(mask_range) != 2:
-                raise ValueError(
-                    f"Invalid mask range for column {column}: {mask_range}"
-                )
+                raise ValueError(f"Invalid mask range for column {column}: {mask_range}")
             if not all(isinstance(v, (int, float)) or v is None for v in mask_range):
-                raise ValueError(
-                    f"Mask range values for column {column} must be numeric or None: {mask_range}"
-                )
+                raise ValueError(f"Mask range values for column {column} must be numeric or None: {mask_range}")
 
         self.config = config
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         for column, range in self.config.items():
             min_val, max_val = range
-            logging.info(
-                f"Masking {column} with condition: {min_val} <= {column} <= {max_val}"
-            )
+            logging.info(f"Masking {column} with condition: {min_val} <= {column} <= {max_val}")
             obs_df[column] = obs_df[column].mask(
                 (obs_df[column] < min_val if min_val is not None else False)
                 | (obs_df[column] > max_val if max_val is not None else False)

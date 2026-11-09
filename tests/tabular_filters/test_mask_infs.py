@@ -17,9 +17,7 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 
 def test_mask_infs_with_prefix():
     config = {"column_prefix": "col"}
-    df = pd.DataFrame(
-        {"col1": [np.inf, 1, 2, -np.inf], "col2": [3, np.inf, -np.inf, 6]}
-    )
+    df = pd.DataFrame({"col1": [np.inf, 1, 2, -np.inf], "col2": [3, np.inf, -np.inf, 6]})
     mask_infs = create_filter("mask_infs", **config)
     result = mask_infs(df.copy())
 
@@ -27,9 +25,7 @@ def test_mask_infs_with_prefix():
     assert tuple(result.columns) == tuple(df.columns)
     assert result.shape == df.shape
 
-    expected_result = pd.DataFrame(
-        {"col1": [np.nan, 1, 2, np.nan], "col2": [3, np.nan, np.nan, 6]}
-    )
+    expected_result = pd.DataFrame({"col1": [np.nan, 1, 2, np.nan], "col2": [3, np.nan, np.nan, 6]})
     assert result.equals(expected_result)
 
 
@@ -43,9 +39,7 @@ def test_mask_infs_with_prefix_missing():
 
 def test_mask_infs_with_columns():
     config = {"columns": ["col1"]}
-    df = pd.DataFrame(
-        {"col1": [np.inf, 1, 2, -np.inf], "col2": [3, np.inf, -np.inf, 6]}
-    )
+    df = pd.DataFrame({"col1": [np.inf, 1, 2, -np.inf], "col2": [3, np.inf, -np.inf, 6]})
     mask_infs = create_filter("mask_infs", **config)
     result = mask_infs(df.copy())
 

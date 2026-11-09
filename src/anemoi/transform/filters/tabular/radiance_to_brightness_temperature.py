@@ -42,17 +42,9 @@ class RadianceToBrightnessTemperature(Filter):
 
     """
 
-    def __init__(
-        self,
-        *,
-        mode: str,
-        input_prefix: str = "obsvalue_rad_",
-        output_prefix: str = "obsvalue_rawbt_",
-    ):
+    def __init__(self, *, mode: str, input_prefix: str = "obsvalue_rad_", output_prefix: str = "obsvalue_rawbt_"):
         if mode not in ("cris_fsr", "cris_nsr", "iasi"):
-            raise ValueError(
-                f"Invalid mode: {mode}. Must be 'cris_fsr', 'cris_nsr' or 'iasi'."
-            )
+            raise ValueError(f"Invalid mode: {mode}. Must be 'cris_fsr', 'cris_nsr' or 'iasi'.")
         self.mode = mode
         self.input_prefix = input_prefix
         self.output_prefix = output_prefix
@@ -91,9 +83,7 @@ class RadianceToBrightnessTemperature(Filter):
     def _iasi_wavenumbers(ch):
         """Vectorised IASI channel -> wavenumber [cm^-1]"""
         ch = np.asarray(ch, dtype=np.float32)
-        nu = 645.0 + 0.25 * (
-            ch - 1
-        )  # see https://space.oscar.wmo.int/instruments/view/iasi
+        nu = 645.0 + 0.25 * (ch - 1)  # see https://space.oscar.wmo.int/instruments/view/iasi
         return nu
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
@@ -101,16 +91,9 @@ class RadianceToBrightnessTemperature(Filter):
         cols_mask = obs_df.columns.str.startswith(self.input_prefix)
         cols = obs_df.columns[cols_mask]
         if len(cols) == 0:
-            raise ValueError(
-                f"No columns starting with '{self.input_prefix}' found in DataFrame."
-            )
+            raise ValueError(f"No columns starting with '{self.input_prefix}' found in DataFrame.")
 
-        chans = (
-            obs_df.columns[cols_mask]
-            .str.extract(r"_(\d+)$", expand=False)
-            .astype(int)
-            .to_numpy()
-        )
+        chans = obs_df.columns[cols_mask].str.extract(r"_(\d+)$", expand=False).astype(int).to_numpy()
 
         # Sort by channel to align wavenumbers with columns
         order = np.argsort(chans)
@@ -128,9 +111,7 @@ class RadianceToBrightnessTemperature(Filter):
         elif self.mode == "iasi":
             nu = self._iasi_wavenumbers(chans)  # [cm^-1]
         else:
-            logging.error(
-                f"radiance_to_brightness_temperature ERROR: Mode not supported {self.mode}"
-            )
+            logging.error(f"radiance_to_brightness_temperature ERROR: Mode not supported {self.mode}")
 
         a = C1_W * (nu**3)  # shape (nch,)
         b = C2 * nu
@@ -143,8 +124,6 @@ class RadianceToBrightnessTemperature(Filter):
         # Write back and rename
         out_df = obs_df.copy()
         out_df.loc[:, cols] = Tb
-        out_df = out_df.rename(
-            columns={c: f"{self.output_prefix}{ch}" for c, ch in zip(cols, chans)}
-        )
+        out_df = out_df.rename(columns={c: f"{self.output_prefix}{ch}" for c, ch in zip(cols, chans)})
 
         return out_df

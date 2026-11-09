@@ -59,9 +59,7 @@ def test_impute_nans_dispatches_to_tabular_filter():
             "z": [0.0, 1.0, 2.0, 3.0, np.nan],
         }
     )
-    impute_nans = create_filter(
-        "impute_nans", columns=["obsvalue_x", "obsvalue_y"], value=0.0
-    )
+    impute_nans = create_filter("impute_nans", columns=["obsvalue_x", "obsvalue_y"], value=0.0)
     result = impute_nans(df.copy())
 
     assert isinstance(result, pd.DataFrame)

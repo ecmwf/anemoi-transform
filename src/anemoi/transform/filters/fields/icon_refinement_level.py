@@ -13,11 +13,9 @@ import logging
 import earthkit.data as ekd
 import tqdm
 
-from anemoi.transform.fields import (
-    new_field_from_latitudes_longitudes,
-    new_field_from_numpy,
-    new_fieldlist_from_list,
-)
+from anemoi.transform.fields import new_field_from_latitudes_longitudes
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 from anemoi.transform.grids.icon import icon_grid
@@ -75,12 +73,11 @@ class IconRefinement(Filter):
 
         result = []
         for field in tqdm.tqdm(fields, desc="Regridding"):
+
             data = field.to_numpy(flatten=True)
             data = data[..., self.nearest_grid_points]
             new_field = new_field_from_latitudes_longitudes(
-                new_field_from_numpy(data, template=field),
-                latitudes=self.latitudes,
-                longitudes=self.longitudes,
+                new_field_from_numpy(data, template=field), latitudes=self.latitudes, longitudes=self.longitudes
             )
             new_field.resolution = f"mrl{self.refinement_level_c}"
             result.append(new_field)

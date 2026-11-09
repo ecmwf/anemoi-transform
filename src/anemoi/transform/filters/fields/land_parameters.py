@@ -14,7 +14,8 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 SOIL_TYPE_DIC = {
     0: {"theta_pwp": 0.0, "theta_cap": 0.0},
@@ -52,9 +53,7 @@ VEG_TYPE_DIC = {
 }
 
 
-def read_crosswalking_table(
-    param: Any, param_dic: dict[int, dict[str, float]]
-) -> list[np.ndarray]:
+def read_crosswalking_table(param: Any, param_dic: dict[int, dict[str, float]]) -> list[np.ndarray]:
     """Read crosswalking table and return arrays for each key.
 
     Parameters
@@ -69,9 +68,7 @@ def read_crosswalking_table(
     List[np.ndarray]
         The arrays for each key in the crosswalking table.
     """
-    arrays = [
-        np.array([param_dic[x][key] for x in param]) for key in param_dic[0].keys()
-    ]
+    arrays = [np.array([param_dic[x][key] for x in param]) for key in param_dic[0].keys()]
     return arrays
 
 
@@ -135,37 +132,15 @@ class LandParameters(MatchingFieldsFilter):
         Iterator[ekd.Field]
             An iterator over the new fields with static parameters.
         """
-        hveg_rsmin, hveg_cov, hveg_z0m = read_crosswalking_table(
-            high_veg_type.to_numpy(), VEG_TYPE_DIC
-        )
-        lveg_rsmin, lveg_cov, lveg_z0m = read_crosswalking_table(
-            low_veg_type.to_numpy(), VEG_TYPE_DIC
-        )
-        theta_pwp, theta_cap = read_crosswalking_table(
-            soil_type.to_numpy(), SOIL_TYPE_DIC
-        )
+        hveg_rsmin, hveg_cov, hveg_z0m = read_crosswalking_table(high_veg_type.to_numpy(), VEG_TYPE_DIC)
+        lveg_rsmin, lveg_cov, lveg_z0m = read_crosswalking_table(low_veg_type.to_numpy(), VEG_TYPE_DIC)
+        theta_pwp, theta_cap = read_crosswalking_table(soil_type.to_numpy(), SOIL_TYPE_DIC)
 
-        yield self.new_field_from_numpy(
-            hveg_rsmin, template=high_veg_type, param=self.hveg_rsmin
-        )
-        yield self.new_field_from_numpy(
-            hveg_cov, template=high_veg_type, param=self.hveg_cov
-        )
-        yield self.new_field_from_numpy(
-            hveg_z0m, template=high_veg_type, param=self.hveg_z0m
-        )
-        yield self.new_field_from_numpy(
-            lveg_rsmin, template=low_veg_type, param=self.lveg_rsmin
-        )
-        yield self.new_field_from_numpy(
-            lveg_cov, template=low_veg_type, param=self.lveg_cov
-        )
-        yield self.new_field_from_numpy(
-            lveg_z0m, template=low_veg_type, param=self.lveg_z0m
-        )
-        yield self.new_field_from_numpy(
-            theta_pwp, template=soil_type, param=self.theta_pwp
-        )
-        yield self.new_field_from_numpy(
-            theta_cap, template=soil_type, param=self.theta_cap
-        )
+        yield self.new_field_from_numpy(hveg_rsmin, template=high_veg_type, param=self.hveg_rsmin)
+        yield self.new_field_from_numpy(hveg_cov, template=high_veg_type, param=self.hveg_cov)
+        yield self.new_field_from_numpy(hveg_z0m, template=high_veg_type, param=self.hveg_z0m)
+        yield self.new_field_from_numpy(lveg_rsmin, template=low_veg_type, param=self.lveg_rsmin)
+        yield self.new_field_from_numpy(lveg_cov, template=low_veg_type, param=self.lveg_cov)
+        yield self.new_field_from_numpy(lveg_z0m, template=low_veg_type, param=self.lveg_z0m)
+        yield self.new_field_from_numpy(theta_pwp, template=soil_type, param=self.theta_pwp)
+        yield self.new_field_from_numpy(theta_cap, template=soil_type, param=self.theta_cap)

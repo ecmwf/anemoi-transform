@@ -61,13 +61,9 @@ class RemoveExtremeValues(Filter):
         method: Literal["mask", "drop"] = "drop",
     ):
         if method not in ("mask", "drop"):
-            raise ValueError(
-                f"Invalid method '{method}'. Must be either 'mask' or 'drop'."
-            )
+            raise ValueError(f"Invalid method '{method}'. Must be either 'mask' or 'drop'.")
         if bool(columns) == bool(column_prefix):
-            raise ValueError(
-                "Either columns or column_prefix must be specified, but not both."
-            )
+            raise ValueError("Either columns or column_prefix must be specified, but not both.")
         self.method = method
         self.columns = columns
         self.column_prefix = column_prefix
@@ -78,13 +74,9 @@ class RemoveExtremeValues(Filter):
             obs_cols = list(self.columns)
             raise_if_df_missing_cols(obs_df, self.columns)
         elif self.column_prefix:
-            obs_cols = [
-                col for col in obs_df.columns if col.startswith(self.column_prefix)
-            ]
+            obs_cols = [col for col in obs_df.columns if col.startswith(self.column_prefix)]
             if not obs_cols:
-                raise ValueError(
-                    f"No columns starting with '{self.column_prefix}' found in DataFrame."
-                )
+                raise ValueError(f"No columns starting with '{self.column_prefix}' found in DataFrame.")
         obs_cols += ["latitude", "longitude"]
 
         verb = "Dropping" if self.method == "drop" else "Masking"

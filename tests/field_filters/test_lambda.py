@@ -65,9 +65,7 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
         The fieldlist to use for testing.
     """
 
-    before_filter = {
-        field.metadata("param"): field.to_numpy().copy() for field in fieldlist
-    }
+    before_filter = {field.metadata("param"): field.to_numpy().copy() for field in fieldlist}
     filter = create_filter(
         "earthkitfieldlambda",
         fn="tests.field_filters.test_lambda.do_something",
@@ -77,14 +75,10 @@ def test_earthkitfieldlambda(fieldlist: ekd.FieldList) -> None:
     )
 
     transformed = filter.forward(fieldlist)
-    after_forward = {
-        field.metadata("param"): field.to_numpy().copy() for field in transformed
-    }
+    after_forward = {field.metadata("param"): field.to_numpy().copy() for field in transformed}
 
     untransformed = filter.backward(transformed)
-    after_backward = {
-        field.metadata("param"): field.to_numpy().copy() for field in untransformed
-    }
+    after_backward = {field.metadata("param"): field.to_numpy().copy() for field in untransformed}
 
     for param in ("sp", "2t"):
         # round trip works

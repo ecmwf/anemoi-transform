@@ -13,12 +13,11 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 
-def compute_fraction_of_snow_cover(
-    snow_depth: np.ndarray, snow_density: np.ndarray
-) -> np.ndarray:
+def compute_fraction_of_snow_cover(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.ndarray:
     """Convert snow depth to fraction of snow cover.
 
     Parameters
@@ -105,9 +104,7 @@ class FractionOfSnowCover(MatchingFieldsFilter):
         self.fraction_of_snow_cover = fraction_of_snow_cover
         super().__init__()
 
-    def forward_transform(
-        self, snow_depth: ekd.Field, snow_density: ekd.Field
-    ) -> Iterator[ekd.Field]:
+    def forward_transform(self, snow_depth: ekd.Field, snow_density: ekd.Field) -> Iterator[ekd.Field]:
         """Convert snow depth and snow density to fraction of snow cover.
 
         Parameters
@@ -122,13 +119,6 @@ class FractionOfSnowCover(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Transformed fields.
         """
-        fscov = compute_fraction_of_snow_cover(
-            snow_depth.to_numpy(), snow_density.to_numpy()
-        )
+        fscov = compute_fraction_of_snow_cover(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield self.new_field_from_numpy(
-            fscov,
-            template=snow_depth,
-            param=self.fraction_of_snow_cover,
-            units="Fraction",
-        )
+        yield self.new_field_from_numpy(fscov, template=snow_depth, param=self.fraction_of_snow_cover, units="Fraction")

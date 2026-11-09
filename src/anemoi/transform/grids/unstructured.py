@@ -33,12 +33,7 @@ class Geography:
         UUID of the horizontal grid.
     """
 
-    def __init__(
-        self,
-        latitudes: np.ndarray,
-        longitudes: np.ndarray,
-        uuidOfHGrid: str | None = None,
-    ) -> None:
+    def __init__(self, latitudes: np.ndarray, longitudes: np.ndarray, uuidOfHGrid: str | None = None) -> None:
         assert isinstance(latitudes, np.ndarray), type(latitudes)
         assert isinstance(longitudes, np.ndarray), type(longitudes)
         assert len(latitudes) == len(longitudes)
@@ -191,16 +186,12 @@ class UnstructuredGridFieldList(FieldArray):
         longitudes, longitudes_uuid = _load(longitudes_url_or_path, longitudes_params)
 
         if latitudes_uuid != longitudes_uuid:
-            raise ValueError(
-                f"uuidOfHGrid mismatch: lat={latitudes_uuid} != lon={longitudes_uuid}"
-            )
+            raise ValueError(f"uuidOfHGrid mismatch: lat={latitudes_uuid} != lon={longitudes_uuid}")
 
         return cls([UnstructuredGridField(Geography(latitudes, longitudes))])
 
     @classmethod
-    def from_values(
-        cls, *, latitudes: Any, longitudes: Any
-    ) -> "UnstructuredGridFieldList":
+    def from_values(cls, *, latitudes: Any, longitudes: Any) -> "UnstructuredGridFieldList":
         """Create an UnstructuredGridFieldList from latitude and longitude values.
 
         Parameters

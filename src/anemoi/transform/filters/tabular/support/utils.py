@@ -18,9 +18,7 @@ from scipy.spatial import cKDTree
 def raise_if_df_missing_cols(df: pd.DataFrame, required_cols: Iterable[str]):
     missing_cols = set(required_cols) - set(df.columns)
     if missing_cols:
-        raise ValueError(
-            f"DataFrame is missing columns: {missing_cols}. Available columns: {df.columns}"
-        )
+        raise ValueError(f"DataFrame is missing columns: {missing_cols}. Available columns: {df.columns}")
 
 
 def get_heights(

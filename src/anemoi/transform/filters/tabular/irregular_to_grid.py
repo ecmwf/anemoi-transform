@@ -128,9 +128,7 @@ class IrregularToGrid(Filter):
         df["date"] = pd.to_datetime(df["date"])
 
         # Check that all requested columns exist
-        required_cols = ["date", "spatial_index", self.window_date_column] + list(
-            self.columns
-        )
+        required_cols = ["date", "spatial_index", self.window_date_column] + list(self.columns)
         raise_if_df_missing_cols(df, required_cols=required_cols)
 
         # Generate grid coordinates
@@ -146,28 +144,20 @@ class IrregularToGrid(Filter):
         # Initialize grids for all columns to grid with NaNs
         # NaNs will remain for time steps with no observations
         n_time = len(target_times)
-        grids = {
-            col: np.full((n_time, n_spatial_total), np.nan) for col in self.columns
-        }
+        grids = {col: np.full((n_time, n_spatial_total), np.nan) for col in self.columns}
 
         # Process each target time
         for t_idx, target_time in enumerate(target_times):
             # Convert target_time to tz-naive for consistent comparison (all times assumed UTC)
             target_time_naive = pd.Timestamp(target_time).tz_localize(None)
 
-            df_window = self.select_window(
-                df, target_time_naive, self.columns, self.window
-            )
+            df_window = self.select_window(df, target_time_naive, self.columns, self.window)
             if df_window is None:
                 # No observations - NaNs remain in grids for this time step
                 continue
 
             df_nearest = self.get_nearest_obs(
-                df_window,
-                target_time_naive,
-                time_delta,
-                self.columns,
-                self.nan_score_weight,
+                df_window, target_time_naive, time_delta, self.columns, self.nan_score_weight
             )
             self._fill_grids(grids, df_nearest, self.columns, n_spatial_total, t_idx)
 
@@ -310,9 +300,7 @@ class IrregularToGrid(Filter):
             max_nans = len(columns)
             nan_count = df_window[columns].isna().sum(axis=1)
             nan_score = nan_count / max_nans
-            selection_score = (
-                1.0 - nan_score_weight
-            ) * time_score + nan_score_weight * nan_score
+            selection_score = (1.0 - nan_score_weight) * time_score + nan_score_weight * nan_score
         else:
             selection_score = time_score
 
@@ -329,9 +317,5 @@ class IrregularToGrid(Filter):
         from anemoi.transform.grids.named import lookup
 
         grid_info = lookup(grid)
-        lon = np.where(
-            grid_info["longitudes"] > 180,
-            grid_info["longitudes"] - 360,
-            grid_info["longitudes"],
-        )
+        lon = np.where(grid_info["longitudes"] > 180, grid_info["longitudes"] - 360, grid_info["longitudes"])
         return grid_info["latitudes"], lon

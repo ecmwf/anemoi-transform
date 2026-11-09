@@ -38,9 +38,7 @@ def test_clipper_fields(fieldlist: ekd.FieldList) -> None:
     ref = np.clip(data, 300.0, 305.0)
 
     npt.assert_allclose(clipped.sel(param="2t").to_numpy(), ref)
-    npt.assert_allclose(
-        clipped.sel(param="sp").to_numpy(), fieldlist.sel(param="sp").to_numpy()
-    )
+    npt.assert_allclose(clipped.sel(param="sp").to_numpy(), fieldlist.sel(param="sp").to_numpy())
 
     assert after_stats["sp"]["min"] == before_stats["sp"]["min"]
     assert after_stats["sp"]["max"] == before_stats["sp"]["max"]

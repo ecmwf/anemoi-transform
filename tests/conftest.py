@@ -24,19 +24,7 @@ from anemoi.transform.sources import source_registry
 pytest_plugins = ["anemoi.utils.testing"]
 
 # Create a ekd Metadata Class that mocks the mars metadata namespace
-MARS_KEYS = {
-    "param",
-    "levelist",
-    "type",
-    "step",
-    "date",
-    "time",
-    "number",
-    "expver",
-    "class",
-    "stream",
-    "domain",
-}
+MARS_KEYS = {"param", "levelist", "type", "step", "date", "time", "number", "expver", "class", "stream", "domain"}
 
 
 class MarsUserMetadata(UserMetadata):

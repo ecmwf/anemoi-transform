@@ -12,11 +12,9 @@ import logging
 import earthkit.data as ekd
 import numpy as np
 
-from anemoi.transform.fields import (
-    FieldSelection,
-    new_field_from_numpy,
-    new_fieldlist_from_list,
-)
+from anemoi.transform.fields import FieldSelection
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -159,15 +157,9 @@ class MaskVariable(Filter):
     def prepare_filter(self):
         """Set up the MaskVariable filter."""
 
-        provided = [
-            self.path is not None,
-            self.mask_param is not None,
-            bool(self.self_mask),
-        ]
+        provided = [self.path is not None, self.mask_param is not None, bool(self.self_mask)]
         if sum(provided) != 1:
-            raise ValueError(
-                "Exactly one of `path`, `mask_param` or `self_mask` must be provided."
-            )
+            raise ValueError("Exactly one of `path`, `mask_param` or `self_mask` must be provided.")
 
         if self.self_mask:
             if self.param is None:
@@ -175,14 +167,10 @@ class MaskVariable(Filter):
                 # would be applied to unrelated variables.
                 raise ValueError("`param` must be provided together with `self_mask`.")
             if self.return_mask:
-                raise ValueError(
-                    "`return_mask` is only used together with `mask_param`."
-                )
+                raise ValueError("`return_mask` is only used together with `mask_param`.")
 
         if (self.mask_value is None) == (self.threshold is None):
-            raise ValueError(
-                "Exactly one of `mask_value` or `threshold` must be provided."
-            )
+            raise ValueError("Exactly one of `mask_value` or `threshold` must be provided.")
 
         if self.threshold is not None:
             if self.threshold_operator not in OPERATORS:
@@ -233,9 +221,7 @@ class MaskVariable(Filter):
 
         return new_field_from_numpy(values, template=field, **metadata)
 
-    def _separate_mask_and_fields(
-        self, fields: ekd.FieldList
-    ) -> tuple[np.ndarray | None, ekd.FieldList]:
+    def _separate_mask_and_fields(self, fields: ekd.FieldList) -> tuple[np.ndarray | None, ekd.FieldList]:
         if self.self_mask:
             # the mask is computed from each field in turn, in forward_transform
             return None, fields
@@ -258,9 +244,7 @@ class MaskVariable(Filter):
             remaining.append(field)
 
         if mask_field is None:
-            raise ValueError(
-                f"Mask parameter '{self.mask_param}' not found in input data."
-            )
+            raise ValueError(f"Mask parameter '{self.mask_param}' not found in input data.")
 
         mask = self._compute_mask(mask_field.to_numpy(flatten=True))
 

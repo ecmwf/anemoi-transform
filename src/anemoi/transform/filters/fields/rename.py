@@ -24,11 +24,7 @@ class FormatRename:
 
         # Escape ":" type delimiter used by eccodes as ":" is a reserved symbol in str.format.
         self._delimiter = "|"
-        self.format = re.sub(
-            r"{([^}]+)}",
-            lambda m: "{" + m.group(1).replace(":", self._delimiter) + "}",
-            self.format,
-        )
+        self.format = re.sub(r"{([^}]+)}", lambda m: "{" + m.group(1).replace(":", self._delimiter) + "}", self.format)
         self.format_keys = [b.replace(":", self._delimiter) for b in self.bits]
 
     def rename(self, field):

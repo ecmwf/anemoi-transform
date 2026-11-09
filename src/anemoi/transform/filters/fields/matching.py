@@ -10,18 +10,24 @@
 
 import logging
 from abc import abstractmethod
-from collections.abc import Callable, Iterable, Iterator
-from dataclasses import dataclass, replace
+from collections.abc import Callable
+from collections.abc import Iterator
+from dataclasses import dataclass
+from dataclasses import replace
 from inspect import signature
 from itertools import chain
-from typing import Literal, cast
+from typing import Iterable
+from typing import Literal
+from typing import cast
 
 import earthkit.data as ekd
 import numpy as np
 
-from anemoi.transform.fields import new_field_from_numpy, new_fieldlist_from_list
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
-from anemoi.transform.grouping import GroupByParam, GroupByParamVertical
+from anemoi.transform.grouping import GroupByParam
+from anemoi.transform.grouping import GroupByParamVertical
 
 LOG = logging.getLogger(__name__)
 
@@ -51,16 +57,12 @@ class MatchingSpec:
         object.__setattr__(self, "backward", self._to_tuple_of_str(self.backward))
 
         if self.return_inputs not in ("all", "none"):
-            object.__setattr__(
-                self, "return_inputs", self._to_tuple_of_str(self.return_inputs)
-            )
+            object.__setattr__(self, "return_inputs", self._to_tuple_of_str(self.return_inputs))
             all_params = set(self.forward) | set(self.backward)
             if not set(self.return_inputs).issubset(all_params):
                 raise ValueError(f"Returned input names must subset {all_params}")
 
-    def update_return_inputs(
-        self, return_inputs: Literal["all", "none"] | Iterable[str]
-    ) -> "MatchingSpec":
+    def update_return_inputs(self, return_inputs: Literal["all", "none"] | Iterable[str]) -> "MatchingSpec":
         if return_inputs in ("all", "none"):
             return_inputs = cast('Literal["all", "none"]', return_inputs)
         else:
@@ -103,23 +105,15 @@ class MatchingFieldsFilter(Filter):
         super().__init_subclass__(**kwargs)
 
         if not hasattr(cls, "MATCHING") or not isinstance(cls.MATCHING, MatchingSpec):
-            raise TypeError(
-                f"Class {cls.__name__} must define a 'MATCHING' attribute of type MatchingSpec."
-            )
+            raise TypeError(f"Class {cls.__name__} must define a 'MATCHING' attribute of type MatchingSpec.")
 
         forward_required_params = set(cls.MATCHING.forward)
         backward_required_params = set(cls.MATCHING.backward)
         constructor_required_params = forward_required_params | backward_required_params
 
-        MatchingFieldsFilter._check_expected_method_parameters(
-            cls.__init__, constructor_required_params
-        )
-        MatchingFieldsFilter._check_expected_method_parameters(
-            cls.forward_transform, forward_required_params
-        )
-        MatchingFieldsFilter._check_expected_method_parameters(
-            cls.backward_transform, backward_required_params
-        )
+        MatchingFieldsFilter._check_expected_method_parameters(cls.__init__, constructor_required_params)
+        MatchingFieldsFilter._check_expected_method_parameters(cls.forward_transform, forward_required_params)
+        MatchingFieldsFilter._check_expected_method_parameters(cls.backward_transform, backward_required_params)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -140,9 +134,7 @@ class MatchingFieldsFilter(Filter):
                     f"Some {direction} inputs will not be returned because they are not in the filter parameters: {diff}"
                 )
 
-    def _check_metadata_match(
-        self, data: ekd.FieldList, args: list[str] | tuple[str, ...]
-    ) -> None:
+    def _check_metadata_match(self, data: ekd.FieldList, args: list[str] | tuple[str, ...]) -> None:
         """Checks the parameters names of the data and the groups match.
 
         Parameters
@@ -178,8 +170,7 @@ class MatchingFieldsFilter(Filter):
         def _forward_transform(*fields: ekd.Field) -> Iterator[ekd.Field]:
             kwargs = dict(zip(self.MATCHING.forward, fields, strict=True))
             return chain(
-                inputs_generator(self.MATCHING.inputs(direction="forward"), **kwargs),
-                self.forward_transform(**kwargs),
+                inputs_generator(self.MATCHING.inputs(direction="forward"), **kwargs), self.forward_transform(**kwargs)
             )
 
         group_by = (getattr(self, name) for name in self.MATCHING.forward)
@@ -254,9 +245,7 @@ class MatchingFieldsFilter(Filter):
                 result.append(f)
         return self.new_fieldlist_from_list(result)
 
-    def new_field_from_numpy(
-        self, array: np.ndarray, *, template: ekd.Field, **kwargs
-    ) -> ekd.Field:
+    def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, **kwargs) -> ekd.Field:
         """Create a new field from a numpy array.
 
         Parameters
@@ -304,6 +293,7 @@ class MatchingFieldsFilter(Filter):
         Iterator[ekd.Field]
             Transformed fields.
         """
+        pass
 
     def backward_transform(self, *fields: ekd.Field) -> Iterator[ekd.Field]:
         """Backward transformation to be implemented by subclasses.

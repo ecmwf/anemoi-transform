@@ -63,14 +63,10 @@ class MaskValues(Filter):
         self.config = {}
         for col, condition in config.items():
             if not isinstance(condition, dict):
-                raise ValueError(
-                    f"Mask condition for column {col} must be a dictionary, "
-                )
+                raise ValueError(f"Mask condition for column {col} must be a dictionary, ")
 
             if "value" not in condition:
-                raise ValueError(
-                    f"Mask condition for column {col} must contain a 'value' key."
-                )
+                raise ValueError(f"Mask condition for column {col} must contain a 'value' key.")
 
             operator_str = condition.get("operator", "==")
             if operator_str not in OPERATORS:
@@ -78,10 +74,7 @@ class MaskValues(Filter):
                     f"Invalid operator '{operator_str}' for column {col}. "
                     f"Valid operators are: {', '.join(OPERATORS.keys())}."
                 )
-            self.config[col] = {
-                "value": condition["value"],
-                "operator": OPERATORS[operator_str],
-            }
+            self.config[col] = {"value": condition["value"], "operator": OPERATORS[operator_str]}
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
         raise_if_df_missing_cols(obs_df, self.config.keys())

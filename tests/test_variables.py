@@ -20,28 +20,19 @@ def test_variables() -> None:
     - Creating a pressure level variable and checking its properties.
     - Creating a surface level variable and checking its properties.
     """
-    z500: Variable = Variable.from_dict(
-        "z500", {"mars": {"param": "z", "levtype": "pl", "levelist": 500}}
-    )
+    z500: Variable = Variable.from_dict("z500", {"mars": {"param": "z", "levtype": "pl", "levelist": 500}})
 
     assert z500.is_pressure_level
     assert z500.level == 500
 
-    msl: Variable = Variable.from_dict(
-        "msl", {"mars": {"param": "msl", "levtype": "sfc"}}
-    )
+    msl: Variable = Variable.from_dict("msl", {"mars": {"param": "msl", "levtype": "sfc"}})
 
     assert not msl.is_pressure_level
     assert msl.level is None
     assert msl.period == as_timedelta(0)
 
     avg_tos: Variable = Variable.from_dict(
-        "avg_tos",
-        {
-            "mars": {"param": "avg_tos", "levtype": "o2d"},
-            "period": [5, "6h"],
-            "process": "average",
-        },
+        "avg_tos", {"mars": {"param": "avg_tos", "levtype": "o2d"}, "period": [5, "6h"], "process": "average"}
     )
 
     assert avg_tos.is_valid_over_a_period

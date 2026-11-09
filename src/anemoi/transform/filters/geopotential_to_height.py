@@ -13,9 +13,7 @@ import pandas as pd
 from anemoi.transform.filter import DispatchingFilter
 from anemoi.transform.filters import filter_registry
 from anemoi.transform.filters.fields.orog_to_z import Orography as OrographyFields
-from anemoi.transform.filters.tabular.geopotential_to_height import (
-    GeopotentialToHeight as GeopotentialToHeightTabular,
-)
+from anemoi.transform.filters.tabular.geopotential_to_height import GeopotentialToHeight as GeopotentialToHeightTabular
 
 
 class GeopotentialToHeight(DispatchingFilter):
@@ -24,22 +22,16 @@ class GeopotentialToHeight(DispatchingFilter):
     def __init__(self, **config):
         config["geopotential"] = config.get("geopotential", "z")
         if ("height" in config) and ("orography" in config):
-            raise ValueError(
-                "Must specify either 'height' or 'orography' parameter, but not both."
-            )
+            raise ValueError("Must specify either 'height' or 'orography' parameter, but not both.")
 
         # use "height" as the canonical key - override with "orography" if "height" not present
         if "height" not in config:
             config["height"] = config.pop("orography", "orog")
 
         # field orography filter uses geopotential and orography keys
-        self.field_filter = OrographyFields(
-            geopotential=config["geopotential"], orography=config["height"]
-        )
+        self.field_filter = OrographyFields(geopotential=config["geopotential"], orography=config["height"])
         # tabular filter uses geopotential and height keys
-        self.tabular_filter = GeopotentialToHeightTabular(
-            geopotential=config["geopotential"], height=config["height"]
-        )
+        self.tabular_filter = GeopotentialToHeightTabular(geopotential=config["geopotential"], height=config["height"])
 
     def forward_fields(self, data: ekd.FieldList) -> ekd.FieldList:
         return self.field_filter.forward(data)
@@ -51,9 +43,5 @@ class GeopotentialToHeight(DispatchingFilter):
         return self.tabular_filter.forward(data)
 
 
-filter_registry.register(
-    "geopotential_to_height", GeopotentialToHeight, aliases=["orog_to_z"]
-)
-filter_registry.register(
-    "height_to_geopotential", GeopotentialToHeight.reversed, aliases=["z_to_orog"]
-)
+filter_registry.register("geopotential_to_height", GeopotentialToHeight, aliases=["orog_to_z"])
+filter_registry.register("height_to_geopotential", GeopotentialToHeight.reversed, aliases=["z_to_orog"])

@@ -18,11 +18,9 @@ import earthkit.data as ekd
 import numpy as np
 import pandas as pd
 
-from anemoi.transform.fields import (
-    FieldSelection,
-    new_field_from_numpy,
-    new_fieldlist_from_list,
-)
+from anemoi.transform.fields import FieldSelection
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.transform import Transform
 
 LOG = logging.getLogger(__name__)
@@ -30,6 +28,8 @@ LOG = logging.getLogger(__name__)
 
 class Filter(Transform):
     """A filter transform that processes field data."""
+
+    pass
 
 
 class DispatchingFilter(Transform):
@@ -44,17 +44,13 @@ class DispatchingFilter(Transform):
             return getattr(cls, name) is not getattr(DispatchingFilter, name)
 
         if not (overridden("forward_fields") or overridden("forward_tabular")):
-            raise TypeError(
-                f"{cls.__name__} must override at least one of `forward_fields` or `forward_tabular`"
-            )
+            raise TypeError(f"{cls.__name__} must override at least one of `forward_fields` or `forward_tabular`")
 
         for data_type in ("fields", "tabular"):
             forward_name = f"forward_{data_type}"
             backward_name = f"backward_{data_type}"
             if overridden(backward_name) and not overridden(forward_name):
-                raise TypeError(
-                    f"{cls.__name__} overrides `{backward_name}` but not `{forward_name}`"
-                )
+                raise TypeError(f"{cls.__name__} overrides `{backward_name}` but not `{forward_name}`")
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -130,6 +126,7 @@ class SingleFieldFilter(Filter):
             if self.positive_number < 0:
                 raise ValueError("positive_number must be positive")
         """
+        pass
 
     def forward_select(self) -> dict[str, str | list[str] | tuple[str]]:
         """Provide an opportunity for subclasses to select specific fields for processing.
@@ -156,14 +153,13 @@ class SingleFieldFilter(Filter):
     @abstractmethod
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
         """Apply the transformation to a field. Must be implemented by subclasses."""
+        pass
 
     def backward_transform(self, field: ekd.Field) -> ekd.Field:
         """Apply the backward transformation to a field."""
         raise NotImplementedError("Field backward transform not implemented.")
 
-    def new_field_from_numpy(
-        self, array: np.ndarray, *, template: ekd.Field, **metadata: dict
-    ) -> ekd.Field:
+    def new_field_from_numpy(self, array: np.ndarray, *, template: ekd.Field, **metadata: dict) -> ekd.Field:
         return new_field_from_numpy(array, template=template, **metadata)
 
     def _validate_inputs(self) -> None:
@@ -174,9 +170,7 @@ class SingleFieldFilter(Filter):
             raise TypeError("Required inputs must be a list or tuple.")
 
         if not all(input in self._config for input in self.required_inputs):
-            raise TypeError(
-                f"Missing required input(s): '{set(self.required_inputs) - set(self._config)}'."
-            )
+            raise TypeError(f"Missing required input(s): '{set(self.required_inputs) - set(self._config)}'.")
 
         valid_keys = set(self.required_inputs) | set(self.optional_inputs)
         leftover_keys = set(self._config) - valid_keys
@@ -192,28 +186,18 @@ class SingleFieldFilter(Filter):
         return self._config[name]
 
     @staticmethod
-    def _map_transform(
-        transform_function: Callable, fields: ekd.FieldList
-    ) -> ekd.FieldList:
+    def _map_transform(transform_function: Callable, fields: ekd.FieldList) -> ekd.FieldList:
         fieldlist = [transform_function(field) for field in fields]
         return new_fieldlist_from_list([f for f in fieldlist if f is not None])
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         def transform(field: ekd.Field) -> ekd.Field:
-            return (
-                self.forward_transform(field)
-                if self._forward_selection.match(field)
-                else field
-            )
+            return self.forward_transform(field) if self._forward_selection.match(field) else field
 
         return self._map_transform(transform, data)
 
     def backward(self, data: ekd.FieldList) -> ekd.FieldList:
         def transform(field: ekd.Field) -> ekd.Field:
-            return (
-                self.backward_transform(field)
-                if self._backward_selection.match(field)
-                else field
-            )
+            return self.backward_transform(field) if self._backward_selection.match(field) else field
 
         return self._map_transform(transform, data)

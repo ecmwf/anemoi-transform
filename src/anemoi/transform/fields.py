@@ -8,7 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 from typing import Any
 
 import earthkit.data as ekd
@@ -24,9 +25,11 @@ MISSING_METADATA = object()
 
 
 class Flavour(ABC):
+
     @abstractmethod
     def __call__(self, key: str, field: ekd.Field) -> Any:
         """Called during field metadata lookup, so it can be modified"""
+        pass
 
 
 def new_fieldlist_from_list(fields: list[Any]) -> SimpleFieldList:
@@ -113,7 +116,7 @@ class WrappedField:
         str
             The string representation of the `_field` attribute.
         """
-        return f"{self.__class__.__name__}({self._field!r}, {self._repr_specific()})"
+        return f"{self.__class__.__name__ }({repr(self._field)}, {self._repr_specific()})"
 
     def _repr_specific(self) -> str:
         """Return a string representation of the specific field type.
@@ -172,9 +175,7 @@ class NewDataField(WrappedField):
         """Get the values of the field."""
         return self.to_numpy(flatten=True)
 
-    def to_numpy(
-        self, flatten: bool = False, dtype: type | None = None, index: Any | None = None
-    ) -> np.ndarray:
+    def to_numpy(self, flatten: bool = False, dtype: type | None = None, index: Any | None = None) -> np.ndarray:
         """Convert the field data to a numpy array.
 
         Parameters
@@ -253,7 +254,7 @@ class GeoMetadata(Geography):
 
     def mars_grid(self) -> None:
         """Get the MARS grid of the geography data."""
-        return
+        return None
 
     def latitudes(self, dtype: type | None = None) -> np.ndarray:
         """Get the latitudes of the geography data.
@@ -303,7 +304,7 @@ class GeoMetadata(Geography):
 
     def projection(self) -> None:
         """Get the projection of the geography data."""
-        return
+        return None
 
     def bounding_box(self) -> None:
         """Get the bounding box of the geography data."""
@@ -327,9 +328,7 @@ class NewLatLonField(WrappedField):
         The new longitudes for the field.
     """
 
-    def __init__(
-        self, field: Any, latitudes: np.ndarray, longitudes: np.ndarray
-    ) -> None:
+    def __init__(self, field: Any, latitudes: np.ndarray, longitudes: np.ndarray) -> None:
         super().__init__(field)
         self._latitudes = latitudes
         self._longitudes = longitudes
@@ -495,6 +494,7 @@ class _NewMetadataField(WrappedField, ABC):
         if len(args) == 0 and len(kwargs) == 0:
 
             class MD:
+
                 geography = this._field.metadata().geography
 
                 def get(self, key, default=None):
@@ -594,13 +594,7 @@ class NewValidDateTimeField(NewMetadataField):
 
         self.valid_datetime = valid_datetime
 
-        super().__init__(
-            field,
-            date=date,
-            time=time,
-            step=0,
-            valid_datetime=valid_datetime.isoformat(),
-        )
+        super().__init__(field, date=date, time=time, step=0, valid_datetime=valid_datetime.isoformat())
 
 
 class NewClonedField(WrappedField):
@@ -637,9 +631,7 @@ class NewClonedField(WrappedField):
             if args[0] in self._metadata:
                 if callable(self._metadata[args[0]]):
                     proc = self._metadata[args[0]]
-                    self._metadata[args[0]] = proc(
-                        self._field, args[0], self._field.metadata()
-                    )
+                    self._metadata[args[0]] = proc(self._field, args[0], self._field.metadata())
 
             if args[0] in self._metadata:
                 return self._metadata[args[0]]
@@ -650,9 +642,7 @@ class NewClonedField(WrappedField):
         return f"(metadata={self._metadata})"
 
 
-def new_field_from_numpy(
-    array: np.ndarray, *, template: WrappedField, **metadata: Any
-) -> NewMetadataField:
+def new_field_from_numpy(array: np.ndarray, *, template: WrappedField, **metadata: Any) -> NewMetadataField:
     """Create a new field from a numpy array.
 
     Parameters
@@ -672,9 +662,7 @@ def new_field_from_numpy(
     return NewMetadataField(NewDataField(template, array), **metadata)
 
 
-def new_field_with_valid_datetime(
-    template: WrappedField, date: Any
-) -> NewValidDateTimeField:
+def new_field_with_valid_datetime(template: WrappedField, date: Any) -> NewValidDateTimeField:
     """Create a new field with a valid datetime.
 
     Parameters
@@ -692,9 +680,7 @@ def new_field_with_valid_datetime(
     return NewValidDateTimeField(template, date)
 
 
-def new_field_with_metadata(
-    template: WrappedField, **metadata: Any
-) -> NewMetadataField:
+def new_field_with_metadata(template: WrappedField, **metadata: Any) -> NewMetadataField:
     """Create a new field with metadata.
 
     Parameters
@@ -791,17 +777,13 @@ class FieldSelection:
 
     def _validate_spec(self):
         if not set(self._spec).issubset(self.ALLOWED_KEYS):
-            raise ValueError(
-                f"Invalid keys in spec: {tuple(self._spec)} - only {self.ALLOWED_KEYS} are allowed."
-            )
+            raise ValueError(f"Invalid keys in spec: {tuple(self._spec)} - only {self.ALLOWED_KEYS} are allowed.")
 
     def _sanitise_spec(self):
         for key, value in list(self._spec.items()):
             if isinstance(value, (str, int, float, bool)):
                 self._spec[key] = (value,)
-            elif value is None or (
-                isinstance(value, (list, tuple)) and len(value) == 0
-            ):
+            elif value is None or (isinstance(value, (list, tuple)) and len(value) == 0):
                 del self._spec[key]
             elif not isinstance(value, (list, tuple)):
                 raise ValueError(f"Invalid value for key {key}: {value}")
@@ -810,8 +792,6 @@ class FieldSelection:
         if self._all:
             return True
         try:
-            return all(
-                field.metadata(key) in values for key, values in self._spec.items()
-            )
+            return all(field.metadata(key) in values for key, values in self._spec.items())
         except KeyError:
             return False

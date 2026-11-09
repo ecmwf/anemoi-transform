@@ -13,9 +13,7 @@ import pandas as pd
 
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
-from anemoi.transform.filters.tabular.support.compute_forcings import (
-    cos_solar_zenith_angle,
-)
+from anemoi.transform.filters.tabular.support.compute_forcings import cos_solar_zenith_angle
 
 
 @filter_registry.register("add_forcings")
@@ -64,9 +62,7 @@ class AddForcings(Filter):
 
     def __init__(self, *, columns: list[str]):
         if not set(columns).issubset(self.SUPPORTED_FORCINGS):
-            raise ValueError(
-                f"Unknown columns requested: {set(columns) - self.SUPPORTED_FORCINGS}"
-            )
+            raise ValueError(f"Unknown columns requested: {set(columns) - self.SUPPORTED_FORCINGS}")
         self.columns = columns
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
@@ -78,9 +74,7 @@ class AddForcings(Filter):
         latitude = obs_df["latitude"].values
         for column in self.columns:
             if column == "cos_sza":
-                obs_df.loc[:, column] = self._cos_solar_zenith_angle(
-                    date, latitude, longitude
-                )
+                obs_df.loc[:, column] = self._cos_solar_zenith_angle(date, latitude, longitude)
                 continue
             trig_function, variable = column.split("_", maxsplit=1)
             angle_radians = self._angle_radians(variable, date, latitude, longitude)
@@ -90,9 +84,7 @@ class AddForcings(Filter):
         return obs_df
 
     @staticmethod
-    def _angle_radians(
-        name: str, date: pd.DatetimeIndex, latitude: np.ndarray, longitude: np.ndarray
-    ):
+    def _angle_radians(name: str, date: pd.DatetimeIndex, latitude: np.ndarray, longitude: np.ndarray):
         if name == "julian_day":
             return AddForcings._julian_day_radians(date)
         elif name == "local_time":
@@ -125,9 +117,7 @@ class AddForcings(Filter):
     def _cos_solar_zenith_angle(date, latitude, longitude):
         julian_day = AddForcings._julian_day(date)
         hours_since_midnight = AddForcings._hours_since_midnight(date)
-        return cos_solar_zenith_angle(
-            julian_day, hours_since_midnight, latitude, longitude
-        )
+        return cos_solar_zenith_angle(julian_day, hours_since_midnight, latitude, longitude)
 
     @staticmethod
     def _local_time_radians(date, longitude):

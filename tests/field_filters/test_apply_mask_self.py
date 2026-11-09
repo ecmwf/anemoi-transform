@@ -47,20 +47,12 @@ FIELD_SPECS = [
 
 @pytest.fixture()
 def source(test_source):
-    return test_source(
-        [{**spec, "values": spec["values"].copy()} for spec in FIELD_SPECS]
-    )
+    return test_source([{**spec, "values": spec["values"].copy()} for spec in FIELD_SPECS])
 
 
 def test_self_mask_is_computed_per_field(source):
     """Each field is masked by its own values, not by the first field's."""
-    apply_mask = create_filter(
-        "apply_mask",
-        self_mask=True,
-        param="cin",
-        threshold=SENTINEL,
-        threshold_operator="<=",
-    )
+    apply_mask = create_filter("apply_mask", self_mask=True, param="cin", threshold=SENTINEL, threshold_operator="<=")
 
     input_fields = collect_fields_by_param(source)
     output_fields = collect_fields_by_param(source | apply_mask)
@@ -74,10 +66,7 @@ def test_self_mask_is_computed_per_field(source):
         assert not np.any(result[~np.isnan(result)] <= SENTINEL)
 
     # an unselected parameter keeps its sentinel
-    assert np.array_equal(
-        input_fields["t"][0].to_numpy(flatten=True),
-        output_fields["t"][0].to_numpy(flatten=True),
-    )
+    assert np.array_equal(input_fields["t"][0].to_numpy(flatten=True), output_fields["t"][0].to_numpy(flatten=True))
 
 
 def test_self_mask_with_mask_value(source):
@@ -92,20 +81,11 @@ def test_self_mask_with_mask_value(source):
 @pytest.mark.parametrize(
     "kwargs,match",
     [
-        (
-            {"self_mask": True, "param": "cin", "mask_param": "lsm", "threshold": 0},
-            "Exactly one of",
-        ),
+        ({"self_mask": True, "param": "cin", "mask_param": "lsm", "threshold": 0}, "Exactly one of"),
         ({"threshold": 0}, "Exactly one of"),
         ({"self_mask": True, "threshold": 0}, "`param` must be provided"),
-        (
-            {"self_mask": True, "param": "cin", "threshold": 0, "return_mask": True},
-            "`return_mask`",
-        ),
-        (
-            {"self_mask": True, "param": "cin"},
-            "Exactly one of `mask_value` or `threshold`",
-        ),
+        ({"self_mask": True, "param": "cin", "threshold": 0, "return_mask": True}, "`return_mask`"),
+        ({"self_mask": True, "param": "cin"}, "Exactly one of `mask_value` or `threshold`"),
     ],
 )
 def test_self_mask_rejects_invalid_arguments(kwargs, match):

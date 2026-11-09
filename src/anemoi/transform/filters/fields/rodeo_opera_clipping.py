@@ -12,7 +12,8 @@ from collections.abc import Iterator
 import earthkit.data as ekd
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
+from anemoi.transform.filters.fields.matching import MatchingSpec
 
 from .rodeo_opera_preprocessing import clip_opera
 
@@ -97,10 +98,6 @@ class RodeoOperaClipping(MatchingFieldsFilter):
         total_precipitation_cleaned = total_precipitation_cleaned / FACTOR_TP
 
         yield self.new_field_from_numpy(
-            total_precipitation_cleaned,
-            template=total_precipitation,
-            param=self.total_precipitation,
+            total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
         )
-        yield self.new_field_from_numpy(
-            quality_clipped, template=quality, param=self.quality
-        )
+        yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)

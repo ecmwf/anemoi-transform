@@ -42,13 +42,9 @@ class MaskInfs(Filter):
 
     """
 
-    def __init__(
-        self, *, columns: list[str] | None = None, column_prefix: str | None = None
-    ):
+    def __init__(self, *, columns: list[str] | None = None, column_prefix: str | None = None):
         if bool(columns) == bool(column_prefix):
-            raise ValueError(
-                "Either columns or column_prefix must be specified, but not both."
-            )
+            raise ValueError("Either columns or column_prefix must be specified, but not both.")
         self.columns = columns
         self.column_prefix = column_prefix
 
@@ -57,13 +53,9 @@ class MaskInfs(Filter):
             columns = list(self.columns)
             raise_if_df_missing_cols(obs_df, self.columns)
         elif self.column_prefix:
-            columns = [
-                col for col in obs_df.columns if col.startswith(self.column_prefix)
-            ]
+            columns = [col for col in obs_df.columns if col.startswith(self.column_prefix)]
             if not columns:
-                raise ValueError(
-                    f"No columns starting with '{self.column_prefix}' found in DataFrame."
-                )
+                raise ValueError(f"No columns starting with '{self.column_prefix}' found in DataFrame.")
 
         for col in columns:
             logging.info(f"Masking {col} with infinite values")

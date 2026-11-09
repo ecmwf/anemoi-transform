@@ -9,7 +9,8 @@
 
 from argparse import ArgumentParser
 
-from anemoi.utils.cli import cli_main, make_parser
+from anemoi.utils.cli import cli_main
+from anemoi.utils.cli import make_parser
 
 from anemoi.transform import __version__
 from anemoi.transform.commands import COMMANDS

@@ -59,17 +59,9 @@ class ImputeNaNs(Filter):
               - obsvalue_1
     """
 
-    def __init__(
-        self,
-        *,
-        value: float | dict,
-        columns: list[str] | None = None,
-        column_prefix: str | None = None,
-    ):
+    def __init__(self, *, value: float | dict, columns: list[str] | None = None, column_prefix: str | None = None):
         if bool(columns) and bool(column_prefix):
-            raise ValueError(
-                "Either columns or column_prefix may be specified, but not both."
-            )
+            raise ValueError("Either columns or column_prefix may be specified, but not both.")
         self.value = value
         self.columns = columns
         self.column_prefix = column_prefix
@@ -79,17 +71,11 @@ class ImputeNaNs(Filter):
             subset = list(self.columns)
             raise_if_df_missing_cols(obs_df, self.columns)
         elif self.column_prefix:
-            subset = [
-                col for col in obs_df.columns if col.startswith(self.column_prefix)
-            ]
+            subset = [col for col in obs_df.columns if col.startswith(self.column_prefix)]
             if not subset:
-                raise ValueError(
-                    f"No columns starting with '{self.column_prefix}' found in DataFrame."
-                )
+                raise ValueError(f"No columns starting with '{self.column_prefix}' found in DataFrame.")
         else:
             subset = None
 
-        logging.info(
-            f"Dropping rows with all NaN values on df with length: {len(obs_df)}"
-        )
+        logging.info(f"Dropping rows with all NaN values on df with length: {len(obs_df)}")
         return obs_df.fillna(self.value)

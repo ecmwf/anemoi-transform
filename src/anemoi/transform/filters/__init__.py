@@ -30,9 +30,7 @@ def _merge_registries():
             try:
                 target.register(name, factory, aliases=source.aliases().get(name, None))
             except AssertionError as e:
-                raise AssertionError(
-                    f"Duplicate filter name: {name} in {source.package} registry"
-                ) from e
+                raise AssertionError(f"Duplicate filter name: {name} in {source.package} registry") from e
 
 
 def create_filter_by_name(name: str, *, context: Any = None, **config) -> Filter:
@@ -63,4 +61,4 @@ def create_filter(context: Any, config: Any) -> Filter:
 
 
 _merge_registries()
-__all__ = ["create_filter", "create_filter_by_name", "filter_registry"]
+__all__ = ["filter_registry", "create_filter", "create_filter_by_name"]

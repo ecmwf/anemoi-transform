@@ -9,12 +9,15 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from typing import Dict
+from typing import Iterable
+from typing import List
 
 import earthkit.data as ekd
 import numpy as np
 
-from anemoi.transform.fields import new_field_from_numpy, new_fieldlist_from_list
+from anemoi.transform.fields import new_field_from_numpy
+from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -69,7 +72,7 @@ class AccumToInterval(Filter):
 
     def forward(self, fields: ekd.FieldList) -> ekd.FieldList:
         # Group by identifier (name + level) so it works for sfc and pl/ml variables
-        groups: dict[tuple, list[ekd.Field]] = {}
+        groups: Dict[tuple, List[ekd.Field]] = {}
         for f in fields:
             groups.setdefault(self._identifier(f), []).append(f)
 
@@ -77,7 +80,7 @@ class AccumToInterval(Filter):
         for k, fl in groups.items():
             groups[k] = sorted(fl, key=lambda x: x.metadata("valid_datetime"))
 
-        out: list[ekd.Field] = []
+        out: List[ekd.Field] = []
         for (param_name, level, level_type), fl in groups.items():
             # Only transform targeted variables; pass-through others untouched
             if param_name not in self.variables or len(fl) == 0:
@@ -86,20 +89,12 @@ class AccumToInterval(Filter):
 
             # Convert accum-from-start → interval accumulations by differencing
             if self.zero_left:
-                out.append(
-                    new_field_from_numpy(
-                        np.zeros_like(fl[0].to_numpy()), template=fl[0]
-                    )
-                )
+                out.append(new_field_from_numpy(np.zeros_like(fl[0].to_numpy()), template=fl[0]))
             else:
                 out.append(fl[0])
 
             # subsequent steps via indexing
             for i in range(1, len(fl)):
-                out.append(
-                    new_field_from_numpy(
-                        fl[i].to_numpy() - fl[i - 1].to_numpy(), template=fl[i]
-                    )
-                )
+                out.append(new_field_from_numpy(fl[i].to_numpy() - fl[i - 1].to_numpy(), template=fl[i]))
 
         return new_fieldlist_from_list(out)

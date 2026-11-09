@@ -13,7 +13,8 @@ import pytest
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
-from ..utils import assert_fields_equal, collect_fields_by_param
+from ..utils import assert_fields_equal
+from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -21,13 +22,7 @@ MOCK_FIELD_METADATA = {
     "valid_datetime": "2018-08-01T09:00:00Z",
 }
 
-OROG_VALUES = np.array(
-    [
-        [243.87788459, 1892.45371246],
-        [427.80215359, 156.92873391],
-        [2167.93458212, 338.15794671],
-    ]
-)
+OROG_VALUES = np.array([[243.87788459, 1892.45371246], [427.80215359, 156.92873391], [2167.93458212, 338.15794671]])
 
 
 @pytest.fixture

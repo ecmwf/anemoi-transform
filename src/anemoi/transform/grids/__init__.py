@@ -33,6 +33,7 @@ class Grid:
         tuple
             A tuple containing the latitudes and longitudes.
         """
+        pass
 
 
 def create_grid(context: Any, config: Any) -> Grid:

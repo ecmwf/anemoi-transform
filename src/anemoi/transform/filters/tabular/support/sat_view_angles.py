@@ -9,6 +9,7 @@
 
 
 from datetime import datetime
+from typing import Tuple
 
 import numpy as np
 
@@ -30,12 +31,7 @@ def calc_zenith(latdeg, londeg, satlats, satlons):
         * 2
         * np.arcsin(
             np.sqrt(
-                (
-                    1
-                    - np.sin(rlats) * np.sin(rsatlats)
-                    - np.cos(rlats) * np.cos(rsatlats) * np.cos(rlons - rsatlons)
-                )
-                / 2
+                (1 - np.sin(rlats) * np.sin(rsatlats) - np.cos(rlats) * np.cos(rsatlats) * np.cos(rlons - rsatlons)) / 2
             )
         )
     )
@@ -70,9 +66,7 @@ def calc_azimuth(latdeg, londeg, satlats, satlons):
     # Calculate angular distance
     zdlon = lonS - lon
     zdlat = latS - lat
-    za = (
-        np.sin(zdlat / 2.0) ** 2 + np.cos(lat) * np.cos(latS) * np.sin(zdlon / 2.0) ** 2
-    )
+    za = np.sin(zdlat / 2.0) ** 2 + np.cos(lat) * np.cos(latS) * np.sin(zdlon / 2.0) ** 2
     distOS = 2.0 * np.arcsin(np.minimum(1.0, np.sqrt(za)))
 
     # Calculate azimuth using law of sines
@@ -81,9 +75,7 @@ def calc_azimuth(latdeg, londeg, satlats, satlons):
     azmsin = np.arcsin(azmsin)
 
     # Calculate azimuth using law of cosines
-    azmcos = (np.sin(latS) - np.sin(lat) * np.cos(distOS)) / (
-        np.cos(lat) * np.sin(distOS)
-    )
+    azmcos = (np.sin(latS) - np.sin(lat) * np.cos(distOS)) / (np.cos(lat) * np.sin(distOS))
     azmcos = np.clip(azmcos, -1.0, 1.0)
     azmcos = np.arccos(azmcos)
 
@@ -105,9 +97,7 @@ def calc_azimuth(latdeg, londeg, satlats, satlons):
     return azm
 
 
-def get_meteosat_loc(
-    satids: np.ndarray, dts: np.ndarray
-) -> tuple[np.ndarray, np.ndarray]:
+def get_meteosat_loc(satids: np.ndarray, dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """Given an array of satellite IDs and an arrays of datetimes,
         returns the sub-satellite lat, lon for that satellite.
         Adapted from obd/bufr2odb/b2o_convert_asr.F90.
@@ -127,24 +117,16 @@ def get_meteosat_loc(
     lons = np.zeros_like(satids)
     lats = np.zeros_like(satids)
 
-    mask = (satids == 55) & (
-        dts > np.datetime64(datetime.strptime("20161020", "%Y%m%d"))
-    )
+    mask = (satids == 55) & (dts > np.datetime64(datetime.strptime("20161020", "%Y%m%d")))
     lons[mask] = 41.5
 
-    mask = (satids == 56) & (
-        dts > np.datetime64(datetime.strptime("20220508", "%Y%m%d"))
-    )
+    mask = (satids == 56) & (dts > np.datetime64(datetime.strptime("20220508", "%Y%m%d")))
     lons[mask] = 45.5
 
-    mask = (satids == 57) & (
-        dts < np.datetime64(datetime.strptime("20130124", "%Y%m%d"))
-    )
+    mask = (satids == 57) & (dts < np.datetime64(datetime.strptime("20130124", "%Y%m%d")))
     lons[mask] = -3.4
 
-    mask = (satids == 70) & (
-        dts < np.datetime64(datetime.strptime("20151201", "%Y%m%d"))
-    )
+    mask = (satids == 70) & (dts < np.datetime64(datetime.strptime("20151201", "%Y%m%d")))
     lons[mask] = -3.4
 
     return lats, lons

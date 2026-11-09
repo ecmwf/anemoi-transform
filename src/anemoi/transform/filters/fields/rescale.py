@@ -6,8 +6,9 @@
 # In applying this licence, ECMWF does not waive the privileges and immunities
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
-from abc import ABC, abstractmethod
-from collections.abc import Callable
+from abc import ABC
+from abc import abstractmethod
+from typing import Callable
 
 import earthkit.data as ekd
 
@@ -48,9 +49,7 @@ class RescaleMixin(ABC):
     def forward_transform(self, param: ekd.Field) -> ekd.Field:
         """Apply the forward transformation (x to ax+b)."""
         rescaled = self.rescaler.forward(param.to_numpy())
-        return self.new_field_from_numpy(
-            rescaled, template=param, param=self.param, units=self.forward_units
-        )
+        return self.new_field_from_numpy(rescaled, template=param, param=self.param, units=self.forward_units)
 
     def backward_transform(self, param: ekd.Field) -> ekd.Field:
         """Apply the backward transformation (ax+b to x)."""

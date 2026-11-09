@@ -52,15 +52,10 @@ class AddAzimuth(Filter):
         self.spacecraft_longitude = spacecraft_longitude
 
     def forward(self, obs_df: pd.DataFrame) -> pd.DataFrame:
-        raise_if_df_missing_cols(
-            obs_df, required_cols=[self.spacecraft_latitude, self.spacecraft_longitude]
-        )
+        raise_if_df_missing_cols(obs_df, required_cols=[self.spacecraft_latitude, self.spacecraft_longitude])
 
         lats, lons = obs_df["latitude"].values, obs_df["longitude"].values
-        sc_lats, sc_lons = (
-            obs_df[self.spacecraft_latitude].values,
-            obs_df[self.spacecraft_longitude].values,
-        )
+        sc_lats, sc_lons = obs_df[self.spacecraft_latitude].values, obs_df[self.spacecraft_longitude].values
 
         obs_df[self.azimuth] = calc_azimuth(lats, lons, sc_lats, sc_lons)
 

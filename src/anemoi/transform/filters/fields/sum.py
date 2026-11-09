@@ -9,15 +9,16 @@
 
 
 import logging
-from collections import defaultdict
-from collections.abc import Hashable
 
 import earthkit.data as ekd
+import numpy as np
 
 from anemoi.transform.fields import new_field_from_numpy
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
+from anemoi.transform.grouping import GroupByParam
+from anemoi.transform.grouping import GroupByParamIgnoreLevel
 
 LOG = logging.getLogger(__name__)
 
@@ -81,40 +82,10 @@ class Sum(Filter):
         """
         result = []
 
-        needed_fields: dict[tuple[Hashable, ...], dict[str, ekd.Field]] = defaultdict(dict)
-
-        for f in fields:
-            key = f.metadata(namespace="mars")
-            param = key.pop("param", None)
-            if self.ignore_level:
-                ll = key.pop("levelist", None)
-                LOG.debug(f"Removing levelist ({ll}) from matching key for variable: {param}")
-
-            if param is None:
-                param = f.metadata("param")
-            if param in self.params:
-                key = tuple(key.items())
-
-                if param in needed_fields[key]:
-                    raise ValueError(f"Duplicate field {param} for {key}")
-
-                needed_fields[key][param] = f
-            else:
-                result.append(f)
-
-        for keys, values in needed_fields.items():
-
-            if len(values) != len(self.params):
-                raise ValueError("Missing fields")
-
-            s = None
-            for k, v in values.items():
-                c = v.to_numpy(flatten=True)
-                if s is None:
-                    s = c
-                else:
-                    s += c
-            result.append(new_field_from_numpy(s, template=values[list(values.keys())[0]], param=self.output))
+        grouping = GroupByParamIgnoreLevel(self.params) if self.ignore_level else GroupByParam(self.params)
+        for group in grouping.iterate(fields, other=result.append):
+            s = np.sum([f.to_numpy(flatten=True) for f in group], axis=0)
+            result.append(new_field_from_numpy(s, template=group[0], param=self.output))
 
         return new_fieldlist_from_list(result)
 

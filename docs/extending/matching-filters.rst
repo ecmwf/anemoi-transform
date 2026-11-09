@@ -20,8 +20,9 @@ which fields the filter expects as inputs, and how to group them.
 ``MatchingSpec`` accepts the following arguments:
 
 ``select``
-   The metadata key used to identify fields. Currently only ``"param"``
-   is supported.
+   The metadata key used to identify fields. Currently only
+   ``"parameter.variable"`` is supported. ``"param"`` is accepted as a
+   deprecated alias.
 
 ``forward``
    A tuple of names that identify the fields required by the forward
@@ -61,7 +62,7 @@ Example
 
    class MyFilter(MatchingFieldsFilter):
        MATCHING = MatchingSpec(
-           select="param",
+           select="parameter.variable",
            forward=("humidity", "temperature"),
            backward=("relative_humidity", "temperature"),
        )
@@ -156,7 +157,9 @@ output fields:
 ``new_field_from_numpy(array, *, template, **kwargs)``
    Creates a new ``ekd.Field`` from a NumPy array, copying metadata
    from ``template``. Any additional keyword arguments (e.g.
-   ``param="r"``) override the corresponding metadata values.
+   ``param="r"``) override the corresponding metadata values. The new
+   field takes its shape from the geography of ``template``, so the
+   array must have as many values as ``template`` has points.
 
 ``new_fieldlist_from_list(fields)``
    Creates a new ``ekd.FieldList`` from a list of ``ekd.Field`` objects.
@@ -218,7 +221,7 @@ setting controls whether input fields are also returned:
 
    class MyFilter(MatchingFieldsFilter):
        MATCHING = MatchingSpec(
-           select="param",
+           select="parameter.variable",
            forward=("a", "b"),
            backward=("c",),
        )

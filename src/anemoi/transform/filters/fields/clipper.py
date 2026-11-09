@@ -62,7 +62,7 @@ class Clipper(SingleFieldFilter):
             raise ValueError("At least one value for minimum or maximum must be specified.")
 
     def forward_select(self):
-        return {"param": self.param}
+        return {"parameter.variable": self.param}
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
         data = field.to_numpy()

@@ -13,14 +13,15 @@ import pytest
 from anemoi.transform.filters import create_filter_by_name as create_filter
 from anemoi.transform.filters.fields.soil_mapping import SOIL_LEVTYPE
 from anemoi.transform.filters.fields.soil_mapping import SoilMapping
+from anemoi.transform.metadata import get_metadata
 
 from ..utils import assert_fields_equal
 from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
-    "valid_datetime": "2018-08-01T09:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
+    "time.valid_datetime": "2018-08-01T09:00:00Z",
 }
 
 STL1_VALUES = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
@@ -45,7 +46,10 @@ SOIL_CASES = {
 @pytest.fixture
 def soil_source(test_source):
     """A source of the named soil parameters (no levtype/levelist)."""
-    spec = [{"param": name, "values": values, **MOCK_FIELD_METADATA} for name, (_, _, values) in SOIL_CASES.items()]
+    spec = [
+        {"parameter.variable": name, "data.values": values, **MOCK_FIELD_METADATA}
+        for name, (_, _, values) in SOIL_CASES.items()
+    ]
     return test_source(spec)
 
 
@@ -54,10 +58,10 @@ def generic_soil_source(test_source):
     """A source of the generic soil parameters (with levtype/levelist)."""
     spec = [
         {
-            "param": generic,
-            "levtype": SOIL_LEVTYPE,
-            "levelist": level,
-            "values": values,
+            "parameter.variable": generic,
+            "vertical.level_type": SOIL_LEVTYPE,
+            "vertical.level": level,
+            "data.values": values,
             **MOCK_FIELD_METADATA,
         }
         for (generic, level, values) in SOIL_CASES.values()
@@ -69,9 +73,9 @@ def generic_soil_source(test_source):
 def mixed_source(test_source):
     """A source mixing named soil parameters with an unrelated surface field."""
     spec = [
-        {"param": "stl1", "values": STL1_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "swvl2", "values": SWVL2_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "2t", "values": T2M_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "stl1", "data.values": STL1_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "swvl2", "data.values": SWVL2_VALUES, **MOCK_FIELD_METADATA},
+        {"parameter.variable": "2t", "data.values": T2M_VALUES, **MOCK_FIELD_METADATA},
     ]
     return test_source(spec)
 
@@ -92,16 +96,16 @@ def test_soil_to_levtype_sol(soil_source):
         (output_fields["vsw"], "vsw"),
     ):
         for field in fields:
-            assert field.metadata("param") == expected
-            assert field.metadata("levtype") == SOIL_LEVTYPE
-            assert field.metadata("levelist") in (1, 2, 3)
+            assert field.parameter.variable() == expected
+            assert get_metadata(field, "levtype") == SOIL_LEVTYPE
+            assert get_metadata(field, "levelist") in (1, 2, 3)
 
 
 def test_soil_to_levtype_sol_values_and_levels(soil_source):
     soil_to_levtype = create_filter("soil_to_levtype_sol")
     pipeline = soil_source | soil_to_levtype
 
-    by_key = {(f.metadata("param"), f.metadata("levelist")): f for f in pipeline}
+    by_key = {(f.parameter.variable(), get_metadata(f, "levelist")): f for f in pipeline}
 
     for _, (generic, level, values) in SOIL_CASES.items():
         field = by_key[(generic, level)]
@@ -120,8 +124,9 @@ def test_levtype_sol_to_soil(generic_soil_source):
         field = output_fields[name][0]
         assert np.allclose(field.to_numpy(), values)
         # levtype/levelist should be stripped from the named representation.
-        assert field.metadata("levtype", default=None) is None
-        assert field.metadata("levelist", default=None) is None
+        # earthkit-data reports a field without a vertical as level type "unknown".
+        assert field.vertical.level_type() == "unknown"
+        assert get_metadata(field, "levelist", default=None) is None
 
 
 def test_soil_round_trip(soil_source):
@@ -158,8 +163,8 @@ def test_levtype_sol_to_soil_round_trip(generic_soil_source):
     assert set(intermediate_fields) == set(SOIL_CASES)
     assert set(output_fields) == {"sot", "vsw"}
 
-    input_by_key = {(f.metadata("param"), f.metadata("levelist")): f for f in generic_soil_source}
-    output_by_key = {(f.metadata("param"), f.metadata("levelist")): f for f in pipeline}
+    input_by_key = {(f.parameter.variable(), get_metadata(f, "levelist")): f for f in generic_soil_source}
+    output_by_key = {(f.parameter.variable(), get_metadata(f, "levelist")): f for f in pipeline}
 
     assert set(input_by_key) == set(output_by_key)
     for key, field in input_by_key.items():
@@ -175,7 +180,7 @@ def test_non_soil_fields_pass_through(mixed_source):
     assert set(output_fields) == {"sot", "vsw", "2t"}
     # The unrelated field is unchanged.
     assert np.allclose(output_fields["2t"][0].to_numpy(), T2M_VALUES)
-    assert output_fields["2t"][0].metadata("levtype", default=None) is None
+    assert output_fields["2t"][0].vertical.level_type() == "unknown"
 
 
 def test_patch_data_request_replaces_named_params():

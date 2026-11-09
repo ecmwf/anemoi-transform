@@ -13,6 +13,8 @@ import earthkit.data as ekd
 
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
+from anemoi.transform.metadata import get_metadata
+from anemoi.transform.metadata import mars_value_to_component
 
 # Mapping of named soil parameters to their generic (param, levelist) representation.
 #
@@ -57,7 +59,6 @@ def _build_inverse_mapping(
             "param": named,
             "levtype": None,
             "levelist": None,
-            "level": None,
         }
         inverse[(spec["param"], int(spec["levelist"]))] = new_metadata
     return inverse
@@ -97,11 +98,11 @@ class SoilMapping(SingleFieldFilter):
 
     def forward_select(self) -> dict[str, list[str]]:
         # Select only the named soil parameters (which carry no levtype/levelist).
-        return {"param": self.named_params}
+        return {"parameter.variable": self.named_params}
 
     def backward_select(self) -> dict[str, list[str]]:
         # Select only the generic soil parameters (which carry levtype/levelist).
-        return {"param": self.generic_params}
+        return {"parameter.variable": self.generic_params}
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
         """Convert a named soil parameter to its generic representation.
@@ -116,9 +117,13 @@ class SoilMapping(SingleFieldFilter):
         ekd.Field
             The field with the generic ``param``, ``levtype`` and ``levelist``.
         """
-        param = field.metadata("param")
-        new_metadata = self.mapping[param]
-        return self.new_field_from_numpy(field.to_numpy(), template=field, **new_metadata)
+        spec = self.mapping[field.parameter.variable()]
+        # Replace the whole vertical component: the named field may have none, and
+        # vertical.* keys cannot be set on an empty one.
+        template = field.set(
+            vertical={"level": spec["levelist"], "level_type": mars_value_to_component("levtype", spec["levtype"])}
+        )
+        return self.new_field_from_numpy(field.to_numpy(), template=template, param=spec["param"])
 
     def backward_transform(self, field: ekd.Field) -> ekd.Field:
         """Convert a generic soil parameter back to its named representation.
@@ -133,8 +138,8 @@ class SoilMapping(SingleFieldFilter):
         ekd.Field
             The field with the named soil parameter metadata (e.g. ``stl1``).
         """
-        param = field.metadata("param")
-        levelist = field.metadata("levelist", default=field.metadata("level", default=None))
+        param = field.parameter.variable()
+        levelist = get_metadata(field, "levelist", default=None)
 
         if levelist is None:
             # Not enough information to map back, pass through unchanged.

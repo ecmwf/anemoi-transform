@@ -41,7 +41,9 @@ class ColumnTransformation:
         "cos_deg": cos_deg,
     }
 
-    def __init__(self, source: tuple[str] | tuple[str, str], target: str, transformation: str):
+    def __init__(
+        self, source: tuple[str] | tuple[str, str], target: str, transformation: str
+    ):
         self.source = source
         self.target = target
         self.transform = self._to_callable(transformation)
@@ -57,7 +59,9 @@ class ColumnTransformation:
         try:
             inputs = (df[col] for col in self.source)
         except KeyError as e:
-            raise KeyError(f"DataFrame must contain columns {self.source} for transformation.") from e
+            raise KeyError(
+                f"DataFrame must contain columns {self.source} for transformation."
+            ) from e
         df[self.target] = self.transform(*inputs)
 
 
@@ -112,9 +116,13 @@ class ApplyColumnTransformations(Filter):
         # check config is valid
         for target_column, transform_spec in config.items():
             if not isinstance(transform_spec, dict):
-                raise ValueError(f"Invalid transformation specification for column {target_column}: {transform_spec}")
+                raise ValueError(
+                    f"Invalid transformation specification for column {target_column}: {transform_spec}"
+                )
             if "function" not in transform_spec:
-                raise ValueError(f"Invalid transformation specification for column {target_column}: {transform_spec}")
+                raise ValueError(
+                    f"Invalid transformation specification for column {target_column}: {transform_spec}"
+                )
 
         # build transformations
         transformations = []
@@ -124,7 +132,9 @@ class ApplyColumnTransformations(Filter):
                 source = (source,)
 
             transformation = ColumnTransformation(
-                source=source, target=target_column, transformation=transform_spec["function"]
+                source=source,
+                target=target_column,
+                transformation=transform_spec["function"],
             )
             transformations.append(transformation)
         self.transformations = transformations

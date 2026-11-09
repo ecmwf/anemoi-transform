@@ -16,8 +16,7 @@ import earthkit.data as ekd
 from anemoi.transform.constants import g_gravitational_acceleration
 from anemoi.transform.filters.fields import filter_registry
 
-from .matching import MatchingFieldsFilter
-from .matching import MatchingSpec
+from .matching import MatchingFieldsFilter, MatchingSpec
 
 
 class VerticalVelocity(MatchingFieldsFilter):
@@ -95,13 +94,22 @@ class VerticalVelocity(MatchingFieldsFilter):
 
         level = float(vertical_velocity._metadata.get("levelist", None))
         # here the pressure gradient is assimilated to volumic weight : hydrostatic hypothesis
-        rho = (100 * level) / (287 * temperature.to_numpy() * (1 + 0.61 * humidity.to_numpy()) + 1e-8)
-        wz = (-1.0 / (rho * g_gravitational_acceleration + 1e-8)) * vertical_velocity.to_numpy()
+        rho = (100 * level) / (
+            287 * temperature.to_numpy() * (1 + 0.61 * humidity.to_numpy()) + 1e-8
+        )
+        wz = (
+            -1.0 / (rho * g_gravitational_acceleration + 1e-8)
+        ) * vertical_velocity.to_numpy()
 
-        yield self.new_field_from_numpy(wz, template=vertical_velocity, param=self.geometric_vertical_velocity)
+        yield self.new_field_from_numpy(
+            wz, template=vertical_velocity, param=self.geometric_vertical_velocity
+        )
 
     def backward_transform(
-        self, geometric_vertical_velocity: ekd.Field, temperature: ekd.Field, humidity: ekd.Field
+        self,
+        geometric_vertical_velocity: ekd.Field,
+        temperature: ekd.Field,
+        humidity: ekd.Field,
     ) -> Iterator[ekd.Field]:
         """Convert vertical wind speed from m/s to Pa/s.
 
@@ -122,10 +130,19 @@ class VerticalVelocity(MatchingFieldsFilter):
 
         level = float(geometric_vertical_velocity._metadata.get("levelist", None))
         # here the pressure gradient is assimilated to volumic weight : hydrostatic hypothesis
-        rho = (100 * level) / (287 * temperature.to_numpy() * (1 + 0.61 * humidity.to_numpy()) + 1e-8)
-        w = -1.0 * rho * g_gravitational_acceleration * geometric_vertical_velocity.to_numpy()
+        rho = (100 * level) / (
+            287 * temperature.to_numpy() * (1 + 0.61 * humidity.to_numpy()) + 1e-8
+        )
+        w = (
+            -1.0
+            * rho
+            * g_gravitational_acceleration
+            * geometric_vertical_velocity.to_numpy()
+        )
 
-        yield self.new_field_from_numpy(w, template=geometric_vertical_velocity, param=self.vertical_velocity)
+        yield self.new_field_from_numpy(
+            w, template=geometric_vertical_velocity, param=self.vertical_velocity
+        )
 
 
 filter_registry.register("w_to_wz", VerticalVelocity)

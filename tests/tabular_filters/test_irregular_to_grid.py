@@ -325,10 +325,14 @@ def test_fill_grids():
     grids = {"temperature": np.full((t_idx, n_spatial), np.nan)}
     df_nearest = pd.DataFrame({"spatial_index": [0, 2], "temperature": [10.0, 30.0]})
     # note: grids arrays are mutated in place
-    IrregularToGrid._fill_grids(grids, df_nearest, ["temperature"], n_spatial, t_idx - 1)
+    IrregularToGrid._fill_grids(
+        grids, df_nearest, ["temperature"], n_spatial, t_idx - 1
+    )
 
     # only last time index is filled in
-    expected = np.array([[np.nan, np.nan, np.nan, np.nan], [10.0, np.nan, 30.0, np.nan]])
+    expected = np.array(
+        [[np.nan, np.nan, np.nan, np.nan], [10.0, np.nan, 30.0, np.nan]]
+    )
     np.testing.assert_array_equal(grids["temperature"], expected)
 
 
@@ -360,7 +364,9 @@ def test_fill_grids():
             Window("(-6h, 0]"),
             pd.DataFrame(
                 {
-                    "date": pd.to_datetime(["2023-01-01 06:00"]),  # exactly at target (inclusive upper bound)
+                    "date": pd.to_datetime(
+                        ["2023-01-01 06:00"]
+                    ),  # exactly at target (inclusive upper bound)
                     "spatial_index": [0],
                     "temperature": [10.0],
                 }
@@ -380,7 +386,9 @@ def test_fill_grids():
             Window("(-6h, 0]"),
             pd.DataFrame(
                 {
-                    "date": pd.to_datetime(["2023-01-01 00:00"]),  # exactly at target - freq (exclusive lower bound)
+                    "date": pd.to_datetime(
+                        ["2023-01-01 00:00"]
+                    ),  # exactly at target - freq (exclusive lower bound)
                     "spatial_index": [0],
                     "temperature": [10.0],
                 }
@@ -439,7 +447,9 @@ def test_fill_grids():
             Window("[-6h, 0]"),
             pd.DataFrame(
                 {
-                    "date": pd.to_datetime(["2023-01-01 00:00", "2023-01-01 06:00"]),  # both boundaries, both closed
+                    "date": pd.to_datetime(
+                        ["2023-01-01 00:00", "2023-01-01 06:00"]
+                    ),  # both boundaries, both closed
                     "spatial_index": [0, 1],
                     "temperature": [10.0, 20.0],
                 }
@@ -482,7 +492,12 @@ def test_fill_grids():
             pd.DataFrame(
                 {
                     "date": pd.to_datetime(
-                        ["2023-01-01 03:00", "2023-01-01 04:00", "2023-01-01 07:00", "2023-01-01 07:01"]
+                        [
+                            "2023-01-01 03:00",
+                            "2023-01-01 04:00",
+                            "2023-01-01 07:00",
+                            "2023-01-01 07:01",
+                        ]
                     ),  # lower bound excluded, upper bound included, one obs outside
                     "spatial_index": [0, 1, 2, 3],
                     "temperature": [10.0, 20.0, 30.0, 40.0],
@@ -501,7 +516,9 @@ def test_fill_grids():
     ],
 )
 def test_select_window(target_time, window, input_df, expected):
-    result = IrregularToGrid.select_window(input_df, target_time, ["temperature"], window)
+    result = IrregularToGrid.select_window(
+        input_df, target_time, ["temperature"], window
+    )
     if expected is None:
         assert result is None
     else:
@@ -534,7 +551,9 @@ def test_select_window(target_time, window, input_df, expected):
             datetime(2023, 1, 1, 6, 0),
             pd.DataFrame(
                 {
-                    "date": pd.to_datetime(["2023-01-01 03:00", "2023-01-01 05:50", "2023-01-01 05:00"]),
+                    "date": pd.to_datetime(
+                        ["2023-01-01 03:00", "2023-01-01 05:50", "2023-01-01 05:00"]
+                    ),
                     "spatial_index": [0, 0, 0],
                     "temperature": [100.0, 200.0, 300.0],
                 }
@@ -554,7 +573,12 @@ def test_select_window(target_time, window, input_df, expected):
             pd.DataFrame(
                 {
                     "date": pd.to_datetime(
-                        ["2023-01-01 03:00", "2023-01-01 05:50", "2023-01-01 06:05", "2023-01-01 06:10"]
+                        [
+                            "2023-01-01 03:00",
+                            "2023-01-01 05:50",
+                            "2023-01-01 06:05",
+                            "2023-01-01 06:10",
+                        ]
                     ),
                     "spatial_index": [0, 0, 1, 1],
                     "temperature": [100.0, 200.0, 300.0, 400.0],
@@ -573,7 +597,9 @@ def test_select_window(target_time, window, input_df, expected):
     ],
 )
 def test_get_nearest_obs(target_time, input_df, expected):
-    result = IrregularToGrid.get_nearest_obs(input_df, target_time, pd.Timedelta("6h"), ["temperature"])
+    result = IrregularToGrid.get_nearest_obs(
+        input_df, target_time, pd.Timedelta("6h"), ["temperature"]
+    )
     pd.testing.assert_frame_equal(result, expected, check_like=True)
 
 
@@ -664,7 +690,12 @@ def test_get_nearest_obs(target_time, input_df, expected):
             pd.DataFrame(
                 {
                     "date": pd.to_datetime(
-                        ["2023-01-01 05:50", "2023-01-01 05:00", "2023-01-01 05:55", "2023-01-01 05:00"]
+                        [
+                            "2023-01-01 05:50",
+                            "2023-01-01 05:00",
+                            "2023-01-01 05:55",
+                            "2023-01-01 05:00",
+                        ]
                     ),
                     "spatial_index": [0, 0, 1, 1],
                     "temperature": [np.nan, 20.0, 30.0, 40.0],
@@ -684,6 +715,10 @@ def test_get_nearest_obs(target_time, input_df, expected):
         ),
     ],
 )
-def test_get_nearest_obs_nan_weighting(target_time, input_df, columns, nan_score_weight, expected):
-    result = IrregularToGrid.get_nearest_obs(input_df, target_time, pd.Timedelta("6h"), columns, nan_score_weight)
+def test_get_nearest_obs_nan_weighting(
+    target_time, input_df, columns, nan_score_weight, expected
+):
+    result = IrregularToGrid.get_nearest_obs(
+        input_df, target_time, pd.Timedelta("6h"), columns, nan_score_weight
+    )
     pd.testing.assert_frame_equal(result, expected, check_like=True)

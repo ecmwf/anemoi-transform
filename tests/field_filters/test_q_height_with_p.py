@@ -13,9 +13,7 @@ from earthkit.meteo import thermo
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
-from ..utils import SelectFieldSource
-from ..utils import assert_fields_equal
-from ..utils import collect_fields_by_param
+from ..utils import SelectFieldSource, assert_fields_equal, collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -28,7 +26,9 @@ Q_VALUES = np.array([[0.005, 0.010], [0.015, 0.008], [0.002, 0.020]])
 P_VALUES = np.array([[95000.0, 100000.0], [101325.0, 92000.0], [88000.0, 98000.0]])
 
 # Derived values — computed from T, Q, P using the same thermo functions as the filters
-R_VALUES = thermo.relative_humidity_from_specific_humidity(t=T_VALUES, q=Q_VALUES, p=P_VALUES)
+R_VALUES = thermo.relative_humidity_from_specific_humidity(
+    t=T_VALUES, q=Q_VALUES, p=P_VALUES
+)
 
 
 @pytest.fixture
@@ -77,7 +77,9 @@ def test_q_to_r_height_with_p_round_trip(specific_humidity_source):
     q_to_r = create_filter("q_to_r_height_with_p")
     r_to_q = create_filter("r_to_q_height_with_p")
 
-    relative_humidity_source = SelectFieldSource(specific_humidity_source | q_to_r, params=["r", "t", "pres"])
+    relative_humidity_source = SelectFieldSource(
+        specific_humidity_source | q_to_r, params=["r", "t", "pres"]
+    )
     pipeline = relative_humidity_source | r_to_q
 
     input_fields = collect_fields_by_param(specific_humidity_source)
@@ -95,7 +97,9 @@ def test_q_to_r_height_with_p_round_trip(specific_humidity_source):
 
     # intermediate fields unchanged through second filter
     for param in ("r", "t", "pres"):
-        for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
+        for intermediate_field, output_field in zip(
+            intermediate_fields[param], output_fields[param]
+        ):
             assert_fields_equal(intermediate_field, output_field)
 
 
@@ -116,7 +120,9 @@ def test_r_to_q_height_with_p(relative_humidity_source):
 
     # output matches expected values
     result = output_fields["q"][0].to_numpy()
-    expected_q = thermo.specific_humidity_from_relative_humidity(t=T_VALUES, r=R_VALUES, p=P_VALUES)
+    expected_q = thermo.specific_humidity_from_relative_humidity(
+        t=T_VALUES, r=R_VALUES, p=P_VALUES
+    )
     np.testing.assert_allclose(result, expected_q)
 
 
@@ -124,7 +130,9 @@ def test_r_to_q_height_with_p_round_trip(relative_humidity_source):
     r_to_q = create_filter("r_to_q_height_with_p")
     q_to_r = create_filter("q_to_r_height_with_p")
 
-    specific_humidity_source = SelectFieldSource(relative_humidity_source | r_to_q, params=["q", "t", "pres"])
+    specific_humidity_source = SelectFieldSource(
+        relative_humidity_source | r_to_q, params=["q", "t", "pres"]
+    )
     pipeline = specific_humidity_source | q_to_r
 
     input_fields = collect_fields_by_param(relative_humidity_source)
@@ -142,7 +150,9 @@ def test_r_to_q_height_with_p_round_trip(relative_humidity_source):
 
     # intermediate fields unchanged through second filter
     for param in ("q", "t", "pres"):
-        for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
+        for intermediate_field, output_field in zip(
+            intermediate_fields[param], output_fields[param]
+        ):
             assert_fields_equal(intermediate_field, output_field)
 
 

@@ -28,18 +28,26 @@ GLACIER_MASK = np.array([[0, 0], [0, 1], [1, 1]])
 
 @pytest.fixture
 def snow_depth_source(test_source):
-    SNOW_DEPTH_SPEC = [{"param": "sd", "values": SNOW_DEPTH_VALUES.copy(), **MOCK_FIELD_METADATA}]
+    SNOW_DEPTH_SPEC = [
+        {"param": "sd", "values": SNOW_DEPTH_VALUES.copy(), **MOCK_FIELD_METADATA}
+    ]
     return test_source(SNOW_DEPTH_SPEC)
 
 
 @pytest.fixture
 def mock_mask():
-    field = {"param": "glacier_mask", "values": GLACIER_MASK.copy(), **MOCK_FIELD_METADATA}
+    field = {
+        "param": "glacier_mask",
+        "values": GLACIER_MASK.copy(),
+        **MOCK_FIELD_METADATA,
+    }
     return ekd.from_source("list-of-dicts", [field])
 
 
 def test_glacier_mask(snow_depth_source, mock_mask):
-    with mock.patch("anemoi.transform.filters.fields.glacier_mask.ekd.from_source") as mock_earthkit:
+    with mock.patch(
+        "anemoi.transform.filters.fields.glacier_mask.ekd.from_source"
+    ) as mock_earthkit:
         mock_earthkit.return_value = mock_mask
 
         glacier_mask = create_filter("glacier_mask", glacier_mask="glacier_mask.grib")
@@ -51,5 +59,9 @@ def test_glacier_mask(snow_depth_source, mock_mask):
 
     assert set(output_fields) == {"sd_masked"}
     assert len(output_fields["sd_masked"]) == 1
-    expected_value = np.ma.array(SNOW_DEPTH_VALUES, mask=GLACIER_MASK.astype(bool)).filled(np.nan)
-    assert np.allclose(output_fields["sd_masked"][0].to_numpy(), expected_value, equal_nan=True)
+    expected_value = np.ma.array(
+        SNOW_DEPTH_VALUES, mask=GLACIER_MASK.astype(bool)
+    ).filled(np.nan)
+    assert np.allclose(
+        output_fields["sd_masked"][0].to_numpy(), expected_value, equal_nan=True
+    )

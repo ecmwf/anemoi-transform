@@ -48,7 +48,8 @@ EXPECTED_METADATA = {
 @pytest.fixture
 def source(test_source):
     FIELD_SPECS = [
-        {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA} for i, values in enumerate(INPUT_VALUES)
+        {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA}
+        for i, values in enumerate(INPUT_VALUES)
     ]
     return test_source(FIELD_SPECS)
 
@@ -65,15 +66,27 @@ def test_remove_nans_fields(source):
     assert set(input_fields) == set(output_fields)
     assert len(input_fields[param]) == len(output_fields[param])
 
-    for i, (input_field, output_field) in enumerate(zip(input_fields[param], output_fields[param])):
+    for i, (input_field, output_field) in enumerate(
+        zip(input_fields[param], output_fields[param])
+    ):
         # existing behaviour is to generate a mask based on the location of
         # NaNs in the first field and apply this mask for all fields
-        assert np.array_equal(input_field.to_numpy(flatten=True), INPUT_VALUES[i].flatten(), equal_nan=True)
-        assert np.array_equal(output_field.to_numpy(flatten=True), EXPECTED_VALUES[i], equal_nan=True)
+        assert np.array_equal(
+            input_field.to_numpy(flatten=True),
+            INPUT_VALUES[i].flatten(),
+            equal_nan=True,
+        )
+        assert np.array_equal(
+            output_field.to_numpy(flatten=True), EXPECTED_VALUES[i], equal_nan=True
+        )
 
         output_lats, output_lons = output_field.grid_points()
-        assert np.array_equal(output_lats, EXPECTED_METADATA["latitudes"], equal_nan=True)
-        assert np.array_equal(output_lons, EXPECTED_METADATA["longitudes"], equal_nan=True)
+        assert np.array_equal(
+            output_lats, EXPECTED_METADATA["latitudes"], equal_nan=True
+        )
+        assert np.array_equal(
+            output_lons, EXPECTED_METADATA["longitudes"], equal_nan=True
+        )
 
 
 def test_drop_nans_tabular():

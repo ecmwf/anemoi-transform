@@ -14,8 +14,10 @@ import logging
 import earthkit.data as ekd
 from earthkit.data.utils.dates import to_datetime
 
-from anemoi.transform.fields import new_field_with_valid_datetime
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.fields import (
+    new_field_with_valid_datetime,
+    new_fieldlist_from_list,
+)
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -46,6 +48,10 @@ class ClearStepFilter(Filter):
         for field in data:
             valid_datetime = to_datetime(field.metadata("valid_datetime"))
             step = field.metadata("step")
-            result.append(new_field_with_valid_datetime(field, valid_datetime - datetime.timedelta(hours=step)))
+            result.append(
+                new_field_with_valid_datetime(
+                    field, valid_datetime - datetime.timedelta(hours=step)
+                )
+            )
 
         return new_fieldlist_from_list(result)

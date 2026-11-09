@@ -12,8 +12,7 @@ import pytest
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
-from ..utils import assert_fields_equal
-from ..utils import collect_fields_by_param
+from ..utils import assert_fields_equal, collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -64,7 +63,9 @@ def test_lnsp_to_sp_round_trip(lnsp_source):
     assert len(intermediate_fields["sp"]) == 1
     assert set(output_fields) == {"lnsp"}
     assert len(output_fields["lnsp"]) == 1
-    assert_fields_equal(input_fields["lnsp"][0], output_fields["lnsp"][0], exclude_keys=["levelist"])
+    assert_fields_equal(
+        input_fields["lnsp"][0], output_fields["lnsp"][0], exclude_keys=["levelist"]
+    )
 
 
 def test_sp_to_lnsp(sp_source):
@@ -93,4 +94,6 @@ def test_sp_to_lnsp_round_trip(sp_source):
     assert len(intermediate_fields["lnsp"]) == 1
     assert set(output_fields) == {"sp"}
     assert len(output_fields["sp"]) == 1
-    assert_fields_equal(input_fields["sp"][0], output_fields["sp"][0], exclude_keys=["levelist"])
+    assert_fields_equal(
+        input_fields["sp"][0], output_fields["sp"][0], exclude_keys=["levelist"]
+    )

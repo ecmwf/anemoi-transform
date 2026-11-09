@@ -53,7 +53,10 @@ def test_rename_grib_format_rename(grib_source):
         )
         assert isinstance(orig_level, int)
         assert isinstance(orig_level_d, float)
-        assert result.metadata("param") == f"{orig_param}_{orig_level}_{orig_levtype}_{orig_level_d}"
+        assert (
+            result.metadata("param")
+            == f"{orig_param}_{orig_level}_{orig_levtype}_{orig_level_d}"
+        )
 
 
 @skip_if_offline
@@ -61,7 +64,14 @@ def test_rename_grib_dict_multiple(grib_source):
     rename = create_filter(
         "rename",
         param={"z": "geopotential", "t": "temperature"},
-        levelist={1000: "1000hPa", 850: "850hPa", 700: "700hPa", 500: "500hPa", 400: "400hPa", 300: "300hPa"},
+        levelist={
+            1000: "1000hPa",
+            850: "850hPa",
+            700: "700hPa",
+            500: "500hPa",
+            400: "400hPa",
+            300: "300hPa",
+        },
     )
     pipeline = grib_source | rename
 

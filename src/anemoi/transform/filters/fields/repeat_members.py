@@ -13,8 +13,7 @@ import logging
 import earthkit.data as ekd
 from anemoi.utils.humanize import make_list_int
 
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.fields import new_field_from_numpy, new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -99,7 +98,9 @@ class RepeatMembers(Filter):
 
         members = make_list_int(members)
         self.members = members
-        assert isinstance(members, (tuple, list)), f"members must be a list or tuple, got {type(members)}"
+        assert isinstance(members, (tuple, list)), (
+            f"members must be a list or tuple, got {type(members)}"
+        )
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
         """Apply the forward transformation to replicate fields.

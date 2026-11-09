@@ -13,11 +13,12 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
 
 
-def compute_snow_depth_m(snow_depth: np.ndarray, snow_density: np.ndarray) -> np.ndarray:
+def compute_snow_depth_m(
+    snow_depth: np.ndarray, snow_density: np.ndarray
+) -> np.ndarray:
     """Convert snow depth (water equivalent) to snow depth in metres.
 
     The snow depth in metres (``sde``) is computed from ``snow depth`` (``sd``,
@@ -94,7 +95,9 @@ class SnowDepthM(MatchingFieldsFilter):
         self.snow_depth_m = snow_depth_m
         super().__init__()
 
-    def forward_transform(self, snow_depth: ekd.Field, snow_density: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(
+        self, snow_depth: ekd.Field, snow_density: ekd.Field
+    ) -> Iterator[ekd.Field]:
         """Convert snow depth (water equivalent) and snow density to snow depth in metres.
 
         Parameters
@@ -111,4 +114,6 @@ class SnowDepthM(MatchingFieldsFilter):
         """
         sde = compute_snow_depth_m(snow_depth.to_numpy(), snow_density.to_numpy())
 
-        yield self.new_field_from_numpy(sde, template=snow_depth, param=self.snow_depth_m, units="m")
+        yield self.new_field_from_numpy(
+            sde, template=snow_depth, param=self.snow_depth_m, units="m"
+        )

@@ -14,9 +14,11 @@ from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
-from ..utils import SelectAndAddFieldSource
-from ..utils import assert_fields_equal
-from ..utils import collect_fields_by_param
+from ..utils import (
+    SelectAndAddFieldSource,
+    assert_fields_equal,
+    collect_fields_by_param,
+)
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -25,12 +27,19 @@ MOCK_FIELD_METADATA = {
 }
 
 R2M_VALUES = np.array([[0, 10, 20, 30], [40, 50, 60, 70], [80, 90, 100, 110]])
-T2M_VALUES = np.array([[299, 295, 294, 291], [286, 269, 291, 291], [297, 299, 250, 238]])
+T2M_VALUES = np.array(
+    [[299, 295, 294, 291], [286, 269, 291, 291], [297, 299, 250, 238]]
+)
 Q2M_VALUES = np.array(
     [
         [0.0, 0.0020382843983213, 0.0030328053695092, 0.0041460924390494],
         [0.0037995906399138, 0.0013875242433219, 0.007505377077515, 0.0087464703870742],
-        [0.0146151303517757, 0.0191325953775226, 0.0004603447218772, 0.0001570271615703],
+        [
+            0.0146151303517757,
+            0.0191325953775226,
+            0.0004603447218772,
+            0.0001570271615703,
+        ],
     ]
 )
 D2M_VALUES = np.array(
@@ -40,14 +49,28 @@ D2M_VALUES = np.array(
         [293.33820197, 297.23259971, 247.36689612, 235.17086978],
     ]
 )
-SP_VALUES = np.array([[80417, 79975, 101152, 92153], [97221, 99400, 102021, 102212], [101488, 98555, 101390, 91533]])
+SP_VALUES = np.array(
+    [
+        [80417, 79975, 101152, 92153],
+        [97221, 99400, 102021, 102212],
+        [101488, 98555, 101390, 91533],
+    ]
+)
 
 T_VALUES = {
     136: np.array(
-        [[297.67, 295.83, 295.22, 292.19], [288.51, 269.26, 290.87, 291.02], [296.24, 298.50, 250.34, 244.79]]
+        [
+            [297.67, 295.83, 295.22, 292.19],
+            [288.51, 269.26, 290.87, 291.02],
+            [296.24, 298.50, 250.34, 244.79],
+        ]
     ),
     137: np.array(
-        [[297.82, 294.65, 294.48, 291.79], [287.30, 269.31, 291.06, 291.21], [296.50, 298.53, 250.34, 243.16]]
+        [
+            [297.82, 294.65, 294.48, 291.79],
+            [287.30, 269.31, 291.06, 291.21],
+            [296.50, 298.53, 250.34, 243.16],
+        ]
     ),
 }
 
@@ -70,8 +93,28 @@ Q_VALUES = {
 
 # IFS A and B coeffients for level 137 - 129
 AB_coefficients_files = {
-    "A": [424.414063, 302.476563, 202.484375, 122.101563, 62.781250, 22.835938, 3.757813, 0.0, 0.0],
-    "B": [0.969513, 0.975078, 0.980072, 0.984542, 0.988500, 0.991984, 0.995003, 0.997630, 1.000000],
+    "A": [
+        424.414063,
+        302.476563,
+        202.484375,
+        122.101563,
+        62.781250,
+        22.835938,
+        3.757813,
+        0.0,
+        0.0,
+    ],
+    "B": [
+        0.969513,
+        0.975078,
+        0.980072,
+        0.984542,
+        0.988500,
+        0.991984,
+        0.995003,
+        0.997630,
+        1.000000,
+    ],
 }
 
 # IFS A and B coeffients for level 137 - 129
@@ -90,11 +133,23 @@ def relative_humidity_source(test_source):
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC.append(
-            {"param": "t", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "param": "t",
+                "levtype": "ml",
+                "levelist": level,
+                "values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     for level, values in Q_VALUES.items():
         HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC.append(
-            {"param": "q", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "param": "q",
+                "levtype": "ml",
+                "levelist": level,
+                "values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     return test_source(HEIGHT_LEVEL_RELATIVE_HUMIDITY_SPEC)
 
@@ -108,11 +163,23 @@ def specific_humidity_source(test_source):
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC.append(
-            {"param": "t", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "param": "t",
+                "levtype": "ml",
+                "levelist": level,
+                "values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     for level, values in Q_VALUES.items():
         HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC.append(
-            {"param": "q", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "param": "q",
+                "levtype": "ml",
+                "levelist": level,
+                "values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     return test_source(HEIGHT_LEVEL_SPECIFIC_HUMIDITY_SPEC)
 
@@ -125,18 +192,32 @@ def dewpoint_temperature_source(test_source):
     ]
     for level, values in T_VALUES.items():
         HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC.append(
-            {"param": "t", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "param": "t",
+                "levtype": "ml",
+                "levelist": level,
+                "values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     for level, values in Q_VALUES.items():
         HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC.append(
-            {"param": "q", "levtype": "ml", "levelist": level, "values": values, **MOCK_FIELD_METADATA}
+            {
+                "param": "q",
+                "levtype": "ml",
+                "levelist": level,
+                "values": values,
+                **MOCK_FIELD_METADATA,
+            }
         )
     return test_source(HEIGHT_LEVEL_DEWPOINT_TEMPERATURE_SPEC)
 
 
 @skip_if_offline
 def test_height_level_specific_humidity_to_relative_humidity_from_file(test_source):
-    source = test_source("anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib")
+    source = test_source(
+        "anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib"
+    )
     q_to_r_height = create_filter(
         "q_to_r_height",
         height=2,
@@ -203,7 +284,9 @@ def test_specific_humidity_to_relative_humidity(specific_humidity_source):
     np.testing.assert_allclose(result, expected_relative_humidity)
 
 
-def test_height_level_specific_humidity_to_relative_humidity_round_trip(specific_humidity_source):
+def test_height_level_specific_humidity_to_relative_humidity_round_trip(
+    specific_humidity_source,
+):
     q_to_r_height = create_filter(
         "q_to_r_height",
         height=2,
@@ -253,14 +336,20 @@ def test_height_level_specific_humidity_to_relative_humidity_round_trip(specific
 
     # test intermediate fields are unchanged
     for param in ("2r", "2t", "sp"):
-        for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
+        for intermediate_field, output_field in zip(
+            intermediate_fields[param], output_fields[param]
+        ):
             assert_fields_equal(intermediate_field, output_field)
 
 
 @skip_if_offline
 def test_relative_humidity_to_specific_humidity_from_file(test_source):
-    source = test_source("anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib")
-    input_relative_humidity = test_source("anemoi-transform/filters/single_level_relative_humidity.npy").ds.to_numpy()
+    source = test_source(
+        "anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib"
+    )
+    input_relative_humidity = test_source(
+        "anemoi-transform/filters/single_level_relative_humidity.npy"
+    ).ds.to_numpy()
 
     md = source.ds.sel(param="2d")[0].metadata().override(edition=2, shortName="2r")
 
@@ -330,7 +419,9 @@ def test_relative_humidity_to_specific_humidity(relative_humidity_source):
     np.testing.assert_allclose(result, expected_specific_humidity)
 
 
-def test_height_level_relative_humidity_to_specific_humidity_round_trip(relative_humidity_source):
+def test_height_level_relative_humidity_to_specific_humidity_round_trip(
+    relative_humidity_source,
+):
     r_to_q_height = create_filter(
         "r_to_q_height",
         height=2,
@@ -380,13 +471,17 @@ def test_height_level_relative_humidity_to_specific_humidity_round_trip(relative
 
     # test intermediate fields are unchanged
     for param in ("2sh", "2t", "sp"):
-        for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
+        for intermediate_field, output_field in zip(
+            intermediate_fields[param], output_fields[param]
+        ):
             assert_fields_equal(intermediate_field, output_field)
 
 
 @skip_if_offline
 def test_specific_humidity_to_dewpoint_from_file(test_source):
-    source = test_source("anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib")
+    source = test_source(
+        "anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib"
+    )
 
     q_to_d_height = create_filter(
         "q_to_d_height",
@@ -452,7 +547,9 @@ def test_specific_humidity_to_dewpoint_temperature(specific_humidity_source):
     np.testing.assert_allclose(result, expected_relative_humidity)
 
 
-def test_height_level_specific_humidity_to_dewpoint_temperature_round_trip(specific_humidity_source):
+def test_height_level_specific_humidity_to_dewpoint_temperature_round_trip(
+    specific_humidity_source,
+):
     q_to_d_height = create_filter(
         "q_to_d_height",
         height=2,
@@ -500,13 +597,17 @@ def test_height_level_specific_humidity_to_dewpoint_temperature_round_trip(speci
 
     # test intermediate fields are unchanged
     for param in ("2d", "2t", "sp"):
-        for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
+        for intermediate_field, output_field in zip(
+            intermediate_fields[param], output_fields[param]
+        ):
             assert_fields_equal(intermediate_field, output_field)
 
 
 @skip_if_offline
 def test_dewpoint_to_specific_humidity_from_file(test_source):
-    source = test_source("anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib")
+    source = test_source(
+        "anemoi-transform/filters/input_single_level_specific_humidity_to_relative_humidity.grib"
+    )
     input_dewpoint_temperature = test_source(
         "anemoi-transform/filters/single_level_dewpoint_temperature.npy"
     ).ds.to_numpy()
@@ -577,7 +678,9 @@ def test_dewpoint_temperature_to_specific_humidity(dewpoint_temperature_source):
     np.testing.assert_allclose(result, expected_specific_humidity)
 
 
-def test_height_level_dewpoint_temperature_to_specific_humidity_round_trip(dewpoint_temperature_source):
+def test_height_level_dewpoint_temperature_to_specific_humidity_round_trip(
+    dewpoint_temperature_source,
+):
     d_to_q_height = create_filter(
         "d_to_q_height",
         height=2,
@@ -625,7 +728,9 @@ def test_height_level_dewpoint_temperature_to_specific_humidity_round_trip(dewpo
 
     # test intermediate fields are unchanged
     for param in ("2sh", "sp"):
-        for intermediate_field, output_field in zip(intermediate_fields[param], output_fields[param]):
+        for intermediate_field, output_field in zip(
+            intermediate_fields[param], output_fields[param]
+        ):
             assert_fields_equal(intermediate_field, output_field)
 
 

@@ -42,7 +42,9 @@ def test_fill_heights_defaults():
         }
     )
 
-    with mock.patch("anemoi.transform.filters.tabular.fill_heights.xr.open_dataset") as open_dataset:
+    with mock.patch(
+        "anemoi.transform.filters.tabular.fill_heights.xr.open_dataset"
+    ) as open_dataset:
         orog_dataset = mock_dataset(
             lat_spec=("latitude", [-45.0, 45.0]),
             lon_spec=("longitude", [0.0, 180.0]),
@@ -65,7 +67,10 @@ def test_fill_heights_defaults():
 
 
 def test_fill_heights_station_altitude():
-    config = {"orography_file": "/path/to/orography.zarr", "station_altitude": "my_station_altitude"}
+    config = {
+        "orography_file": "/path/to/orography.zarr",
+        "station_altitude": "my_station_altitude",
+    }
     df = pd.DataFrame(
         {
             "latitude": [-45.0, -45.0, 45.0, 45.0],
@@ -74,7 +79,9 @@ def test_fill_heights_station_altitude():
         }
     )
 
-    with mock.patch("anemoi.transform.filters.tabular.fill_heights.xr.open_dataset") as open_dataset:
+    with mock.patch(
+        "anemoi.transform.filters.tabular.fill_heights.xr.open_dataset"
+    ) as open_dataset:
         orog_dataset = mock_dataset(
             lat_spec=("latitude", [-45.0, 45.0]),
             lon_spec=("longitude", [0.0, 180.0]),
@@ -111,7 +118,9 @@ def test_fill_heights_orog_file_varnames():
         }
     )
 
-    with mock.patch("anemoi.transform.filters.tabular.fill_heights.xr.open_dataset") as open_dataset:
+    with mock.patch(
+        "anemoi.transform.filters.tabular.fill_heights.xr.open_dataset"
+    ) as open_dataset:
         orog_dataset = mock_dataset(
             lat_spec=("lat", [-45.0, 45.0]),
             lon_spec=("lon", [0.0, 180.0]),
@@ -143,7 +152,9 @@ def test_fill_heights_missing_station_altitude():
         }
     )
 
-    with mock.patch("anemoi.transform.filters.tabular.fill_heights.xr.open_dataset") as open_dataset:
+    with mock.patch(
+        "anemoi.transform.filters.tabular.fill_heights.xr.open_dataset"
+    ) as open_dataset:
         orog_dataset = mock_dataset(
             lat_spec=("lat", [-45.0, 45.0]),
             lon_spec=("lon", [0.0, 180.0]),

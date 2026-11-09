@@ -103,11 +103,15 @@ def test_cutout_mask_parameter_types():
     global_lons = np.array([0.0, 2.0])
 
     # Test with int
-    mask_int = cutout_mask(lam_lats, lam_lons, global_lats, global_lons, max_distance_km=100)
+    mask_int = cutout_mask(
+        lam_lats, lam_lons, global_lats, global_lons, max_distance_km=100
+    )
     assert isinstance(mask_int, np.ndarray)
 
     # Test with float
-    mask_float = cutout_mask(lam_lats, lam_lons, global_lats, global_lons, max_distance_km=100.0)
+    mask_float = cutout_mask(
+        lam_lats, lam_lons, global_lats, global_lons, max_distance_km=100.0
+    )
     assert isinstance(mask_float, np.ndarray)
 
 
@@ -148,10 +152,20 @@ def test_cutout_mask_large_grid():
 @pytest.mark.parametrize("neighbours", [0, 1, 2])
 def test_cutout_mask_rejects_too_few_neighbours(neighbours):
     """Nearest LAM points are used as triangle vertices, so at least 3 are required."""
-    glat, glon = np.meshgrid(np.arange(-10, 10.01, 2.0), np.arange(-10, 10.01, 2.0), indexing="ij")
-    llat, llon = np.meshgrid(np.arange(-3, 3.01, 0.5), np.arange(-3, 3.01, 0.5), indexing="ij")
+    glat, glon = np.meshgrid(
+        np.arange(-10, 10.01, 2.0), np.arange(-10, 10.01, 2.0), indexing="ij"
+    )
+    llat, llon = np.meshgrid(
+        np.arange(-3, 3.01, 0.5), np.arange(-3, 3.01, 0.5), indexing="ij"
+    )
     with pytest.raises(AssertionError, match="at least 3"):
-        cutout_mask(llat.ravel(), llon.ravel(), glat.ravel(), glon.ravel(), neighbours=neighbours)
+        cutout_mask(
+            llat.ravel(),
+            llon.ravel(),
+            glat.ravel(),
+            glon.ravel(),
+            neighbours=neighbours,
+        )
 
 
 def test_longitude_extent():
@@ -175,9 +189,13 @@ def test_cutout_mask_lam_across_zero_meridian():
     0 meridian and must produce the identical mask.
     """
     rng = np.random.default_rng(2)
-    glat, glon = np.meshgrid(np.arange(-50, 50.01, 2.0), np.arange(0, 360, 2.0), indexing="ij")
+    glat, glon = np.meshgrid(
+        np.arange(-50, 50.01, 2.0), np.arange(0, 360, 2.0), indexing="ij"
+    )
     glat, glon = glat.ravel(), glon.ravel()
-    llat, llon = np.meshgrid(np.arange(-15, 15.01, 0.5), np.arange(-25, 35.01, 0.5), indexing="ij")
+    llat, llon = np.meshgrid(
+        np.arange(-15, 15.01, 0.5), np.arange(-25, 35.01, 0.5), indexing="ij"
+    )
     llat = llat.ravel() + rng.normal(0, 0.05, llat.size)
     llon = np.mod(llon.ravel() + rng.normal(0, 0.05, llon.size), 360.0)
 

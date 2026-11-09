@@ -40,7 +40,9 @@ def define_healpix_grid(nside: int) -> np.ndarray:
     return grid_points
 
 
-def assign_nearest_grid(df: pd.DataFrame, grid_points: np.ndarray, time_slot_len: int) -> pd.DataFrame:
+def assign_nearest_grid(
+    df: pd.DataFrame, grid_points: np.ndarray, time_slot_len: int
+) -> pd.DataFrame:
     # Make an explicit copy at the start
     df = df.copy()
 

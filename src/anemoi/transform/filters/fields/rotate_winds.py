@@ -14,8 +14,7 @@ from earthkit.geo.rotate import rotate_vector
 from pyproj import CRS
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
 
 
 class RotateWinds(MatchingFieldsFilter):
@@ -56,7 +55,9 @@ class RotateWinds(MatchingFieldsFilter):
         self.target_projection = target_projection
         super().__init__()
 
-    def forward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
+    def forward_transform(
+        self, x_wind: ekd.Field, y_wind: ekd.Field
+    ) -> Iterator[ekd.Field]:
         """Rotate wind components from source projection to target projection.
 
         Parameters
@@ -79,14 +80,24 @@ class RotateWinds(MatchingFieldsFilter):
             lons,
             x_wind.to_numpy(flatten=True),
             y_wind.to_numpy(flatten=True),
-            (self.source_projection if self.source_projection is not None else CRS.from_string(proj_string)),
+            (
+                self.source_projection
+                if self.source_projection is not None
+                else CRS.from_string(proj_string)
+            ),
             self.target_projection,
         )
 
-        yield self.new_field_from_numpy(x_new, template=x_wind, param=x_wind.metadata("param"))
-        yield self.new_field_from_numpy(y_new, template=y_wind, param=y_wind.metadata("param"))
+        yield self.new_field_from_numpy(
+            x_new, template=x_wind, param=x_wind.metadata("param")
+        )
+        yield self.new_field_from_numpy(
+            y_new, template=y_wind, param=y_wind.metadata("param")
+        )
 
-    def backward_transform(self, x_wind: ekd.Field, y_wind: ekd.Field) -> Iterator[ekd.Field]:
+    def backward_transform(
+        self, x_wind: ekd.Field, y_wind: ekd.Field
+    ) -> Iterator[ekd.Field]:
         """Rotate wind components from target projection back to source projection.
 
         Parameters
@@ -103,7 +114,9 @@ class RotateWinds(MatchingFieldsFilter):
         """
         lats, lons = x_wind.grid_points()
 
-        assert self.source_projection is not None, "source_projection cannot be None when unrotating winds!"
+        assert self.source_projection is not None, (
+            "source_projection cannot be None when unrotating winds!"
+        )
 
         x_unrotated, y_unrotated = rotate_vector(
             lats,
@@ -114,8 +127,12 @@ class RotateWinds(MatchingFieldsFilter):
             self.source_projection,
         )
 
-        yield self.new_field_from_numpy(x_unrotated, template=x_wind, param=x_wind.metadata("param"))
-        yield self.new_field_from_numpy(y_unrotated, template=y_wind, param=y_wind.metadata("param"))
+        yield self.new_field_from_numpy(
+            x_unrotated, template=x_wind, param=x_wind.metadata("param")
+        )
+        yield self.new_field_from_numpy(
+            y_unrotated, template=y_wind, param=y_wind.metadata("param")
+        )
 
 
 filter_registry.register("rotate_winds", RotateWinds)

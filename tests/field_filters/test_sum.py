@@ -20,11 +20,21 @@ MOCK_FIELD_METADATA = {
     "valid_datetime": "2018-08-01T09:00:00Z",
 }
 
-T_VALUES = np.array([[293.32301331, 284.21559143], [260.53981018, 291.18824768], [279.88941956, 248.87574768]])
+T_VALUES = np.array(
+    [
+        [293.32301331, 284.21559143],
+        [260.53981018, 291.18824768],
+        [279.88941956, 248.87574768],
+    ]
+)
 
-Q_VALUES = np.array([[0.00657578, 0.00769957], [0.00147607, 0.01088967], [0.00505508, 0.00044559]])
+Q_VALUES = np.array(
+    [[0.00657578, 0.00769957], [0.00147607, 0.01088967], [0.00505508, 0.00044559]]
+)
 
-R_VALUES = np.array([[37.91091442, 79.51638317], [95.61794567, 71.53396130], [70.03982067, 89.69021130]])
+R_VALUES = np.array(
+    [[37.91091442, 79.51638317], [95.61794567, 71.53396130], [70.03982067, 89.69021130]]
+)
 
 EXPECTED_SUM = (R_VALUES + T_VALUES).flatten()
 
@@ -45,7 +55,12 @@ def sum_input_source_one_level(mars_test_source):
 def sum_input_source_multilevel(mars_test_source):
     MULTILEVEL_TEMP_RELATIVE_HUMIDITY = [
         {"param": "t_850", "levelist": 850, "values": T_VALUES, **MOCK_FIELD_METADATA},
-        {"param": "t_500", "levelist": 500, "values": T_VALUES - 15.0, **MOCK_FIELD_METADATA},
+        {
+            "param": "t_500",
+            "levelist": 500,
+            "values": T_VALUES - 15.0,
+            **MOCK_FIELD_METADATA,
+        },
         {"param": "r", "levelist": 850, "values": R_VALUES, **MOCK_FIELD_METADATA},
     ]
     return mars_test_source(MULTILEVEL_TEMP_RELATIVE_HUMIDITY)
@@ -82,7 +97,9 @@ def test_sum_filter_backward_not_implemented(sum_input_source_one_level):
 
 
 def test_sum_fields_multilevel(sum_input_source_multilevel):
-    sum_filter = create_filter("sum", params=["t_850", "t_500"], output="sum", ignore_level=True)
+    sum_filter = create_filter(
+        "sum", params=["t_850", "t_500"], output="sum", ignore_level=True
+    )
 
     pipeline = sum_input_source_multilevel | sum_filter
     output_fields = collect_fields_by_param(pipeline)

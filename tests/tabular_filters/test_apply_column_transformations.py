@@ -36,7 +36,9 @@ def test_apply_column_transformations():
             "col7": [0.0, 1.0, 2.0, 3.0, 4.0],
         }
     )
-    apply_column_transformations = create_filter("apply_column_transformations", **config)
+    apply_column_transformations = create_filter(
+        "apply_column_transformations", **config
+    )
     result = apply_column_transformations(df.copy())
 
     assert isinstance(result, pd.DataFrame)
@@ -110,7 +112,9 @@ def test_apply_column_transformations_safe_log():
             "col1": [0, 1, 2, 3, 4],
         }
     )
-    apply_column_transformations = create_filter("apply_column_transformations", **config)
+    apply_column_transformations = create_filter(
+        "apply_column_transformations", **config
+    )
     result = apply_column_transformations(df.copy())
 
     assert isinstance(result, pd.DataFrame)
@@ -132,7 +136,9 @@ def test_apply_column_transformations_missing_column():
             # col2 is missing
         }
     )
-    apply_column_transformations = create_filter("apply_column_transformations", **config)
+    apply_column_transformations = create_filter(
+        "apply_column_transformations", **config
+    )
     with pytest.raises(KeyError):
         _ = apply_column_transformations(df.copy())
 

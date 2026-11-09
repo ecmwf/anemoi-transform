@@ -40,7 +40,9 @@ def test_impute_nans_dict_value():
             "obsvalue_y": [0.0, 1.0, np.nan],
         }
     )
-    impute_nans = create_filter("impute_nans_tabular", value={"obsvalue_x": -1.0, "obsvalue_y": -2.0})
+    impute_nans = create_filter(
+        "impute_nans_tabular", value={"obsvalue_x": -1.0, "obsvalue_y": -2.0}
+    )
     result = impute_nans(df.copy())
 
     assert isinstance(result, pd.DataFrame)
@@ -56,7 +58,9 @@ def test_impute_nans_with_columns_validates_presence():
             "z": [0.0, 1.0, np.nan],
         }
     )
-    impute_nans = create_filter("impute_nans_tabular", value=0.0, columns=["obsvalue_x"])
+    impute_nans = create_filter(
+        "impute_nans_tabular", value=0.0, columns=["obsvalue_x"]
+    )
     result = impute_nans(df.copy())
 
     assert isinstance(result, pd.DataFrame)
@@ -65,7 +69,9 @@ def test_impute_nans_with_columns_validates_presence():
 
 def test_impute_nans_with_columns_raises_for_missing():
     df = pd.DataFrame({"z": [1.0, 2.0, np.nan]})
-    impute_nans = create_filter("impute_nans_tabular", value=0.0, columns=["obsvalue_x"])
+    impute_nans = create_filter(
+        "impute_nans_tabular", value=0.0, columns=["obsvalue_x"]
+    )
     with pytest.raises(ValueError):
         impute_nans(df.copy())
 
@@ -78,7 +84,9 @@ def test_impute_nans_with_column_prefix():
             "z": [0.0, 1.0, np.nan],
         }
     )
-    impute_nans = create_filter("impute_nans_tabular", value=99.0, column_prefix="obsvalue_")
+    impute_nans = create_filter(
+        "impute_nans_tabular", value=99.0, column_prefix="obsvalue_"
+    )
     result = impute_nans(df.copy())
 
     assert isinstance(result, pd.DataFrame)
@@ -88,11 +96,18 @@ def test_impute_nans_with_column_prefix():
 
 def test_impute_nans_with_column_prefix_raises_for_missing():
     df = pd.DataFrame({"z": [1.0, 2.0, np.nan]})
-    impute_nans = create_filter("impute_nans_tabular", value=0.0, column_prefix="obsvalue_")
+    impute_nans = create_filter(
+        "impute_nans_tabular", value=0.0, column_prefix="obsvalue_"
+    )
     with pytest.raises(ValueError):
         impute_nans(df.copy())
 
 
 def test_impute_nans_both_column_specs_raises():
     with pytest.raises(ValueError):
-        create_filter("impute_nans_tabular", value=0.0, columns=["obsvalue_x"], column_prefix="obsvalue_")
+        create_filter(
+            "impute_nans_tabular",
+            value=0.0,
+            columns=["obsvalue_x"],
+            column_prefix="obsvalue_",
+        )

@@ -40,7 +40,8 @@ DATA_VALUES = {
 @pytest.fixture()
 def field_source(test_source):
     FIELD_SPECS = [
-        {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA} for param, values in DATA_VALUES.items()
+        {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA}
+        for param, values in DATA_VALUES.items()
     ]
     return test_source(FIELD_SPECS)
 
@@ -56,7 +57,9 @@ def ekd_from_source():
         mock_field.to_numpy.return_value = mask
         return [mock_field]
 
-    with mock.patch("anemoi.transform.filters.fields.apply_mask.ekd.from_source", autospec=True) as mock_fn:
+    with mock.patch(
+        "anemoi.transform.filters.fields.apply_mask.ekd.from_source", autospec=True
+    ) as mock_fn:
         mock_fn.side_effect = side_effect
         yield mock_fn
 
@@ -72,8 +75,12 @@ def ekd_from_source():
 )
 @pytest.mark.parametrize("rename", [None, "renamed"])
 @pytest.mark.parametrize("mask_name", MASK_VALUES.keys())
-def test_apply_mask_fields(field_source, ekd_from_source, mask_name, rename, threshold_options):
-    apply_mask = create_filter("apply_mask", path=mask_name, rename=rename, **threshold_options)
+def test_apply_mask_fields(
+    field_source, ekd_from_source, mask_name, rename, threshold_options
+):
+    apply_mask = create_filter(
+        "apply_mask", path=mask_name, rename=rename, **threshold_options
+    )
     ekd_from_source.assert_called_once_with("file", mask_name)
 
     pipeline = field_source | apply_mask
@@ -86,14 +93,18 @@ def test_apply_mask_fields(field_source, ekd_from_source, mask_name, rename, thr
         # mask checks for exact equality - beware floats
         expected_mask = expected_mask == threshold_options["mask_value"]
     else:
-        operator = {"<": np.less, ">": np.greater}[threshold_options["threshold_operator"]]
+        operator = {"<": np.less, ">": np.greater}[
+            threshold_options["threshold_operator"]
+        ]
         expected_mask = operator(expected_mask, threshold_options["threshold"])
     expected_mask_count = np.sum(expected_mask)
 
-    for param in DATA_VALUES.keys():
+    for param in DATA_VALUES:
         result_param = f"{param}_{rename}" if rename else param
         assert result_param in output_fields
-        for input_field, output_field in zip(input_fields[param], output_fields[result_param]):
+        for input_field, output_field in zip(
+            input_fields[param], output_fields[result_param]
+        ):
             expected_values = input_field.to_numpy(flatten=True).copy()
             expected_values[expected_mask] = np.nan
             result = output_field.to_numpy(flatten=True)

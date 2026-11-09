@@ -15,8 +15,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
 
 
 @filter_registry.register("cos_sin_from_rad")
@@ -71,12 +70,20 @@ class CosSinFromRad(MatchingFieldsFilter):
         """
         data = param.to_numpy()
         if (min := data.min()) < -2 * np.pi:
-            raise ValueError(f"Param {self.param} is expected in radians in the range [-2pi, pi], but {min=}")
+            raise ValueError(
+                f"Param {self.param} is expected in radians in the range [-2pi, pi], but {min=}"
+            )
         if (max := data.max()) > 2 * np.pi:
-            raise ValueError(f"Param {self.param} is expected in radians in the range [-2pi, pi], but {max=}")
+            raise ValueError(
+                f"Param {self.param} is expected in radians in the range [-2pi, pi], but {max=}"
+            )
 
-        yield self.new_field_from_numpy(np.cos(data), template=param, param=self.cos_param)
-        yield self.new_field_from_numpy(np.sin(data), template=param, param=self.sin_param)
+        yield self.new_field_from_numpy(
+            np.cos(data), template=param, param=self.cos_param
+        )
+        yield self.new_field_from_numpy(
+            np.sin(data), template=param, param=self.sin_param
+        )
 
     def backward_transform(
         self,
@@ -120,7 +127,9 @@ class CosSinFromRad(MatchingFieldsFilter):
             return data_request
 
         if self.cos_param in param or self.sin_param in param:
-            data_request["param"] = [p for p in param if p not in (self.cos_param, self.sin_param)]
+            data_request["param"] = [
+                p for p in param if p not in (self.cos_param, self.sin_param)
+            ]
             data_request["param"].append(self.param)
 
         return data_request

@@ -27,7 +27,9 @@ def _get_template() -> tuple[Any, np.ndarray, Any]:
     Tuple
         A tuple containing the fieldlist, values, and metadata.
     """
-    temp = ekd.from_source("mars", {"param": "2t", "levtype": "sfc", "dates": ["2023-11-17 00:00:00"]})
+    temp = ekd.from_source(
+        "mars", {"param": "2t", "levtype": "sfc", "dates": ["2023-11-17 00:00:00"]}
+    )
     fieldlist = temp.to_fieldlist()
     return fieldlist, fieldlist[0].values, fieldlist[0].metadata
 

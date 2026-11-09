@@ -127,7 +127,9 @@ def test_singlefieldfilter_not_reversible_raises(source):
         def forward_transform(self, field):
             pass
 
-    with pytest.raises(NotImplementedError, match="Field backward transform not implemented"):
+    with pytest.raises(
+        NotImplementedError, match="Field backward transform not implemented"
+    ):
         for _ in source | TestFilter.reversed():
             pass
 
@@ -273,14 +275,20 @@ def test_singlefieldfilter_complex_roundtrip(source):
 
         def forward_transform(self, field):
             new_metadata = {"param": self.renamed_temperature}
-            return self.new_field_from_numpy(field.to_numpy() + 1, template=field, **new_metadata)
+            return self.new_field_from_numpy(
+                field.to_numpy() + 1, template=field, **new_metadata
+            )
 
         def backward_transform(self, field):
             orig_metadata = {"param": self.temperature}
-            return self.new_field_from_numpy(field.to_numpy() - 1, template=field, **orig_metadata)
+            return self.new_field_from_numpy(
+                field.to_numpy() - 1, template=field, **orig_metadata
+            )
 
     forward_filter = TestFilter(temperature="2t", renamed_temperature="2t_renamed")
-    backward_filter = forward_filter.reversed(temperature="2t", renamed_temperature="2t_renamed")
+    backward_filter = forward_filter.reversed(
+        temperature="2t", renamed_temperature="2t_renamed"
+    )
 
     pipeline = source | forward_filter
     # forward transform

@@ -15,8 +15,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
 
 LOG = logging.getLogger(__name__)
 
@@ -50,7 +49,9 @@ class Timeseries(MatchingFieldsFilter):
             import xarray as xr
 
             self.ds = xr.open_dataset(netcdf["path"])  # .to_dataframe()
-        LOG.warning("Using the timeseries filter will be deprecated in the future. Please do not rely on it.")
+        LOG.warning(
+            "Using the timeseries filter will be deprecated in the future. Please do not rely on it."
+        )
 
         self.template_param = template_param
         super().__init__()

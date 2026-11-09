@@ -28,7 +28,9 @@ def test_add_healpix():
     result = add_healpix(df.copy())
 
     assert isinstance(result, pd.DataFrame)
-    assert tuple(result.columns) == tuple(df.columns) + (f"healpix_idx_{config['nside']}",)
+    assert tuple(result.columns) == tuple(df.columns) + (
+        f"healpix_idx_{config['nside']}",
+    )
     assert result.shape == (len(df), len(df.columns) + 1)
 
     assert result[["latitude", "longitude"]].equals(df[["latitude", "longitude"]])

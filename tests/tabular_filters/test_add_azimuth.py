@@ -32,7 +32,9 @@ def test_add_azimuth():
     assert tuple(result.columns) == tuple(df.columns) + (new_col,)
     assert result.shape == (len(df), len(df.columns) + 1)
 
-    assert result[["latitude", "longitude", "spacecraft_latitude", "spacecraft_longitude"]].equals(
+    assert result[
+        ["latitude", "longitude", "spacecraft_latitude", "spacecraft_longitude"]
+    ].equals(
         df[["latitude", "longitude", "spacecraft_latitude", "spacecraft_longitude"]]
     )
     expected_azimuth = np.array([135.57378316, 44.99563646, 44.42621684])

@@ -15,8 +15,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
 
 
 @filter_registry.register("cos_sin_mean_wave_direction")
@@ -72,8 +71,16 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         data = mean_wave_direction.to_numpy()
         data = np.deg2rad(data)
 
-        yield self.new_field_from_numpy(np.cos(data), template=mean_wave_direction, param=self.cos_mean_wave_direction)
-        yield self.new_field_from_numpy(np.sin(data), template=mean_wave_direction, param=self.sin_mean_wave_direction)
+        yield self.new_field_from_numpy(
+            np.cos(data),
+            template=mean_wave_direction,
+            param=self.cos_mean_wave_direction,
+        )
+        yield self.new_field_from_numpy(
+            np.sin(data),
+            template=mean_wave_direction,
+            param=self.sin_mean_wave_direction,
+        )
 
     def backward_transform(
         self,
@@ -94,11 +101,17 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         Iterator[ekd.Field]
             Field of the mean wave direction.
         """
-        mwd = np.rad2deg(np.arctan2(sin_mean_wave_direction.to_numpy(), cos_mean_wave_direction.to_numpy()))
+        mwd = np.rad2deg(
+            np.arctan2(
+                sin_mean_wave_direction.to_numpy(), cos_mean_wave_direction.to_numpy()
+            )
+        )
         mwd = np.where(mwd >= 360, mwd - 360, mwd)
         mwd = np.where(mwd < 0, mwd + 360, mwd)
 
-        yield self.new_field_from_numpy(mwd, template=cos_mean_wave_direction, param=self.mean_wave_direction)
+        yield self.new_field_from_numpy(
+            mwd, template=cos_mean_wave_direction, param=self.mean_wave_direction
+        )
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
         """Modify the data request to include mean wave direction.
@@ -119,9 +132,14 @@ class CosSinWaveDirection(MatchingFieldsFilter):
         if param is None:
             return data_request
 
-        if self.cos_mean_wave_direction in param or self.sin_mean_wave_direction in param:
+        if (
+            self.cos_mean_wave_direction in param
+            or self.sin_mean_wave_direction in param
+        ):
             data_request["param"] = [
-                p for p in param if p not in (self.cos_mean_wave_direction, self.sin_mean_wave_direction)
+                p
+                for p in param
+                if p not in (self.cos_mean_wave_direction, self.sin_mean_wave_direction)
             ]
             data_request["param"].append(self.mean_wave_direction)
 

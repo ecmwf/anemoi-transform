@@ -14,8 +14,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from anemoi.transform.constants import R_earth_km
-from anemoi.transform.constants import radian
+from anemoi.transform.constants import R_earth_km, radian
 
 LOG = logging.getLogger(__name__)
 
@@ -97,16 +96,24 @@ def _resolution(points) -> float:
     return np.min(distances[:, 1])
 
 
-def _distance_km_to_resolution(function, distance_km, lam_points, global_points) -> float:
+def _distance_km_to_resolution(
+    function, distance_km, lam_points, global_points
+) -> float:
     if isinstance(distance_km, (int, float)):
         distance = distance_km / R_earth_km
     else:
-        distance = _resolution({"lam": lam_points, "global": global_points, None: global_points}[distance_km])
+        distance = _resolution(
+            {"lam": lam_points, "global": global_points, None: global_points}[
+                distance_km
+            ]
+        )
         LOG.info(f"{function} using distance = {distance * R_earth_km} km")
     return distance
 
 
-def xyz_to_latlon(x: NDArray[Any], y: NDArray[Any], z: NDArray[Any]) -> tuple[NDArray[Any], NDArray[Any]]:
+def xyz_to_latlon(
+    x: NDArray[Any], y: NDArray[Any], z: NDArray[Any]
+) -> tuple[NDArray[Any], NDArray[Any]]:
     """Convert Cartesian coordinates to latitude and longitude.
 
     Parameters
@@ -439,7 +446,7 @@ def _search_radius(
     lam_points: NDArray[Any],
     cropping_distance: float,
     min_distance: float,
-    max_distance_km: int | float | None,
+    max_distance_km: float | None,
     spacing_factor: float = 3.0,
 ) -> float:
     """Return the KD-tree search radius (unit-sphere chord) beyond which a global point cannot be masked.
@@ -448,7 +455,9 @@ def _search_radius(
     relies on the nearest neighbour of every query point being the point itself.
     """
     if tree.n != len(lam_points) or not np.array_equal(tree.data, lam_points):
-        raise ValueError("_search_radius: 'tree' must be a KD-tree built from 'lam_points'")
+        raise ValueError(
+            "_search_radius: 'tree' must be a KD-tree built from 'lam_points'"
+        )
 
     radius = _chord(cropping_distance)
     radius = max(radius, float(min_distance))
@@ -501,8 +510,8 @@ def cutout_mask(
     global_lons: NDArray[Any],
     cropping_distance: float = 2.0,
     neighbours: int = 5,
-    min_distance_km: int | float | None = None,
-    max_distance_km: int | float | None = None,
+    min_distance_km: float | None = None,
+    max_distance_km: float | None = None,
     plot: str | None = None,
 ) -> NDArray[Any]:
     """Return a mask for the points in [global_lats, global_lons] to mask out.
@@ -540,9 +549,15 @@ def cutout_mask(
         Mask array.
     """
     assert cropping_distance >= 0.0, "cropping_distance must be non-negative"
-    assert min_distance_km is None or min_distance_km >= 0.0, "min_distance_km must be non-negative"
-    assert max_distance_km is None or max_distance_km >= 0.0, "max_distance_km must be non-negative"
-    assert neighbours >= 3, "neighbours must be at least 3 (nearest LAM points are used as triangle vertices)"
+    assert min_distance_km is None or min_distance_km >= 0.0, (
+        "min_distance_km must be non-negative"
+    )
+    assert max_distance_km is None or max_distance_km >= 0.0, (
+        "max_distance_km must be non-negative"
+    )
+    assert neighbours >= 3, (
+        "neighbours must be at least 3 (nearest LAM points are used as triangle vertices)"
+    )
 
     from scipy.spatial import cKDTree
 
@@ -563,7 +578,9 @@ def cutout_mask(
         # 2. Compute the radius of the latitude circle at this latitude
         R_earth_at_lat = R_earth_km * np.cos(np.deg2rad(max_lat))
         # 2. Compute the length of 1 degree at this latitude circle
-        L_1_degree_arc_length_km = R_earth_at_lat * radian  # equivalent to (R_earth_at_lat * 2pi) / 360
+        L_1_degree_arc_length_km = (
+            R_earth_at_lat * radian
+        )  # equivalent to (R_earth_at_lat * 2pi) / 360
         max_distance_degrees = max_distance_km / L_1_degree_arc_length_km
         effective_cropping_distance = max(cropping_distance, 1.1 * max_distance_degrees)
 
@@ -593,7 +610,9 @@ def cutout_mask(
     )
 
     tree = cKDTree(lam_points)
-    radius = _search_radius(tree, lam_points, effective_cropping_distance, min_distance, max_distance_km)
+    radius = _search_radius(
+        tree, lam_points, effective_cropping_distance, min_distance, max_distance_km
+    )
     distances, indices = _nearest_lam_points(tree, global_points, neighbours, radius)
 
     inside = points_inside_triangulated_grid(global_points, lam_points, indices)
@@ -809,7 +828,9 @@ def nearest_grid_points(
     target_xyz = latlon_to_xyz(target_latitudes, target_longitudes)
     target_points = np.array(target_xyz).transpose()
     if max_distance is None:
-        distances, indices = cKDTree(source_points).query(target_points, k=num_neighbours_to_return)
+        distances, indices = cKDTree(source_points).query(
+            target_points, k=num_neighbours_to_return
+        )
     else:
         distances, indices = cKDTree(source_points).query(
             target_points, k=num_neighbours_to_return, distance_upper_bound=max_distance

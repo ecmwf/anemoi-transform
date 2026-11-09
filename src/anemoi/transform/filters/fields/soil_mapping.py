@@ -90,7 +90,9 @@ class SoilMapping(SingleFieldFilter):
     """
 
     def prepare_filter(self) -> None:
-        self.mapping = {K: {**v, "levtype": SOIL_LEVTYPE} for K, v in SOIL_MAPPING.copy().items()}
+        self.mapping = {
+            K: {**v, "levtype": SOIL_LEVTYPE} for K, v in SOIL_MAPPING.copy().items()
+        }
         self.inverse_mapping = _build_inverse_mapping(self.mapping)
         self.named_params = list(self.mapping)
         self.generic_params = sorted({spec["param"] for spec in self.mapping.values()})
@@ -118,7 +120,9 @@ class SoilMapping(SingleFieldFilter):
         """
         param = field.metadata("param")
         new_metadata = self.mapping[param]
-        return self.new_field_from_numpy(field.to_numpy(), template=field, **new_metadata)
+        return self.new_field_from_numpy(
+            field.to_numpy(), template=field, **new_metadata
+        )
 
     def backward_transform(self, field: ekd.Field) -> ekd.Field:
         """Convert a generic soil parameter back to its named representation.
@@ -134,7 +138,9 @@ class SoilMapping(SingleFieldFilter):
             The field with the named soil parameter metadata (e.g. ``stl1``).
         """
         param = field.metadata("param")
-        levelist = field.metadata("levelist", default=field.metadata("level", default=None))
+        levelist = field.metadata(
+            "levelist", default=field.metadata("level", default=None)
+        )
 
         if levelist is None:
             # Not enough information to map back, pass through unchanged.
@@ -143,7 +149,9 @@ class SoilMapping(SingleFieldFilter):
         named_metadata = self.inverse_mapping.get((param, int(levelist)))
         if named_metadata is None:
             return field
-        return self.new_field_from_numpy(field.to_numpy(), template=field, **named_metadata)
+        return self.new_field_from_numpy(
+            field.to_numpy(), template=field, **named_metadata
+        )
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:
         """Modify the data request to retrieve the generic soil parameters.
@@ -188,7 +196,11 @@ class SoilMapping(SingleFieldFilter):
 
         existing_levelist = data_request.get("levelist")
         if existing_levelist:
-            existing = existing_levelist if isinstance(existing_levelist, list) else [existing_levelist]
+            existing = (
+                existing_levelist
+                if isinstance(existing_levelist, list)
+                else [existing_levelist]
+            )
             for lvl in existing:
                 if lvl not in levelists:
                     levelists.append(lvl)

@@ -59,7 +59,9 @@ class Clipper(SingleFieldFilter):
 
     def prepare_filter(self):
         if self.minimum is None and self.maximum is None:
-            raise ValueError("At least one value for minimum or maximum must be specified.")
+            raise ValueError(
+                "At least one value for minimum or maximum must be specified."
+            )
 
     def forward_select(self):
         return {"param": self.param}

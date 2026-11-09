@@ -13,8 +13,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
 
 LOG = logging.getLogger(__name__)
 
@@ -59,7 +58,9 @@ def clip_opera(
     return tp, quality
 
 
-def mask_opera(tp: np.ndarray, quality: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def mask_opera(
+    tp: np.ndarray, quality: np.ndarray, mask: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
     """Apply masking to the tp array based on the mask array.
 
     Parameters
@@ -186,7 +187,9 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         """
         # 1st - apply masking
         total_precipitation_masked, quality_masked = mask_opera(
-            tp=total_precipitation.to_numpy(), quality=quality.to_numpy(), mask=mask.to_numpy()
+            tp=total_precipitation.to_numpy(),
+            quality=quality.to_numpy(),
+            mask=mask.to_numpy(),
         )
 
         # 2nd - apply clipping
@@ -197,9 +200,13 @@ class RodeoOperaPreProcessing(MatchingFieldsFilter):
         )
 
         yield self.new_field_from_numpy(
-            total_precipitation_cleaned, template=total_precipitation, param=self.total_precipitation
+            total_precipitation_cleaned,
+            template=total_precipitation,
+            param=self.total_precipitation,
         )
-        yield self.new_field_from_numpy(quality_clipped, template=quality, param=self.quality)
+        yield self.new_field_from_numpy(
+            quality_clipped, template=quality, param=self.quality
+        )
 
         if self.return_mask:
             yield mask

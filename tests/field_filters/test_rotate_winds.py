@@ -20,11 +20,27 @@ MOCK_FIELD_METADATA = {
     "valid_datetime": "2018-08-01T09:00:00Z",
 }
 
-U_VALUES = np.array([[-3.26786804, -2.90458679], [-4.28153992, -10.75224304], [-6.29130554, -4.17704773]])
-V_VALUES = np.array([[6.51824951, 4.7321167], [1.16961670, 1.73797607], [-2.93096924, 3.2399292]])
+U_VALUES = np.array(
+    [
+        [-3.26786804, -2.90458679],
+        [-4.28153992, -10.75224304],
+        [-6.29130554, -4.17704773],
+    ]
+)
+V_VALUES = np.array(
+    [[6.51824951, 4.7321167], [1.16961670, 1.73797607], [-2.93096924, 3.2399292]]
+)
 
-ROTATED_U_VALUES = np.array([[-3.22801207, -2.87233492], [-4.28153992, -10.75224304], [-6.27393622, -4.15286741]])
-ROTATED_V_VALUES = np.array([[6.53807895, 4.7517623], [1.1696167, 1.73797607], [-2.96796738, 3.27086552]])
+ROTATED_U_VALUES = np.array(
+    [
+        [-3.22801207, -2.87233492],
+        [-4.28153992, -10.75224304],
+        [-6.27393622, -4.15286741],
+    ]
+)
+ROTATED_V_VALUES = np.array(
+    [[6.53807895, 4.7517623], [1.1696167, 1.73797607], [-2.96796738, 3.27086552]]
+)
 
 
 @pytest.fixture
@@ -62,8 +78,13 @@ def test_rotate_winds(wind_source, rotated_wind_source):
 
     for param in ("10u", "10v"):
         assert len(output_fields[param]) == len(expected_fields[param])
-        for output_field, expected_field in zip(output_fields[param], expected_fields[param]):
-            assert np.allclose(output_field.to_numpy(flatten=True), expected_field.to_numpy(flatten=True))
+        for output_field, expected_field in zip(
+            output_fields[param], expected_fields[param]
+        ):
+            assert np.allclose(
+                output_field.to_numpy(flatten=True),
+                expected_field.to_numpy(flatten=True),
+            )
 
 
 def test_unrotate_winds(rotated_wind_source, wind_source):
@@ -88,8 +109,13 @@ def test_unrotate_winds(rotated_wind_source, wind_source):
 
     for param in ("10u", "10v"):
         assert len(output_fields[param]) == len(expected_fields[param])
-        for output_field, expected_field in zip(output_fields[param], expected_fields[param]):
-            assert np.allclose(output_field.to_numpy(flatten=True), expected_field.to_numpy(flatten=True))
+        for output_field, expected_field in zip(
+            output_fields[param], expected_fields[param]
+        ):
+            assert np.allclose(
+                output_field.to_numpy(flatten=True),
+                expected_field.to_numpy(flatten=True),
+            )
 
 
 def test_rotate_winds_roundtrip(wind_source):
@@ -118,7 +144,9 @@ def test_rotate_winds_roundtrip(wind_source):
     for param in ("10u", "10v"):
         assert len(input_fields[param]) == len(output_fields[param])
         for input_field, output_field in zip(input_fields[param], output_fields[param]):
-            assert np.allclose(input_field.to_numpy(flatten=True), output_field.to_numpy(flatten=True))
+            assert np.allclose(
+                input_field.to_numpy(flatten=True), output_field.to_numpy(flatten=True)
+            )
 
 
 if __name__ == "__main__":

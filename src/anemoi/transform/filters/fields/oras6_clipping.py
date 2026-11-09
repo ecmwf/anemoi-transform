@@ -13,8 +13,7 @@ import earthkit.data as ekd
 import numpy as np
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
 
 PUNY = 1e-5
 MINTF = 271.15 - PUNY  # Assuming a minimum ocean temperature of 271.15K
@@ -218,11 +217,15 @@ class Oras6Clipping(MatchingFieldsFilter):
         yield self.new_field_from_numpy(siconc_np, template=siconc, param=self.siconc)
         yield self.new_field_from_numpy(siue_np, template=siue, param=self.siue)
         yield self.new_field_from_numpy(sivn_np, template=sivn, param=self.sivn)
-        yield self.new_field_from_numpy(icesalt_np, template=icesalt, param=self.icesalt)
+        yield self.new_field_from_numpy(
+            icesalt_np, template=icesalt, param=self.icesalt
+        )
         yield self.new_field_from_numpy(sihc_np, template=sihc, param=self.sihc)
         yield self.new_field_from_numpy(snhc_np, template=snhc, param=self.snhc)
         yield self.new_field_from_numpy(sipf_np, template=sipf, param=self.sipf)
-        yield self.new_field_from_numpy(sitemptop_np, template=sitemptop, param=self.sitemptop)
+        yield self.new_field_from_numpy(
+            sitemptop_np, template=sitemptop, param=self.sitemptop
+        )
         yield self.new_field_from_numpy(sntemp_np, template=sntemp, param=self.sntemp)
         yield self.new_field_from_numpy(snvol_np, template=snvol, param=self.snvol)
         yield self.new_field_from_numpy(sivol_np, template=sivol, param=self.sivol)

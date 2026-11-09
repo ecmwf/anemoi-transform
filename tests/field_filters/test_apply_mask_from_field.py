@@ -32,7 +32,8 @@ DATA_VALUES = {
 @pytest.fixture()
 def source(test_source):
     FIELD_SPECS = [
-        {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA} for param, values in DATA_VALUES.items()
+        {"param": param, "values": values.copy(), **MOCK_FIELD_METADATA}
+        for param, values in DATA_VALUES.items()
     ]
     return test_source(FIELD_SPECS)
 
@@ -60,7 +61,13 @@ def test_apply_mask_from_field_mask_value(source):
 
 def test_apply_mask_from_field_threshold(source):
     """Test masking using a field from the pipeline with threshold."""
-    apply_mask = create_filter("apply_mask", mask_param="lsm", threshold=0.5, threshold_operator="<", return_mask=False)
+    apply_mask = create_filter(
+        "apply_mask",
+        mask_param="lsm",
+        threshold=0.5,
+        threshold_operator="<",
+        return_mask=False,
+    )
 
     pipeline = source | apply_mask
     output_fields = collect_fields_by_param(pipeline)
@@ -80,7 +87,9 @@ def test_apply_mask_from_field_threshold(source):
 
 def test_apply_mask_from_field_single_param(source):
     """Test masking only a single param using mask_param."""
-    apply_mask = create_filter("apply_mask", mask_param="lsm", mask_value=0, param="sd", return_mask=False)
+    apply_mask = create_filter(
+        "apply_mask", mask_param="lsm", mask_value=0, param="sd", return_mask=False
+    )
 
     pipeline = source | apply_mask
     output_fields = collect_fields_by_param(pipeline)
@@ -113,7 +122,13 @@ def test_apply_mask_from_field_missing_param(source):
 
 def test_apply_mask_return_mask(source):
     """Test that mask is returned when return_mask=True."""
-    apply_mask = create_filter("apply_mask", mask_param="lsm", mask_value=0, return_mask=True, param=["sd", "2t"])
+    apply_mask = create_filter(
+        "apply_mask",
+        mask_param="lsm",
+        mask_value=0,
+        return_mask=True,
+        param=["sd", "2t"],
+    )
 
     pipeline = source | apply_mask
     output_fields = collect_fields_by_param(pipeline)
@@ -121,7 +136,9 @@ def test_apply_mask_return_mask(source):
     # lsm should be present in output
     assert "lsm" in output_fields
     assert len(output_fields["lsm"]) == 1
-    assert np.array_equal(output_fields["lsm"][0].to_numpy(flatten=True), LSM_VALUES.flatten())
+    assert np.array_equal(
+        output_fields["lsm"][0].to_numpy(flatten=True), LSM_VALUES.flatten()
+    )
 
     # sd and 2t should be present and masked
     expected_mask = LSM_VALUES.flatten() == 0
@@ -136,11 +153,15 @@ def test_apply_mask_return_mask(source):
 
 def test_apply_mask_fails_without_path_or_mask_param():
     """Test that an error is raised when neither path nor mask_param is provided."""
-    with pytest.raises(ValueError, match="Exactly one of `path`, `mask_param` or `self_mask`"):
+    with pytest.raises(
+        ValueError, match="Exactly one of `path`, `mask_param` or `self_mask`"
+    ):
         create_filter("apply_mask_fields", mask_value=0)
 
 
 def test_apply_mask_fails_with_both_path_and_mask_param():
     """Test that an error is raised when both path and mask_param are provided."""
-    with pytest.raises(ValueError, match="Exactly one of `path`, `mask_param` or `self_mask`"):
+    with pytest.raises(
+        ValueError, match="Exactly one of `path`, `mask_param` or `self_mask`"
+    ):
         create_filter("apply_mask", path="some_file", mask_param="lsm", mask_value=0)

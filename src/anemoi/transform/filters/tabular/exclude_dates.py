@@ -51,9 +51,13 @@ class ExcludeDates(Filter):
         excluded_dates = defaultdict(list)
         for column, ranges in config.items():
             if not (ranges and isinstance(ranges, (list, tuple))):
-                raise ValueError(f"Invalid date ranges {ranges} for column '{column}'. Expected a list/tuple.")
+                raise ValueError(
+                    f"Invalid date ranges {ranges} for column '{column}'. Expected a list/tuple."
+                )
 
-            if len(ranges) == 2 and all(isinstance(range, (int, str)) for range in ranges):
+            if len(ranges) == 2 and all(
+                isinstance(range, (int, str)) for range in ranges
+            ):
                 # normalize ranges to a list of tuples if a single tuple was provided.
                 ranges = [ranges]
 
@@ -68,7 +72,9 @@ class ExcludeDates(Filter):
 
                 start_dt = pd.to_datetime(str(start), format="%Y%m%d")
                 end_dt = pd.to_datetime(str(end), format="%Y%m%d")
-                end_dt = end_dt + pd.Timedelta(days=1)  # So that it masks all data on the specified end date
+                end_dt = end_dt + pd.Timedelta(
+                    days=1
+                )  # So that it masks all data on the specified end date
 
                 date_range = (start_dt, end_dt)
                 excluded_dates[column].append(date_range)
@@ -81,7 +87,9 @@ class ExcludeDates(Filter):
 
         for column, date_ranges in self.excluded_dates.items():
             for start_dt, end_dt in date_ranges:
-                logging.info(f"Excluding dates for column '{column}' when date is between {start_dt} and {end_dt}.")
+                logging.info(
+                    f"Excluding dates for column '{column}' when date is between {start_dt} and {end_dt}."
+                )
 
                 # Create a mask based on the 'date' column.
                 mask = (obs_df["date"] >= start_dt) & (obs_df["date"] < end_dt)

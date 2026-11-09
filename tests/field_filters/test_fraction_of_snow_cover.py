@@ -10,7 +10,9 @@
 import numpy as np
 import pytest
 
-from anemoi.transform.filters.fields.fraction_of_snow_cover import compute_fraction_of_snow_cover
+from anemoi.transform.filters.fields.fraction_of_snow_cover import (
+    compute_fraction_of_snow_cover,
+)
 
 
 @pytest.mark.skip("Test not implemented")

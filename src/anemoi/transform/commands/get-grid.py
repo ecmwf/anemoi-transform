@@ -24,7 +24,9 @@ class GetGrid(Command):
         command_parser : argparse.ArgumentParser
             The argument parser to add arguments to.
         """
-        command_parser.add_argument("--source", default="file", help="EKD Source type (default: file).")
+        command_parser.add_argument(
+            "--source", default="file", help="EKD Source type (default: file)."
+        )
         command_parser.add_argument("input", help="Input file (GRIB or NetCDF).")
         command_parser.add_argument("output", help="Output NPZ file.")
 

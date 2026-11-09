@@ -43,7 +43,9 @@ def _get_grid_data(grid_id: str | list[float] | tuple[float, float]) -> bytes:
 
     if isinstance(grid_id, (tuple, list)):
         assert len(grid_id) == 2, "Grid name must be a list or a tuple of length 2"
-        assert all(isinstance(i, (int, float)) for i in grid_id), "Grid name must be a list or a tuple of numbers"
+        assert all(isinstance(i, (int, float)) for i in grid_id), (
+            "Grid name must be a list or a tuple of numbers"
+        )
         if grid_id[0] == grid_id[1]:
             grid_id = str(float(grid_id[0]))
         else:

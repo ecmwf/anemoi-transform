@@ -64,7 +64,9 @@ def rodeo_opera_source(test_source):
 
 
 def test_rodeo_opera_clipping(rodeo_opera_source):
-    preprocessing = create_filter("rodeo_opera_clipping", max_total_precipitation=MAX_TP)
+    preprocessing = create_filter(
+        "rodeo_opera_clipping", max_total_precipitation=MAX_TP
+    )
     pipeline = rodeo_opera_source | preprocessing
 
     output_fields = collect_fields_by_param(pipeline)

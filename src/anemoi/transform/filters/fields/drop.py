@@ -16,7 +16,11 @@ from anemoi.transform.filter import SingleFieldFilter
 class Drop(SingleFieldFilter):
     """A filter to drop based on metadata selection"""
 
-    def __init__(self, param: str | list[str] | None = None, levelist: int | list[int] | None = None):
+    def __init__(
+        self,
+        param: str | list[str] | None = None,
+        levelist: int | list[int] | None = None,
+    ):
         """Initialise the Drop filter.
 
         Parameters
@@ -39,8 +43,8 @@ class Drop(SingleFieldFilter):
 
     def forward_transform(self, drop_field: ekd.Field) -> None:
         """Drop fields based on metadata selection."""
-        return None
+        return
 
     def backward_transform(self, drop_field: ekd.Field) -> None:
         """Drop fields based on metadata selection."""
-        return None
+        return

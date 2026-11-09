@@ -16,10 +16,12 @@ import numpy as np
 import tqdm
 from earthkit.data.core.fieldlist import Field
 
-from anemoi.transform.fields import NewLatLonField
-from anemoi.transform.fields import new_field_from_latitudes_longitudes
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.fields import (
+    NewLatLonField,
+    new_field_from_latitudes_longitudes,
+    new_field_from_numpy,
+    new_fieldlist_from_list,
+)
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -168,7 +170,12 @@ class RegridFilter(Filter):
         self.out_grid = out_grid
         self.method = method
         self.interpolator = make_interpolator(
-            in_grid=in_grid, out_grid=out_grid, method=method, matrix=matrix, mask=mask, check=check
+            in_grid=in_grid,
+            out_grid=out_grid,
+            method=method,
+            matrix=matrix,
+            mask=mask,
+            check=check,
         )
 
     def forward(self, data: ekd.FieldList) -> ekd.FieldList:
@@ -211,7 +218,14 @@ class RegridFilter(Filter):
 class EarthkitRegrid:
     """Default interpolator using earthkit."""
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str = "linear", check: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        in_grid: Any,
+        out_grid: Any,
+        method: str = "linear",
+        check: bool = False,
+    ) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -281,10 +295,13 @@ class MIRMatrix:
         loaded = dict(np.load(matrix))
 
         self.matrix: csr_array = csr_array(
-            (loaded["matrix_data"], loaded["matrix_indices"], loaded["matrix_indptr"]), shape=loaded["matrix_shape"]
+            (loaded["matrix_data"], loaded["matrix_indices"], loaded["matrix_indptr"]),
+            shape=loaded["matrix_shape"],
         )
 
-        self.in_grid: dict[str, np.ndarray] = dict(latitudes=loaded["in_latitudes"], longitudes=loaded["in_longitudes"])
+        self.in_grid: dict[str, np.ndarray] = dict(
+            latitudes=loaded["in_latitudes"], longitudes=loaded["in_longitudes"]
+        )
         self.out_grid: dict[str, np.ndarray] = dict(
             latitudes=loaded["out_latitudes"], longitudes=loaded["out_longitudes"]
         )
@@ -309,7 +326,9 @@ class MIRMatrix:
         data = field.to_numpy(flatten=True)
         data = self.matrix @ data
 
-        return new_field_from_latitudes_longitudes(new_field_from_numpy(data, template=field), **self.out_grid)
+        return new_field_from_latitudes_longitudes(
+            new_field_from_numpy(data, template=field), **self.out_grid
+        )
 
 
 class ScipyKDTreeNearestNeighbours:
@@ -317,7 +336,9 @@ class ScipyKDTreeNearestNeighbours:
 
     nearest_grid_points = None
 
-    def __init__(self, *, in_grid: Any, out_grid: Any, method: str, check: bool = False) -> None:
+    def __init__(
+        self, *, in_grid: Any, out_grid: Any, method: str, check: bool = False
+    ) -> None:
         """Parameters
         -------------
         in_grid : Any
@@ -332,7 +353,9 @@ class ScipyKDTreeNearestNeighbours:
         if method != "nearest":
             # TODO Rename to scipy_kdtree_nearest_neighbours
             # To use earthkit.regrid nearest
-            raise NotImplementedError(f"ScipyKDTreeNearestNeighbours does not support {method}, only 'nearest'")
+            raise NotImplementedError(
+                f"ScipyKDTreeNearestNeighbours does not support {method}, only 'nearest'"
+            )
 
         self.in_grid = as_griddata(in_grid)
         self.out_grid = as_griddata(out_grid)
@@ -374,11 +397,19 @@ class ScipyKDTreeNearestNeighbours:
             )
 
         data = field.to_numpy(flatten=True)
-        assert data.shape == self.in_grid["latitudes"].shape, (data.shape, self.in_grid["latitudes"].shape)
-        assert data.shape == self.in_grid["longitudes"].shape, (data.shape, self.in_grid["longitudes"].shape)
+        assert data.shape == self.in_grid["latitudes"].shape, (
+            data.shape,
+            self.in_grid["latitudes"].shape,
+        )
+        assert data.shape == self.in_grid["longitudes"].shape, (
+            data.shape,
+            self.in_grid["longitudes"].shape,
+        )
 
         data = data[..., self.nearest_grid_points]
-        return new_field_from_latitudes_longitudes(new_field_from_numpy(data, template=field), **self.out_grid)
+        return new_field_from_latitudes_longitudes(
+            new_field_from_numpy(data, template=field), **self.out_grid
+        )
 
 
 class MaskedRegrid:
@@ -425,7 +456,9 @@ class MaskedRegrid:
             self.out_longitudes = in_longitudes[self.mask]
 
         return new_field_from_latitudes_longitudes(
-            new_field_from_numpy(data, template=field), latitudes=self.out_latitudes, longitudes=self.out_longitudes
+            new_field_from_numpy(data, template=field),
+            latitudes=self.out_latitudes,
+            longitudes=self.out_longitudes,
         )
 
 

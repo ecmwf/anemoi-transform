@@ -11,11 +11,9 @@ import numpy as np
 import pytest
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
-from anemoi.transform.filters.fields.soil_mapping import SOIL_LEVTYPE
-from anemoi.transform.filters.fields.soil_mapping import SoilMapping
+from anemoi.transform.filters.fields.soil_mapping import SOIL_LEVTYPE, SoilMapping
 
-from ..utils import assert_fields_equal
-from ..utils import collect_fields_by_param
+from ..utils import assert_fields_equal, collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -45,7 +43,10 @@ SOIL_CASES = {
 @pytest.fixture
 def soil_source(test_source):
     """A source of the named soil parameters (no levtype/levelist)."""
-    spec = [{"param": name, "values": values, **MOCK_FIELD_METADATA} for name, (_, _, values) in SOIL_CASES.items()]
+    spec = [
+        {"param": name, "values": values, **MOCK_FIELD_METADATA}
+        for name, (_, _, values) in SOIL_CASES.items()
+    ]
     return test_source(spec)
 
 
@@ -140,7 +141,9 @@ def test_soil_round_trip(soil_source):
     assert set(output_fields) == set(SOIL_CASES)
 
     for name in SOIL_CASES:
-        assert_fields_equal(input_fields[name][0], output_fields[name][0], exclude_keys=["levelist"])
+        assert_fields_equal(
+            input_fields[name][0], output_fields[name][0], exclude_keys=["levelist"]
+        )
 
 
 def test_levtype_sol_to_soil_round_trip(generic_soil_source):
@@ -158,7 +161,9 @@ def test_levtype_sol_to_soil_round_trip(generic_soil_source):
     assert set(intermediate_fields) == set(SOIL_CASES)
     assert set(output_fields) == {"sot", "vsw"}
 
-    input_by_key = {(f.metadata("param"), f.metadata("levelist")): f for f in generic_soil_source}
+    input_by_key = {
+        (f.metadata("param"), f.metadata("levelist")): f for f in generic_soil_source
+    }
     output_by_key = {(f.metadata("param"), f.metadata("levelist")): f for f in pipeline}
 
     assert set(input_by_key) == set(output_by_key)

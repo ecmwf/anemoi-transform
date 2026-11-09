@@ -8,13 +8,9 @@
 # nor does it submit to any jurisdiction.
 
 
-from abc import ABC
-from abc import ABCMeta
-from abc import abstractmethod
-from typing import Any
-from typing import Callable
-from typing import TypeAlias
-from typing import TypeVar
+from abc import ABC, ABCMeta, abstractmethod
+from collections.abc import Callable
+from typing import Any, TypeAlias, TypeVar
 
 import earthkit.data as ekd
 import pandas as pd
@@ -25,7 +21,6 @@ DataContainer: TypeAlias = ekd.FieldList | pd.DataFrame
 
 
 class _TransformMetaClass(ABCMeta):
-
     # This metaclass adds a `reversed` property to all Transform subclasses.
     # And forwards the docstring of the original class to the reversed property.
     # This allows to document the reversed transform in the same way as the original one.
@@ -86,7 +81,6 @@ class Transform(ABC, metaclass=_TransformMetaClass):
         DataContainer
             The transformed data.
         """
-        pass
 
     def backward(self, data: DataContainer) -> DataContainer:
         """Applies the backward transformation to the data.

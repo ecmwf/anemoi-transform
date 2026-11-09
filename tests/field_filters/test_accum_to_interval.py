@@ -74,7 +74,9 @@ def test_accum_to_interval_zero_left_true(test_source):
     ]
 
     source = test_source(FIELD_SPECS)
-    accum_to_interval = create_filter("accum_to_interval", variables=["tp"], zero_left=True)
+    accum_to_interval = create_filter(
+        "accum_to_interval", variables=["tp"], zero_left=True
+    )
     pipeline = source | accum_to_interval
 
     output_fields = collect_fields_by_param(pipeline)
@@ -95,7 +97,11 @@ def test_accum_to_interval_zero_left_true(test_source):
     def _norm_ts(s):
         return s[:-1] + "+00:00" if isinstance(s, str) and s.endswith("Z") else s
 
-    t_inputs = {_norm_ts(spec["valid_datetime"]): spec["values"] for spec in FIELD_SPECS if spec["param"] == "t"}
+    t_inputs = {
+        _norm_ts(spec["valid_datetime"]): spec["values"]
+        for spec in FIELD_SPECS
+        if spec["param"] == "t"
+    }
     for f in output_fields["t"]:
         ts = _norm_ts(f.metadata("valid_datetime"))
         assert np.allclose(f.to_numpy(), t_inputs[ts])
@@ -135,7 +141,9 @@ def test_accum_to_interval_zero_left_false(test_source):
     ]
 
     source = test_source(FIELD_SPECS)
-    accum_to_interval = create_filter("accum_to_interval", variables=["tp"], zero_left=False)
+    accum_to_interval = create_filter(
+        "accum_to_interval", variables=["tp"], zero_left=False
+    )
     pipeline = source | accum_to_interval
 
     output_fields = collect_fields_by_param(pipeline)

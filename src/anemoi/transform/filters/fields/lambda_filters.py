@@ -67,14 +67,22 @@ class EarthkitFieldLambdaFilter(SingleFieldFilter):
             self.fn_kwargs = {}
 
         if not isinstance(self.fn_args, list):
-            raise ValueError("Expected 'fn_args' to be a list. " f"Got {self.fn_args} instead.")
+            raise ValueError(
+                f"Expected 'fn_args' to be a list. Got {self.fn_args} instead."
+            )
         if not isinstance(self.fn_kwargs, dict):
-            raise ValueError("Expected 'fn_kwargs' to be a dictionary. " f"Got {self.fn_kwargs} instead.")
+            raise ValueError(
+                "Expected 'fn_kwargs' to be a dictionary. "
+                f"Got {self.fn_kwargs} instead."
+            )
 
         if not isinstance(self.fn, str):
-            raise ValueError("Expected 'fn' to be a string. " f"Got {self.fn} instead.")
+            raise ValueError(f"Expected 'fn' to be a string. Got {self.fn} instead.")
         if not isinstance(self.backward_fn, str):
-            raise ValueError("Expected 'backward_fn' to be a string. " f"Got {self.backward_fn} instead.")
+            raise ValueError(
+                "Expected 'backward_fn' to be a string. "
+                f"Got {self.backward_fn} instead."
+            )
 
         self.fn = self._import_fn(self.fn)
         self.backward_fn = self._import_fn(self.backward_fn)

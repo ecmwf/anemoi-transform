@@ -121,7 +121,9 @@ def test_dispatchingfilter_backward_tabular_only(data):
 
 @pytest.mark.parametrize("data", TEST_CASES)
 def test_dispatchingfilter_backward_both(data):
-    class BackwardBoth(ForwardField, ForwardTabular, BackwardField, BackwardTabular, DispatchingFilter):
+    class BackwardBoth(
+        ForwardField, ForwardTabular, BackwardField, BackwardTabular, DispatchingFilter
+    ):
         pass
 
     filter = BackwardBoth().reverse()

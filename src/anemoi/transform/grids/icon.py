@@ -13,14 +13,15 @@ from functools import lru_cache
 
 import numpy as np
 
-from . import Grid
-from . import grid_registry
+from . import Grid, grid_registry
 
 LOG = logging.getLogger(__name__)
 
 
 @lru_cache(1)
-def icon_grid(path: str, refinement_level_c: int | None = None) -> tuple[np.ndarray, np.ndarray]:
+def icon_grid(
+    path: str, refinement_level_c: int | None = None
+) -> tuple[np.ndarray, np.ndarray]:
     """Read the ICON grid from a file.
 
     Parameters
@@ -47,7 +48,9 @@ def icon_grid(path: str, refinement_level_c: int | None = None) -> tuple[np.ndar
     longitudes = np.rad2deg(ds.clon[idx].values)
 
     LOG.info(f"Latitudes {np.min(latitudes)} {np.max(latitudes)} ({len(latitudes)})")
-    LOG.info(f"Longitudes {np.min(longitudes)} {np.max(longitudes)} ({len(longitudes)})")
+    LOG.info(
+        f"Longitudes {np.min(longitudes)} {np.max(longitudes)} ({len(longitudes)})"
+    )
 
     LOG.info("Done")
     return latitudes, longitudes
@@ -55,7 +58,6 @@ def icon_grid(path: str, refinement_level_c: int | None = None) -> tuple[np.ndar
 
 @grid_registry.register("icon")
 class IconGrid(Grid):
-
     def __init__(self, path: str, refinement_level_c: int | None = None):
         self.path = path
         self.refinement_level_c = refinement_level_c

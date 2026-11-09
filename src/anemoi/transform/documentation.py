@@ -9,8 +9,7 @@
 
 import inspect
 import textwrap
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from io import StringIO
 from typing import Any
@@ -81,7 +80,9 @@ def parse_directive(lines: list[str]) -> tuple[str, dict[str, str], str]:
     """Parse a generic RST directive from a list of lines."""
     if not lines or not lines[0].lstrip().startswith(".. "):
         line = lines[0] if lines else "EOF"
-        raise ValueError(f"Not a valid directive: must start with '.. name::' ({line=})")
+        raise ValueError(
+            f"Not a valid directive: must start with '.. name::' ({line=})"
+        )
 
     # First line: ".. name::"
     header = lines[0].lstrip()[3:]  # strip leading ".. "
@@ -145,11 +146,17 @@ class Documenter(ABC):
         }
 
         # Replace Optional with Union[..., None]
-        if getattr(annotation, "__origin__", None) is getattr(__import__("typing"), "Optional", None):
+        if getattr(annotation, "__origin__", None) is getattr(
+            __import__("typing"), "Optional", None
+        ):
             args = getattr(annotation, "__args__", ())
             if args:
-                return self.annotation_union(type("Union", (), {"__args__": (args[0], type(None))}))
-        if getattr(annotation, "__origin__", None) is getattr(__import__("typing"), "Union", None):
+                return self.annotation_union(
+                    type("Union", (), {"__args__": (args[0], type(None))})
+                )
+        if getattr(annotation, "__origin__", None) is getattr(
+            __import__("typing"), "Union", None
+        ):
             # If Union, check for NoneType and use pipe notation
             args = getattr(annotation, "__args__", ())
             if args and type(None) in args:
@@ -157,12 +164,17 @@ class Documenter(ABC):
                 if len(non_none) == 1:
                     return f"{self.annotation_str(non_none[0])} | None"
                 else:
-                    return " | ".join(self.annotation_str(a) if a is not type(None) else "None" for a in args)
+                    return " | ".join(
+                        self.annotation_str(a) if a is not type(None) else "None"
+                        for a in args
+                    )
             else:
                 return " or ".join(self.annotation_str(a) for a in args)
 
         if hasattr(annotation, "__name__"):
-            return dispatcher.get(annotation.__name__, self.annotations_name)(annotation)
+            return dispatcher.get(annotation.__name__, self.annotations_name)(
+                annotation
+            )
 
         # Handle typing.Optional[...] as string
         if str(annotation).startswith("typing.Optional["):
@@ -195,10 +207,14 @@ class Documenter(ABC):
                 continue
             if param.default is inspect.Parameter.empty:
                 params[name] = "..."
-                params.yaml_add_eol_comment(f"{self.annotation_str(param.annotation)} (REQUIRED)", name)
+                params.yaml_add_eol_comment(
+                    f"{self.annotation_str(param.annotation)} (REQUIRED)", name
+                )
             else:
                 params[name] = param.default
-                params.yaml_add_eol_comment(f"{self.annotation_str(param.annotation)}", name)
+                params.yaml_add_eol_comment(
+                    f"{self.annotation_str(param.annotation)}", name
+                )
         return params
 
     def find_rubrics(self, lines: list[str]) -> dict[str | None, list[str]]:
@@ -217,7 +233,6 @@ class Documenter(ABC):
         rubrics: dict[str | None, list[str]] = {None: []}
         current_rubric = rubrics[None]
         for i, line in enumerate(lines):
-
             if i > 0 and line and all(c == "-" for c in line):
                 title = lines[i - 1].strip()
                 if len(line) == len(title):
@@ -328,7 +343,12 @@ class YAMLExample(Example):
     """
 
     def __init__(
-        self, example: Any, *, prefix: str | None = None, suffix: str | None = None, header: list[str] | None = None
+        self,
+        example: Any,
+        *,
+        prefix: str | None = None,
+        suffix: str | None = None,
+        header: list[str] | None = None,
     ) -> None:
         self.example = example
         self.prefix = prefix

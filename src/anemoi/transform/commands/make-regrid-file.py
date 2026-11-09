@@ -20,7 +20,9 @@ from anemoi.transform.constants import L_1_degree_earth_arc_length_km as L_1d_km
 LOG = logging.getLogger(__name__)
 
 
-def _xr_ds_lat_lon(path: str, lat_name: str, lon_name: str) -> tuple[np.ndarray, np.ndarray]:
+def _xr_ds_lat_lon(
+    path: str, lat_name: str, lon_name: str
+) -> tuple[np.ndarray, np.ndarray]:
     import xarray as xr
 
     ds = xr.open_dataset(path)
@@ -59,16 +61,22 @@ def _path_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
     return _ds_to_lat_lon(path)
 
 
-def check_duplicate_latlons(input_file: str, latitudes: np.ndarray, longitudes: np.ndarray) -> None:
+def check_duplicate_latlons(
+    input_file: str, latitudes: np.ndarray, longitudes: np.ndarray
+) -> None:
     LOG.info(f"Checking for duplicate lat/lon pairs in {input_file}...")
     seen = set()
     for lat, lon in zip(latitudes, longitudes):
         if (lat, lon) in seen:
-            raise ValueError(f"Duplicate latitude/longitude pair found in {input_file}: ({lat}, {lon})")
+            raise ValueError(
+                f"Duplicate latitude/longitude pair found in {input_file}: ({lat}, {lon})"
+            )
         seen.add((lat, lon))
 
 
-def round_lat_lon(latitudes: np.ndarray, longitudes: np.ndarray, num_decimals: int) -> tuple[np.ndarray, np.ndarray]:
+def round_lat_lon(
+    latitudes: np.ndarray, longitudes: np.ndarray, num_decimals: int
+) -> tuple[np.ndarray, np.ndarray]:
     import numpy as np
 
     LOG.info(
@@ -90,18 +98,26 @@ class MakeMIRMatrix:
         command_parser : argparse.ArgumentParser
             The argument parser to add arguments to.
         """
-        command_parser.add_argument("--source-grid", help="Input file (GRIB or NetCDF).", required=True)
-        command_parser.add_argument("--target-grid", help="Input file (GRIB or NetCDF).", required=True)
+        command_parser.add_argument(
+            "--source-grid", help="Input file (GRIB or NetCDF).", required=True
+        )
+        command_parser.add_argument(
+            "--target-grid", help="Input file (GRIB or NetCDF).", required=True
+        )
 
         command_parser.add_argument(
-            "--mir", default=os.environ.get("MIR_COMMAND", "mir"), help="MIR command (default: 'mir')."
+            "--mir",
+            default=os.environ.get("MIR_COMMAND", "mir"),
+            help="MIR command (default: 'mir').",
         )
         command_parser.add_argument(
             "--rounding",
             type=int,
             help="Round latitudes and longitudes to this precision (default: None).",
         )
-        command_parser.add_argument("--check", action="store_true", help="Check for duplicate lat/lon pairs.")
+        command_parser.add_argument(
+            "--check", action="store_true", help="Check for duplicate lat/lon pairs."
+        )
         command_parser.add_argument(
             "--mir_args",
             nargs="*",
@@ -128,15 +144,25 @@ class MakeMIRMatrix:
         target_lat, target_lon = _path_to_lat_lon(args.target_grid)
 
         if args.rounding is not None:
-            source_lat, source_lon = round_lat_lon(source_lat, source_lon, args.rounding)
-            target_lat, target_lon = round_lat_lon(target_lat, target_lon, args.rounding)
+            source_lat, source_lon = round_lat_lon(
+                source_lat, source_lon, args.rounding
+            )
+            target_lat, target_lon = round_lat_lon(
+                target_lat, target_lon, args.rounding
+            )
 
         if args.check:
             check_duplicate_latlons(args.source_grid, source_lat, source_lon)
             check_duplicate_latlons(args.target_grid, target_lat, target_lon)
 
         MakeMIRMatrix.make_mir_matrix(
-            source_lat, source_lon, target_lat, target_lon, output=args.output, mir=args.mir, **mir_kwargs
+            source_lat,
+            source_lon,
+            target_lat,
+            target_lon,
+            output=args.output,
+            mir=args.mir,
+            **mir_kwargs,
         )
 
     @staticmethod
@@ -145,7 +171,9 @@ class MakeMIRMatrix:
         import numpy as np
         from earthkit.regrid.utils.mir import mir_make_matrix
 
-        sparse_array = mir_make_matrix(lat1, lon1, lat2, lon2, output=None, mir=mir, **mir_kwargs)
+        sparse_array = mir_make_matrix(
+            lat1, lon1, lat2, lon2, output=None, mir=mir, **mir_kwargs
+        )
 
         np.savez(
             output,
@@ -161,7 +189,6 @@ class MakeMIRMatrix:
 
 
 class MakeGlobalOnLamMask:
-
     def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
         """Add arguments to the command parser.
 
@@ -170,8 +197,12 @@ class MakeGlobalOnLamMask:
         command_parser : argparse.ArgumentParser
             The argument parser to add arguments to.
         """
-        command_parser.add_argument("--lam-grid", help="Input file (GRIB or NetCDF).", required=True)
-        command_parser.add_argument("--global-grid", help="Input file (GRIB or NetCDF).", required=True)
+        command_parser.add_argument(
+            "--lam-grid", help="Input file (GRIB or NetCDF).", required=True
+        )
+        command_parser.add_argument(
+            "--global-grid", help="Input file (GRIB or NetCDF).", required=True
+        )
         command_parser.add_argument(
             "--distance-km",
             type=float,
@@ -249,7 +280,9 @@ class MakeGlobalOnLamMask:
         saver = np.savez_compressed if compress else np.savez
         saver(output, mask=mask)
         if plot_path:
-            MakeGlobalOnLamMask._lat_lon_plot(global_lat[mask], global_lon[mask], plot_path)
+            MakeGlobalOnLamMask._lat_lon_plot(
+                global_lat[mask], global_lon[mask], plot_path
+            )
 
 
 OPTIONS: dict[str, type] = {

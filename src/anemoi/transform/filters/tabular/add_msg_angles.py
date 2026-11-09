@@ -14,9 +14,11 @@ import pandas as pd
 
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
-from anemoi.transform.filters.tabular.support.sat_view_angles import calc_azimuth
-from anemoi.transform.filters.tabular.support.sat_view_angles import calc_zenith
-from anemoi.transform.filters.tabular.support.sat_view_angles import get_meteosat_loc
+from anemoi.transform.filters.tabular.support.sat_view_angles import (
+    calc_azimuth,
+    calc_zenith,
+    get_meteosat_loc,
+)
 
 
 @filter_registry.register("add_msg_angles")
@@ -59,7 +61,9 @@ class AddMSGAngles(Filter):
         satellite_id="satellite_id",
     ):
         if angle not in ("azimuth", "zenith", "both"):
-            raise ValueError(f"Invalid angle: {angle}. Must be 'azimuth', 'zenith' or 'both'.")
+            raise ValueError(
+                f"Invalid angle: {angle}. Must be 'azimuth', 'zenith' or 'both'."
+            )
 
         self.angle = ("azimuth", "zenith") if angle == "both" else (angle,)
         self.azimuth = azimuth
@@ -68,7 +72,9 @@ class AddMSGAngles(Filter):
 
     def forward(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.satellite_id not in df.columns:
-            raise ValueError(f"DataFrame must contain a column '{self.satellite_id}' for MSG angles calculation.")
+            raise ValueError(
+                f"DataFrame must contain a column '{self.satellite_id}' for MSG angles calculation."
+            )
 
         df = df.copy()
         latdeg, londeg = df["latitude"].values, df["longitude"].values

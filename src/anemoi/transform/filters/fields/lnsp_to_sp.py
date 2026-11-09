@@ -51,7 +51,9 @@ class LnspToSp(SingleFieldFilter):
         }
 
         return self.new_field_from_numpy(
-            np.exp(log_of_surface_pressure.to_numpy()), template=log_of_surface_pressure, **new_metadata
+            np.exp(log_of_surface_pressure.to_numpy()),
+            template=log_of_surface_pressure,
+            **new_metadata,
         )
 
     def backward_transform(self, surface_pressure: ekd.Field) -> ekd.Field:
@@ -67,10 +69,16 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The natural log of surface pressure.
         """
-        orig_metadata = {"param": self.log_of_surface_pressure, "levtype": "ml", "units": "Numeric"}
+        orig_metadata = {
+            "param": self.log_of_surface_pressure,
+            "levtype": "ml",
+            "units": "Numeric",
+        }
 
         return self.new_field_from_numpy(
-            np.log(surface_pressure.to_numpy()), template=surface_pressure, **orig_metadata
+            np.log(surface_pressure.to_numpy()),
+            template=surface_pressure,
+            **orig_metadata,
         )
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:

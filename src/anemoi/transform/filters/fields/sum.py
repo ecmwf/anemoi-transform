@@ -14,8 +14,7 @@ from collections.abc import Hashable
 
 import earthkit.data as ekd
 
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.fields import new_field_from_numpy, new_fieldlist_from_list
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.fields import filter_registry
 
@@ -81,14 +80,18 @@ class Sum(Filter):
         """
         result = []
 
-        needed_fields: dict[tuple[Hashable, ...], dict[str, ekd.Field]] = defaultdict(dict)
+        needed_fields: dict[tuple[Hashable, ...], dict[str, ekd.Field]] = defaultdict(
+            dict
+        )
 
         for f in fields:
             key = f.metadata(namespace="mars")
             param = key.pop("param", None)
             if self.ignore_level:
                 ll = key.pop("levelist", None)
-                LOG.debug(f"Removing levelist ({ll}) from matching key for variable: {param}")
+                LOG.debug(
+                    f"Removing levelist ({ll}) from matching key for variable: {param}"
+                )
 
             if param is None:
                 param = f.metadata("param")
@@ -103,7 +106,6 @@ class Sum(Filter):
                 result.append(f)
 
         for keys, values in needed_fields.items():
-
             if len(values) != len(self.params):
                 raise ValueError("Missing fields")
 
@@ -114,7 +116,11 @@ class Sum(Filter):
                     s = c
                 else:
                     s += c
-            result.append(new_field_from_numpy(s, template=values[list(values.keys())[0]], param=self.output))
+            result.append(
+                new_field_from_numpy(
+                    s, template=values[list(values.keys())[0]], param=self.output
+                )
+            )
 
         return new_fieldlist_from_list(result)
 

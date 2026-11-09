@@ -47,7 +47,8 @@ EXPECTED_METADATA = {
 @pytest.fixture
 def source(test_source):
     FIELD_SPECS = [
-        {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA} for i, values in enumerate(INPUT_VALUES)
+        {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA}
+        for i, values in enumerate(INPUT_VALUES)
     ]
     return test_source(FIELD_SPECS)
 
@@ -55,7 +56,8 @@ def source(test_source):
 @pytest.fixture
 def source_multiple_params(test_source):
     FIELD_SPECS = [
-        {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA} for i, values in enumerate(INPUT_VALUES)
+        {"param": "t", "step": i, "values": values.copy(), **INPUT_METADATA}
+        for i, values in enumerate(INPUT_VALUES)
     ] + [
         # first step of "a" has more NaNs than "t"
         {"param": "a", "step": i, "values": values.copy(), **INPUT_METADATA}
@@ -86,15 +88,27 @@ def test_remove_nans(source):
     assert set(input_fields) == set(output_fields)
     assert len(input_fields[param]) == len(output_fields[param])
 
-    for i, (input_field, output_field) in enumerate(zip(input_fields[param], output_fields[param])):
+    for i, (input_field, output_field) in enumerate(
+        zip(input_fields[param], output_fields[param])
+    ):
         # existing behaviour is to generate a mask based on the location of
         # NaNs in the first field and apply this mask for all fields
-        assert np.array_equal(input_field.to_numpy(flatten=True), INPUT_VALUES[i].flatten(), equal_nan=True)
-        assert np.array_equal(output_field.to_numpy(flatten=True), EXPECTED_VALUES[i], equal_nan=True)
+        assert np.array_equal(
+            input_field.to_numpy(flatten=True),
+            INPUT_VALUES[i].flatten(),
+            equal_nan=True,
+        )
+        assert np.array_equal(
+            output_field.to_numpy(flatten=True), EXPECTED_VALUES[i], equal_nan=True
+        )
 
         output_lats, output_lons = output_field.grid_points()
-        assert np.array_equal(output_lats, EXPECTED_METADATA["latitudes"], equal_nan=True)
-        assert np.array_equal(output_lons, EXPECTED_METADATA["longitudes"], equal_nan=True)
+        assert np.array_equal(
+            output_lats, EXPECTED_METADATA["latitudes"], equal_nan=True
+        )
+        assert np.array_equal(
+            output_lons, EXPECTED_METADATA["longitudes"], equal_nan=True
+        )
 
 
 def test_remove_nans_invalid_method():
@@ -111,18 +125,30 @@ class Test_remove_nans_param:
     def test_dataset_consistency(self, source_multiple_params):
         output_fields, _ = source_multiple_params
         for i in range(len(output_fields["param=None"]["a"])):
-            assert output_fields["param=None"]["a"][i].shape == output_fields["param=None"]["t"][i].shape
+            assert (
+                output_fields["param=None"]["a"][i].shape
+                == output_fields["param=None"]["t"][i].shape
+            )
 
     def test_params_a_b(self, source_multiple_params):
         output_fields, _ = source_multiple_params
         # Test that param="a" and param="t" give different maskings
-        assert output_fields["param=a"]["a"][0].shape != output_fields["param=t"]["a"][0].shape
-        assert output_fields["param=a"]["t"][0].shape != output_fields["param=t"]["t"][0].shape
+        assert (
+            output_fields["param=a"]["a"][0].shape
+            != output_fields["param=t"]["a"][0].shape
+        )
+        assert (
+            output_fields["param=a"]["t"][0].shape
+            != output_fields["param=t"]["t"][0].shape
+        )
 
     def test_default(self, source_multiple_params):
         output_fields, first_param = source_multiple_params
         # Test that the first param is used as default
-        assert output_fields["param=" + first_param]["t"][0].shape == output_fields["param=None"]["t"][0].shape
+        assert (
+            output_fields["param=" + first_param]["t"][0].shape
+            == output_fields["param=None"]["t"][0].shape
+        )
 
 
 if __name__ == "__main__":

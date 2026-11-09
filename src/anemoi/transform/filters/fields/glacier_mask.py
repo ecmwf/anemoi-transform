@@ -42,7 +42,9 @@ class SnowDepthMasked(SingleFieldFilter):
     optional_inputs = {"snow_depth": "sd", "snow_depth_masked": "sd_masked"}
 
     def prepare_filter(self):
-        self.glacier_mask = ekd.from_source("file", self.glacier_mask)[0].to_numpy().astype(bool)
+        self.glacier_mask = (
+            ekd.from_source("file", self.glacier_mask)[0].to_numpy().astype(bool)
+        )
 
     def forward_select(self):
         return {"param": self.snow_depth}
@@ -63,5 +65,8 @@ class SnowDepthMasked(SingleFieldFilter):
         snow_depth_masked = mask_glaciers(snow_depth.to_numpy(), self.glacier_mask)
 
         return self.new_field_from_numpy(
-            snow_depth_masked, template=snow_depth, param=self.snow_depth_masked, units="Fraction"
+            snow_depth_masked,
+            template=snow_depth,
+            param=self.snow_depth_masked,
+            units="Fraction",
         )

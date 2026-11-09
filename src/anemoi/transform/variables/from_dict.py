@@ -9,9 +9,7 @@
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Union
+from typing import TYPE_CHECKING, Any, Union
 
 from anemoi.utils.dates import as_timedelta
 
@@ -144,7 +142,9 @@ class VariableFromMarsVocabulary(Variable):
 
         def __similarity(a: Any, b: Any) -> int:
             if isinstance(a, dict) and isinstance(b, dict):
-                return sum(__similarity(a[k], b[k]) for k in set(a.keys()) & set(b.keys()))
+                return sum(
+                    __similarity(a[k], b[k]) for k in set(a.keys()) & set(b.keys())
+                )
 
             if isinstance(a, list) and isinstance(b, list):
                 return sum(__similarity(a[i], b[i]) for i in range(min(len(a), len(b))))

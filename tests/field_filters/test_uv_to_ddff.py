@@ -12,8 +12,7 @@ import pytest
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
-from ..utils import assert_fields_equal
-from ..utils import collect_fields_by_param
+from ..utils import assert_fields_equal, collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],
@@ -22,23 +21,55 @@ MOCK_FIELD_METADATA = {
 }
 
 U_VALUES = {
-    500: np.array([[-3.26786804, -2.90458679], [-4.28153992, -10.75224304], [-6.29130554, -4.17704773]]),
-    850: np.array([[-6.72481718, -0.34174164], [-7.14725727, -2.02047454], [-4.93597360, -0.00018431]]),
+    500: np.array(
+        [
+            [-3.26786804, -2.90458679],
+            [-4.28153992, -10.75224304],
+            [-6.29130554, -4.17704773],
+        ]
+    ),
+    850: np.array(
+        [
+            [-6.72481718, -0.34174164],
+            [-7.14725727, -2.02047454],
+            [-4.93597360, -0.00018431],
+        ]
+    ),
 }
 
 V_VALUES = {
-    500: np.array([[6.51824951, 4.7321167], [1.16961670, 1.73797607], [-2.93096924, 3.2399292]]),
-    850: np.array([[5.4374572, -0.00679462], [2.23226754, 6.78457592], [-1.79188286, -0.0093771]]),
+    500: np.array(
+        [[6.51824951, 4.7321167], [1.16961670, 1.73797607], [-2.93096924, 3.2399292]]
+    ),
+    850: np.array(
+        [[5.4374572, -0.00679462], [2.23226754, 6.78457592], [-1.79188286, -0.0093771]]
+    ),
 }
 
 DD_VALUES = {
-    500: np.array([[7.29153881, 5.55243666], [4.43842171, 10.89179926], [6.94054076, 5.28629066]]),
-    850: np.array([[8.64806955, 0.34180918], [7.48774364, 7.07903862], [5.25115983, 0.00937891]]),
+    500: np.array(
+        [[7.29153881, 5.55243666], [4.43842171, 10.89179926], [6.94054076, 5.28629066]]
+    ),
+    850: np.array(
+        [[8.64806955, 0.34180918], [7.48774364, 7.07903862], [5.25115983, 0.00937891]]
+    ),
 }
 
 FF_VALUES = {
-    500: np.array([[153.37349864, 148.45827835], [105.27908047, 99.18178736], [65.02031089, 127.79896253]]),
-    850: np.array([[128.95781905, 88.86097611], [107.34489249, 163.41625261], [70.04782648, 1.12603196]]),
+    500: np.array(
+        [
+            [153.37349864, 148.45827835],
+            [105.27908047, 99.18178736],
+            [65.02031089, 127.79896253],
+        ]
+    ),
+    850: np.array(
+        [
+            [128.95781905, 88.86097611],
+            [107.34489249, 163.41625261],
+            [70.04782648, 1.12603196],
+        ]
+    ),
 }
 
 
@@ -56,10 +87,30 @@ def uv_source(test_source):
 @pytest.fixture
 def ddff_source(test_source):
     DDFF_SPEC = [
-        {"param": "ws", "levelist": 500, "values": DD_VALUES[500], **MOCK_FIELD_METADATA},
-        {"param": "wdir", "levelist": 500, "values": FF_VALUES[500], **MOCK_FIELD_METADATA},
-        {"param": "ws", "levelist": 850, "values": DD_VALUES[850], **MOCK_FIELD_METADATA},
-        {"param": "wdir", "levelist": 850, "values": FF_VALUES[850], **MOCK_FIELD_METADATA},
+        {
+            "param": "ws",
+            "levelist": 500,
+            "values": DD_VALUES[500],
+            **MOCK_FIELD_METADATA,
+        },
+        {
+            "param": "wdir",
+            "levelist": 500,
+            "values": FF_VALUES[500],
+            **MOCK_FIELD_METADATA,
+        },
+        {
+            "param": "ws",
+            "levelist": 850,
+            "values": DD_VALUES[850],
+            **MOCK_FIELD_METADATA,
+        },
+        {
+            "param": "wdir",
+            "levelist": 850,
+            "values": FF_VALUES[850],
+            **MOCK_FIELD_METADATA,
+        },
     ]
     return test_source(DDFF_SPEC)
 

@@ -11,15 +11,13 @@ from typing import Literal
 
 import earthkit.data as ekd
 import numpy as np
-from earthkit.meteo import thermo
-from earthkit.meteo import vertical
+from earthkit.meteo import thermo, vertical
 from numpy.typing import NDArray
 
 from anemoi.transform.constants import model_level_AB as predefined_AB
 from anemoi.transform.filters.fields import filter_registry
 
-from .matching import MatchingFieldsFilter
-from .matching import MatchingSpec
+from .matching import MatchingFieldsFilter, MatchingSpec
 
 # Protection against zero relative or specific humidity when calculating dewpoint temperature
 EPS_SPECIFIC = 1.0e-8

@@ -25,7 +25,6 @@ MISSING_METADATA = object()
 
 
 class Flavour(ABC):
-
     @abstractmethod
     def __call__(self, key: str, field: ekd.Field) -> Any:
         """Called during field metadata lookup, so it can be modified"""
@@ -116,7 +115,7 @@ class WrappedField:
         str
             The string representation of the `_field` attribute.
         """
-        return f"{self.__class__.__name__ }({repr(self._field)}, {self._repr_specific()})"
+        return f"{self.__class__.__name__}({repr(self._field)}, {self._repr_specific()})"
 
     def _repr_specific(self) -> str:
         """Return a string representation of the specific field type.
@@ -494,7 +493,6 @@ class _NewMetadataField(WrappedField, ABC):
         if len(args) == 0 and len(kwargs) == 0:
 
             class MD:
-
                 geography = this._field.metadata().geography
 
                 def get(self, key, default=None):

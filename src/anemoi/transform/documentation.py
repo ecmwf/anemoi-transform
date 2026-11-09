@@ -217,7 +217,6 @@ class Documenter(ABC):
         rubrics: dict[str | None, list[str]] = {None: []}
         current_rubric = rubrics[None]
         for i, line in enumerate(lines):
-
             if i > 0 and line and all(c == "-" for c in line):
                 title = lines[i - 1].strip()
                 if len(line) == len(title):

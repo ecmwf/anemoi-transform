@@ -73,7 +73,6 @@ class IconRefinement(Filter):
 
         result = []
         for field in tqdm.tqdm(fields, desc="Regridding"):
-
             data = field.to_numpy(flatten=True)
             data = data[..., self.nearest_grid_points]
             new_field = new_field_from_latitudes_longitudes(

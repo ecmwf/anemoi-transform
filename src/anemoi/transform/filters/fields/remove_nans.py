@@ -106,7 +106,6 @@ class RemoveNaNs(Filter):
 
         result = []
         for field in tqdm.tqdm(fields, desc="Remove NaNs"):
-
             data = field.to_numpy(flatten=True)
             result.append(
                 new_field_from_latitudes_longitudes(

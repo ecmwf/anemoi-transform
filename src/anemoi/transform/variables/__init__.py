@@ -358,7 +358,7 @@ class Variable(ABC):
         keys2 = set(variables2.keys())
 
         if keys1 != keys2:
-            raise ValueError(f"Variable compatibility: missing={keys1-keys2}, added={keys2-keys1}")
+            raise ValueError(f"Variable compatibility: missing={keys1 - keys2}, added={keys2 - keys1}")
 
         reasons = []
         for k in keys1:

@@ -49,9 +49,9 @@ def _check_consistency(A: NDArray, B: NDArray, model_level_fields: dict[str, ekd
             name,
         )
         # Assert that A and B coefficients have one more vertical level than the model level field
-        assert (
-            A.shape[-1] == field.to_numpy().shape[0] + 1
-        ), f"model level AB-coefficients should have one more vertical level than {name}"
+        assert A.shape[-1] == field.to_numpy().shape[0] + 1, (
+            f"model level AB-coefficients should have one more vertical level than {name}"
+        )
 
 
 class SpecificToRelativeAtHeightLevelWithP(MatchingFieldsFilter):

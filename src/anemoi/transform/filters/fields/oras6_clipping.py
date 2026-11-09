@@ -26,7 +26,7 @@ class Oras6Clipping(MatchingFieldsFilter):
     """A filter to mask ocean and sea ice-related variables when sea ice concentration is low."""
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=(
             "siue",
             "sivn",

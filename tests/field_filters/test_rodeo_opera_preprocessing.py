@@ -11,9 +11,7 @@ import numpy as np
 import pytest
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
-from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _INF
-from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _NODATA
-from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _UNDETECTED
+from anemoi.transform.filters.fields.rodeo_opera_preprocessing import _INF, _NODATA, _UNDETECTED
 
 from ..utils import collect_fields_by_param
 

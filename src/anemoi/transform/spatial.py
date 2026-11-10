@@ -14,8 +14,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from anemoi.transform.constants import R_earth_km
-from anemoi.transform.constants import radian
+from anemoi.transform.constants import R_earth_km, radian
 
 LOG = logging.getLogger(__name__)
 

@@ -18,9 +18,7 @@ import earthkit.data as ekd
 import numpy as np
 import pandas as pd
 
-from anemoi.transform.fields import FieldSelection
-from anemoi.transform.fields import new_field_from_numpy
-from anemoi.transform.fields import new_fieldlist_from_list
+from anemoi.transform.fields import FieldSelection, new_field_from_numpy, new_fieldlist_from_list
 from anemoi.transform.transform import Transform
 
 LOG = logging.getLogger(__name__)

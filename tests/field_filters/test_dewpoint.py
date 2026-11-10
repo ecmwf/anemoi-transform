@@ -13,9 +13,7 @@ from anemoi.utils.testing import skip_if_offline
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 
-from ..utils import SelectFieldSource
-from ..utils import assert_fields_equal
-from ..utils import collect_fields_by_param
+from ..utils import SelectFieldSource, assert_fields_equal, collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
     "latitudes": [10.0, 0.0, -10.0],

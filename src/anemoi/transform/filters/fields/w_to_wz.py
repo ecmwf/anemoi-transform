@@ -16,8 +16,7 @@ import earthkit.data as ekd
 from anemoi.transform.constants import g_gravitational_acceleration
 from anemoi.transform.filters.fields import filter_registry
 
-from .matching import MatchingFieldsFilter
-from .matching import MatchingSpec
+from .matching import MatchingFieldsFilter, MatchingSpec
 
 
 class VerticalVelocity(MatchingFieldsFilter):

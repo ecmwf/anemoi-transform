@@ -8,11 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 import logging
-from abc import ABC
-from abc import abstractmethod
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Union
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Union
 
 from anemoi.utils.logs import OnceLogger
 

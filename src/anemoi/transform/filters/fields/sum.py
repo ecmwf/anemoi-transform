@@ -103,7 +103,6 @@ class Sum(Filter):
                 result.append(f)
 
         for keys, values in needed_fields.items():
-
             if len(values) != len(self.params):
                 raise ValueError("Missing fields")
 

@@ -23,7 +23,6 @@ args = parser.parse_args()
 
 
 class ScriptDocumenter(Documenter):
-
     def __init__(self, name):
         super().__init__()
         self.name = name
@@ -83,7 +82,6 @@ class ScriptDocumenter(Documenter):
 filters = []
 
 for f in filter_registry.registered:
-
     rich.print(f"Processing filter '{f}'")
 
     filter = filter_registry.lookup(f, return_none=True)
@@ -97,7 +95,6 @@ for f in filter_registry.registered:
     os.path.exists(args.target_dir) or os.makedirs(args.target_dir)
 
     with open(f"{args.target_dir}/{f}.rst", "w") as docfile:
-
         print(file=docfile)
         print(f".. _{f}-filter:", file=docfile)
         print(file=docfile)
@@ -129,7 +126,6 @@ relative_target_dir = os.path.relpath(os.path.realpath(args.target_dir), os.path
 
 
 with open(args.index, "w") as docfile:
-
     print(file=docfile)
     print(".. _list-of-filters:", file=docfile)
     print(file=docfile)

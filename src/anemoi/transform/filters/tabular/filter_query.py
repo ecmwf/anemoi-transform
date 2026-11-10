@@ -83,7 +83,7 @@ class FilterQuery(Filter):
 
             final_len = len(obs_df)
             n_dropped = initial_len - final_len
-            logging.info(f"Dropped {n_dropped} rows ({n_dropped/initial_len*100:.2f}%). Kept {final_len} rows.")
+            logging.info(f"Dropped {n_dropped} rows ({n_dropped / initial_len * 100:.2f}%). Kept {final_len} rows.")
 
         except Exception as e:
             logging.error(f"Error evaluating query filter: {e}")

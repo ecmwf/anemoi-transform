@@ -161,7 +161,6 @@ class MakeMIRMatrix:
 
 
 class MakeGlobalOnLamMask:
-
     def add_arguments(self, command_parser: argparse.ArgumentParser) -> None:
         """Add arguments to the command parser.
 

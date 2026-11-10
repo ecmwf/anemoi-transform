@@ -21,7 +21,7 @@ def define_grid(grid: str) -> np.ndarray:
     data = lookup(grid)
     lat = data["latitudes"]
     lon = data["longitudes"]
-    lon = np.where(lon > 180, lon - 360, lon)
+    # longitude range: [0, 360)
     return np.column_stack([lat, lon])
 
 
@@ -32,9 +32,8 @@ def define_healpix_grid(nside: int) -> np.ndarray:
     theta, phi = hp.pix2ang(nside, np.arange(npix))
     # Convert theta and phi to latitude and longitude
     lat = 90 - np.degrees(theta)  # theta=0 is North pole
+    # longitude range: [0, 360)
     lon = np.degrees(phi)
-    # Adjust longitude range from [0, 360) to [-180, 180)
-    lon = np.where(lon > 180, lon - 360, lon)
     # Stack latitudes and longitudes
     grid_points = np.column_stack([lat, lon])
     return grid_points

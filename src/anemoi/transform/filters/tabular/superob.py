@@ -57,9 +57,42 @@ class SuperOb(Filter):
         self.columns_to_take_nearest = columns_to_take_nearest if columns_to_take_nearest else []
         self.columns_to_groupby = columns_to_groupby if columns_to_groupby else []
 
+    def _empty_output_schema(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Return an empty frame whose columns match the aggregated output.
+
+        The grid-assignment and aggregation path is skipped for empty inputs,
+        so this reorders the columns to mirror the schema produced for
+        non-empty inputs (grouped columns first, then the averaged columns,
+        then the nearest columns; the ``grid_index``, ``spatial_index`` and
+        ``distance`` helper columns are never added). This keeps downstream
+        variable enumeration consistent regardless of whether a given date
+        contains observations.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            The (empty) input frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The empty frame with columns reordered to match the aggregated output schema.
+        """
+        grouped = set(self.columns_to_groupby)
+        nearest = set(self.columns_to_take_nearest)
+        ordered = (
+            list(self.columns_to_groupby)
+            + [c for c in df.columns if c not in (grouped | nearest)]
+            + list(self.columns_to_take_nearest)
+        )
+        return df.reindex(columns=ordered)
+
     def forward(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.grid == "native" or len(df) == 0:
+        if self.grid == "native":
             return df
+
+        if len(df) == 0:
+            return self._empty_output_schema(df)
 
         # Define output grid (spatail + temporal)
         if self.grid[0] == "h":
@@ -69,7 +102,7 @@ class SuperOb(Filter):
 
         df.dropna(subset=["date", "latitude", "longitude"], inplace=True)
         if len(df) == 0:
-            return df
+            return self._empty_output_schema(df)
 
         # Assign each observation to an output grid cell
         df = assign_nearest_grid(df, output_grid, self.timeslot_length)
@@ -92,6 +125,6 @@ class SuperOb(Filter):
         averaged_df = averaged_df[~averaged_df.index.duplicated(keep="first")]
         nearest_df = nearest_df[~nearest_df.index.duplicated(keep="first")]
         gridded_df = pd.concat([averaged_df, nearest_df], axis=1, join="inner").reset_index()
-        gridded_df = gridded_df.drop(columns=["grid_index", "distance"], errors="ignore")
+        gridded_df = gridded_df.drop(columns=["grid_index", "spatial_index", "distance"], errors="ignore")
         gridded_df = gridded_df.sort_values("date")
         return gridded_df

@@ -42,7 +42,6 @@ def test_superob():
             ],
             "latitude": [89.2, 89.2],
             "longitude": [-126.0, -90.0],
-            "spatial_index": [13.0, 15.0],
             "reportype": [1001, 1001],
             "obsvalue_rawbt_1": [208.0, 265.5],
         }
@@ -56,6 +55,34 @@ def test_superob():
         check_column_type=True,
         check_names=True,
     )
+
+
+def test_superob_empty_input_matches_non_empty_schema():
+    config = {
+        "grid": "o96",
+        "timeslot_length": 3600,
+        "columns_to_take_nearest": ["date"],
+        "columns_to_groupby": ["reportype"],
+    }
+    columns = ["date", "latitude", "longitude", "reportype", "obsvalue_rawbt_1"]
+    non_empty = pd.DataFrame(
+        {
+            "date": [pd.Timestamp("2025-01-01 00:00:00"), pd.Timestamp("2025-01-01 02:00:01")],
+            "latitude": [89.1, 89.2],
+            "longitude": [-126.0, -90.0],
+            "reportype": [1001, 1001],
+            "obsvalue_rawbt_1": [207.0, 265.0],
+        }
+    )[columns]
+    empty = non_empty.iloc[0:0]
+
+    superob = create_filter("superob", **config)
+
+    # The grid-assignment path is skipped for empty inputs, but the output
+    # column schema must stay identical so variable enumeration is consistent.
+    assert list(superob(empty.copy()).columns) == list(superob(non_empty.copy()).columns)
+    # The helper columns must never leak into the output.
+    assert "spatial_index" not in superob(non_empty.copy()).columns
 
 
 def test_superob_groupby():
@@ -91,7 +118,6 @@ def test_superob_groupby():
             ],
             "latitude": [89.2, 89.2, 89.2],
             "longitude": [-126.2, -90.0, -90.0],
-            "spatial_index": [13.0, 15.0, 15.0],
             "reportype": [1001, 1001, 1002],
             "obsvalue_rawbt_1": [208.0, 265.0, 266.0],
         }

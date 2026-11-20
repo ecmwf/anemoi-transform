@@ -8,13 +8,8 @@
 # nor does it submit to any jurisdiction.
 
 
-from abc import ABC
-from abc import ABCMeta
-from abc import abstractmethod
-from typing import Any
-from typing import Callable
-from typing import TypeAlias
-from typing import TypeVar
+from abc import ABC, ABCMeta, abstractmethod
+from typing import Any, Callable, TypeAlias, TypeVar
 
 import earthkit.data as ekd
 import pandas as pd

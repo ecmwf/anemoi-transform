@@ -9,9 +9,7 @@
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Union
+from typing import TYPE_CHECKING, Any, Union
 
 from anemoi.utils.dates import as_timedelta
 

@@ -12,9 +12,7 @@ import pandas as pd
 
 from anemoi.transform.filter import Filter
 from anemoi.transform.filters.tabular import filter_registry
-from anemoi.transform.filters.tabular.support.superob import assign_nearest_grid
-from anemoi.transform.filters.tabular.support.superob import define_grid
-from anemoi.transform.filters.tabular.support.superob import define_healpix_grid
+from anemoi.transform.filters.tabular.support.superob import assign_nearest_grid, define_grid, define_healpix_grid
 
 
 @filter_registry.register("superob")

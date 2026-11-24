@@ -238,6 +238,43 @@ def test_canonical_unstructured() -> None:
     assert c1.same_ordering_as(c2)  # both converge to the same ordering
 
 
+def test_canonical_duplicated_wrap_column() -> None:
+    """Grid containing both 0.0 and 360.0 longitude keeps both points.
+
+    np.mod maps 360.0 -> 0.0, so the two points sort adjacently in
+    canonical order. They remain distinct stored points, which means a
+    wrapped grid and its unwrapped equivalent are NOT the same point
+    set: same_points_as fails the bijection check (two canonical
+    points would map to one). This is intentional — the point sets
+    genuinely differ in cardinality of distinct locations.
+    """
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    nlat = 4
+    # wrapped: nlon=9 columns, 0..360 inclusive (0 and 360 duplicated)
+    lats_w = np.repeat(np.linspace(90, -90, nlat), 9)
+    lons_w = np.tile(np.arange(9) * 45.0, nlat)  # 0,45,...,360
+    wrapped = LatLonGrid.from_latlon(lats_w, lons_w)
+
+    # unwrapped: nlon=8 columns, 0..315
+    lats_u, lons_u = _regular_ll(nlat=nlat, nlon=8)
+    unwrapped = LatLonGrid.from_latlon(lats_u, lons_u)
+
+    # canonicalization keeps both wrap points, sorted adjacently
+    c = wrapped.canonical()
+    assert c.size == 36
+    # first row: 0.0 (from 360.0) then 0.0 (from 0.0) then 45...
+    row0_lons = c.longitudes[:9]
+    assert row0_lons[0] == 0.0 and row0_lons[1] == 0.0
+
+    # different sizes -> not the same point set
+    assert not wrapped.same_points_as(unwrapped)
+
+    # same-size case: wrapped grid vs itself shifted — bijection still
+    # holds because both sides carry the duplicate
+    assert wrapped.same_points_as(LatLonGrid.from_latlon(lats_w[::-1], lons_w[::-1]))
+
+
 if __name__ == "__main__":
     from anemoi.utils.testing import run_tests
 

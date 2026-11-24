@@ -158,6 +158,86 @@ def test_latlon_grid_from_field_duck_typed() -> None:
     assert g.same_ordering_as(g2)
 
 
+def test_canonical_already_canonical() -> None:
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    g = LatLonGrid.from_latlon(*_regular_ll())  # helper already produces N->S, 0->360
+    assert g.is_canonical()
+    np.testing.assert_array_equal(g.canonical_permutation(), np.arange(g.size))
+
+
+def test_canonical_reversed_latitude() -> None:
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    lats, lons = _regular_ll()
+    g = LatLonGrid.from_latlon(lats[::-1], lons[::-1])
+    assert not g.is_canonical()
+    c = g.canonical()
+    assert c.is_canonical()
+    np.testing.assert_allclose(c.latitudes, lats)
+    np.testing.assert_allclose(c.longitudes, lons)
+
+
+def test_canonical_longitude_convention_normalized() -> None:
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    g = LatLonGrid.from_latlon(*_regular_ll(lon_360=False))  # -180..180 input
+    c = g.canonical()
+    assert np.all((c.longitudes >= 0) & (c.longitudes < 360))  # output in [0, 360)
+    assert c.is_canonical()
+
+
+def test_canonical_flip_and_shift() -> None:
+    """S->N ordering AND -180..180 convention together."""
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    lats, lons = _regular_ll(lon_360=False)
+    g = LatLonGrid.from_latlon(lats[::-1], lons[::-1])
+    c = g.canonical()
+    expected_lats, expected_lons = _regular_ll(lon_360=True)
+    np.testing.assert_allclose(c.latitudes, expected_lats)
+    np.testing.assert_allclose(c.longitudes, expected_lons)
+
+
+def test_canonical_reshape_regular_ll() -> None:
+    """Canonical order must be row-major (nlat, nlon) for regular_ll."""
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    nlat, nlon = 4, 8
+    lats, lons = _regular_ll(nlat=nlat, nlon=nlon)
+    # scramble, then canonicalize
+    rng = np.random.default_rng(0)
+    scramble = rng.permutation(lats.size)
+    g = LatLonGrid.from_latlon(lats[scramble], lons[scramble])
+    p = g.canonical_permutation()
+
+    data = np.arange(lats.size, dtype=float)[scramble]
+    grid2d = data[p].reshape(nlat, nlon)
+    lat2d = lats[scramble][p].reshape(nlat, nlon)
+    lon2d = np.mod(lons[scramble][p], 360).reshape(nlat, nlon)
+
+    # each row is one latitude, descending; each row's lons ascend
+    np.testing.assert_allclose(lat2d, np.linspace(90, -90, nlat)[:, None])
+    np.testing.assert_allclose(lon2d, np.arange(nlon) * 45.0)
+    # data value i sits at the i-th canonical point
+    np.testing.assert_array_equal(grid2d.ravel(), np.arange(nlat * nlon))
+
+
+def test_canonical_unstructured() -> None:
+    """Non-regular grid: canonical order still well-defined and consistent."""
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    rng = np.random.default_rng(1)
+    lats = rng.uniform(-90, 90, 100)
+    lons = rng.uniform(-180, 180, 100)
+    g1 = LatLonGrid.from_latlon(lats, lons)
+    # same points, different order and convention
+    perm = rng.permutation(100)
+    g2 = LatLonGrid.from_latlon(lats[perm], np.mod(lons[perm] + 180, 360))
+    c1, c2 = g1.canonical(), g2.canonical()
+    assert c1.same_ordering_as(c2)  # both converge to the same ordering
+
+
 if __name__ == "__main__":
     from anemoi.utils.testing import run_tests
 

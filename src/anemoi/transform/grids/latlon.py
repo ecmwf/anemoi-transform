@@ -31,6 +31,17 @@ LOG = logging.getLogger(__name__)
 # grid spacing but above float32/float64 round-trip noise.
 DEFAULT_MAX_DISTANCE = 1e-6
 
+# Canonical ordering: latitude descending (N->S), longitude ascending
+# in [0, 360), row-major — the ordering a regular_ll GRIB scan produces.
+CANONICAL_DECIMALS = 6  # rounding precision for sort keys
+
+
+def _canonical_key(latitudes, longitudes):
+    """Sort keys: round to fixed precision, normalize lon to [0, 360)."""
+    lat_key = np.round(np.asarray(latitudes, dtype=np.float64), CANONICAL_DECIMALS)
+    lon_key = np.round(np.mod(np.asarray(longitudes, dtype=np.float64), 360.0), CANONICAL_DECIMALS)
+    return lat_key, lon_key
+
 
 class GridMismatchError(ValueError):
     """Raised when two grids mismatch cannot be reconciled with auto-
@@ -326,6 +337,43 @@ class LatLonGrid:
         except GridMismatchError as e:
             return GridComparisonResult(GridComparison.DIFFERENT, error=e)
         return GridComparisonResult(GridComparison.REORDERABLE, permutation=permutation)
+
+    def canonical_permutation(self) -> NDArray[Any]:
+        """Indices ``p`` such that ``self.points[p]`` is in canonical order.
+
+        Canonical order is latitude descending (N->S), then longitude
+        ascending in [0, 360), row-major. For a ``regular_ll`` grid this
+        is exactly the ``(nlat, nlon)`` row-major scan order, so
+        ``data[p].reshape(nlat, nlon)`` is correct.
+
+        Applying ``p`` to data stored on this grid's ordering yields
+        data in canonical order: ``data_canonical = data[p]``.
+
+        Returns
+        -------
+        np.ndarray
+            Permutation indices of shape ``(self.size,)``.
+        """
+        lat_key, lon_key = _canonical_key(self.latitudes, self.longitudes)
+        # lexsort uses the LAST key as primary: primary = -lat (desc), secondary = lon (asc)
+        return np.lexsort((lon_key, -lat_key))
+
+    def canonical(self) -> "LatLonGrid":
+        """Return a new ``LatLonGrid`` with the same point set in canonical order.
+
+        Output longitudes are normalized to [0, 360) — not merely
+        reordered input values. Metadata is preserved.
+        """
+        p = self.canonical_permutation()
+        return LatLonGrid(
+            self.latitudes[p],
+            np.mod(self.longitudes[p], 360.0),
+            metadata=self.metadata,
+        )
+
+    def is_canonical(self) -> bool:
+        """True if this grid is already in canonical order."""
+        return bool(np.array_equal(self.canonical_permutation(), np.arange(self.size)))
 
 
 class GridComparisonResult:

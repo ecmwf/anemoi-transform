@@ -168,7 +168,7 @@ class LatLonGrid:
         return self.latitudes.size
 
     def latlon(self) -> tuple[NDArray[Any], NDArray[Any]]:
-        """Return ``(latitudes, longitudes)`` — satisfies the ``Grid`` protocol."""
+        """Return ``(latitudes, longitudes)``. Satisfies the ``Grid`` protocol."""
         return self.latitudes, self.longitudes
 
     def xyz(self) -> NDArray[Any]:
@@ -212,10 +212,12 @@ class LatLonGrid:
         -------
         bool
         """
+        # Note: metadata is deliberately not used to short-circuit this check.
+        # A matching uuidOfHGrid metadata means the same grid definition,
+        # but this method exists precisely to catch stored orderings that diverge
+        # from that definition.
         if self.size != other.size:
             return False
-        if self._uuid_matches(other):
-            return True
         return bool(np.allclose(self.xyz(), other.xyz(), rtol=rtol, atol=atol))
 
     def _match(self, other: "LatLonGrid", max_distance: float) -> tuple[NDArray[Any], NDArray[Any]]:
@@ -264,6 +266,7 @@ class LatLonGrid:
                 f"Grid size mismatch: {self.size} != {other.size}",
                 num_unmatched=abs(self.size - other.size),
             )
+        # uuidOfHGrid metadata is used here to short-circuit index-reordering.
         if self._uuid_matches(other) or self.same_ordering_as(other):
             return np.arange(self.size)
 

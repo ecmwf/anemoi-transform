@@ -303,8 +303,15 @@ class MIRMatrix:
             The interpolated field.
         """
         if self.check:
-            # TODO: Check that the field is on the same grid as the in_grid
-            pass
+            from anemoi.transform.grids.latlon import LatLonGrid
+
+            if self._in_latlon_grid is None:
+                self._in_latlon_grid = LatLonGrid.from_latlon(**self.in_grid)
+            field_grid = LatLonGrid.from_field(field)
+            if not field_grid.same_ordering_as(self._in_latlon_grid):
+                raise ValueError(
+                    f"Field is not on the expected input grid ({field_grid.size} points vs {self._in_latlon_grid.size})"
+                )
 
         data = field.to_numpy(flatten=True)
         data = self.matrix @ data

@@ -24,6 +24,8 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from anemoi.transform.grids import Grid
+
 LOG = logging.getLogger(__name__)
 
 # Default tolerance for point-set matching, in unit-sphere xyz distance.
@@ -72,7 +74,9 @@ class GridComparison(enum.Enum):
     DIFFERENT = "different"
 
 
-class LatLonGrid:
+# Should not be registered with @grid_registry.registe like other Grid subclasses
+# because LatLonGrid isn't constructible from config since it inits from latlon arrays.
+class LatLonGrid(Grid):
     """A grid identity defined by its lat/lon coordinates.
 
     Wraps materialized coordinate arrays and provides ordering-aware
@@ -168,7 +172,7 @@ class LatLonGrid:
         return self.latitudes.size
 
     def latlon(self) -> tuple[NDArray[Any], NDArray[Any]]:
-        """Return ``(latitudes, longitudes)``. Satisfies the ``Grid`` protocol."""
+        """Return ``(latitudes, longitudes)``. Implements the ``Grid`` protocol."""
         return self.latitudes, self.longitudes
 
     def xyz(self) -> NDArray[Any]:

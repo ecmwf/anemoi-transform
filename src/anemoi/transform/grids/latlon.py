@@ -340,7 +340,9 @@ class LatLonGrid(Grid):
         if self.same_ordering_as(other, rtol=rtol, atol=atol):
             return GridComparisonResult(GridComparison.IDENTICAL_ORDERING)
         try:
+            LOG.info("------------------Not same ordering. Attempting permutation")
             permutation = self.permutation_to(other, max_distance=max_distance)
+            LOG.info(f"{permutation=}")
         except GridMismatchError as e:
             return GridComparisonResult(GridComparison.DIFFERENT, error=e)
         return GridComparisonResult(GridComparison.REORDERABLE, permutation=permutation)
@@ -398,3 +400,15 @@ class GridComparisonResult:
 
     def __repr__(self) -> str:
         return f"GridComparisonResult({self.kind.value})"
+
+    @property
+    def is_identical(self) -> bool:
+        return self.kind is GridComparison.IDENTICAL_ORDERING
+
+    @property
+    def is_reorderable(self) -> bool:
+        return self.kind is GridComparison.REORDERABLE
+
+    @property
+    def is_different(self) -> bool:
+        return self.kind is GridComparison.DIFFERENT

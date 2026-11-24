@@ -55,7 +55,6 @@ def icon_grid(path: str, refinement_level_c: int | None = None) -> tuple[np.ndar
 
 @grid_registry.register("icon")
 class IconGrid(Grid):
-
     def __init__(self, path: str, refinement_level_c: int | None = None):
         self.path = path
         self.refinement_level_c = refinement_level_c

@@ -58,7 +58,7 @@ class MaskValuesCustom(Filter):
                 obs_df[col] = obs_df[col].mask(mask)
 
                 n_masked = mask.sum()
-                logging.info(f"Masked {n_masked} values in {col} ({n_masked/len(obs_df)*100:.2f}%)")
+                logging.info(f"Masked {n_masked} values in {col} ({n_masked / len(obs_df) * 100:.2f}%)")
 
             except Exception as e:
                 logging.error(f"Error evaluating custom mask condition for {col}: {e}")

@@ -25,7 +25,6 @@ DataContainer: TypeAlias = ekd.FieldList | pd.DataFrame
 
 
 class _TransformMetaClass(ABCMeta):
-
     # This metaclass adds a `reversed` property to all Transform subclasses.
     # And forwards the docstring of the original class to the reversed property.
     # This allows to document the reversed transform in the same way as the original one.

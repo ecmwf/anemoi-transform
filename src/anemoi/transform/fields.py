@@ -125,6 +125,10 @@ def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
     component keys (``parameter.variable``) are used as-is, and anything else is
     stored as an arbitrary user label under the ``labels`` namespace.
 
+    Units given as a string are also kept as the ``labels.units`` label:
+    earthkit-data parses ``parameter.units`` with pint, which does not keep the
+    spelling (``"Pa"`` reads back as ``"pascal"``).
+
     Parameters
     ----------
     template : ekd.Field
@@ -137,9 +141,10 @@ def new_field_with_metadata(template: ekd.Field, **metadata: Any) -> ekd.Field:
     ekd.Field
         The new field with the provided metadata.
     """
-    return template.set(
-        **{key_to_component(key): mars_value_to_component(key, value) for key, value in metadata.items()}
-    )
+    components = {key_to_component(key): mars_value_to_component(key, value) for key, value in metadata.items()}
+    if isinstance(components.get("parameter.units"), str):
+        components.setdefault("labels.units", components["parameter.units"])
+    return template.set(**components)
 
 
 def new_field_with_units(template: ekd.Field, units: str) -> ekd.Field:

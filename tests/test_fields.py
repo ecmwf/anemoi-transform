@@ -135,6 +135,14 @@ def test_field_mixed_metadata_keys(sample_field):
     assert new_field.labels == {"anemoi_origin": "mars"}
 
 
+@pytest.mark.parametrize("key", ["units", "parameter.units"])
+def test_field_units_keep_their_spelling(sample_field, key):
+    """Units given as a string are also kept, as given, in the ``labels.units`` label."""
+    new_field = new_field_with_metadata(sample_field, **{key: "Pa"})
+    assert str(new_field.get("parameter.units")) == "pascal"
+    assert new_field.get("labels.units") == "Pa"
+
+
 def test_fieldselection_match_all():
     """Test FieldSelection with no arguments matches all fields."""
     field = mock_field(**{"labels.invalid_key": "value"})

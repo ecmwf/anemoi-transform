@@ -16,6 +16,10 @@ from typing import Any
 import numpy as np
 from anemoi.utils.registry import Registry
 
+from anemoi.transform.grids.latlon import GridComparison
+from anemoi.transform.grids.latlon import GridComparisonResult
+from anemoi.transform.grids.latlon import GridMismatchError
+from anemoi.transform.grids.latlon import LatLonGrid
 from anemoi.transform.grids.unstructured import UnstructuredGridFieldList
 
 grid_registry = Registry(__name__)
@@ -56,4 +60,10 @@ def create_grid(context: Any, config: Any) -> Grid:
     return grid
 
 
-__all__ = ["UnstructuredGridFieldList"]
+__all__ = [
+    "UnstructuredGridFieldList",
+    "GridComparison",
+    "GridComparisonResult",
+    "GridMismatchError",
+    "LatLonGrid",
+]

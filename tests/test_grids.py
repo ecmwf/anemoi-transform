@@ -275,6 +275,42 @@ def test_canonical_duplicated_wrap_column() -> None:
     assert wrapped.same_points_as(LatLonGrid.from_latlon(lats_w[::-1], lons_w[::-1]))
 
 
+def test_from_field_raw_dict() -> None:
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    lats, lons = _regular_ll()
+    g = LatLonGrid.from_field({"latitudes": lats, "longitudes": lons})
+    np.testing.assert_allclose(g.latitudes, lats)
+    np.testing.assert_allclose(g.longitudes, lons)
+
+
+def test_from_field_dict_missing_keys() -> None:
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    with pytest.raises(TypeError, match="missing.*latitudes"):
+        LatLonGrid.from_field({"param": "2t", "values": np.zeros(4)})
+
+
+def test_from_field_unsupported_type() -> None:
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    with pytest.raises(TypeError, match="cannot extract coordinates"):
+        LatLonGrid.from_field(object())
+
+
+def test_from_field_wrapper_around_dict() -> None:
+    """NewValidDateTimeField wrapping a dict: unwrap _field, read keys."""
+    import datetime
+
+    from anemoi.transform.fields import new_field_with_valid_datetime
+    from anemoi.transform.grids.latlon import LatLonGrid
+
+    lats, lons = _regular_ll()
+    wrapped = new_field_with_valid_datetime({"latitudes": lats, "longitudes": lons}, datetime.datetime(2024, 1, 1))
+    g = LatLonGrid.from_field(wrapped)
+    np.testing.assert_allclose(g.latitudes, lats)
+
+
 if __name__ == "__main__":
     from anemoi.utils.testing import run_tests
 

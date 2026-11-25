@@ -27,15 +27,15 @@ class NightMask(SingleFieldFilter):
 
     A field valued at time ``t`` that is accumulated over ``(t - accumulation_period, t]`` (for example
     ``ssr``, ``ssrd`` or ``fdir`` accumulated over one hour) can only be non-zero if the sun was up at some point
-    in that window. The filter therefore sets the field to zero where the mask variable is ``<= 0`` both at
-    ``t`` and at ``t - accumulation_period``. Testing the instantaneous value at ``t`` alone would wrongly zero
-    the hour that follows sunset.
+    in that window. The filter therefore sets the field to zero where the insolation (the cosine of the solar
+    zenith angle, zero at night) is ``<= 0`` both at ``t`` and at ``t - accumulation_period``. Testing ``t`` alone
+    would wrongly zero the hour that follows sunset.
 
-    The mask variable is computed from the field's grid and valid date, with the same code that provides the
-    computed forcings of anemoi datasets and models, so no extra input is needed.
+    The insolation is computed from the field's grid and valid date, with the same code that provides the
+    ``insolation`` forcing of anemoi datasets and models.
 
-    The mask is only evaluated at the two ends of the window. It misses a sun that is above the horizon only
-    in the middle of the window, which can happen only at the edge of polar day and night.
+    The window is only tested at its two ends, so a sun above the horizon only in the middle of the window is
+    missed. This can only happen at the edge of polar day and night.
 
     This filter is not invertible: ``backward`` returns the fields unchanged.
 
@@ -45,8 +45,6 @@ class NightMask(SingleFieldFilter):
         ``param`` of the accumulated fields to mask. Other fields are passed through unchanged.
     accumulation_period : str or int or datetime.timedelta
         Period over which the fields are accumulated, e.g. ``1h``. A number is read as hours.
-    mask_variable : str, optional
-        Computed forcing whose zeros (or negative values) mark night, by default ``insolation``.
 
     Examples
     --------
@@ -61,7 +59,6 @@ class NightMask(SingleFieldFilter):
     """
 
     required_inputs = ("variables", "accumulation_period")
-    optional_inputs = {"mask_variable": "insolation"}
 
     def prepare_filter(self) -> None:
         variables = self.variables
@@ -79,15 +76,14 @@ class NightMask(SingleFieldFilter):
         return {"param": self._variables}
 
     def _is_dark(self, lat: np.ndarray, lon: np.ndarray, date: datetime.datetime) -> np.ndarray:
-        """Return where the mask variable is not positive at ``date``, caching the latest dates."""
+        """Return where the insolation is not positive at ``date``, caching the latest dates."""
         key = (date, lat.size, float(lat[0]), float(lon[0]), float(lat[-1]), float(lon[-1]))
         if key not in self._cache:
             if len(self._cache) >= _CACHE_SIZE:  # dates mostly advance in time: drop the oldest
                 self._cache.pop(next(iter(self._cache)))
-            forcing = ekd.from_source(
-                "forcings", latitudes=lat, longitudes=lon, date=[date], param=[self.mask_variable]
-            )[0]
-            self._cache[key] = forcing.to_numpy(dtype=np.float32, flatten=True) <= 0
+            request = dict(latitudes=lat, longitudes=lon, date=[date], param=["insolation"])
+            insolation = ekd.from_source("forcings", **request)[0]
+            self._cache[key] = insolation.to_numpy(dtype=np.float32, flatten=True) <= 0
         return self._cache[key]
 
     def forward_transform(self, field: ekd.Field) -> ekd.Field:
@@ -104,7 +100,4 @@ class NightMask(SingleFieldFilter):
         return field
 
     def __repr__(self) -> str:
-        return (
-            f"NightMask(variables={self._variables}, mask_variable={self.mask_variable}, "
-            f"accumulation_period={self._period})"
-        )
+        return f"NightMask(variables={self._variables}, accumulation_period={self._period})"

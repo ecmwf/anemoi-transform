@@ -137,23 +137,61 @@ class LatLonGrid(Grid):
 
     @classmethod
     def from_field(cls, field: Any) -> "LatLonGrid":
-        """Build a grid from an earthkit Field via ``field.grid_points()``.
+        """Build a grid from a field-like object.
 
-        Duck-typed: any object exposing ``grid_points()`` works; no
-        earthkit import is required by this module. ``uuidOfHGrid`` and
-        ``gridType`` are carried into ``.metadata`` when the field
-        exposes them via ``metadata()``.
+        Accepted inputs, tried in order:
+
+        - Objects exposing ``grid_points()``: earthkit ``Field``'s and
+          anemoi-transform wrappers (``WrappedField`` delegates via
+          ``__getattr__``).
+        - Dicts (or dict-like objects) carrying ``latitudes`` /
+          ``longitudes`` keys, e.g. what ``ekd.from_source(
+          "list-of-dicts", ...)`` yields on iteration.
+        - ``WrappedField`` chains: ``_field`` is followed until one of
+          the above matches.
 
         Parameters
         ----------
         field : Any
-            A field object exposing ``grid_points()``.
+            The field-like object to extract coordinates from.
 
         Returns
         -------
         LatLonGrid
+
+        Raises
+        ------
+        TypeError
+            If no coordinates can be extracted — the message names the
+            offending type rather than leaking an ``AttributeError``
+            or ``KeyError`` from internals.
         """
-        latitudes, longitudes = field.grid_points()
+        seen = field
+        latitudes = longitudes = None
+        for _ in range(32):  # bound against _field cycles
+            if hasattr(seen, "grid_points"):
+                latitudes, longitudes = seen.grid_points()
+                break
+            if isinstance(seen, dict):
+                if "latitudes" in seen and "longitudes" in seen:
+                    latitudes = np.asarray(seen["latitudes"])
+                    longitudes = np.asarray(seen["longitudes"])
+                    break
+                raise TypeError(
+                    f"LatLonGrid.from_field: dict field is missing 'latitudes'/'longitudes' keys (has: {sorted(seen)})"
+                )
+            inner = getattr(seen, "_field", None)
+            if inner is None or inner is seen:
+                break
+            seen = inner
+
+        if latitudes is None:
+            raise TypeError(
+                f"LatLonGrid.from_field: cannot extract coordinates from "
+                f"{type(field).__name__}: no grid_points(), no "
+                f"latitudes/longitudes dict, no _field to unwrap"
+            )
+
         metadata: dict[str, Any] = {}
         meta = getattr(field, "metadata", None)
         if callable(meta):
@@ -340,9 +378,7 @@ class LatLonGrid(Grid):
         if self.same_ordering_as(other, rtol=rtol, atol=atol):
             return GridComparisonResult(GridComparison.IDENTICAL_ORDERING)
         try:
-            LOG.info("------------------Not same ordering. Attempting permutation")
             permutation = self.permutation_to(other, max_distance=max_distance)
-            LOG.info(f"{permutation=}")
         except GridMismatchError as e:
             return GridComparisonResult(GridComparison.DIFFERENT, error=e)
         return GridComparisonResult(GridComparison.REORDERABLE, permutation=permutation)

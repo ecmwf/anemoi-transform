@@ -236,7 +236,7 @@ def test_canonical_unstructured() -> None:
     g1 = LatLonGrid.from_latlon(lats, lons)
     # same points, different order and convention
     perm = rng.permutation(100)
-    g2 = LatLonGrid.from_latlon(lats[perm], np.mod(lons[perm] + 180, 360))
+    g2 = LatLonGrid.from_latlon(lats[perm], np.mod(lons[perm], 360))
     c1, c2 = g1.canonical(), g2.canonical()
     assert c1.same_ordering_as(c2)  # both converge to the same ordering
 

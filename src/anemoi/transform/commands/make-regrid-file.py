@@ -29,6 +29,14 @@ def _xr_ds_lat_lon(path: str, lat_name: str, lon_name: str) -> tuple[np.ndarray,
     return lat, lon
 
 
+def _anemoi_zarr_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
+    """Read the ``latitudes`` and ``longitudes`` arrays of an anemoi dataset, in any zarr format."""
+    import zarr
+
+    group = zarr.open_group(path, mode="r")
+    return group["latitudes"][:].flatten(), group["longitudes"][:].flatten()
+
+
 def _ds_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
     import earthkit.data as ekd
 
@@ -49,10 +57,10 @@ def _path_to_lat_lon(path: str) -> tuple[np.ndarray, np.ndarray]:
         data = np.load(path)
         return data["latitudes"], data["longitudes"]
     if path.endswith(".zarr"):
-        # assume anemoi-dataset first - load with xarray
+        # assume anemoi-dataset first - read the arrays with zarr (xarray cannot open anemoi stores in format 3)
         try:
-            return _xr_ds_lat_lon(path, "latitudes", "longitudes")
-        except KeyError:
+            return _anemoi_zarr_lat_lon(path)
+        except (KeyError, ValueError, FileNotFoundError, ImportError):
             pass
 
     # fallback to earthkit-data

@@ -9,6 +9,13 @@ Please add your functional changes to the appropriate section in the PR.
 Keep it human-readable, your future self will thank you!
 
 
+## [0.5.2](https://github.com/ecmwf/anemoi-transform/compare/0.5.1...0.5.2) (2026-11-26)
+
+
+### Features
+
+* **filters:** Add night_mask field filter ([#384](https://github.com/ecmwf/anemoi-transform/issues/384)) ([91046f7](https://github.com/ecmwf/anemoi-transform/commit/91046f7a618a69221a8d99e26eb7053abed6d7f5))
+
 ## [0.5.1](https://github.com/ecmwf/anemoi-transform/compare/0.5.0...0.5.1) (2026-10-15)
 
 

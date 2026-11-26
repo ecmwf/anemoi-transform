@@ -14,8 +14,7 @@ from earthkit.geo.rotate import rotate_vector
 from pyproj import CRS
 
 from anemoi.transform.filters.fields import filter_registry
-from anemoi.transform.filters.fields.matching import MatchingFieldsFilter
-from anemoi.transform.filters.fields.matching import MatchingSpec
+from anemoi.transform.filters.fields.matching import MatchingFieldsFilter, MatchingSpec
 
 
 class RotateWinds(MatchingFieldsFilter):

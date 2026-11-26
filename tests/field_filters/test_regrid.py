@@ -16,9 +16,7 @@
 # nor does it submit to any jurisdiction.
 
 import pytest
-from anemoi.utils.testing import cli_testing
-from anemoi.utils.testing import skip_if_missing_command
-from anemoi.utils.testing import skip_if_offline
+from anemoi.utils.testing import cli_testing, skip_if_missing_command, skip_if_offline
 
 from anemoi.transform.filters import create_filter_by_name as create_filter
 

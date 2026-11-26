@@ -68,7 +68,7 @@ def _regular_ll(nlat: int = 4, nlon: int = 8, lon_360: bool = True):
 
 
 def test_latlon_grid_identical_ordering() -> None:
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     g = LatLonGrid.from_latlon(*_regular_ll())
     assert g.same_ordering_as(LatLonGrid.from_latlon(*_regular_ll()))
@@ -76,8 +76,8 @@ def test_latlon_grid_identical_ordering() -> None:
 
 
 def test_latlon_grid_reversed_latitude() -> None:
-    from anemoi.transform.grids.latlon import GridComparison
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import GridComparison
+    from anemoi.transform.grids import LatLonGrid
 
     lats, lons = _regular_ll()
     g1 = LatLonGrid.from_latlon(lats, lons)
@@ -91,7 +91,7 @@ def test_latlon_grid_reversed_latitude() -> None:
 
 
 def test_latlon_grid_longitude_convention() -> None:
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     g360 = LatLonGrid.from_latlon(*_regular_ll(lon_360=True))
     g180 = LatLonGrid.from_latlon(*_regular_ll(lon_360=False))
@@ -101,7 +101,7 @@ def test_latlon_grid_longitude_convention() -> None:
 
 def test_latlon_grid_permutation_data_outcome() -> None:
     """Reordering data must land values on the right coordinates."""
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     lats, lons = _regular_ll()
     g1 = LatLonGrid.from_latlon(lats, lons)
@@ -115,9 +115,9 @@ def test_latlon_grid_permutation_data_outcome() -> None:
 
 
 def test_latlon_grid_different_resolution() -> None:
-    from anemoi.transform.grids.latlon import GridComparison
-    from anemoi.transform.grids.latlon import GridMismatchError
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import GridComparison
+    from anemoi.transform.grids import GridMismatchError
+    from anemoi.transform.grids import LatLonGrid
 
     g1 = LatLonGrid.from_latlon(*_regular_ll(nlat=4, nlon=8))
     g2 = LatLonGrid.from_latlon(*_regular_ll(nlat=8, nlon=16))
@@ -129,8 +129,8 @@ def test_latlon_grid_different_resolution() -> None:
 
 def test_latlon_grid_non_bijective() -> None:
     """Same size, shifted grid: nearest mapping is not a bijection."""
-    from anemoi.transform.grids.latlon import GridMismatchError
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import GridMismatchError
+    from anemoi.transform.grids import LatLonGrid
 
     lats, lons = _regular_ll()
     g1 = LatLonGrid.from_latlon(lats, lons)
@@ -142,7 +142,7 @@ def test_latlon_grid_non_bijective() -> None:
 
 
 def test_latlon_grid_from_field_duck_typed() -> None:
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     class FakeField:
         def grid_points(self):
@@ -159,7 +159,7 @@ def test_latlon_grid_from_field_duck_typed() -> None:
 
 
 def test_canonical_already_canonical() -> None:
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     g = LatLonGrid.from_latlon(*_regular_ll())  # helper already produces N->S, 0->360
     assert g.is_canonical()
@@ -167,7 +167,7 @@ def test_canonical_already_canonical() -> None:
 
 
 def test_canonical_reversed_latitude() -> None:
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     lats, lons = _regular_ll()
     g = LatLonGrid.from_latlon(lats[::-1], lons[::-1])
@@ -179,7 +179,7 @@ def test_canonical_reversed_latitude() -> None:
 
 
 def test_canonical_longitude_convention_normalized() -> None:
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     g = LatLonGrid.from_latlon(*_regular_ll(lon_360=False))  # -180..180 input
     c = g.canonical()
@@ -189,7 +189,7 @@ def test_canonical_longitude_convention_normalized() -> None:
 
 def test_canonical_flip_and_shift() -> None:
     """S->N ordering AND -180..180 convention together."""
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     lats, lons = _regular_ll(lon_360=False)
     g = LatLonGrid.from_latlon(lats[::-1], lons[::-1])
@@ -201,7 +201,7 @@ def test_canonical_flip_and_shift() -> None:
 
 def test_canonical_reshape_regular_ll() -> None:
     """Canonical order must be row-major (nlat, nlon) for regular_ll."""
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     nlat, nlon = 4, 8
     lats, lons = _regular_ll(nlat=nlat, nlon=nlon)
@@ -216,16 +216,19 @@ def test_canonical_reshape_regular_ll() -> None:
     lat2d = lats[scramble][p].reshape(nlat, nlon)
     lon2d = np.mod(lons[scramble][p], 360).reshape(nlat, nlon)
 
+    expected_lats = np.broadcast_to(np.linspace(90, -90, nlat)[:, None], (nlat, nlon))
+    expected_lons = np.broadcast_to(np.arange(nlon) * 45.0, (nlat, nlon))
+
     # each row is one latitude, descending; each row's lons ascend
-    np.testing.assert_allclose(lat2d, np.linspace(90, -90, nlat)[:, None])
-    np.testing.assert_allclose(lon2d, np.arange(nlon) * 45.0)
+    np.testing.assert_allclose(lat2d, expected_lats)
+    np.testing.assert_allclose(lon2d, expected_lons)
     # data value i sits at the i-th canonical point
     np.testing.assert_array_equal(grid2d.ravel(), np.arange(nlat * nlon))
 
 
 def test_canonical_unstructured() -> None:
     """Non-regular grid: canonical order still well-defined and consistent."""
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     rng = np.random.default_rng(1)
     lats = rng.uniform(-90, 90, 100)
@@ -248,7 +251,7 @@ def test_canonical_duplicated_wrap_column() -> None:
     points would map to one). This is intentional — the point sets
     genuinely differ in cardinality of distinct locations.
     """
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     nlat = 4
     # wrapped: nlon=9 columns, 0..360 inclusive (0 and 360 duplicated)
@@ -276,7 +279,7 @@ def test_canonical_duplicated_wrap_column() -> None:
 
 
 def test_from_field_raw_dict() -> None:
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     lats, lons = _regular_ll()
     g = LatLonGrid.from_field({"latitudes": lats, "longitudes": lons})
@@ -285,14 +288,14 @@ def test_from_field_raw_dict() -> None:
 
 
 def test_from_field_dict_missing_keys() -> None:
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     with pytest.raises(TypeError, match="missing.*latitudes"):
         LatLonGrid.from_field({"param": "2t", "values": np.zeros(4)})
 
 
 def test_from_field_unsupported_type() -> None:
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     with pytest.raises(TypeError, match="cannot extract coordinates"):
         LatLonGrid.from_field(object())
@@ -303,7 +306,7 @@ def test_from_field_wrapper_around_dict() -> None:
     import datetime
 
     from anemoi.transform.fields import new_field_with_valid_datetime
-    from anemoi.transform.grids.latlon import LatLonGrid
+    from anemoi.transform.grids import LatLonGrid
 
     lats, lons = _regular_ll()
     wrapped = new_field_with_valid_datetime({"latitudes": lats, "longitudes": lons}, datetime.datetime(2024, 1, 1))

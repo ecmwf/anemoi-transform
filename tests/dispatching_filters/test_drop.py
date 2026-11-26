@@ -17,9 +17,9 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 from ..utils import collect_fields_by_param
 
 INPUT_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20.0, 30.0, 40.0],
-    "valid_datetime": "2018-08-01T12:00:00Z",
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20.0],
+    "time.valid_datetime": "2018-08-01T12:00:00Z",
 }
 
 MOCK_VALUES = np.array([1.0, 2.0, 3.0])
@@ -28,17 +28,17 @@ MOCK_VALUES = np.array([1.0, 2.0, 3.0])
 @pytest.fixture
 def source(test_source):
     FIELD_SPECS = [
-        {"param": "t", "levelist": 500, "values": MOCK_VALUES.copy(), **INPUT_METADATA},
+        {"parameter.variable": "t", "vertical.level": 500, "data.values": MOCK_VALUES.copy(), **INPUT_METADATA},
         {
-            "param": "t",
-            "levelist": 850,
-            "values": MOCK_VALUES.copy() * 2,
+            "parameter.variable": "t",
+            "vertical.level": 850,
+            "data.values": MOCK_VALUES.copy() * 2,
             **INPUT_METADATA,
         },
         {
-            "param": "z",
-            "levelist": 500,
-            "values": MOCK_VALUES.copy() * 3,
+            "parameter.variable": "z",
+            "vertical.level": 500,
+            "data.values": MOCK_VALUES.copy() * 3,
             **INPUT_METADATA,
         },
     ]

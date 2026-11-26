@@ -19,7 +19,7 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 def calc_stats(fieldlist):
     stats = {}
     for param in ("2t", "sp"):
-        fields = fieldlist.sel(param=param)
+        fields = fieldlist.sel(**{"parameter.variable": param})
         assert len(fields) == 1
         data = fields[0].to_numpy()
         stats[param] = {"min": np.min(data), "max": np.max(data)}
@@ -33,11 +33,13 @@ def test_clipper_minimum(fieldlist: ekd.FieldList) -> None:
     clipped = clipper(fieldlist)
     after_stats = calc_stats(clipped)
 
-    data = fieldlist.sel(param="2t").to_numpy()
+    data = fieldlist.sel(**{"parameter.variable": "2t"}).to_numpy()
     ref = np.clip(data, 300.0, None)
 
-    npt.assert_allclose(clipped.sel(param="2t").to_numpy(), ref)
-    npt.assert_allclose(clipped.sel(param="sp").to_numpy(), fieldlist.sel(param="sp").to_numpy())
+    npt.assert_allclose(clipped.sel(**{"parameter.variable": "2t"}).to_numpy(), ref)
+    npt.assert_allclose(
+        clipped.sel(**{"parameter.variable": "sp"}).to_numpy(), fieldlist.sel(**{"parameter.variable": "sp"}).to_numpy()
+    )
 
     assert after_stats["sp"]["min"] == before_stats["sp"]["min"]
     assert after_stats["sp"]["max"] == before_stats["sp"]["max"]
@@ -53,11 +55,13 @@ def test_clipper_maximum(fieldlist: ekd.FieldList) -> None:
     clipped = clipper(fieldlist)
     after_stats = calc_stats(clipped)
 
-    data = fieldlist.sel(param="2t").to_numpy()
+    data = fieldlist.sel(**{"parameter.variable": "2t"}).to_numpy()
     ref = np.clip(data, None, 300.0)
 
-    npt.assert_allclose(clipped.sel(param="2t").to_numpy(), ref)
-    npt.assert_allclose(clipped.sel(param="sp").to_numpy(), fieldlist.sel(param="sp").to_numpy())
+    npt.assert_allclose(clipped.sel(**{"parameter.variable": "2t"}).to_numpy(), ref)
+    npt.assert_allclose(
+        clipped.sel(**{"parameter.variable": "sp"}).to_numpy(), fieldlist.sel(**{"parameter.variable": "sp"}).to_numpy()
+    )
 
     assert after_stats["sp"]["min"] == before_stats["sp"]["min"]
     assert after_stats["sp"]["max"] == before_stats["sp"]["max"]
@@ -73,11 +77,13 @@ def test_clipper_both(fieldlist: ekd.FieldList) -> None:
     clipped = clipper(fieldlist)
     after_stats = calc_stats(clipped)
 
-    data = fieldlist.sel(param="2t").to_numpy()
+    data = fieldlist.sel(**{"parameter.variable": "2t"}).to_numpy()
     ref = np.clip(data, 300.0, 305.0)
 
-    npt.assert_allclose(clipped.sel(param="2t").to_numpy(), ref)
-    npt.assert_allclose(clipped.sel(param="sp").to_numpy(), fieldlist.sel(param="sp").to_numpy())
+    npt.assert_allclose(clipped.sel(**{"parameter.variable": "2t"}).to_numpy(), ref)
+    npt.assert_allclose(
+        clipped.sel(**{"parameter.variable": "sp"}).to_numpy(), fieldlist.sel(**{"parameter.variable": "sp"}).to_numpy()
+    )
 
     assert after_stats["sp"]["min"] == before_stats["sp"]["min"]
     assert after_stats["sp"]["max"] == before_stats["sp"]["max"]

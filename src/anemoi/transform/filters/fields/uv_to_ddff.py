@@ -31,7 +31,7 @@ class WindComponents(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("u_component", "v_component"),
         backward=("wind_speed", "wind_direction"),
     )

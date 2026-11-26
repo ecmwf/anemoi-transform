@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
+import logging
 from collections import defaultdict
 from typing import Any
 
@@ -18,6 +19,45 @@ from anemoi.transform.fields import MISSING_METADATA
 from anemoi.transform.fields import Flavour
 from anemoi.transform.fields import new_fieldlist_from_list
 from anemoi.transform.fields import new_flavoured_field
+from anemoi.transform.metadata import get_metadata
+
+LOG = logging.getLogger(__name__)
+
+
+class _FieldMetadataMapping:
+    """A Mapping-like wrapper around a field, for use with Rule.match().
+
+    Rule.match() expects a Mapping, using ``key in obj`` and ``obj[key]``.
+    earthkit-data fields support neither, and earthkit-data 1.0 removed the
+    no-argument ``field.metadata()`` call that used to return a dict-like object,
+    so the field has to be adapted.
+
+    Keys are resolved with :func:`anemoi.transform.metadata.get_metadata`, so
+    flavour rules can be written against raw metadata keys (e.g. GRIB keys such as
+    ``paramId``) as well as MARS-style keys (e.g. ``param``, ``levtype``).
+    """
+
+    _MISSING = object()
+
+    def __init__(self, field: ekd.Field, unresolved: set[str]) -> None:
+        self._field = field
+        self._unresolved = unresolved
+
+    def __contains__(self, key: str) -> bool:
+        if get_metadata(self._field, key, default=self._MISSING) is not self._MISSING:
+            return True
+        if key not in self._unresolved:
+            self._unresolved.add(key)
+            LOG.warning(
+                "Flavour rule key '%s' cannot be resolved on field %s, rules using it will not match. "
+                "Raw GRIB keys are lost once a field is modified, prefer keys such as 'param' or 'levtype'.",
+                key,
+                self._field,
+            )
+        return False
+
+    def __getitem__(self, key: str) -> Any:
+        return get_metadata(self._field, key)
 
 
 class RuleBasedFlavour(Flavour):
@@ -43,6 +83,8 @@ class RuleBasedFlavour(Flavour):
         self.rules = {}
         for key, value in per_target.items():
             self.rules[key] = RuleSet.from_any(value)
+
+        self._unresolved_keys: set[str] = set()
 
     def apply(self, field: ekd.Field) -> ekd.Field:
         """Apply the flavour to a single field.
@@ -74,6 +116,16 @@ class RuleBasedFlavour(Flavour):
         """
         return new_fieldlist_from_list([self.apply(field) for field in fieldlist])
 
+    def keys(self) -> Any:
+        """The metadata keys this flavour may override.
+
+        Returns
+        -------
+        Any
+            The keys targeted by the flavour rules.
+        """
+        return self.rules.keys()
+
     def __call__(self, key: str, field: ekd.Field) -> Any:
         """Called when the field metadata is queried.
 
@@ -93,7 +145,7 @@ class RuleBasedFlavour(Flavour):
             return MISSING_METADATA
 
         for rule in self.rules[key]:
-            if rule.match(field.metadata()):
+            if rule.match(_FieldMetadataMapping(field, self._unresolved_keys)):
                 return rule.result
 
         return MISSING_METADATA

@@ -15,6 +15,8 @@ from typing import Union
 
 from anemoi.utils.dates import as_timedelta
 
+from anemoi.transform.metadata import LEVEL_TYPE_TO_LEVTYPE
+from anemoi.transform.metadata import mars_to_component
 from anemoi.transform.units import Units
 from anemoi.transform.variables import Variable
 
@@ -168,6 +170,108 @@ class VariableFromDict(VariableFromMarsVocabulary):
             The data defining the variable.
         """
         super().__init__(name, data)
+
+
+class VariableFromEarthkit(VariableFromMarsVocabulary):
+    """A variable that is defined by an EarthKit field."""
+
+    # The subset of MARS keys that belong in the MARS vocabulary namespace.
+    # Note "units" is deliberately excluded: it is handled separately below and
+    # stored outside the "mars" dict.
+    _MARS_KEYS = ("param", "levtype", "levelist", "step", "number")
+    _MARS_KEY_MAPPING = {key: mars_to_component(key) for key in _MARS_KEYS}
+
+    # Mapping from earthkit-data level type names to MARS-style abbreviations.
+    _LEVEL_TYPE_MAPPING = LEVEL_TYPE_TO_LEVTYPE
+
+    # Mapping from earthkit-data time methods to the anemoi time processing names.
+    _TIME_METHOD_MAPPING = {
+        "accum": "accumulation",
+        "avg": "average",
+        "max": "maximum",
+    }
+
+    def __init__(self, name: str, field: Any) -> None:
+        """Initialize the variable with a name and field.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        field : Any
+            The EarthKit field defining the variable.
+        """
+        # Build a MARS-like metadata dict from the field's component API
+        mars_data = {}
+        for mars_key, component_key in self._MARS_KEY_MAPPING.items():
+            try:
+                mars_data[mars_key] = field.get(component_key)
+            except (KeyError, TypeError):
+                pass
+        mars_data["param"] = name
+
+        data = {"mars": mars_data}
+
+        # Convert earthkit level type to MARS-style abbreviation
+        if "levtype" in mars_data:
+            levtype = mars_data["levtype"]
+            if levtype in self._LEVEL_TYPE_MAPPING:
+                mars_data["levtype"] = self._LEVEL_TYPE_MAPPING[levtype]
+            else:
+                # Remove unknown/unmapped level types so they are treated as None
+                del mars_data["levtype"]
+
+        # Get units from the field if available
+        try:
+            units = field.get("parameter.units")
+            if units is not None:
+                data["units"] = str(units)
+        except (KeyError, TypeError):
+            pass
+
+        # Try to extract time processing info from the field. earthkit-data reports
+        # unknown GRIB step types as "instant", so "instant" is not trusted either.
+        try:
+            time_method = field.get("proc.time_method")
+            if time_method in self._TIME_METHOD_MAPPING:
+                data["process"] = self._TIME_METHOD_MAPPING[time_method]
+        except (KeyError, TypeError):
+            pass
+
+        super().__init__(name, data)
+        self.field = field
+        # Track whether we actually got process info from the field
+        self._has_process_info = "process" in data
+
+    @property
+    def is_instantanous(self) -> bool:
+        """Check if the variable is instantaneous.
+
+        Returns None if this information is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().is_instantanous
+
+    @property
+    def is_accumulation(self) -> bool:
+        """Check if the variable is an accumulation.
+
+        Returns None if this information is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().is_accumulation
+
+    @property
+    def period(self):
+        """Get the variable's period.
+
+        Returns None if time processing info is not available from the field.
+        """
+        if not self._has_process_info:
+            return None
+        return super().period
 
 
 class PostProcessedVariable(VariableFromMarsVocabulary):

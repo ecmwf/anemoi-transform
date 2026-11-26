@@ -23,6 +23,22 @@ LOG = logging.getLogger(__name__)
 LOG_ONCE = OnceLogger(LOG)
 
 
+def _same_units(units1: Any, units2: Any) -> bool:
+    """Whether two units are the same unit, however they are spelled (``K`` and ``kelvin``, ``kg m-2`` and
+    ``kilogram / meter ** 2``). Different units are never the same, even if one converts to the other.
+    """
+    if units1 == units2:
+        return True
+    if units1 is None or units2 is None:
+        return False
+    try:
+        from earthkit.utils.units import Units
+
+        return Units.from_any(str(units1)) == Units.from_any(str(units2))
+    except Exception:
+        return False
+
+
 class Variable(ABC):
     """Variable is a class that represents a variable during
     training and inference.
@@ -72,7 +88,7 @@ class Variable(ABC):
         Any
             The created Variable instance.
         """
-        from anemoi.transform.variables.from_ekd import VariableFromEarthkit
+        from anemoi.transform.variables.from_dict import VariableFromEarthkit
 
         return VariableFromEarthkit(name, field)
 
@@ -286,7 +302,7 @@ class Variable(ABC):
         def _compare():
 
             if check_units:
-                if self.units != other.units:
+                if not _same_units(self.units, other.units):
                     if self.units is None or other.units is None:
                         LOG_ONCE.warning(
                             f"{self}: one of the variables has missing units: {self.units} vs {other.units}. Assuming they are compatible."

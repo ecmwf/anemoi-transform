@@ -15,8 +15,8 @@ from anemoi.transform.filters import create_filter_by_name as create_filter
 from ..utils import collect_fields_by_param
 
 MOCK_FIELD_METADATA = {
-    "latitudes": [10.0, 0.0, -10.0],
-    "longitudes": [20, 40.0],
+    "geography.distinct_latitudes": [10.0, 0.0, -10.0],
+    "geography.distinct_longitudes": [20, 40.0],
 }
 
 SENTINEL = -999.0
@@ -25,21 +25,21 @@ SENTINEL = -999.0
 # unrelated parameter that must pass through untouched.
 FIELD_SPECS = [
     {
-        "param": "cin",
-        "valid_datetime": "2018-08-01T09:00:00Z",
-        "values": np.array([[SENTINEL, SENTINEL], [12.0, 30.0], [SENTINEL, 4.0]]),
+        "parameter.variable": "cin",
+        "time.valid_datetime": "2018-08-01T09:00:00Z",
+        "data.values": np.array([[SENTINEL, SENTINEL], [12.0, 30.0], [SENTINEL, 4.0]]),
         **MOCK_FIELD_METADATA,
     },
     {
-        "param": "cin",
-        "valid_datetime": "2018-08-01T10:00:00Z",
-        "values": np.array([[SENTINEL, 45.0], [SENTINEL, 30.0], [1.0, 4.0]]),
+        "parameter.variable": "cin",
+        "time.valid_datetime": "2018-08-01T10:00:00Z",
+        "data.values": np.array([[SENTINEL, 45.0], [SENTINEL, 30.0], [1.0, 4.0]]),
         **MOCK_FIELD_METADATA,
     },
     {
-        "param": "t",
-        "valid_datetime": "2018-08-01T09:00:00Z",
-        "values": np.array([[SENTINEL, 2.0], [3.0, 4.0], [5.0, 6.0]]),
+        "parameter.variable": "t",
+        "time.valid_datetime": "2018-08-01T09:00:00Z",
+        "data.values": np.array([[SENTINEL, 2.0], [3.0, 4.0], [5.0, 6.0]]),
         **MOCK_FIELD_METADATA,
     },
 ]
@@ -47,7 +47,7 @@ FIELD_SPECS = [
 
 @pytest.fixture()
 def source(test_source):
-    return test_source([{**spec, "values": spec["values"].copy()} for spec in FIELD_SPECS])
+    return test_source([{**spec, "data.values": spec["data.values"].copy()} for spec in FIELD_SPECS])
 
 
 def test_self_mask_is_computed_per_field(source):

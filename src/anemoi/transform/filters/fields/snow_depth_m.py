@@ -67,7 +67,7 @@ class SnowDepthM(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("snow_depth", "snow_density"),
     )
 

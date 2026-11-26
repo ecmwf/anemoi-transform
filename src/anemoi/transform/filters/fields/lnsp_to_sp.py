@@ -14,6 +14,7 @@ import numpy as np
 
 from anemoi.transform.filter import SingleFieldFilter
 from anemoi.transform.filters.fields import filter_registry
+from anemoi.transform.metadata import mars_value_to_component
 
 
 class LnspToSp(SingleFieldFilter):
@@ -23,11 +24,11 @@ class LnspToSp(SingleFieldFilter):
 
     def forward_select(self):
         # select only fields where the param is self.log_of_surface_pressure
-        return {"param": self.log_of_surface_pressure}
+        return {"parameter.variable": self.log_of_surface_pressure}
 
     def backward_select(self):
         # select only fields where the param is self.surface_pressure
-        return {"param": self.surface_pressure}
+        return {"parameter.variable": self.surface_pressure}
 
     def forward_transform(self, log_of_surface_pressure: ekd.Field) -> ekd.Field:
         """Convert ln(sp) to sp.
@@ -42,17 +43,12 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The surface pressure.
         """
-        new_metadata = {
-            "param": self.surface_pressure,
-            "levelist": None,
-            "level": None,
-            "levtype": "sfc",
-            "units": "Pa",
-        }
-
-        return self.new_field_from_numpy(
+        new_metadata = {"param": self.surface_pressure, "units": "Pa"}
+        field = self.new_field_from_numpy(
             np.exp(log_of_surface_pressure.to_numpy()), template=log_of_surface_pressure, **new_metadata
         )
+        # Set the whole vertical component: vertical.* keys cannot be set on a field without one.
+        return field.set(vertical={"level": None, "level_type": mars_value_to_component("levtype", "sfc")})
 
     def backward_transform(self, surface_pressure: ekd.Field) -> ekd.Field:
         """Convert surface surface pressure to ln(surface_pressure).
@@ -67,10 +63,16 @@ class LnspToSp(SingleFieldFilter):
         ekd.Field
             The natural log of surface pressure.
         """
-        orig_metadata = {"param": self.log_of_surface_pressure, "levtype": "ml", "units": "Numeric"}
-
-        return self.new_field_from_numpy(
+        orig_metadata = {"param": self.log_of_surface_pressure, "units": "Numeric"}
+        field = self.new_field_from_numpy(
             np.log(surface_pressure.to_numpy()), template=surface_pressure, **orig_metadata
+        )
+        # Set the whole vertical component: vertical.* keys cannot be set on a field without one.
+        return field.set(
+            vertical={
+                "level": surface_pressure.get("vertical.level"),
+                "level_type": mars_value_to_component("levtype", "ml"),
+            }
         )
 
     def patch_data_request(self, data_request: dict[str, Any]) -> dict[str, Any]:

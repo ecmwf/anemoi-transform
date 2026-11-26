@@ -77,7 +77,7 @@ class LandParameters(MatchingFieldsFilter):
     """A filter to add static parameters from table based on soil/vegetation type."""
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("high_veg_type", "low_veg_type", "soil_type"),
     )
 

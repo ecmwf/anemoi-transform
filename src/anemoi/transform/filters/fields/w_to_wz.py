@@ -32,7 +32,7 @@ class VerticalVelocity(MatchingFieldsFilter):
     """
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("vertical_velocity", "temperature", "humidity"),
         backward=("geometric_vertical_velocity", "temperature", "humidity"),
     )

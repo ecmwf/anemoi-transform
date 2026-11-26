@@ -25,7 +25,7 @@ class DewPoint(MatchingFieldsFilter):
     """A filter to extract dewpoint temperature from relative humidity and temperature"""
 
     MATCHING = MatchingSpec(
-        select="param",
+        select="parameter.variable",
         forward=("relative_humidity", "temperature"),
         backward=("dewpoint", "temperature"),
     )

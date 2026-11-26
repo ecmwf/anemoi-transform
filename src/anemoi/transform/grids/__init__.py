@@ -7,53 +7,24 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-
 """Grids"""
 
-from abc import abstractmethod
-from typing import Any
-
-import numpy as np
-from anemoi.utils.registry import Registry
-
+from anemoi.transform.grids.base import Grid
+from anemoi.transform.grids.base import create_grid
+from anemoi.transform.grids.base import grid_registry
+from anemoi.transform.grids.latlon import GridComparison
+from anemoi.transform.grids.latlon import GridComparisonResult
+from anemoi.transform.grids.latlon import GridMismatchError
+from anemoi.transform.grids.latlon import LatLonGrid
 from anemoi.transform.grids.unstructured import UnstructuredGridFieldList
 
-grid_registry = Registry(__name__)
-
-
-class Grid:
-    """Base class for all grids."""
-
-    @abstractmethod
-    def latlon(self) -> tuple[np.ndarray, np.ndarray]:
-        """Return the latitudes and longitudes of the grid.
-
-        Returns
-        -------
-        tuple
-            A tuple containing the latitudes and longitudes.
-        """
-        pass
-
-
-def create_grid(context: Any, config: Any) -> Grid:
-    """Create a grid definition from the given context and configuration.
-
-    Parameters
-    ----------
-    context : Any
-        The context in which the grid is created.
-    config : Any
-        The configuration for the grid.
-
-    Returns
-    -------
-    Grid
-        The created grid.
-    """
-    grid = grid_registry.from_config(config)
-    grid.context = context
-    return grid
-
-
-__all__ = ["UnstructuredGridFieldList"]
+__all__ = [
+    "Grid",
+    "create_grid",
+    "grid_registry",
+    "GridComparison",
+    "GridComparisonResult",
+    "GridMismatchError",
+    "LatLonGrid",
+    "UnstructuredGridFieldList",
+]
